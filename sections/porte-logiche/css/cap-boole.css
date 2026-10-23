@@ -1,0 +1,85 @@
+/* Capitolo 1 · La logica prima dei circuiti */
+
+/* figura: x · x = x */
+.cap-boole .b0-law { text-align: center; padding: 10px 0 4px; }
+.cap-boole .b0-eq { margin: 0; font: italic 700 clamp(2.6rem, 8vw, 4.2rem)/1.1 var(--serif); color: var(--ink); letter-spacing: .04em; }
+.cap-boole .b0-note { margin: 6px 0 20px; font: italic 1.02rem var(--serif); color: var(--muted); }
+.cap-boole .b0-cases { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; }
+.cap-boole .b0-case { display: grid; gap: 4px; padding: 12px 10px; border-radius: 12px; background: var(--bg); border: 1px solid var(--line); }
+.cap-boole .b0-case.is-ok { background: color-mix(in srgb, var(--ok) 10%, var(--surface)); border-color: color-mix(in srgb, var(--ok) 45%, transparent); }
+.cap-boole .b0-case-a { font: 700 .85rem var(--mono); color: var(--muted); }
+.cap-boole .b0-case-b { font: 800 1.1rem var(--mono); color: var(--ink); }
+.cap-boole .b0-case.is-ok .b0-case-b b { color: var(--ok); }
+.cap-boole .b0-case.is-ko .b0-case-b b { color: var(--ko); }
+
+/* laboratorio: frasi vere e false */
+.cap-boole .b1-rows { display: grid; gap: 10px; }
+.cap-boole .b1-row {
+  display: grid; grid-template-columns: 96px minmax(0, 1fr) 92px 150px; align-items: center; gap: 14px;
+  padding: 12px 16px; border-radius: 12px; background: #0f1916; border: 1px solid #22332e;
+  transition: border-color var(--d-normal) ease, background-color var(--d-normal) ease;
+}
+.cap-boole .b1-row.is-true { border-color: color-mix(in srgb, var(--trace-1) 45%, transparent); background: color-mix(in srgb, var(--trace-1) 7%, #0f1916); }
+.cap-boole .b1-row.flash { animation: b1-flash .6s var(--ease); }
+@keyframes b1-flash { from { box-shadow: 0 0 0 4px color-mix(in srgb, var(--trace-1) 35%, transparent); } to { box-shadow: 0 0 0 0 transparent; } }
+.cap-boole .b1-op { font-weight: 800; color: var(--trace-3); font-size: .9rem; }
+.cap-boole .b1-text { color: #fff; font-size: 1.05rem; font-weight: 600; }
+.cap-boole .b1-boole { color: var(--trace-2); font-size: 1rem; text-align: center; }
+.cap-boole .b1-out { display: flex; align-items: center; gap: 10px; justify-content: flex-end; font-family: var(--mono); }
+.cap-boole .b1-val strong { color: #fff; }
+.cap-boole .b1-row:not(.is-true) .b1-val strong { color: #7d978d; }
+.cap-boole .b1-explain { margin: 0; }
+
+/* laboratorio: De Morgan */
+.cap-boole .b2-grid { grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); }
+.cap-boole .b2-pin { fill: var(--trace-3); font: 800 14px var(--mono); }
+.cap-boole .b2-side { fill: var(--scope-text); font: 700 12px var(--mono); }
+.cap-boole .b2-eq { fill: #49625a; font: 800 40px var(--mono); transition: fill var(--d-normal) ease; }
+.cap-boole .b2-eq.is-ok { fill: var(--trace-1); }
+.cap-boole .b2-table { display: flex; justify-content: center; overflow-x: auto; }
+.cap-boole .b2-table .pl-tt th.out { font-size: .72rem; white-space: nowrap; }
+
+/* laboratorio: il circuito di Shannon */
+.cap-boole .b3-grid { grid-template-columns: minmax(0, 1.75fr) minmax(0, 1fr); align-items: start; }
+.cap-boole .b3-toggles { display: flex; flex-wrap: wrap; gap: 8px; }
+.cap-boole .b3-art .pl-wire { stroke-width: 3.5; }
+.cap-boole .b3-art .pl-wire.is-0 { stroke: #3a524a; }
+.cap-boole .b3-art .pl-switch.is-closed .pl-switch-arm { stroke: #e8f2ee; }
+.cap-boole .b3-art .pl-switch.is-live .pl-switch-arm { stroke: var(--trace-1); filter: drop-shadow(0 0 4px var(--trace-1)); }
+.cap-boole .b3-art .pl-switch-arm, .cap-boole .b3-art .pl-switch-pin, .cap-boole .b3-art .pl-battery-plate { stroke: #e8f2ee; }
+.cap-boole .b3-art .pl-switch-pin { fill: #0b1210; }
+.cap-boole .b3-art .pl-lamp-glass { fill: #15211e; stroke: #e8f2ee; }
+.cap-boole .b3-art .pl-lamp.is-on .pl-lamp-glass { fill: #fff3c4; }
+.cap-boole .b3-clickable { cursor: pointer; }
+.cap-boole .b3-clickable:hover .pl-switch-arm { stroke-width: 5; }
+.cap-boole .b3-status { margin: 6px 0 12px; }
+.cap-boole .b3-desc { margin: 0; }
+.cap-boole .b3-grid .pl-lab-panel .pl-tt { margin-top: 4px; }
+
+/* laboratorio: rumore e soglia */
+.cap-boole .b4-axis { stroke: #2a3b36; stroke-width: 1; }
+.cap-boole .b4-thr { stroke: var(--trace-2); stroke-width: 1.5; stroke-dasharray: 6 5; opacity: .8; }
+.cap-boole .b4-thr.is-thin { stroke-width: 1; opacity: .45; }
+.cap-boole .b4-trace { fill: none; stroke: var(--trace-3); stroke-width: 2; stroke-linejoin: round; filter: drop-shadow(0 0 3px color-mix(in srgb, var(--trace-3) 60%, transparent)); }
+.cap-boole .b4-sample { fill: #fff; }
+.cap-boole .b4-box { fill: color-mix(in srgb, var(--trace-1) 14%, #0f1916); stroke: color-mix(in srgb, var(--trace-1) 50%, transparent); stroke-width: 1; }
+.cap-boole .b4-box.is-err { fill: color-mix(in srgb, #ff5d57 18%, #0f1916); stroke: #ff5d57; }
+.cap-boole .b4-sym { fill: var(--trace-1); font: 800 15px var(--mono); }
+.cap-boole .b4-sym.is-err { fill: #ff8a80; }
+.cap-boole .b4-was { fill: #ff8a80; font: 600 10px var(--mono); }
+.cap-boole .b4-counter { margin: 0 0 4px; color: #fff; }
+
+@media (max-width: 900px) {
+  .cap-boole .b2-grid, .cap-boole .b3-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 760px) {
+  .cap-boole .b1-row { grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; }
+  .cap-boole .b1-op { grid-column: 1 / -1; }
+  .cap-boole .b1-boole { text-align: left; }
+  .cap-boole .b1-out { grid-column: 1 / -1; justify-content: flex-start; }
+}
+
+/* etichette leggibili anche quando il disegno si rimpicciolisce */
+.cap-boole .b3-art .pl-t-switch { font-size: 17px; }
+.cap-boole .b3-art .pl-t-small { font-size: 14px; }
