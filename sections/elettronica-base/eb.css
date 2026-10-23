@@ -249,6 +249,10 @@
 .eb-lab-nota:empty { display: none; }
 .eb-lab-nota strong { color: #fff; }
 .eb-lab-stato { margin: 0; padding: 40px 16px; text-align: center; color: var(--lab-dim); }
+.eb-trascinabile { cursor: grab; }
+.eb-trascinabile.in-presa { cursor: grabbing; }
+.eb-lab svg [tabindex]:focus { outline: none; }
+.eb-lab svg [tabindex]:focus-visible { outline: 2px solid #fff; outline-offset: 3px; border-radius: 4px; }
 .eb-lab.errore .eb-lab-stato { color: var(--lab-f); }
 
 .eb-lab-sfide { padding: 12px 18px 16px; border-top: 1px solid var(--lab-line); }

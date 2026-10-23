@@ -5,7 +5,8 @@
  *   apertura         frase d'impatto in corsivo
  *   intro            paragrafi; nel testo: **grassetto**, *corsivo*, `formula`,
  *                    [[voce]] o [[testo visibile|voce]] del glossario
- *   figura           { svg, alt, didascalia }: illustrazione SVG originale
+ *   figura           { svg, alt, didascalia }: illustrazione SVG originale; stili e
+ *                    animazioni in capitoli/<id>.css con le classi fig-<id>-*
  *   inBreve          3-4 punti chiave
  *   formule          [{ nome, formula, legenda: [[simbolo, grandezza, unità]] }]
  *   laboratori       [{ id, titolo, consegna, sfide: [{ id, testo }] }]

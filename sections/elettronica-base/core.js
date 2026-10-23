@@ -191,24 +191,32 @@
   /* ---------- formule con le grandezze colorate ---------- */
 
   // Ogni grandezza ha sempre lo stesso colore: V tensione, I corrente, R resistenza...
+  // I pedici numerici e i suffissi tot, eff, max, min prendono il colore della grandezza base:
+  // V₁ e Vtot come V, q₂ come q. Le costanti con valore '' restano neutre (ε₀ non è una tensione).
   const GRANDEZZE = {
-    V: 'v', U: 'v', ε: 'v', Vp: 'v', Vs: 'v', Veff: 'v', Vpicco: 'v',
+    V: 'v', U: 'v', ε: 'v', Vp: 'v', Vs: 'v', Vpicco: 'v',
     I: 'i', Ip: 'i', Is: 'i',
     R: 'r', Req: 'r', ρ: 'r',
     P: 'p', E: 'p', W: 'p',
-    Q: 'q', q: 'q', C: 'q', q1: 'q', q2: 'q',
-    B: 'b', Φ: 'b', L: 'b', N: 'b',
+    Q: 'q', q: 'q', C: 'q', e: 'q',
+    B: 'b', Φ: 'b', L: 'b', N: 'b', Np: 'b', Ns: 'b',
     F: 'f', t: 't', f: 't', T: 't', τ: 't',
+    ε0: '', 'ε₀': '', εr: '',
   };
+  function grandezza(p) {
+    if (p in GRANDEZZE) return GRANDEZZE[p];
+    const base = p.replace(/(?:[₀-₉0-9]+|tot|eff|max|min)$/, '');
+    return base !== p && base in GRANDEZZE ? GRANDEZZE[base] : null;
+  }
 
   EB.formula = function (testo, opzioni) {
     const o = opzioni || {};
     const el = EB.h(o.inline ? 'code' : 'div', { class: o.inline ? 'eb-f eb-f-in' : 'eb-f' });
     String(testo).split(/([A-Za-zΦτεργ][A-Za-z0-9₀-₉]*)/).forEach((p) => {
       if (!p) return;
-      const g = GRANDEZZE[p];
+      const g = grandezza(p);
       if (g) el.append(EB.h('var', { class: 'q-' + g }, p));
-      else if (/^[A-Za-zΦτεργ][₀-₉0-9]?$/.test(p)) el.append(EB.h('var', null, p));
+      else if (g === '' || /^[A-Za-zΦτεργ][₀-₉0-9]?$/.test(p)) el.append(EB.h('var', null, p));
       else el.append(p);
     });
     return el;
@@ -283,6 +291,76 @@
         if (io) io.disconnect();
         document.removeEventListener('visibilitychange', vis);
       },
+    };
+  };
+
+  /* ---------- trascinamento ---------- */
+
+  // Coordinate di un evento puntatore nel sistema del viewBox di un SVG.
+  EB.puntoSvg = function (svg, e) {
+    const p = svg.createSVGPoint();
+    p.x = e.clientX;
+    p.y = e.clientY;
+    return p.matrixTransform(svg.getScreenCTM().inverse());
+  };
+
+  /*
+   * Rende trascinabile un elemento SVG con mouse, dito o penna, e spostabile con le frecce
+   * (Maiusc + freccia = passo più lungo). Opzioni:
+   *   svg            l'SVG che definisce le coordinate
+   *   muovi(x, y)    nuova posizione assoluta durante il trascinamento
+   *   sposta(dx, dy) spostamento da tastiera
+   *   inizio(), fine()  facoltativi
+   *   etichetta      testo per gli screen reader ("Carica positiva: usa le frecce per spostarla")
+   *   passo          passo da tastiera in unità del viewBox (predefinito 6)
+   * Restituisce una funzione che rimuove gli ascoltatori.
+   */
+  EB.trascina = function (el, o) {
+    let attivo = false;
+    el.style.touchAction = 'none';
+    el.classList.add('eb-trascinabile');
+    el.setAttribute('tabindex', '0');
+    el.setAttribute('role', 'button');
+    if (o.etichetta) el.setAttribute('aria-label', o.etichetta);
+    const giu = (e) => {
+      attivo = true;
+      el.setPointerCapture(e.pointerId);
+      el.classList.add('in-presa');
+      if (o.inizio) o.inizio();
+      const p = EB.puntoSvg(o.svg, e);
+      o.muovi(p.x, p.y);
+      e.preventDefault();
+    };
+    const muovi = (e) => {
+      if (!attivo) return;
+      const p = EB.puntoSvg(o.svg, e);
+      o.muovi(p.x, p.y);
+    };
+    const su = () => {
+      if (!attivo) return;
+      attivo = false;
+      el.classList.remove('in-presa');
+      if (o.fine) o.fine();
+    };
+    const tasto = (e) => {
+      const passo = (o.passo || 6) * (e.shiftKey ? 4 : 1);
+      const d = { ArrowLeft: [-passo, 0], ArrowRight: [passo, 0], ArrowUp: [0, -passo], ArrowDown: [0, passo] }[e.key];
+      if (!d || !o.sposta) return;
+      e.preventDefault();
+      o.sposta(d[0], d[1]);
+      if (o.fine) o.fine();
+    };
+    el.addEventListener('pointerdown', giu);
+    el.addEventListener('pointermove', muovi);
+    el.addEventListener('pointerup', su);
+    el.addEventListener('pointercancel', su);
+    el.addEventListener('keydown', tasto);
+    return () => {
+      el.removeEventListener('pointerdown', giu);
+      el.removeEventListener('pointermove', muovi);
+      el.removeEventListener('pointerup', su);
+      el.removeEventListener('pointercancel', su);
+      el.removeEventListener('keydown', tasto);
     };
   };
 

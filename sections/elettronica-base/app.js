@@ -393,7 +393,8 @@
       { fino: 1799, nome: 'Seicento e Settecento' },
       { fino: 1849, nome: 'Prima metà dell\'Ottocento' },
       { fino: 1899, nome: 'Seconda metà dell\'Ottocento' },
-      { fino: Infinity, nome: 'Novecento' },
+      { fino: 1999, nome: 'Novecento' },
+      { fino: Infinity, nome: 'Dal 2000 a oggi' },
     ];
     const lista = h('ol', { class: 'timeline' });
     let era = null;
