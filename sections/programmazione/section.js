@@ -11,7 +11,7 @@
     titolo: 'Storia della programmazione',
     sottotitolo: 'Dalle schede del telaio Jacquard all\'intelligenza artificiale: come abbiamo imparato a parlare alle macchine.',
     periodo: '1725–2026',
-    colore: '#8e44ad',
+    colore: 'var(--sez-7, #3d5266)',
     capitoli: [
       { id: 'telai', titolo: 'Le schede che comandano', periodo: '1725–1890', descrizione: 'Il telaio Jacquard, la macchina analitica di Babbage, le note di Ada Lovelace e le schede di Hollerith.' },
       { id: 'logica', titolo: 'La logica diventa macchina', periodo: '1847–1945', descrizione: 'L\'algebra di Boole, la macchina di Turing, i circuiti a relè di Shannon e i calcolatori di Zuse.' },
