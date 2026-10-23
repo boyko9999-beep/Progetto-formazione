@@ -1,0 +1,161 @@
+/*
+ * Enciclopedia: stile comune dell'hub, sopra ai token di BusLab (../css/style.css).
+ * Carta chiara per leggere, titoli con grazie da libro, un colore per sezione.
+ */
+
+:root {
+  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, ui-serif, serif;
+  --sez-1: #a8480f;
+  --sez-2: #1d5bbf;
+  --sez-3: #7a3dc8;
+  --sez-4: #1d7a3a;
+  --sez-5: #0b6f80;
+  --sez-6: #b0245a;
+  --sez-7: #3d5266;
+  --sez-8: #b42318;
+  --enc-shadow: 0 1px 2px rgb(20 24 28 / 6%), 0 8px 24px -12px rgb(20 24 28 / 22%);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --sez-1: #f2994a;
+    --sez-2: #6ea8ff;
+    --sez-3: #b693ff;
+    --sez-4: #5fd38a;
+    --sez-5: #3cc6d9;
+    --sez-6: #ff6fa0;
+    --sez-7: #9fb3c8;
+    --sez-8: #ff8a80;
+    --enc-shadow: 0 1px 2px rgb(0 0 0 / 30%), 0 10px 28px -14px rgb(0 0 0 / 70%);
+  }
+}
+
+:root[data-theme="dark"] {
+  --sez-1: #f2994a;
+  --sez-2: #6ea8ff;
+  --sez-3: #b693ff;
+  --sez-4: #5fd38a;
+  --sez-5: #3cc6d9;
+  --sez-6: #ff6fa0;
+  --sez-7: #9fb3c8;
+  --sez-8: #ff8a80;
+  --enc-shadow: 0 1px 2px rgb(0 0 0 / 30%), 0 10px 28px -14px rgb(0 0 0 / 70%);
+}
+
+.enc [hidden] { display: none !important; }
+.enc .brand rect { fill: var(--scope-bg); }
+.enc .brand .orbit { fill: none; stroke: var(--sez-1); stroke-width: 2.2; }
+.enc .brand .nucleo { fill: var(--trace-2); stroke: none; }
+
+/* ---------- hero dell'hub ---------- */
+
+.enc-hero { display: grid; gap: 28px; margin-bottom: 40px; }
+.enc-hero h1 { font-family: var(--serif); font-weight: 700; font-size: clamp(2.2rem, 5.4vw, 3.6rem); letter-spacing: -0.01em; margin-bottom: .3em; }
+.enc-hero .lead { max-width: 64ch; }
+.enc-hero-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+
+/* Il percorso: dalla pietra d'ambra al software, otto tappe su un filo percorso da un impulso. */
+.evo-wrap { position: relative; margin-top: 8px; }
+.evo-filo { position: absolute; left: 6.25%; right: 6.25%; top: 22px; height: 32px; overflow: hidden; pointer-events: none; }
+.evo-filo::before {
+  content: ""; position: absolute; left: 0; right: 0; top: 15px; height: 2px; border-radius: 2px; opacity: .5;
+  background: linear-gradient(90deg, var(--sez-1), var(--sez-2), var(--sez-3), var(--sez-4), var(--sez-5), var(--sez-6), var(--sez-7), var(--sez-8));
+}
+.evo-impulso { position: absolute; inset: 0; animation: evo-impulso 7s cubic-bezier(.45, 0, .55, 1) infinite; }
+.evo-impulso::before {
+  content: ""; position: absolute; left: -4px; top: 12px; width: 8px; height: 8px; border-radius: 50%;
+  background: #fff; box-shadow: 0 0 0 3px color-mix(in srgb, var(--trace-2) 60%, transparent), 0 0 14px 3px var(--trace-2);
+}
+@keyframes evo-impulso {
+  0% { transform: translateX(0); opacity: 0; }
+  6% { opacity: 1; }
+  94% { opacity: 1; }
+  100% { transform: translateX(100%); opacity: 0; }
+}
+.evo { list-style: none; margin: 0; padding: 0; position: relative; display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 8px; }
+.evo li { position: relative; display: grid; justify-items: center; text-align: center; gap: 4px; }
+.evo a, .evo .evo-attesa { display: grid; justify-items: center; gap: 4px; text-decoration: none; border-radius: 12px; padding: 4px 2px 8px; }
+.evo .evo-attesa { opacity: .5; }
+.evo .evo-ico {
+  width: 68px; height: 68px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--surface); border: 2px solid color-mix(in srgb, var(--c) 55%, var(--line)); color: var(--c);
+  box-shadow: var(--enc-shadow); transition: transform .18s ease, border-color .18s ease;
+}
+.evo .evo-ico svg { width: 36px; height: 36px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.evo a:hover .evo-ico { transform: translateY(-3px); border-color: var(--c); }
+.evo .evo-anno { font: 700 .78rem var(--mono); color: var(--c); }
+.evo .evo-nome { font-size: .82rem; font-weight: 650; line-height: 1.25; color: var(--ink); }
+
+/* ---------- schede delle sezioni ---------- */
+
+.enc-sezioni h2, .enc-extra h2 { font-family: var(--serif); font-size: 1.55rem; }
+.enc-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); gap: 16px; }
+.enc-card {
+  position: relative; height: 100%; display: grid; grid-template-rows: auto auto 1fr auto; gap: 10px;
+  padding: 18px 18px 16px; border-radius: var(--radius);
+  background: var(--surface); border: 1px solid var(--line); border-top: 4px solid var(--c);
+  box-shadow: var(--enc-shadow);
+  transition: transform .2s cubic-bezier(.22, 1, .36, 1), box-shadow .2s ease;
+}
+.enc-card:hover { transform: translateY(-3px); box-shadow: 0 14px 34px -18px var(--c); }
+.enc-card-top { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.enc-num { font: 800 2.4rem/1 var(--serif); color: transparent; -webkit-text-stroke: 1.5px var(--c); letter-spacing: -0.02em; }
+.enc-periodo { font: 600 .78rem var(--mono); color: var(--c); text-align: right; }
+.enc-card h3 { font-family: var(--serif); font-size: 1.35rem; margin: 0 0 4px; }
+.enc-card h3 a { text-decoration: none; }
+.enc-card h3 a::after { content: ""; position: absolute; inset: 0; border-radius: var(--radius); }
+.enc-card h3 a:focus-visible { outline: none; }
+.enc-card:has(h3 a:focus-visible) { outline: 3px solid var(--accent); outline-offset: 2px; }
+.enc-sotto { color: var(--muted); margin: 0; font-size: .95rem; }
+.enc-capitoli { list-style: none; margin: 0; padding: 10px 0 0; border-top: 1px solid var(--line); display: grid; gap: 4px; font-size: .9rem; }
+.enc-capitoli li { display: flex; gap: 8px; align-items: baseline; }
+.enc-capitoli li::before { content: ""; flex: none; width: 6px; height: 6px; border-radius: 50%; background: var(--c); transform: translateY(-2px); }
+.enc-capitoli .altri { color: var(--muted); }
+.enc-capitoli .altri::before { background: transparent; border: 1px solid var(--c); }
+.enc-card-foot { display: grid; gap: 10px; }
+.enc-barra { display: flex; align-items: center; gap: 10px; font-size: .8rem; color: var(--muted); }
+.enc-barra-track { flex: 1; height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; }
+.enc-barra-track span { display: block; height: 100%; background: var(--c); border-radius: 3px; }
+.enc-azioni { display: flex; flex-wrap: wrap; gap: 8px; position: relative; z-index: 1; }
+.enc-azioni .btn { padding: 8px 14px; font-size: .9rem; }
+.enc-azioni .btn.primary { background: var(--c); color: var(--bg); }
+
+.enc-card.attesa { border-top-style: dashed; box-shadow: none; background: transparent; border-style: dashed; }
+.enc-card.attesa:hover { transform: none; box-shadow: none; }
+.enc-card.attesa .enc-num { opacity: .55; }
+.enc-stato { font-size: .82rem; font-weight: 700; color: var(--muted); }
+
+.enc-card.scheletro { min-height: 230px; background: linear-gradient(100deg, var(--surface) 30%, color-mix(in srgb, var(--line) 60%, var(--surface)) 50%, var(--surface) 70%) 0 0 / 300% 100%; animation: enc-shimmer 1.4s linear infinite; border-top-color: var(--line); }
+@keyframes enc-shimmer { to { background-position: -150% 0; } }
+
+/* ---------- BusLab e note ---------- */
+
+.enc-extra { margin-top: 44px; }
+.enc-buslab {
+  display: grid; grid-template-columns: auto 1fr auto; gap: 18px; align-items: center;
+  padding: 18px 20px; border-radius: var(--radius); background: var(--scope-bg); color: var(--scope-text);
+  text-decoration: none; border: 1px solid var(--scope-grid);
+}
+.enc-buslab:hover { border-color: var(--trace-1); }
+.enc-buslab svg { width: 54px; height: 54px; }
+.enc-buslab rect { fill: #0f1a17; stroke: var(--scope-grid); }
+.enc-buslab path { fill: none; stroke: var(--trace-1); stroke-width: 3; }
+.enc-buslab strong { display: block; color: #fff; font-size: 1.15rem; }
+.enc-buslab .vai { font-weight: 800; color: var(--trace-1); white-space: nowrap; }
+
+@media (max-width: 900px) {
+  .evo { grid-template-columns: repeat(4, minmax(0, 1fr)); row-gap: 14px; }
+  .evo::before, .evo::after { display: none; }
+}
+
+@media (max-width: 520px) {
+  .evo .evo-ico { width: 56px; height: 56px; }
+  .evo .evo-ico svg { width: 30px; height: 30px; }
+  .evo .evo-nome { font-size: .74rem; }
+  .enc-buslab { grid-template-columns: 1fr; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .evo::after { display: none; }
+  .enc-card.scheletro { animation: none; }
+}
