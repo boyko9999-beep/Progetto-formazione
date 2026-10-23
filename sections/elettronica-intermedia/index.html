@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Elettronica intermedia · Enciclopedia BusLab</title>
+  <meta name="description" content="Sezione 2 dell'enciclopedia interattiva: semiconduttori, diodi, LED, transistor, MOSFET, filtri RC, amplificatori operazionali, il timer 555 e l'alimentatore, con un laboratorio animato in ogni capitolo.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230b1210'/%3E%3Cpath d='M4 16h7M21 16h7M11 9v14l10-7z' fill='none' stroke='%23f0b44c' stroke-width='2.6' stroke-linejoin='round'/%3E%3Cpath d='M21 9v14' stroke='%23f0b44c' stroke-width='2.6'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="../../css/style.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="ei-page">
+  <a class="skip" href="#main">Vai al contenuto</a>
+  <header class="topbar">
+    <a class="brand" href="../../index.html" aria-label="BusLab, torna alla pagina principale">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7"/><path d="M4 22h6V10h6v12h6V10h6"/></svg>
+      <span>BusLab</span>
+    </a>
+    <nav class="topnav" aria-label="Sezione Elettronica intermedia">
+      <a href="../index.html">Enciclopedia</a>
+      <a href="#" data-nav="home">Capitoli</a>
+      <a href="#storia" data-nav="storia">Storia</a>
+      <a href="#glossario" data-nav="glossario">Glossario</a>
+      <a href="../quiz/index.html#elettronica-intermedia">Quiz</a>
+    </nav>
+    <div class="progress" aria-live="polite">
+      <span id="progress">0/9 capitoli</span>
+      <span class="progress-track"><span id="progress-bar"></span></span>
+    </div>
+  </header>
+  <main id="main" tabindex="-1">
+    <noscript><p>Questa sezione è interattiva: attiva JavaScript nel browser per vedere i capitoli e i laboratori.</p></noscript>
+  </main>
+  <footer class="foot">
+    Enciclopedia BusLab · Sezione 2, Elettronica intermedia. I laboratori usano modelli fisici semplificati ma con le equazioni vere (diodo di Shockley, carica RC, guadagno degli amplificatori, frequenza del 555); i valori dei componenti seguono le serie commerciali.
+  </footer>
+  <script src="section.js"></script>
+  <script src="js/core.js"></script>
+  <script src="js/storia.js"></script>
+  <script src="chapters/semiconduttori.js"></script>
+  <script src="chapters/diodo.js"></script>
+  <script src="chapters/led-zener.js"></script>
+  <script src="chapters/bjt.js"></script>
+  <script src="chapters/mosfet.js"></script>
+  <script src="chapters/rc-filtri.js"></script>
+  <script src="chapters/operazionale.js"></script>
+  <script src="chapters/oscillatori.js"></script>
+  <script src="chapters/alimentatore.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
