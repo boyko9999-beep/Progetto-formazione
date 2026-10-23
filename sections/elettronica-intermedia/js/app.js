@@ -51,8 +51,21 @@
     const sfide = EI.loadDone().size;
     document.getElementById('progress').textContent = n + '/' + chapters.length + ' capitoli' + (sfide ? ' · ' + sfide + (sfide === 1 ? ' sfida' : ' sfide') : '');
     document.getElementById('progress-bar').style.width = (100 * n / chapters.length) + '%';
+    reportToHub(n);
   }
   window.addEventListener('ei:progress', updateProgress);
+
+  // L'hub dell'enciclopedia (sections/index.html) mostra i capitoli letti di ogni sezione:
+  // stesso formato di Enciclopedia.progresso, scritto direttamente se questa pagina non carica l'hub.
+  function reportToHub(n) {
+    const slug = (window.EI_SEZIONE && EI_SEZIONE.slug) || 'elettronica-intermedia';
+    if (window.Enciclopedia && Enciclopedia.progresso) { Enciclopedia.progresso(slug, n, chapters.length); return; }
+    try {
+      const all = JSON.parse(localStorage.getItem('enciclopedia-progressi') || '{}') || {};
+      all[slug] = { fatti: n, totale: chapters.length };
+      localStorage.setItem('enciclopedia-progressi', JSON.stringify(all));
+    } catch (e) { /* archivio non disponibile */ }
+  }
 
   /* ---------- termini del glossario con definizione al passaggio ---------- */
 

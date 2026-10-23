@@ -10,7 +10,8 @@
     numero: 2,
     titolo: 'Elettronica intermedia',
     sottotitolo: 'Semiconduttori, transistor e circuiti analogici: dal cristallo di silicio all\'alimentatore da 5 volt.',
-    colore: '#b7791f',
+    periodo: '1833 – oggi',
+    colore: 'var(--sez-2, #1d5bbf)',
     capitoli: [
       { id: 'semiconduttori', titolo: 'Semiconduttori e drogaggio', descrizione: 'Il silicio, gli elettroni liberi e le lacune: pochi atomi estranei rendono il cristallo di tipo N o P.', periodo: '1874–1940' },
       { id: 'diodo', titolo: 'La giunzione P-N e il diodo', descrizione: 'Un pezzo P e uno N a contatto creano una barriera: la corrente passa in un solo verso.', periodo: '1904–1949' },
