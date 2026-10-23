@@ -27,7 +27,7 @@ Riusa `../../css/style.css` (token, barra superiore, bottoni) e si registra nell
 | `js/lib/hollerith.js` | codici delle schede perforate IBM 029 |
 | `test/*.test.js` | test in Node (`node --test sections/programmazione/test/*.test.js`) |
 
-Regole: un file non tocca il DOM quando viene caricato (solo dentro `monta` o `disegna`), così i test in Node possono caricarlo. Le classi CSS di un laboratorio iniziano con `lab-<id>-`, quelle di una figura con `fig-<id>-`.
+Regole: un file non tocca il DOM quando viene caricato (solo dentro `monta` o `disegna`), così i test in Node possono caricarlo. Le classi CSS di un laboratorio iniziano con `lab-<id>-`, quelle di una figura con `fig-<id>-`, quelle degli schermi d'epoca con `pg-sc-`.
 
 ## Capitolo
 
@@ -63,20 +63,23 @@ Mini-markup nei testi: `**grassetto**`, `*corsivo*`, `` `codice` ``, `{{termine}
 
 ### Campi di `ciao` per ogni schermo
 
-| `epoca` / `schermo` | Campi usati |
-| --- | --- |
-| `jacquard` | `uscita` (parola da tessere, massimo 8 lettere) |
-| `nastro` | `uscita` (simboli scritti sul nastro), `codice` facoltativo (tavola delle regole) |
-| `williams` | `uscita` (parola disegnata con i punti della memoria) |
-| `telescrivente`, `tabulato`, `foglio` | `codice` (listato), `uscita` (stampa) |
-| `scheda` | `codice` (una riga, massimo 80 caratteri, maiuscole), `uscita` |
-| `terminale`, `editor` | `file` facoltativo, `codice`, `comandi` (righe di shell), `uscita` |
-| `home` | `codice` (righe BASIC numerate), `uscita` |
-| `mac` | `codice` (script), `uscita` (testo della finestra di dialogo) |
-| `browser` | `codice` (HTML), `uscita` facoltativa |
-| `chat` | `prompt`, `risposta`, `codice`, `uscita` |
+| `epoca` / `schermo` | Che cosa si vede | Campi usati |
+| --- | --- | --- |
+| `jacquard` | la catena di schede guida il telaio, riga dopo riga il tessuto mostra la parola | `uscita` (massimo 8 caratteri) |
+| `nastro` | la testina della macchina di Turing scrive un simbolo per casella e si ferma in ALT | `uscita` (massimo 12 simboli), `codice` facoltativo: la tavola delle regole; se ha una riga con `→` per simbolo, le righe si accendono in ordine |
+| `williams` | 32 righe da 32 bit, punti e trattini: il programma in alto, i dati disegnano la parola | `uscita` (al massimo 3 righe da 5 lettere) |
+| `telescrivente` | il nastro perforato passa nel lettore, poi la telescrivente stampa | `codice` (listato), `uscita` (in maiuscolo) |
+| `foglio` | il programma scritto a matita sul modulo di codifica, una casella per carattere | `codice` (FORTRAN a colonne fisse), `uscita` |
+| `scheda` | la scheda IBM perforata colonna per colonna, con la lente sui 12 fori | `codice` (una riga, massimo 80 caratteri della perforatrice 029), `uscita` |
+| `tabulato` | la stampante a righe stampa il listato numerato e il risultato | `codice`, `uscita` |
+| `terminale` | `cat` del file, i comandi battuti a mano, l'uscita | `file`, `codice`, `comandi` (righe che iniziano con `$ `), `uscita` |
+| `home` | il televisore blu: si batte il programma, `RUN`; con un `GOTO` gira finché arriva `BREAK` | `codice` (righe BASIC numerate), `uscita` |
+| `mac` | lo script del pulsante «Saluta», il clic, la finestra di dialogo | `codice` (script), `uscita` (testo del messaggio) |
+| `browser` | il sorgente HTML e la pagina disegnata (in un riquadro isolato, senza script) | `codice` (HTML), `file` facoltativo (indirizzo) |
+| `editor` | editor moderno con completamento automatico e terminale integrato | `file`, `codice`, `comandi`, `uscita`, `cartella` facoltativa |
+| `chat` | la domanda, la risposta un token alla volta, il codice e la sua esecuzione | `prompt`, `risposta`, `codice`, `uscita` |
 
-Tutti accettano `anno`, `linguaggio` e `nota` (didascalia).
+Tutti accettano `anno`, `linguaggio` e `nota` (didascalia). L'animazione parte quando lo schermo entra in vista; il bottone in alto a destra la salta o la rivede; con il movimento ridotto si vede subito il risultato. `test/schermi.test.js` controlla che i dati di ogni capitolo vadano bene per il suo schermo.
 
 ## Laboratorio
 
