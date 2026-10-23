@@ -6,7 +6,9 @@ ciascuno con la sua storia, come funziona, una simulazione animata dei segnali e
 
 ## Come avviarlo
 
-Non serve installare niente: apri `index.html` con un browser (doppio clic).
+**Online:** https://boyko9999-beep.github.io/Progetto-formazione/ (pubblicato da GitHub Pages a ogni modifica su `main`).
+
+**Sul tuo computer:** non serve installare niente: apri `index.html` con un browser (doppio clic).
 
 In alternativa, da terminale:
 
