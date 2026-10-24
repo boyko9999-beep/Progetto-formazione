@@ -444,7 +444,7 @@
       const t = s('g', { class: 'qz-term', 'data-input': leaf.input }, svg);
       s('rect', { x: X_IN, y: leaf.y - 13, width: 44, height: 26, rx: 7 }, t);
       text(t, X_IN + 13, leaf.y + 5, leaf.input, { class: 'qz-term-name', 'text-anchor': 'middle' });
-      const v = text(t, X_IN + 33, leaf.y + 5, '0', { class: 'qz-term-val', 'text-anchor': 'middle' });
+      const v = text(t, X_IN + 33, leaf.y + 5, '', { class: 'qz-term-val', 'text-anchor': 'middle' });
       termEls.push({ node: leaf, el: t, val: v });
     });
 
@@ -485,13 +485,12 @@
       led.classList.toggle('on', val(tree) === 1);
       return val(tree);
     }
-    update({});
+    // Si parte spenti e senza valori: un circuito già acceso direbbe l'uscita prima della risposta.
     return { el: svg, update: update, names: names, terminals: termEls, steps: steps };
   }
 
   function logicFigure(f) {
     const d = logicDiagram(f.expr);
-    d.update({});
     return wrap('logic', d.el, f.caption);
   }
 

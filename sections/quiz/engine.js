@@ -653,9 +653,19 @@
       oninput: () => ctx.changed(),
       onkeydown: (e) => { if (e.key === 'Enter') { e.preventDefault(); ctx.confirm(); } },
     });
+    // Il tastierino numerico dei telefoni spesso non ha il segno meno: lo dà questo pulsante.
+    const sign = h('button', {
+      type: 'button', class: 'qz-num-sign', 'aria-label': 'Cambia segno', title: 'Cambia segno',
+      onclick: () => {
+        const v = input.value.trim();
+        input.value = /^[-−]/.test(v) ? v.replace(/^[-−]\s*/, '') : '−' + v;
+        ctx.changed();
+        input.focus({ preventScroll: true });
+      },
+    }, '±');
     const box = h('div', { class: 'qz-num' },
       h('label', { for: id, class: 'qz-num-label' }, 'La tua risposta'),
-      h('div', { class: 'qz-num-field' }, input, q.unit ? h('span', { class: 'qz-num-unit', id: id + '-u' }, q.unit) : null));
+      h('div', { class: 'qz-num-field' }, sign, input, q.unit ? h('span', { class: 'qz-num-unit', id: id + '-u' }, q.unit) : null));
     return {
       el: box,
       ready: () => Number.isFinite(Core.parseNumber(input.value)),
@@ -664,6 +674,7 @@
       typing: true,
       lock(ok) {
         input.readOnly = true;
+        sign.disabled = true;
         box.classList.add(ok ? 'right' : 'wrong');
         return input;
       },

@@ -2,7 +2,7 @@
  * Banca domande del quiz: i bus di BusLab.
  * Riusa le domande delle 31 lezioni (js/buses.js) e ne ricava altre dai dati:
  * linee del tempo da riordinare e sigle da abbinare. Le domande in più scritte
- * a mano, e le opzioni ritoccate di alcune domande di BusLab (QuizBusFixes),
+ * a mano, e i ritocchi di qualunque domanda di questo file (QuizBusFixes, per id),
  * sono in bus-extra.js, che va caricato prima di questo file.
  */
 (function (root) {
@@ -28,7 +28,7 @@
         options: q.options,
         answer: q.answer,
         why: q.why,
-      }, fixes[id]));
+      }));
     });
   });
 
@@ -88,6 +88,9 @@
     pairs: homes.map((b) => [b.name, catById[b.category].name]),
     why: homes.map((b) => b.name + ': ' + catById[b.category].name.toLowerCase()).join('; ') + '.',
   });
+
+  // I ritocchi di bus-extra.js valgono per tutte le domande, anche per quelle ricavate dai dati.
+  questions.forEach((q, i) => { if (fixes[q.id]) questions[i] = Object.assign({}, q, fixes[q.id]); });
 
   root.QuizBank.register({
     slug: 'bus',
