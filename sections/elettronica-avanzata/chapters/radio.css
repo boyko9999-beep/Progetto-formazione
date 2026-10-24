@@ -1,1 +1,29 @@
-/* Capitolo "radio": stile in preparazione. */
+/* Capitolo 4 · Onde nell'etere */
+
+.radio-lab-canvas { aspect-ratio: 16 / 10; }
+
+/* I comandi che non servono per la modulazione scelta restano nascosti. */
+.radio-lab .ea-ctl[hidden] { display: none; }
+
+/* Sei display in righe sempre complete: 6, poi 3, poi 2 per riga. */
+.radio-lab .ea-lab-readouts { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+
+/* Etichette su due righe: i valori restano allineati in basso. */
+.radio-lab .ea-ro { align-content: space-between; }
+
+@media (max-width: 1024px) {
+  .radio-lab .ea-lab-readouts { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+/* Sugli schermi stretti i tre strumenti stanno uno sotto l'altro. */
+@media (max-width: 640px) {
+  .radio-lab-canvas { aspect-ratio: 4 / 5; }
+}
+
+@media (max-width: 560px) {
+  .radio-lab .ea-lab-readouts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 480px) {
+  .radio-lab-canvas { aspect-ratio: 5 / 8; }
+}
