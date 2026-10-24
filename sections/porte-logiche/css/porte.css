@@ -275,7 +275,8 @@
 .pl-lab-readout { padding: 12px 20px; border-top: 1px solid var(--scope-grid); font-size: .95rem; min-height: 3.2em; }
 .pl-lab-readout strong { color: #fff; }
 .pl-lab-caption { padding: 10px 20px 14px; border-top: 1px solid var(--scope-grid); font-size: .84rem; color: #8aa59b; }
-.pl-lab .pl-svg text { fill: #d7e6e0; }
+/* :where() tiene bassa la specificità: le classi dei capitoli (.cap-x .classe) possono ricolorare i testi */
+.pl-lab :where(.pl-svg text) { fill: #d7e6e0; }
 .pl-lab .pl-t, .pl-lab .pl-t-small { paint-order: stroke; stroke: var(--scope-bg); stroke-width: 4px; stroke-linejoin: round; }
 .pl-lab-grid { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 20px; align-items: center; }
 .pl-lab-panel { background: rgb(255 255 255 / 2.5%); border: 1px solid var(--scope-grid); border-radius: 12px; padding: 12px 14px; }
