@@ -249,3 +249,61 @@ test('prontuario e durate in italiano', () => {
   assert.strictEqual(L.durataItaliana(120000), '2 minuti');
   assert.strictEqual(L.durataItaliana(200), '1 secondo');
 });
+
+test('aiuti per l\'interfaccia: errori brevi, riga del cursore, etichette per cella', () => {
+  const casi = [
+    ['LAOD 3', 'istruzione sconosciuta'], ['JZ fien', 'etichetta sconosciuta'], ['JUMP', 'manca l\'indirizzo'],
+    ['HALT 3', 'qui niente operando'], ['LOAD 40', 'indirizzo oltre 31'], ['LOAD 1 2', 'troppi operandi'],
+    ['a: HALT\na: HALT', 'etichetta già usata'], ['out: HALT', 'nome riservato'], ['DATA x', 'serve un numero'], ['DATA 300', 'numero troppo grande'],
+    [Array.from({ length: 32 }, () => 'HALT').join('\n'), 'memoria finita'],
+  ];
+  for (const [src, atteso] of casi) {
+    const ris = C.assembla(src);
+    assert.ok(ris.errori.length, src);
+    assert.strictEqual(L.breve(ris.errori[0].messaggio), atteso, src);
+  }
+  assert.strictEqual(L.breve('boh'), 'errore');
+  assert.strictEqual(L.rigaDi('a\nb\nc', 0), 1);
+  assert.strictEqual(L.rigaDi('a\nb\nc', 2), 2);
+  assert.strictEqual(L.rigaDi('a\nb\nc', 99), 3);
+  assert.strictEqual(L.rigaDi('', 5), 1);
+  const ris = C.assembla(ESEMPI.somma);
+  assert.deepStrictEqual(L.etichettePerCella(ris), { 0: ['ciclo'], 8: ['fine'], 11: ['n'], 12: ['uno'], 13: ['somma'], 31: ['OUT'] });
+  const doppia = C.assembla('Fine: HALT\nfine: HALT');
+  assert.deepStrictEqual(L.etichettePerCella(doppia), { 0: ['Fine'], 31: ['OUT'] });
+  assert.deepStrictEqual(L.etichettePerCella(null), {});
+});
+
+test('descriviCella: istruzioni, dati, celle vuote e uscita', () => {
+  const ris = C.assembla(ESEMPI.somma);
+  assert.strictEqual(L.descriviCella(ris, 0), 'Cella 0: 00101101, cioè LOAD 13, dalla riga 2 («ciclo: LOAD somma»).');
+  assert.strictEqual(L.descriviCella(ris, 11), 'Cella 11: il dato 5, in binario 00000101, dalla riga 13 («n: DATA 5»).');
+  assert.match(L.descriviCella(ris, 20), /^Cella 20: vuota/);
+  assert.match(L.descriviCella(ris, 31), /^Cella 31: l'uscita, OUT/);
+  const neg = C.assembla('x: DATA -3');
+  assert.strictEqual(L.descriviCella(neg, 0), 'Cella 0: il dato -3, in binario 11111101, dalla riga 1 («x: DATA -3»).');
+});
+
+test('tempi: le tre velocità vengono dalle durate del motore', () => {
+  const D = { istante: 80, veloce: 180, normale: 350, lenta: 600, narrativa: 1000 };
+  const m = L.tempi('media', D);
+  const l = L.tempi('lenta', D);
+  const v = L.tempi('veloce', D);
+  assert.strictEqual(m.riga, 350);
+  assert.strictEqual(m.esegui, 180);
+  for (const k of Object.keys(m)) {
+    if (k === 'fattore') continue;
+    assert.ok(l[k] > m[k] && m[k] > v[k] && v[k] > 0, k);
+  }
+  assert.deepStrictEqual(L.tempi('boh', D), m);
+});
+
+test('minuscola: dopo i due punti, ma non per sigle e mnemonici', () => {
+  assert.strictEqual(L.minuscola('Etichetta sconosciuta: «fien».'), 'etichetta sconosciuta: «fien».');
+  assert.strictEqual(L.minuscola('L\'etichetta «a» è già usata.'), 'l\'etichetta «a» è già usata.');
+  assert.strictEqual(L.minuscola('DATA vuole un numero, per esempio DATA 7.'), 'DATA vuole un numero, per esempio DATA 7.');
+  assert.strictEqual(L.minuscola('HALT non vuole operandi.'), 'HALT non vuole operandi.');
+  assert.strictEqual(L.minuscola('«out» è una parola riservata'), '«out» è una parola riservata');
+  const cop = L.copione('LOAD a\nLAOD a\nHALT\na: DATA 2');
+  assert.strictEqual(L.narra(cop.passi[cop.passi.length - 1]), 'Riga 2: istruzione sconosciuta: «LAOD».');
+});

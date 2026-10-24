@@ -72,14 +72,14 @@
     {
       id: 'short-code', nome: 'Short Code', anno: 1949, alias: ['brief code'],
       autori: 'John Mauchly, William F. Schmitt', paradigmi: ['imperativo'], famiglia: 'algol', influenzatoDa: [], capitolo: 'assembly',
-      descrizione: 'Proposto da John Mauchly nel 1949 e realizzato da William Schmitt per il BINAC e poi per l\'UNIVAC I: si scrivevano formule invece di istruzioni macchina. Era interpretato, quindi molto più lento del codice macchina.',
+      descrizione: 'Proposto da John Mauchly nel 1949 con il nome di Brief Code e realizzato da William Schmitt: prima per il BINAC, dove non fu mai collaudato, poi nel 1950 per l\'UNIVAC I. Si scrivevano formule invece di istruzioni macchina; era interpretato, quindi circa 50 volte più lento del codice macchina.',
       ciao: '', ciaoTipo: 'assente',
       ciaoNota: 'Nessun «Ciao, mondo»: Short Code lavorava con numeri e formule, e ogni formula andava trascritta a mano in codici numerici.',
     },
     {
       id: 'autocode', nome: 'Autocode', anno: 1952,
       autori: 'Alick Glennie', paradigmi: ['imperativo'], famiglia: 'algol', influenzatoDa: [], capitolo: 'assembly',
-      descrizione: 'Alick Glennie lo scrisse nel 1952 per il Manchester Mark 1: è spesso considerato il primo linguaggio compilato, cioè tradotto per intero in codice macchina prima dell\'esecuzione. Nel 1954 Tony Brooker ne creò una versione più comoda, il Mark 1 Autocode.',
+      descrizione: 'Alick Glennie lo scrisse nel 1952 per il Manchester Mark 1: è spesso considerato il primo linguaggio compilato, cioè tradotto per intero in codice macchina prima dell\'esecuzione. Tra il 1954 e il 1955 Tony Brooker ne creò una versione più comoda, il Mark 1 Autocode.',
       ciao: '', ciaoTipo: 'assente',
       ciaoNota: 'Nessun «Ciao, mondo» d\'epoca: l\'Autocode serviva a scrivere calcoli in forma quasi algebrica, non a stampare frasi.',
     },
@@ -92,9 +92,9 @@
     },
     {
       id: 'flow-matic', nome: 'FLOW-MATIC', anno: 1957, alias: ['b-0'],
-      notaAnno: 'Sviluppato tra il 1955 e il 1959.',
+      notaAnno: 'Sviluppato tra il 1955 e il 1959: come anno di nascita le fonti indicano il 1955, il 1957 o il 1958.',
       autori: 'Grace Hopper e il suo gruppo alla Remington Rand', paradigmi: ['imperativo'], famiglia: 'dati', influenzatoDa: [], capitolo: 'fortran',
-      descrizione: 'Il gruppo di Grace Hopper lo sviluppò per l\'UNIVAC I: fu il primo linguaggio per l\'elaborazione dei dati aziendali a usare parole inglesi al posto dei simboli matematici, e preparò la strada al COBOL.',
+      descrizione: 'Il gruppo di Grace Hopper lo sviluppò per l\'UNIVAC I: è considerato il primo linguaggio per l\'elaborazione dei dati aziendali a usare parole inglesi al posto dei simboli matematici, e preparò la strada al COBOL.',
       ciao: '(0) INPUT INVENTORY FILE-A PRICE FILE-B ;\n    OUTPUT PRICED-INV FILE-C UNPRICED-INV\n    FILE-D ; HSP D .\n(1) COMPARE PRODUCT-NO (A) WITH PRODUCT-NO (B) ;\n    IF GREATER GO TO OPERATION 10 ;\n    IF EQUAL GO TO OPERATION 5 ;\n    OTHERWISE GO TO OPERATION 2 .',
       ciaoTipo: 'assaggio',
       ciaoNota: 'FLOW-MATIC non aveva un\'istruzione per stampare un saluto: leggeva e scriveva archivi su nastro. Sono le prime righe del programma d\'esempio del manuale, che confronta un archivio di magazzino con un listino prezzi (righe spezzate per leggibilità).',
@@ -144,7 +144,7 @@
     {
       id: 'pl-i', nome: 'PL/I', anno: 1964, alias: ['pl1', 'pli'],
       autori: 'IBM, con il comitato degli utenti SHARE', paradigmi: ['imperativo', 'strutturato'], famiglia: 'algol', influenzatoDa: ['fortran', 'cobol', 'algol-60'],
-      descrizione: 'L\'IBM lo presentò nel 1964 insieme ai computer System/360, per unire il calcolo scientifico del FORTRAN, la gestione dei dati del COBOL e la struttura a blocchi di ALGOL. Potente ma enorme, servì tra l\'altro a scrivere il sistema operativo Multics.',
+      descrizione: 'L\'IBM lo presentò nel 1964 per la nuova famiglia di computer System/360: doveva unire il calcolo scientifico del FORTRAN, la gestione dei dati del COBOL e la struttura a blocchi di ALGOL. Potente ma enorme, servì tra l\'altro a scrivere il sistema operativo Multics.',
       ciao: 'CIAO: PROCEDURE OPTIONS (MAIN);\n   PUT SKIP LIST (\'CIAO, MONDO\');\nEND CIAO;',
     },
     {
@@ -178,9 +178,9 @@
     {
       id: 'b', nome: 'B', anno: 1969,
       autori: 'Ken Thompson, con Dennis Ritchie', paradigmi: ['imperativo', 'strutturato'], famiglia: 'c', influenzatoDa: ['bcpl'], capitolo: 'unix',
-      descrizione: 'Ken Thompson lo ricavò dal BCPL ai Bell Labs, nel 1969, per programmare il piccolo PDP-7 su cui stava nascendo Unix. Nel tutorial di Brian Kernighan su B compare il primo «hello, world» documentato.',
+      descrizione: 'Ken Thompson lo ricavò dal BCPL ai Bell Labs, nel 1969, per programmare il piccolo PDP-7 su cui stava nascendo Unix. Nel tutorial di Brian Kernighan su B compare il più antico «hello, world» conosciuto.',
       ciao: 'main( ) {\n  extrn a, b, c;\n  putchar(a); putchar(b); putchar(c); putchar(\'!*n\');\n}\n\na \'hell\';\nb \'o, w\';\nc \'orld\';',
-      ciaoNota: 'L\'originale di Brian Kernighan (1972): ogni costante conteneva al massimo quattro caratteri, per questo il saluto è spezzato in tre pezzi.',
+      ciaoNota: 'L\'originale del tutorial di Brian Kernighan (1972 o 1973: le fonti non concordano): ogni costante conteneva al massimo quattro caratteri, per questo il saluto è spezzato in tre pezzi.',
     },
     {
       id: 'pascal', nome: 'Pascal', anno: 1970,
@@ -218,7 +218,7 @@
       autori: 'Donald D. Chamberlin e Raymond F. Boyce', paradigmi: ['dichiarativo'], famiglia: 'dati', influenzatoDa: [], capitolo: 'unix',
       descrizione: 'Donald Chamberlin e Raymond Boyce lo idearono all\'IBM nel 1974 (allora si chiamava SEQUEL) per interrogare i database relazionali proposti da Edgar F. Codd. Si descrive quali dati si vogliono, non come andarli a prendere.',
       ciao: 'SELECT \'Ciao, mondo!\';',
-      ciaoNota: 'Funziona in molti database, per esempio PostgreSQL e SQLite; in Oracle si aggiunge FROM DUAL.',
+      ciaoNota: 'Funziona in molti database, per esempio PostgreSQL e SQLite; le versioni meno recenti di Oracle richiedono anche FROM DUAL.',
     },
     {
       id: 'scheme', nome: 'Scheme', anno: 1975,
@@ -259,7 +259,7 @@
     {
       id: 'common-lisp', nome: 'Common Lisp', anno: 1984,
       autori: 'Comitato di esperti (tra gli altri Guy L. Steele e Scott Fahlman)', paradigmi: ['funzionale', 'imperativo', 'oggetti'], famiglia: 'funzionali', influenzatoDa: ['lisp', 'scheme'],
-      descrizione: 'Negli anni Settanta i dialetti del Lisp si erano moltiplicati: Common Lisp li riunì in un unico standard, descritto nel 1984 nel libro di Guy Steele «Common Lisp: the Language» e approvato dall\'ANSI nel 1994.',
+      descrizione: 'Negli anni Settanta i dialetti del Lisp si erano moltiplicati: Common Lisp li riunì in un unico standard, descritto nel 1984 nel libro di Guy Steele «Common Lisp the Language» e approvato dall\'ANSI nel 1994.',
       ciao: '(format t "Ciao, mondo!~%")',
     },
     {
@@ -284,7 +284,7 @@
     {
       id: 'eiffel', nome: 'Eiffel', anno: 1986,
       autori: 'Bertrand Meyer', paradigmi: ['oggetti'], famiglia: 'oggetti', influenzatoDa: ['ada', 'simula'], capitolo: 'oggetti',
-      descrizione: 'Bertrand Meyer lo presentò nel 1986 con un\'idea guida, la progettazione per contratto: ogni metodo dichiara che cosa pretende (precondizioni) e che cosa garantisce (postcondizioni), e il programma lo verifica mentre gira. Il nome ricorda l\'ingegnere della torre di Parigi.',
+      descrizione: 'Bertrand Meyer lo presentò nel 1986 con un\'idea guida, la progettazione per contratto: ogni metodo dichiara che cosa pretende (precondizioni) e che cosa garantisce (postcondizioni), e il programma lo verifica mentre gira. Il nome rende omaggio a Gustave Eiffel, l\'ingegnere della torre di Parigi.',
       ciao: 'class\n    CIAO\ncreate\n    make\nfeature\n    make\n        do\n            print ("Ciao, mondo!%N")\n        end\nend',
     },
     {
@@ -333,7 +333,7 @@
     {
       id: 'r', nome: 'R', anno: 1993,
       autori: 'Ross Ihaka e Robert Gentleman', paradigmi: ['funzionale', 'imperativo'], famiglia: 'dati', influenzatoDa: ['s', 'scheme'],
-      descrizione: 'Ross Ihaka e Robert Gentleman lo crearono all\'Università di Auckland, in Nuova Zelanda, come versione libera di S arricchita da idee di Scheme; il nome viene dalle loro iniziali. È lo strumento quotidiano di statistici, biologi ed economisti.',
+      descrizione: 'Ross Ihaka e Robert Gentleman lo crearono all\'Università di Auckland, in Nuova Zelanda, come versione libera di S arricchita da idee di Scheme; il nome viene dall\'iniziale che i due condividono, e richiama S. È lo strumento quotidiano di statistici, biologi ed economisti.',
       ciao: 'cat("Ciao, mondo!\\n")',
     },
     {

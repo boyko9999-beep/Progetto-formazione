@@ -118,22 +118,44 @@
 
   const INLINE = /\*\*(.+?)\*\*|\*(.+?)\*|`([^`]+)`|\{\{([^}|]+)(?:\|([^}]+))?\}\}|\[([^\]]+)\]\(([^)\s]+)\)/g;
 
+  // La punteggiatura che segue un termine del glossario o un codice breve resta sulla stessa riga.
+  const PUNTEGGIATURA = /^[.,;:!?»)\]…]+/;
+
   function inline(testo) {
     const frag = document.createDocumentFragment();
     const str = String(testo == null ? '' : testo);
     const re = new RegExp(INLINE.source, 'g');
     let ultimo = 0;
+    let unito = null; // ultimo elemento a cui incollare la punteggiatura seguente
     let m;
+    function testoSemplice(t) {
+      const p = unito && PUNTEGGIATURA.exec(t);
+      if (p) {
+        const span = h('span', { class: 'pg-nobr' });
+        unito.replaceWith(span);
+        span.append(unito, p[0]);
+        t = t.slice(p[0].length);
+      }
+      unito = null;
+      if (t) frag.append(t);
+    }
     while ((m = re.exec(str))) {
-      if (m.index > ultimo) frag.append(str.slice(ultimo, m.index));
+      if (m.index > ultimo) testoSemplice(str.slice(ultimo, m.index));
+      else unito = null;
+      let el = null;
       if (m[1] != null) frag.append(h('strong', null, inline(m[1])));
       else if (m[2] != null) frag.append(h('em', null, inline(m[2])));
-      else if (m[3] != null) frag.append(h('code', null, m[3]));
-      else if (m[4] != null) frag.append(termine(m[4].trim(), (m[5] || m[4]).trim()));
+      else if (m[3] != null) {
+        const corto = m[3].length <= 24;
+        el = h('code', corto ? { class: 'pg-corto' } : null, m[3]);
+        frag.append(el);
+        if (!corto) el = null;
+      } else if (m[4] != null) frag.append(el = termine(m[4].trim(), (m[5] || m[4]).trim()));
       else if (m[6] != null) frag.append(collegamento(m[6], m[7]));
+      unito = el;
       ultimo = re.lastIndex;
     }
-    if (ultimo < str.length) frag.append(str.slice(ultimo));
+    if (ultimo < str.length) testoSemplice(str.slice(ultimo));
     return frag;
   }
 
@@ -750,11 +772,57 @@
     else window.addEventListener('resize', set);
   }
 
+  // Salto a un'ancora. La pagina è lunghissima e laboratori, figure e schermi si montano
+  // strada facendo: uno scorrimento animato verso un'ancora lontana arriverebbe nel punto
+  // sbagliato. Se l'ancora è lontana si salta subito e la si tiene ferma per un paio di
+  // secondi mentre sopra cambiano le altezze (finché chi legge non tocca la pagina).
+  let lasciaAncora = null;
+  function saltaA(el, liscio) {
+    if (lasciaAncora) lasciaAncora();
+    if (liscio) { el.scrollIntoView({ block: 'start', behavior: 'smooth' }); return; }
+    const radice = document.documentElement;
+    const allinea = () => {
+      const prima = radice.style.scrollBehavior;
+      radice.style.scrollBehavior = 'auto';
+      el.scrollIntoView({ block: 'start' });
+      radice.style.scrollBehavior = prima;
+    };
+    const EVENTI = ['wheel', 'touchstart', 'keydown', 'pointerdown'];
+    const ro = 'ResizeObserver' in window ? new ResizeObserver(allinea) : null;
+    const timer = setTimeout(stop, 2500);
+    function stop() {
+      if (ro) ro.disconnect();
+      clearTimeout(timer);
+      EVENTI.forEach((ev) => window.removeEventListener(ev, stop, true));
+      lasciaAncora = null;
+    }
+    allinea();
+    if (ro) ro.observe(document.getElementById('pg-root') || document.body);
+    EVENTI.forEach((ev) => window.addEventListener(ev, stop, { capture: true, passive: true }));
+    lasciaAncora = stop;
+  }
+
   function vaiAllAncora() {
     const id = decodeURIComponent(location.hash.slice(1));
     if (!id) return;
     const el = document.getElementById(id);
-    if (el) el.scrollIntoView({ block: 'start' });
+    if (el) saltaA(el, false);
+  }
+
+  // I collegamenti interni (#capitolo, #glossario, l'indice...) usano lo stesso salto.
+  function collegamentiInterni() {
+    document.addEventListener('click', (e) => {
+      if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      const a = e.target.closest ? e.target.closest('a[href^="#"]') : null;
+      if (!a) return;
+      const id = decodeURIComponent(a.getAttribute('href').slice(1));
+      const el = id ? document.getElementById(id) : null;
+      if (!el) return;
+      e.preventDefault();
+      const vicina = Math.abs(el.getBoundingClientRect().top) < window.innerHeight * 1.5;
+      saltaA(el, vicina && !riduciMovimento());
+      if (location.hash !== '#' + id) history.pushState(null, '', '#' + id);
+    });
   }
 
   /* ---------- avvio ---------- */
@@ -792,6 +860,7 @@
     impostaAnno(annoInizio(lista[0] || {}) || 1804);
     avviaScorrimento(lista);
     aggiornaProgresso(lista);
+    collegamentiInterni();
     requestAnimationFrame(vaiAllAncora);
   }
 

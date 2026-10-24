@@ -191,3 +191,12 @@ test('consigli: uniq senza sort, grep senza risultati, wc dopo uniq', () => {
   assert.match(L.consiglio(L.esegui([S('cat'), S('parole'), S('minuscole'), S('sort'), S('uniq'), S('wc')])), /56/);
   assert.strictEqual(L.consiglio({ ok: false }), '');
 });
+
+// Riferimento registrato con i veri strumenti (GNU coreutils 9.4, LC_ALL=C) sulle stesse 68 parole:
+//   sort parole.txt | uniq -c | sort -rn | head -12
+// (il vero tr lavora a byte e spezzerebbe le lettere accentate: per questo si confronta da uniq in poi)
+test('uniq -c e sort -rn danno le stesse righe dei veri strumenti GNU', () => {
+  const gnu = ['      3 è', '      2 selva', '      2 per', '      2 nel', '      2 la', '      2 i',
+    '      2 era', '      2 e', '      2 del', '      2 che', '      2 ch', '      1 vita'];
+  assert.deepStrictEqual(L.ordinaNumeri(L.uniqC(L.ordina(parole()))).slice(0, 12), gnu);
+});

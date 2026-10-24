@@ -192,7 +192,8 @@ html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; -moz-osx-fo
   float: left; font: 800 3.5em/0.86 var(--font); color: var(--cap);
   margin: 6px 10px 0 0;
 }
-.pg-cap code { font: .9em var(--mono); background: color-mix(in srgb, var(--cap) 9%, var(--surface)); border: 1px solid color-mix(in srgb, var(--cap) 18%, transparent); padding: 0 5px; border-radius: 5px; }
+.pg-cap code { font: .9em var(--mono); background: color-mix(in srgb, var(--cap) 9%, var(--surface)); border: 1px solid color-mix(in srgb, var(--cap) 18%, transparent); padding: 0 5px; border-radius: 5px; overflow-wrap: anywhere; }
+.pg-cap code.pg-corto, .pg-lab code.pg-corto, .pg-nobr { white-space: nowrap; }
 .pg-cap a { color: var(--cap); text-underline-offset: 3px; }
 .pg-cap strong { font-weight: 700; }
 
@@ -239,9 +240,18 @@ html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; -moz-osx-fo
 .pg-codice figcaption, .pg-tabella figcaption { font-size: .9rem; color: var(--muted); margin-top: 8px; max-width: var(--pg-col); }
 
 .pg-tabella { margin: 28px 0; }
-.pg-tabella-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
+.pg-tabella-wrap {
+  overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius);
+  /* ombre ai bordi quando la tabella continua fuori vista (scorre dentro il suo riquadro) */
+  background:
+    linear-gradient(to right, var(--surface) 35%, transparent) left / 44px 100% no-repeat local,
+    linear-gradient(to left, var(--surface) 35%, transparent) right / 44px 100% no-repeat local,
+    radial-gradient(farthest-side at 0 50%, rgba(0, 0, 0, .3), transparent) left / 18px 100% no-repeat scroll,
+    radial-gradient(farthest-side at 100% 50%, rgba(0, 0, 0, .3), transparent) right / 18px 100% no-repeat scroll,
+    var(--surface);
+}
 .pg-tabella table { min-width: 560px; font-size: .93rem; }
-.pg-tabella thead th { position: static; }
+.pg-tabella thead th { position: static; background: transparent; }
 .pg-tabella tbody th { border-left: 0; font-weight: 700; }
 .pg-tabella tbody tr:hover { background: color-mix(in srgb, var(--cap) 5%, transparent); }
 
@@ -313,13 +323,15 @@ html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; -moz-osx-fo
 }
 .pg-lab :focus-visible { outline: 3px solid var(--trace-1); outline-offset: 2px; }
 .pg-lab-head { padding: 18px 22px 15px; border-bottom: 1px solid var(--lab-line); background: linear-gradient(180deg, rgba(255, 255, 255, .035), transparent); }
-.pg-lab-eyebrow { display: flex; justify-content: space-between; gap: 12px; font: 800 .7rem var(--mono); text-transform: uppercase; letter-spacing: .18em; color: var(--trace-1); margin: 0 0 6px; }
+.pg-lab-eyebrow { display: flex; justify-content: space-between; gap: 12px; font: 800 .8rem var(--mono); text-transform: uppercase; letter-spacing: .18em; color: var(--trace-1); margin: 0 0 6px; }
 .pg-lab-ok { display: none; }
 .pg-lab--fatto .pg-lab-ok { display: inline; }
 .pg-lab-head h3 { color: var(--lab-bright); font-size: 1.32rem; letter-spacing: -0.01em; margin: 0 0 6px; }
 .pg-lab-intro { margin: 0; color: var(--lab-text); max-width: 74ch; font-size: .98rem; line-height: 1.55; }
 .pg-lab-corpo { position: relative; min-height: 380px; }
 .pg-lab code { background: rgba(255, 255, 255, .06); border: 1px solid var(--lab-line); color: var(--lab-bright); padding: 0 5px; border-radius: 5px; font: .9em var(--mono); }
+/* il foglio comune dell'enciclopedia dà a ogni tabella una larghezza minima pensata per il confronto dei bus */
+:where(.pg-lab) table { min-width: 0; }
 .pg-fermo *, .pg-fermo *::before, .pg-fermo *::after { animation-play-state: paused !important; }
 
 /* controlli condivisi dai laboratori */

@@ -15,7 +15,7 @@
 
   const FILE = 'inferno.txt';
 
-  // Inferno, canto I, versi 1-9 (testo dell'edizione Petrocchi), con una riga vuota tra le terzine.
+  // Inferno, canto I, versi 1-9 (pubblico dominio), con una riga vuota tra le terzine.
   const TESTO = [
     'Nel mezzo del cammin di nostra vita',
     'mi ritrovai per una selva oscura,',
@@ -352,6 +352,7 @@
     .lab-pipe-barra { justify-content: space-between; }
     .lab-pipe-esempi { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; min-width: 0; }
     .lab-pipe-esempi > span { font-size: 13px; color: var(--lab-text); }
+    .lab-pipe-esempi .pg-btn { flex: 1 1 auto; }
     .lab-pipe-azioni { display: flex; flex-wrap: wrap; gap: 8px; }
 
     .lab-pipe-riga { display: flex; gap: 10px; align-items: baseline; margin: 0; padding: 12px 18px; border-bottom: 1px solid var(--lab-line); background: #000; font: 600 14px/1.7 var(--mono); color: var(--lab-bright); }
@@ -388,6 +389,21 @@
     .lab-pipe-tubo-segno { position: absolute; left: 52px; top: 50%; transform: translateY(-50%); display: flex; align-items: baseline; gap: 6px; white-space: nowrap; font: 800 16px/1 var(--mono); color: var(--lab-pipe-tubo); }
     .lab-pipe-tubo-segno small { font: 600 13px var(--font); color: var(--lab-text); }
     .lab-pipe-pacchetto { position: absolute; z-index: 3; left: 25px; top: -6px; height: 6px; border-radius: 3px; background: var(--lab-pipe-tubo); box-shadow: 0 0 8px color-mix(in srgb, var(--lab-pipe-tubo) 70%, transparent); opacity: 0; will-change: transform, opacity; pointer-events: none; }
+
+    /* l'ultimo tubo è verde come il terminale: porta le righe sullo schermo, non a un altro programma */
+    .lab-pipe-uscita { --lab-pipe-tubo: var(--lab-pipe-vivo); padding-bottom: 2px; }
+    .lab-pipe-uscita[hidden] { display: none; }
+    .lab-pipe-tubo--uscita::before { border-color: color-mix(in srgb, var(--lab-pipe-tubo) 45%, transparent); }
+    .lab-pipe-tubo--uscita .lab-pipe-tubo-segno { gap: 8px; }
+    .lab-pipe-tubo--uscita .lab-pipe-tubo-segno small { font-weight: 600; transition: color var(--pg-dur-normale) ease; }
+    .lab-pipe-verso::before { content: "↓"; font: 800 15px/1 var(--font); color: var(--lab-pipe-vivo); }
+    .lab-pipe-video { display: block; position: relative; box-sizing: border-box; width: 34px; height: 24px; margin-left: 8px; border: 2px solid color-mix(in srgb, var(--lab-pipe-vivo) 45%, var(--lab-line)); border-radius: 5px; background: #020b06; transition: border-color var(--pg-dur-normale) ease, box-shadow var(--pg-dur-normale) ease; }
+    .lab-pipe-video::before { content: ""; position: absolute; left: 4px; right: 9px; top: 4px; height: 2px; border-radius: 1px; background: var(--lab-pipe-vivo); box-shadow: 0 4px 0 var(--lab-pipe-vivo); opacity: 0; transition: opacity var(--pg-dur-normale) ease; }
+    .lab-pipe-video::after { content: ""; position: absolute; left: 4px; bottom: 3px; width: 6px; height: 3px; background: var(--lab-pipe-vivo); opacity: .45; }
+    .lab-pipe-uscita.is-acceso .lab-pipe-video { border-color: var(--lab-pipe-vivo); box-shadow: 0 0 12px -2px var(--lab-pipe-vivo); }
+    .lab-pipe-uscita.is-acceso .lab-pipe-video::before { opacity: .9; }
+    .lab-pipe-uscita.is-acceso .lab-pipe-video::after { opacity: 1; }
+    .lab-pipe-uscita.is-acceso .lab-pipe-tubo-segno small { color: var(--lab-bright); }
 
     .lab-pipe-box { position: relative; display: grid; gap: 2px; padding: 10px 10px 10px 12px; background: var(--lab-panel); border: 1px solid var(--lab-line); border-radius: 12px; transition: border-color var(--pg-dur-veloce) ease; }
     .lab-pipe-box::before { content: ""; position: absolute; inset: -1px; border-radius: 12px; border: 2px solid var(--lab-pipe-vivo); box-shadow: 0 0 18px -4px var(--lab-pipe-vivo); opacity: 0; pointer-events: none; transition: opacity var(--pg-dur-normale) ease; }
@@ -481,6 +497,7 @@
 
     @container (min-width: 760px) {
       .lab-pipe-arena { grid-template-columns: minmax(0, 1.25fr) minmax(300px, 1fr); gap: 20px; padding: 18px; }
+      .lab-pipe-verso::before { content: "→"; }
     }
     @container (max-width: 520px) {
       .lab-pipe-arena { padding: 12px 10px; gap: 14px; }
@@ -489,13 +506,15 @@
       .lab-pipe-nastro, .lab-pipe-dettaglio { margin-left: 0; }
       .lab-pipe-box { padding: 8px 8px 9px 10px; }
       .lab-pipe-apri { font-size: 14px; }
+      .lab-pipe-ctrl { margin-left: auto; }
     }
     @container (max-width: 360px) {
       .lab-pipe-tavolozza-griglia { grid-template-columns: minmax(0, 1fr); }
       .lab-pipe-pezzo { min-height: 46px; }
     }
     @media (prefers-reduced-motion: reduce) {
-      .lab-pipe-seg, .lab-pipe-box, .lab-pipe-box::before, .lab-pipe-num, .lab-pipe-tubo::before, .lab-pipe-freccia, .lab-pipe-led { transition: none; }
+      .lab-pipe-seg, .lab-pipe-box, .lab-pipe-box::before, .lab-pipe-num, .lab-pipe-tubo::before, .lab-pipe-freccia, .lab-pipe-led,
+      .lab-pipe-video, .lab-pipe-video::before, .lab-pipe-tubo--uscita .lab-pipe-tubo-segno small { transition: none; }
       .lab-pipe-seg.is-nuovo, .lab-pipe-stadio.is-entra, .lab-pipe-nastro.is-arriva .lab-pipe-n, .lab-pipe-nastro.is-arriva .lab-pipe-acapo,
       .lab-pipe-t-riga.is-nuova, .lab-pipe-terminale.is-arrivo .lab-pipe-schermo { animation: none; }
       .lab-pipe-stadio.is-attivo .lab-pipe-box::before { animation: none; opacity: 1; }
@@ -547,7 +566,15 @@
     }, p.nome));
     const btnEsegui = h('button', { type: 'button', class: 'pg-btn pg-btn--primario lab-pipe-esegui', onclick: () => esegui() }, '▶ Esegui');
     const btnPasso = h('button', { type: 'button', class: 'pg-btn lab-pipe-passo', onclick: () => passo(), title: 'Un comando alla volta' }, '⏭ Passo');
-    const btnDaCapo = h('button', { type: 'button', class: 'pg-btn lab-pipe-dacapo', onclick: () => { azzera(); spiega(introduzione()); ctx.annuncia('Risultati cancellati: la catena è pronta.'); } }, '↺ Da capo');
+    const btnDaCapo = h('button', {
+      type: 'button', class: 'pg-btn lab-pipe-dacapo',
+      onclick: () => {
+        azzera();
+        spiega(introduzione());
+        ctx.annuncia('Risultati cancellati: la catena è pronta.');
+        btnEsegui.focus(); // «Da capo» ora è spento: il focus non deve perdersi
+      },
+    }, '↺ Da capo');
 
     const cmd = h('code', { class: 'lab-pipe-cmd' });
     const riga = h('p', { class: 'lab-pipe-riga' },
@@ -559,6 +586,10 @@
     const vuota = h('div', { class: 'lab-pipe-vuota', hidden: true },
       h('p', null, h('strong', null, 'La catena è vuota.')),
       h('p', null, ctx.inline('Comincia da `cat inferno.txt` nella tavolozza: legge il file e lo manda nella prima pipe.')));
+    // l'uscita dell'ultimo comando non va in un'altra pipe: va sullo schermo del terminale
+    const uscitaTubo = h('div', { class: 'lab-pipe-tubo lab-pipe-tubo--uscita' },
+      h('span', { class: 'lab-pipe-tubo-segno' }, h('small', null, 'uscita sul terminale'), h('span', { class: 'lab-pipe-verso' })));
+    const uscita = h('div', { class: 'lab-pipe-uscita', 'aria-hidden': 'true' }, uscitaTubo, h('span', { class: 'lab-pipe-video' }));
 
     const pezzi = Logica.ORDINE.map((id) => {
       const def = Logica.STRUMENTI[id];
@@ -585,7 +616,7 @@
         h('div', { class: 'lab-pipe-azioni' }, btnEsegui, btnPasso, btnDaCapo)),
       riga, avviso,
       h('div', { class: 'lab-pipe-arena' },
-        h('div', { class: 'lab-pipe-colonna lab-pipe-catena' }, h('div', null, lista, vuota)),
+        h('div', { class: 'lab-pipe-colonna lab-pipe-catena' }, h('div', null, lista, uscita, vuota)),
         h('div', { class: 'lab-pipe-colonna lab-pipe-lato' }, terminale, tavolozza)),
       testo));
 
@@ -687,6 +718,7 @@
         aggiornaVista(v, s, i, n);
       });
       vuota.hidden = n > 0;
+      uscita.hidden = n === 0;
       const piena = n >= Logica.MAX_STADI;
       pezzi.forEach((b) => { b.disabled = piena; });
       pieno.hidden = !piena;
@@ -858,6 +890,7 @@
       terminale.classList.toggle('is-corsa', stato.inCorsa || (!!stato.ris && !fine && stato.fatti > 0));
       terminale.classList.toggle('is-fatto', !!fine);
       terminale.classList.toggle('is-errore', stato.terminale === 'errore');
+      uscita.classList.toggle('is-acceso', !!fine);
       schermo.replaceChildren();
       const riga = Logica.rigaComando(stato.catena);
       const prompt = h('span', { class: 'lab-pipe-t-riga lab-pipe-t-cmd' }, h('b', null, '$ '), riga);
@@ -910,17 +943,20 @@
       stato.fatti = 0;
       stato.terminale = 'pronto';
       stato.errore = null;
-      for (const v of vista.values()) v.tubo.querySelectorAll('.lab-pipe-pacchetto').forEach((p) => p.remove());
+      el.querySelectorAll('.lab-pipe-pacchetto').forEach((p) => p.remove());
+      el.querySelectorAll('.lab-pipe-tubo.is-scorre').forEach((t) => t.classList.remove('is-scorre'));
       cmd.querySelectorAll('.is-attivo').forEach((s) => s.classList.remove('is-attivo'));
       mostraRisultati();
     }
 
     function aggiungi(id) {
       if (stato.catena.length >= Logica.MAX_STADI) return;
+      const daPezzo = pezzi.includes(document.activeElement);
       cambiato();
       const s = nuovo(id);
       stato.catena.push(s);
-      disegnaCatena();
+      // con la catena piena i pezzi si spengono: il focus passa al comando appena aggiunto
+      disegnaCatena(daPezzo && stato.catena.length >= Logica.MAX_STADI ? { chiave: s.chiave, ruolo: 'apri' } : null);
       const v = vista.get(s.chiave);
       if (v) v.segNuovo = false;
       const seg = segmento(s.chiave);
@@ -966,9 +1002,12 @@
       if (seg) seg.replaceChildren(...[].concat(comandoColorato(s)));
       const v = vista.get(chiave);
       if (v) aggiornaVista(v, s, v.indice, stato.catena.length);
-      controllaDalVivo();
+      const val = controllaDalVivo();
       aggiornaPreset();
       disegnaTerminale();
+      // la spiegazione segue quello che scrivi: o come correggere, o come provare
+      const e = val.errori.find((x) => stato.catena[x.indice] === s);
+      spiega(e ? e.testo : 'Ora il comando è `' + Logica.comando(s) + '`: premi **Invio** o **▶ Esegui** per provarlo.');
     }
 
     function scegliPreset(id) {
@@ -1019,17 +1058,24 @@
     async function esegui() {
       if (stato.inCorsa) { ferma(); return; }
       if (!controlla()) return;
+      // «▶ Continua» riprende la corsa interrotta; altrimenti si riparte da capo
+      const continua = !!stato.ris && stato.fatti < stato.catena.length;
       stato.inCorsa = true;
+      stato.fermata = false;
       aggiornaComandi();
       if (stato.passoAttivo) { ctx.annulla(); try { await stato.passoAttivo; } catch (e) { /* già gestito */ } }
-      if (!stato.inCorsa) return;
-      if (!stato.ris || stato.fatti >= stato.catena.length) prepara();
+      if (!stato.inCorsa) { stato.fermata = false; aggiornaComandi(); return; }
+      if (!stato.ris || (!continua && stato.fatti >= stato.catena.length)) prepara();
       const ep = stato.epoca;
       const animato = !ctx.riduci;
       stato.inCorsa = true;
       aggiornaComandi();
       disegnaTerminale();
       if (stato.fatti === 0) ctx.annuncia('Esecuzione avviata.');
+      else if (stato.fatti < stato.catena.length) {
+        spiega('La catena riparte dal passo ' + (stato.fatti + 1) + ' di ' + stato.catena.length + '.', 'Via');
+        ctx.annuncia('Esecuzione ripresa dal passo ' + (stato.fatti + 1) + '.');
+      }
       try {
         while (stato.inCorsa && ep === stato.epoca && stato.fatti < stato.catena.length) {
           await rivela(stato.fatti, ep, animato);
@@ -1039,21 +1085,32 @@
       } catch (err) {
         if (!ctx.annullato(err)) throw err;
       } finally {
-        if (ep === stato.epoca) { stato.inCorsa = false; aggiornaComandi(); disegnaTerminaleSeServe(); }
+        if (ep === stato.epoca) {
+          stato.inCorsa = false;
+          aggiornaComandi();
+          disegnaTerminaleSeServe();
+          // fermata a metà: il passo che stava lavorando è stato completato, ora lo si dice
+          const n = stato.catena.length;
+          if (stato.fermata && stato.fatti < n) {
+            const ultimo = stato.fatti > 0 && stato.ris ? Logica.descrivi(stato.ris.stadi[stato.fatti - 1]) + ' ' : '';
+            spiega(ultimo + 'La catena è in pausa dopo il passo ' + stato.fatti + ' di ' + n + ': premi **▶ Continua** per ripartire o **⏭ Passo** per un comando alla volta.', 'Pausa');
+            ctx.annuncia('Esecuzione in pausa dopo il passo ' + stato.fatti + ' di ' + n + '.');
+          } else if (stato.fermata && n && stato.fatti >= n && stato.terminale !== 'fatto') {
+            finale(ep, false).catch(() => {}); // fermata durante l'ultimo comando: l'uscita va comunque sullo schermo
+          }
+        }
+        stato.fermata = false;
       }
     }
 
     function disegnaTerminaleSeServe() { if (stato.terminale !== 'fatto') disegnaTerminale(); }
 
+    // ■ Ferma: le attese si interrompono; il passo in corso si chiude e il messaggio arriva nel finally di esegui.
     function ferma() {
       stato.inCorsa = false;
+      stato.fermata = true;
       ctx.annulla();
       aggiornaComandi();
-      const n = stato.catena.length;
-      if (stato.fatti < n) {
-        spiega('Catena in pausa dopo il passo ' + stato.fatti + ' di ' + n + '. Premi **▶ Continua** o **⏭ Passo**.');
-        ctx.annuncia('Esecuzione in pausa.');
-      }
     }
 
     function passo() {
@@ -1070,6 +1127,9 @@
           if (ep === stato.epoca && stato.fatti >= stato.catena.length && stato.terminale !== 'fatto') await finale(ep, animato);
         } catch (err) {
           if (!ctx.annullato(err)) throw err;
+          // secondo clic su ⏭ Passo durante l'ultimo comando: anche lo schermo si riempie subito
+          // (se invece è ▶ Esegui a prendere il comando, sarà lui a mostrare il finale)
+          if (!stato.inCorsa && ep === stato.epoca && stato.fatti >= stato.catena.length && stato.terminale !== 'fatto') await finale(ep, false);
         }
       })();
       stato.passoAttivo = p;
@@ -1116,9 +1176,10 @@
     const VIAGGIO = 460;
     function durataFlusso(n) { return n ? (Math.min(n, PACCHETTI) - 1) * INTERVALLO + VIAGGIO : ctx.DURATA.normale; }
 
-    function scorre(v, righe) {
+    // I pacchetti scendono nel tubo; nel tubo d'uscita si fermano in fondo, dove comincia lo schermo.
+    function scorre(v, righe, ultimo) {
       if (!righe.length) return ctx.attendi(ctx.DURATA.normale);
-      const corsa = v.tubo.clientHeight + 14;
+      const corsa = v.tubo.clientHeight + (ultimo ? -2 : 14);
       const pacchetti = campiona(righe, PACCHETTI).map((r) => {
         const w = larghezza(r);
         const p = h('span', { class: 'lab-pipe-pacchetto', style: 'width:' + w + 'px;margin-left:' + (-w / 2) + 'px' });
@@ -1147,8 +1208,11 @@
     // L'uscita dell'ultimo comando arriva sullo schermo, una riga dopo l'altra.
     async function finale(ep, animato) {
       const u = stato.ris.uscita;
-      stato.terminale = 'fatto';
       try {
+        // le righe escono dall'ultimo programma e scendono nel tubo verde verso lo schermo
+        if (animato && u.length) await scorre({ tubo: uscitaTubo }, u, true);
+        if (ep !== stato.epoca) return;
+        stato.terminale = 'fatto';
         if (animato && u.length) {
           terminale.classList.remove('is-arrivo');
           void terminale.offsetWidth;
@@ -1162,6 +1226,7 @@
         }
       } finally {
         if (ep === stato.epoca) {
+          stato.terminale = 'fatto';
           disegnaTerminale();
           const c = Logica.consiglio(stato.ris);
           spiega(c || 'Fatto.', 'Fatto');
