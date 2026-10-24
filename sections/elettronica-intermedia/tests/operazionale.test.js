@@ -141,3 +141,32 @@ test('operazionale: le sfide del laboratorio si possono vincere con i valori E12
   const d = m.duty(1, 0.7);
   assert.ok(d >= 0.2 && d <= 0.3, 'duty ' + d);
 });
+
+test('operazionale: inseguitore e comparatore agli estremi dei cursori', () => {
+  // ±5 V di alimentazione e 5 V di picco: anche l'inseguitore satura, a 4 V, e la differenza tra gli ingressi arriva a 1 V
+  const seg = m.cycle({ mode: 'seg', vs: 5 }, 5, 360);
+  assert.strictEqual(seg.sat, true);
+  close(seg.peak, 4, 1e-12);
+  close(seg.maxVd, 1, 1e-9);
+  // nel comparatore V+ − V− è semplicemente Vin − Vref
+  const c = m.solve({ mode: 'cmp', vs: 15, vref: -3.5 }, -1);
+  close(c.vd, 2.5, 1e-12);
+  assert.strictEqual(c.vout, 14);
+  // soglia fuori dal segnale (4 V di picco, Vref = ±5 V): l'uscita non scatta mai
+  assert.strictEqual(m.cycle({ mode: 'cmp', vs: 12, vref: 5 }, 4, 360).high, 0);
+  assert.strictEqual(m.cycle({ mode: 'cmp', vs: 12, vref: -5 }, 4, 360).high, 1);
+  assert.strictEqual(m.duty(4, 5), 0);
+  assert.strictEqual(m.duty(4, -5), 1);
+  // con il guadagno più alto (−1000) e il segnale più piccolo (10 mV) resta tutto lineare
+  const big = m.cycle({ mode: 'inv', r1: 1e3, rf: 1e6, vs: 12 }, 0.01, 360);
+  assert.strictEqual(big.sat, false);
+  close(big.gain, -1000 / (1 + 1001 / A), 1e-9); // −995: con tanto guadagno A non è più «infinito»
+});
+
+test('operazionale: i valori delle sfide sono sui cursori (serie E12)', () => {
+  const { EI } = require('./harness.js');
+  const rin = EI.seriesValues('E12', 1000, 100000);
+  const rf = EI.seriesValues('E12', 1000, 1e6);
+  [1e3, 10e3, 100e3].forEach((v) => assert.ok(rin.includes(v), 'Rin ' + v));
+  [10e3, 100e3, 1e6].forEach((v) => assert.ok(rf.includes(v), 'Rf ' + v));
+});

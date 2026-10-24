@@ -397,7 +397,7 @@
             return h('li', { class: 'event' + (c ? '' : ' root'), style: '--cat:var(--ei)' },
               h('span', { class: 'event-year' }, String(e.year)),
               h('div', { class: 'event-body' },
-                h('h3', null, e.title),
+                h('h3', null, e.title), ' ',
                 c ? h('a', { class: 'chip', href: chapterHref(c.id), style: '--cat:var(--ei)' }, c.number + ' · ' + c.title) : null,
                 e.who ? h('span', { class: 'ei-ev-who' }, e.who) : null,
                 e.text ? rich('p', null, e.text) : null));

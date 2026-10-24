@@ -20,15 +20,15 @@
   EI.eras = [
     {
       from: 1800, to: 1939, title: 'Cristalli e valvole',
-      text: 'Nell\'Ottocento si scopre che certi cristalli conducono in un verso solo e che un filamento caldo, nel vuoto, lascia uscire elettricità. Da queste due stranezze nascono il rivelatore a cristallo, il diodo a vuoto di Fleming e il triodo di De Forest, il primo componente elettronico capace di amplificare un segnale. Con le valvole arrivano la radio, il telefono da costa a costa e i primi amplificatori; ma restano calde, fragili e assetate di energia.',
+      text: 'Nell\'Ottocento si scopre che certi cristalli lasciano passare la corrente in un verso solo e che un filamento caldo, chiuso nel vuoto, «lascia uscire» elettricità. Da queste due stranezze nascono il rivelatore a cristallo, il diodo a vuoto di Fleming e il triodo di De Forest, il primo componente elettronico capace di amplificare un segnale. Con le valvole arrivano la radio, il telefono da costa a costa e i primi amplificatori; ma sono calde, fragili e assetate di energia.',
     },
     {
       from: 1940, to: 1959, title: 'Nasce il transistor',
-      text: 'Il radar della guerra insegna a preparare germanio e silicio purissimi. Ai Bell Labs un gruppo nato per sostituire valvole e relè studia la giunzione P-N e, tra il 1947 e il 1948, inventa il transistor: freddo, piccolo e robusto. In poco più di dieci anni arrivano il transistor al silicio, la radio tascabile e l\'idea di costruire un intero circuito su un solo pezzo di semiconduttore.',
+      text: 'Il radar della guerra insegna a preparare germanio e silicio purissimi. Ai Bell Labs un gruppo nato per sostituire valvole e relè studia i semiconduttori e, tra il 1947 e il 1948, inventa il transistor: freddo, piccolo e robusto. In poco più di dieci anni arrivano il transistor al silicio, la radio tascabile e l\'idea di costruire un intero circuito su un solo pezzo di semiconduttore.',
     },
     {
       from: 1960, to: 1979, title: 'L\'analogico diventa integrato',
-      text: 'Con il processo planare i transistor si fabbricano a decine, poi a migliaia, sulla stessa fetta di silicio. Arrivano il MOSFET, i LED visibili, l\'amplificatore operazionale µA741, il timer 555 e i regolatori di tensione a tre piedini: un amplificatore che prima chiedeva valvole, trasformatori e un telaio intero ora sta in un contenitore con otto piedini.',
+      text: 'Con il processo planare i transistor si fabbricano a decine, poi a migliaia, sulla stessa fetta di silicio, insieme alle resistenze che li collegano. Arrivano il MOSFET, i LED visibili, l\'amplificatore operazionale µA741, il timer 555 e i regolatori di tensione a tre piedini: un amplificatore che prima chiedeva valvole, trasformatori e un telaio intero ora sta in un contenitore con otto piedini.',
     },
     {
       from: 1980, to: 9999, label: '1980–oggi', title: 'Ovunque e invisibile',
@@ -37,35 +37,38 @@
   ];
 
   // Tappe di contesto: non appartengono a nessun capitolo (le valvole e i laboratori che le hanno superate).
-  // Date, nomi e primati verificati con fonti affidabili; le fonti sono elencate nel resoconto del lavoro.
+  // Date, nomi e primati verificati: brevetto USA 307.031 di Edison (1883-84); domanda di brevetto di Fleming
+  // del 16 novembre 1904 (IEEE Milestone); brevetto USA 879.532 di De Forest (gennaio 1907 - febbraio 1908);
+  // De Forest Radio Co. v. General Electric Co., 283 U.S. 664 (1931); chiamata del 25 gennaio 1915 (AT&T);
+  // Bell Telephone Laboratories dal 1° gennaio 1925; gruppo dello stato solido di Kelly (1945, PBS «Transistorized!»).
   EI.timeline = [
     {
       year: 1883, title: 'L\'effetto Edison', who: 'Thomas Alva Edison',
-      text: 'Per capire perché le sue lampadine si anneriscono, Edison chiude nel bulbo una piastrina di metallo: se la collega al lato positivo del filamento, un galvanometro segna una corrente che attraversa il vuoto; dal lato negativo, niente. La brevetta come indicatore di tensione, senza saperla spiegare.',
+      text: 'Per capire perché le sue lampadine si anneriscono, Edison chiude nel bulbo una piastrina di metallo e scopre che, se la collega al lato positivo del filamento, un galvanometro segna una corrente che attraversa il vuoto; dal lato negativo, niente. La brevetta come «indicatore elettrico», senza saperla spiegare: l\'elettrone sarà scoperto solo nel 1897.',
     },
     {
       year: 1904, title: 'La valvola di Fleming', who: 'John Ambrose Fleming',
-      text: 'Consulente della compagnia di Marconi, Fleming cerca un rivelatore migliore per la radio e riprende l\'effetto Edison: nel novembre 1904 brevetta la «valvola oscillatoria», un diodo a vuoto che lascia passare la corrente in un verso solo. Le oscillazioni radio, troppo rapide per un galvanometro, diventano una corrente in un solo verso che l\'ago riesce a seguire.',
+      text: 'Consulente della compagnia di Marconi, Fleming cerca un rivelatore migliore per la radio: il 16 novembre 1904 chiede il brevetto della «valvola oscillatoria», un filamento e una placca nel vuoto che lasciano passare la corrente in un verso solo. Le oscillazioni della radio sono troppo rapide per un galvanometro, che ne segna solo la media, cioè zero; la valvola ne lascia passare metà e la media diventa una corrente che l\'ago riesce a mostrare.',
     },
     {
       year: 1906, title: 'L\'Audion e la griglia', who: 'Lee De Forest',
-      text: 'De Forest presenta l\'Audion, una valvola per ricevere la radio, e a fine anno aggiunge tra filamento e placca un filo piegato a zig-zag che chiama grid, «griglia»: è il triodo, che brevetta nel gennaio 1907. Non sa bene perché funzioni e lo crede merito del gas rimasto nel bulbo: le prime Audion sono a vuoto «morbido», capricciose, e se la tensione di placca sale troppo si accendono di luce azzurra.',
+      text: 'In ottobre De Forest presenta l\'Audion, una valvola a due elettrodi per ricevere la radio, e a fine anno ne prova una con un terzo elettrodo tra filamento e placca, un filo piegato a zig-zag che chiama grid, «griglia»: è il triodo, brevettato tra il 1907 e il 1908. Non sa bene perché funzioni e lo crede merito del gas rimasto nel bulbo: le prime Audion sono a vuoto «morbido», capricciose, e se la tensione di placca supera qualche decina di volt si accendono di luce azzurra.',
     },
     {
       year: 1913, title: 'Il vuoto spinto', who: 'Harold D. Arnold (Western Electric) e Irving Langmuir (General Electric)',
-      text: 'Due laboratori capiscono, quasi insieme, che il gas non serve: anzi, disturba. Pompando via quasi tutta l\'aria, il triodo diventa un amplificatore stabile e prevedibile. La lite sul brevetto di Langmuir arriverà fino alla Corte suprema degli Stati Uniti, che nel 1931 lo dichiarerà non valido: alla Western Electric il vuoto spinto lo usavano già.',
+      text: 'Tra il 1912 e il 1913 due laboratori capiscono, quasi insieme, che il gas non serve, anzi disturba: pompando via quasi tutta l\'aria il triodo diventa un amplificatore stabile e prevedibile. Nel 1931 la Corte suprema degli Stati Uniti dichiarerà non valido il brevetto di Langmuir: Arnold ci era arrivato prima, nel novembre 1912.',
     },
     {
       year: 1915, title: 'Il telefono da costa a costa', who: 'AT&T, con Alexander Graham Bell e Thomas Watson',
-      text: 'Il 25 gennaio Bell, a New York, parla con il suo vecchio assistente Watson, a San Francisco: si inaugura la prima linea telefonica che attraversa gli Stati Uniti. Lungo migliaia di chilometri di filo la voce si spegnerebbe: la tengono viva i ripetitori, amplificatori a triodi ad alto vuoto sistemati lungo la linea.',
+      text: 'Il 25 gennaio Bell, a New York, parla con il suo vecchio assistente Watson, a San Francisco, sulla prima linea telefonica che attraversa gli Stati Uniti. Su oltre 5000 km di filo la voce si spegnerebbe: la tengono viva i ripetitori, amplificatori a triodi ad alto vuoto sistemati lungo la linea.',
     },
     {
       year: 1925, title: 'Nascono i Bell Labs', who: 'AT&T e Western Electric',
-      text: 'Il 1° gennaio i ricercatori di AT&T e della Western Electric diventano un unico laboratorio, i Bell Telephone Laboratories. Da qui usciranno l\'amplificatore a [[retroazione-negativa|retroazione]], il transistor e buona parte dei componenti di questa sezione.',
+      text: 'Il 1° gennaio il reparto di ingegneria della Western Electric diventa una società a sé, i Bell Telephone Laboratories, di proprietà di AT&T e della stessa Western Electric. Da qui usciranno l\'amplificatore a [[retroazione-negativa|retroazione]], il transistor e buona parte dei componenti di questa sezione.',
     },
     {
       year: 1945, title: 'Un gruppo per sostituire la valvola', who: 'Mervin Kelly, William Shockley e Stanley Morgan (Bell Labs)',
-      text: 'Mervin Kelly, che anni prima aveva diretto lo sviluppo delle valvole, crea ai Bell Labs un gruppo di fisica dello stato solido guidato da Shockley e dal chimico Stanley Morgan, con un obiettivo dichiarato: sostituire valvole e relè delle centrali telefoniche con dispositivi a semiconduttore. Due anni dopo nasce il transistor.',
+      text: 'Mervin Kelly, che negli anni Trenta aveva diretto lo sviluppo delle valvole, crea ai Bell Labs un gruppo di fisica dello stato solido guidato da Shockley e dal chimico Stanley Morgan, con un obiettivo dichiarato: sostituire valvole e relè delle centrali telefoniche con dispositivi a semiconduttore. Due anni dopo nasce il transistor.',
     },
     {
       year: 1958, title: 'Verso il circuito integrato', who: 'Jack Kilby (Texas Instruments) e Robert Noyce (Fairchild)',
@@ -148,7 +151,8 @@
     // Punto di lavoro con la resistenza di carico: Vp = B − RL·I(Vp), risolto per bisezione.
     // iOf(vp) deve crescere con vp. Con B ≤ 0 la placca non è positiva e la corrente è zero.
     operating: (B, RL, iOf) => {
-      if (!(B > 0)) return { vp: B, ip: 0 };
+      // placca non positiva, o valvola che non conduce nemmeno con tutta la tensione: niente corrente
+      if (!(B > 0) || !(iOf(B) > 0)) return { vp: B, ip: 0 };
       let lo = 0;
       let hi = B;
       for (let k = 0; k < 60; k++) {
@@ -160,6 +164,15 @@
     },
 
     diodeOP: (vs, warm, RL) => model.operating(vs, RL || model.RL_DIODE, (v) => model.diode(v, warm)),
+
+    // Corrente media in un periodo di una tensione alternata di ampiezza vac: è quello che segna un
+    // galvanometro, troppo lento per seguire le oscillazioni. Media su n campioni equidistanti.
+    diodeAverage: (vac, warm, RL, n) => {
+      const N = n || 72;
+      let sum = 0;
+      for (let i = 0; i < N; i++) sum += model.diodeOP(vac * Math.sin(2 * Math.PI * (i + 0.5) / N), warm, RL).ip;
+      return sum / N;
+    },
 
     triodeOP: (B, vg, warm, RL) => {
       const op = model.operating(B, RL || model.RL_TRIODE, (v) => model.triode(vg, v, warm).ip);
@@ -212,11 +225,13 @@
       title: 'Fleming e De Forest: un filo in più',
       caption: 'A sinistra la «valvola oscillatoria» di Fleming: un filamento caldo e un cilindro di metallo, la placca, nel vuoto di una lampadina. A destra l\'Audion di De Forest con la griglia, un filo piegato a zig-zag tra filamento e placca. Disegni semplificati: gli esemplari dell\'epoca cambiavano molto l\'uno dall\'altro.',
       alt: 'La valvola di Fleming, con filamento a ferro di cavallo e placca a cilindro, accanto all\'Audion di De Forest con filamento, griglia a zig-zag e placca',
+      svg: figFleming(),
     },
     {
       title: 'Dal vetro al simbolo: triodo e transistor',
       caption: 'Triodo e transistor bipolare si disegnano quasi allo stesso modo: l\'elettrodo che comanda sta a sinistra (la griglia, o la [[base-transistor|base]]) e la corrente scende dall\'alto (dalla placca, o dal [[collettore]]) verso il basso (il catodo, o l\'[[emettitore]]). Le differenze: la griglia comanda con una tensione, quasi senza corrente, mentre la base vuole una piccola corrente; e il transistor non ha un filamento da tenere acceso.',
       alt: 'Simbolo del triodo con placca, griglia e catodo accanto al simbolo del transistor NPN con collettore, base ed emettitore',
+      svg: figSymbols(),
     },
   ];
 
@@ -238,22 +253,36 @@
     pins: [-39, -13, 13, 39], pinTop: 136, pinBot: 148,
   };
   TUBE.gridExitX = -TUBE.hw * Math.sqrt(1 - Math.pow((TUBE.yDome - TUBE.gridY) / (TUBE.yDome - TUBE.yApex), 2));
-  const TY = 178; // centro del catodo nel disegno
-  const Y_TOP = 10; // filo che porta alla placca
-  const Y_LOOP = [338, 374]; // circuito del filamento
-  const Y_RAIL = 392; // massa
+  // Piedini dello zoccolo: 0 libero, 1 catodo, 2 e 3 filamento. La placca esce dal cappuccio in alto.
+  const PIN_K = 1;
+  const PIN_H = [2, 3];
+  const GAL_FS = 0.01; // fondo scala del galvanometro: ±10 mA
 
-  // Due impaginazioni: larga (computer) e stretta (telefono), stesse altezze.
+  /*
+   * Due impaginazioni con le stesse quote verticali: larga (computer) e stretta (telefono).
+   * xL e xR sono i fili verticali dei circuiti di griglia e di placca; heat il circuito del filamento
+   * (interruttore sw e batteria A in bx); galv il riquadro del galvanometro, che nel diodo occupa il posto
+   * del circuito di griglia: R raggio della scala, deg angolo dell'ago a fondo scala, fr e fa raggio e
+   * semiampiezza del quadrante, lr raggio dei numeri, tick lunghezza delle tacche.
+   */
   const GEOM = {
     wide: {
-      key: 'wide', W: 640, H: 414, tx: 318, xL: 116, xR: 540, loopX: 168, sw: [192, 256], gndX: 440, out: true,
-      leg: [420, 124], tagVp: [440, 30], tagVg: [178, 108], gLabel: [178, 80],
-      names: { sig: 'segnale ~', bias: 'batteria C', B: 'batteria B', Vs: 'Vs', A: 'batteria A', leg: ['elettroni nel vuoto', 'corrente nei fili'] },
+      key: 'wide', W: 640, H: 414, tx: 318, ty: 178, xL: 116, xR: 540, yTop: 10, yRail: 392, out: true,
+      heat: { y0: 344, y1: 380, sw: [382, 440], bx: 488 },
+      galv: { x: 14, y: 26, w: 204, h: 250, R: 70, deg: 54, fr: 100, fa: 68, lr: 87, tick: [8, 4] },
+      leg: { x: 416, y: 112, dy: 20, row: false },
+      placca: [334, 33, 'start'], tagVp: [446, 32, 'middle'], gLabel: [178, 80, 'middle'], tagVg: [178, 108, 'middle'],
+      catodo: -8, eq: ' = ',
+      names: { sig: 'segnale ~', bias: 'batteria C', B: 'batteria B', Vs: 'Vs', A: 'batteria A', leg: ['elettroni nel vuoto', 'carica spaziale', 'corrente nei fili'] },
     },
     narrow: {
-      key: 'narrow', W: 400, H: 414, tx: 200, xL: 38, xR: 362, loopX: 70, sw: [84, 140], gndX: 300, out: false,
-      leg: [289, 118], tagVp: [282, 31], tagVg: [80, 108], gLabel: [80, 80],
-      names: { sig: 'segnale', bias: 'C', B: 'B+', Vs: 'Vs', A: 'A', leg: ['elettroni', 'corrente'] },
+      key: 'narrow', W: 400, H: 446, tx: 200, ty: 178, xL: 22, xR: 378, yTop: 10, yRail: 392, out: false,
+      heat: { y0: 344, y1: 380, sw: [258, 306], bx: 342 },
+      galv: { x: 4, y: 26, w: 110, h: 204, R: 35, deg: 44, fr: 60, fa: 60, lr: 46, tick: [6, 3] },
+      leg: { x: 10, y: 434, row: true, gaps: [0, 92, 222] },
+      placca: [186, 26, 'end'], tagVp: [216, 31, 'start'], gLabel: [30, 80, 'start'], tagVg: [30, 108, 'start'],
+      catodo: -8, eq: '=',
+      names: { sig: 'segnale', bias: 'C', B: 'B+', Vs: 'Vs', A: 'A', leg: ['elettroni', 'carica spaziale', 'corrente nei fili'] },
     },
   };
 
@@ -271,7 +300,6 @@
     '.storia-cath { stroke: rgba(0, 0, 0, .4); stroke-width: .8; }',
     '.storia-heater { fill: none; stroke-width: 1.2; stroke-linecap: round; }',
     '.storia-hit { stroke: var(--trace-3); stroke-width: 2.6; stroke-linecap: round; filter: url(#ei-glow); opacity: 0; }',
-    '.storia-cloud { fill: var(--trace-3); opacity: 0; }',
     '.storia-zig { fill: none; stroke-width: 1.5; stroke-linejoin: round; }',
     '.storia-elec { filter: url(#ei-glow); }',
     '.storia-elec .ei-e { filter: none; }',
@@ -286,15 +314,47 @@
     '.storia-tag { font: 700 11.5px var(--mono); }',
     '.storia-leg { fill: var(--scope-text); font: 600 11px var(--font); }',
     '.storia-legdot { fill: var(--flow); filter: url(#ei-glow); }',
+    // galvanometro
+    '.storia-panel { fill: #060c0a; stroke: var(--lab-line); stroke-width: 1.2; }',
+    '.storia-ptitle { fill: var(--scope-text); font: 800 10px var(--mono); letter-spacing: .14em; }',
+    '.storia-face { stroke: #24342f; stroke-width: 1; }',
+    '.storia-arc { fill: none; stroke: var(--scope-text); stroke-width: 1.2; opacity: .55; }',
+    '.storia-arc.on { stroke: var(--trace-3); stroke-width: 4; opacity: .28; }',
+    '.storia-tick { stroke: var(--scope-text); stroke-width: 1.1; opacity: .8; }',
+    '.storia-tick.major { stroke: var(--lab-ink); stroke-width: 1.8; opacity: 1; }',
+    '.storia-ticklbl { fill: var(--scope-text); font: 700 10px var(--mono); }',
+    '.storia-unit { fill: var(--lab-ink); font: 800 12px var(--mono); }',
+    '.storia-needle { stroke: #ffe1a1; stroke-width: 2.2; stroke-linecap: round; filter: drop-shadow(0 0 3px rgba(255, 210, 140, .55)); }',
+    '.storia-needle.tail { stroke-width: 4; filter: none; opacity: .8; }',
+    '.storia-pivot { fill: #c9a467; stroke: #3b2f1c; stroke-width: 1.2; }',
+    '.storia-gval { fill: var(--trace-3); font: 700 17px var(--mono); }',
+    '.storia-gcap { fill: var(--scope-text); font: 600 11px var(--font); }',
+    // interruttore del filamento, cliccabile sul disegno
+    '.storia-switch { cursor: pointer; outline: none; }',
+    '.storia-switch-halo { fill: var(--trace-2); opacity: 0; transition: opacity var(--t-fast) ease; }',
+    '.storia-switch:hover .storia-switch-halo { opacity: .16; }',
+    '.storia-switch:focus-visible .storia-switch-halo { opacity: .22; stroke: #fff; stroke-width: 1.5; }',
     '.storia-narrow .storia-lbl { font-size: 15px; }',
     '.storia-narrow .storia-val, .storia-narrow .storia-tag { font-size: 14px; }',
     '.storia-narrow .storia-leg { font-size: 13.5px; }',
     '.storia-narrow .storia-zig { stroke-width: 1.8; }',
+    '.storia-narrow .storia-ptitle { font-size: 11.5px; letter-spacing: .02em; }',
+    '.storia-narrow .storia-ticklbl { font-size: 12px; }',
+    '.storia-narrow .storia-unit { font-size: 13px; }',
+    '.storia-narrow .storia-gval { font-size: 15px; }',
+    '.storia-narrow .storia-gcap { font-size: 13px; }',
     '.storia-figs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; margin-top: 18px; align-items: start; }',
     '.storia-figs .ei-figure svg { max-height: 320px; }',
+    // La linea del tempo (app.js) mette il titolo e l'etichetta del capitolo uno accanto all'altra senza spazio:
+    // senza un punto in cui andare a capo, su un telefono la tappa allargava la pagina.
+    '.ei-history-page .event-body h3::after { content: "\\200B"; }',
     '@media (max-width: 900px) { .storia-figs { grid-template-columns: 1fr; } }',
+    // sul telefono le figure si rimpiccioliscono di circa un terzo: i testi crescono per restare leggibili
+    '@media (max-width: 640px) { .storia-figs .ei-figure .f-small { font-size: 14px; }' +
+    ' .storia-figs .ei-figure .f-text, .storia-figs .ei-figure .f-accent-text { font-size: 15.5px; }' +
+    ' .storia-figs .ei-figure .f-title { font-size: 16.5px; } }',
     '@media (max-width: 640px) { .storia-lab .ei-stage-svg { max-height: none; } }',
-    '@media (prefers-reduced-motion: reduce) { .storia-fade { transition: none; } }',
+    '@media (prefers-reduced-motion: reduce) { .storia-fade, .storia-switch-halo { transition: none; } }',
   ].join('\n');
 
   const clamp01 = (x) => Math.min(1, Math.max(0, x));
@@ -354,64 +414,68 @@
     let zig = 'M342 100';
     for (let y = 106, k = 0; y <= 178; y += 6, k++) zig += 'L' + (k % 2 ? 342 : 349) + ' ' + y;
     return '<svg viewBox="0 0 460 296">' +
-      // Fleming
+      // Fleming (spostato un poco a destra: le etichette a sinistra devono stare nel disegno anche sul telefono)
+      '<g transform="translate(18 0)">' +
       '<path class="f-soft" d="' + bulb(118) + '"/>' + base(118) +
       '<path class="f-soft" d="M92 124V170A26 7 0 0 0 144 170V124A26 7 0 0 1 92 124Z" opacity=".75"/>' +
       '<path class="f-line" d="M92 124V170A26 7 0 0 0 144 170V124"/><ellipse class="f-line" cx="118" cy="124" rx="26" ry="7"/>' +
       '<path class="f-accent f-glow" stroke-width="2.6" d="M108 206V152Q108 134 118 134Q128 134 128 152V206"/>' +
       '<path class="f-line" d="M136 118V92Q136 74 118 66V42"/><circle class="f-paper" cx="118" cy="38" r="4"/>' +
       '<path class="f-thin" d="M92 146L58 112M108 184L58 196"/>' +
-      '<text class="f-small" x="54" y="108" text-anchor="end">placca</text>' +
-      '<text class="f-small" x="54" y="121" text-anchor="end">(cilindro)</text>' +
+      '<text class="f-small" x="54" y="114" text-anchor="end">placca</text>' +
       '<text class="f-small" x="54" y="200" text-anchor="end">filamento</text>' +
       '<text class="f-title" x="118" y="266" text-anchor="middle">Fleming, 1904</text>' +
-      '<text class="f-small" x="118" y="284" text-anchor="middle">diodo: filamento e placca</text>' +
+      '<text class="f-small" x="118" y="285" text-anchor="middle">diodo: due elettrodi</text>' +
+      '</g>' +
       // De Forest
       '<path class="f-soft" d="' + bulb(342) + '"/>' + base(342) +
       '<path class="f-soft" d="M336 62L342 54L348 62Z"/>' +
       '<path class="f-accent f-glow" stroke-width="2.6" d="M313 206V112Q317 104 321 112V206"/>' +
       '<path class="f-line" stroke-width="1.6" d="' + zig + '"/>' +
       '<rect class="f-fill" x="362" y="96" width="7" height="86" rx="1.5"/>' +
-      '<path class="f-line" stroke-width="1.6" d="M345 100V72L338 58V40M365 96V74L346 58V40"/>' +
-      '<circle class="f-paper" cx="338" cy="36" r="4"/><circle class="f-paper" cx="346" cy="36" r="4" transform="translate(10 0)"/>' +
+      '<path class="f-line" stroke-width="1.6" d="M345 100V72L338 58V40M365 96V74L356 58V40"/>' +
+      '<circle class="f-paper" cx="338" cy="36" r="4"/><circle class="f-paper" cx="356" cy="36" r="4"/>' +
       '<path class="f-thin" d="M339 116L286 92M313 184L282 196M369 120L404 110"/>' +
-      '<text class="f-small" x="282" y="90" text-anchor="end">griglia</text>' +
+      '<text class="f-small" x="282" y="88" text-anchor="end">griglia</text>' +
       '<text class="f-small" x="282" y="103" text-anchor="end">a zig-zag</text>' +
       '<text class="f-small" x="278" y="200" text-anchor="end">filamento</text>' +
       '<text class="f-small" x="408" y="113">placca</text>' +
       '<text class="f-title" x="342" y="266" text-anchor="middle">De Forest, 1906</text>' +
-      '<text class="f-small" x="342" y="284" text-anchor="middle">triodo: in mezzo, la griglia</text>' +
+      '<text class="f-small" x="342" y="285" text-anchor="middle">triodo: tre elettrodi</text>' +
       '</svg>';
   }
 
   function figSymbols() {
     return '<svg viewBox="0 0 460 262">' +
       // triodo
-      '<circle class="f-line" cx="120" cy="120" r="62"/>' +
-      '<path class="f-line" stroke-width="4" d="M96 88H144"/><path class="f-line" d="M120 88V24"/>' +
-      '<path class="f-line" stroke-dasharray="6 5" d="M84 120H156"/><path class="f-accent" stroke-width="2.6" d="M84 120H22"/>' +
-      '<path class="f-line" d="M100 152H142M100 152V230"/>' +
-      '<path class="f-accent" stroke-width="1.6" stroke-dasharray="2 3" opacity=".8" d="M108 172L120 162L132 172"/>' +
-      '<text class="f-text" x="128" y="38">placca</text>' +
-      '<text class="f-accent-text" x="22" y="110">griglia</text>' +
-      '<text class="f-text" x="108" y="226">catodo</text>' +
-      '<text class="f-small" x="136" y="190">filamento</text>' +
+      '<circle class="f-line" cx="150" cy="120" r="60"/>' +
+      '<path class="f-line" stroke-width="4" d="M126 90H174"/><path class="f-line" d="M150 90V24"/>' +
+      '<path class="f-line" stroke-dasharray="6 5" d="M114 120H186"/><path class="f-accent" stroke-width="2.6" d="M114 120H20"/>' +
+      '<path class="f-line" d="M130 150H172M130 150V230"/>' +
+      '<path class="f-accent" stroke-width="1.6" stroke-dasharray="2 3" opacity=".8" d="M138 168L150 160L162 168"/>' +
+      '<path class="f-thin" d="M164 170L196 192"/>' +
+      '<text class="f-text" x="158" y="38">placca</text>' +
+      '<text class="f-accent-text" x="20" y="110">griglia</text>' +
+      '<text class="f-text" x="138" y="226">catodo</text>' +
+      '<text class="f-small" x="199" y="201">filamento</text>' +
       // transistor NPN
+      '<g transform="translate(-22 0)">' +
       '<circle class="f-thin" cx="362" cy="120" r="48"/>' +
-      '<path class="f-line" stroke-width="4" d="M346 96V144"/><path class="f-accent" stroke-width="2.6" d="M346 120H282"/>' +
+      '<path class="f-line" stroke-width="4" d="M346 96V144"/><path class="f-accent" stroke-width="2.6" d="M346 120H268"/>' +
       '<path class="f-line" d="M346 108L378 88V24M346 132L378 152V230"/>' +
       '<path class="f-fill" d="M378 152L364.5 150.5L370.5 141Z"/>' +
       '<text class="f-text" x="386" y="38">collettore</text>' +
-      '<text class="f-accent-text" x="282" y="110">base</text>' +
+      '<text class="f-accent-text" x="268" y="110">base</text>' +
       '<text class="f-text" x="386" y="226">emettitore</text>' +
+      '</g>' +
       // corrispondenze
       '<text class="f-small" x="230" y="252" text-anchor="middle">griglia ↔ base · placca ↔ collettore · catodo ↔ emettitore</text>' +
       '</svg>';
   }
 
-  function figureEl(f, svg) {
+  function figureEl(f) {
     const h = EI.h;
-    const art = h('div', { class: 'ei-figure-art', html: svg });
+    const art = h('div', { class: 'ei-figure-art', html: f.svg });
     const el = art.querySelector('svg');
     if (el) { el.setAttribute('role', 'img'); el.setAttribute('aria-label', f.alt); }
     return h('figure', { class: 'ei-figure reveal in' },
@@ -425,8 +489,8 @@
     const { s, wire, sym, si, num } = EI;
     injectCss();
     const lab = EI.lab(container, {
-      title: 'La valvola: da Fleming a De Forest', chapter: 'storia', layout: 'side', viewBox: [640, 414],
-      svgLabel: 'Una valvola termoionica in vetro con catodo, griglia e placca, collegata alle batterie del filamento, della placca e della griglia',
+      title: 'La valvola: da Fleming a De Forest', chapter: 'storia', layout: 'side', viewBox: [GEOM.wide.W, GEOM.wide.H],
+      svgLabel: 'Una valvola termoionica in vetro con catodo, griglia e placca, collegata alle batterie del filamento, della placca e della griglia; nel diodo un galvanometro, in serie con il catodo, misura la corrente',
     });
     lab.root.classList.add('storia-lab');
     const reduced = lab.reduced;
@@ -439,6 +503,7 @@
       B: 250, RL: 22000, vg: -4, sig: false, amp: 1,
       // valori calcolati a ogni fotogramma
       T: 300, em: 0, ip: 0, ig: 0, vp: 0, vsi: 0, vgi: 0, sw: null, gainMeas: 0,
+      avg: 0, gal: 0, galW: 0, // corrente media nel galvanometro, angolo e velocità dell'ago
       edisonArmed: false, edison: false,
     };
     const buf = [];
@@ -468,15 +533,27 @@
       const id = (n) => 'storia-' + n + '-' + uid;
       const T = TUBE;
       const tx = G.tx;
-      const ty = TY;
+      const ty = G.ty;
       const p = { G: G, last: {} };
       const pin = (k) => [tx + T.pins[k], ty + T.pinBot];
       const cap = [tx, ty + T.capTop];
       const gExit = [tx + T.gridExitX, ty + T.gridY];
+      const K = pin(PIN_K);
+      const H0 = pin(PIN_H[0]);
+      const H1 = pin(PIN_H[1]);
       const xL = G.xL;
       const xR = G.xR;
+      const yR = G.yRail;
+      const hz = G.heat;
+      const gv = G.galv;
       const narrow = G.key === 'narrow';
       const dyLbl = narrow ? 18 : 16;
+      const P = (q) => q[0].toFixed(1) + ' ' + q[1].toFixed(1);
+      // galvanometro: due morsetti sul bordo inferiore del riquadro, in serie con il catodo
+      const postY = gv.y + gv.h;
+      const postP = [gv.x + gv.w - (narrow ? 22 : 42), postY];
+      const postN = [gv.x + (narrow ? 22 : 42), postY];
+      const yK = K[1] + 26;
 
       const defs = s('defs', null, svg);
       defs.innerHTML =
@@ -492,14 +569,19 @@
         '<stop offset="0" stop-color="#4d3626"/><stop offset="1" stop-color="#1f150e"/></linearGradient>' +
         '<linearGradient id="' + id('getter') + '" x1="0" x2="0" y1="0" y2="1">' +
         '<stop offset="0" stop-color="#c3ccd2" stop-opacity=".75"/><stop offset="1" stop-color="#7d868c" stop-opacity="0"/></linearGradient>' +
+        '<radialGradient id="' + id('cloud') + '">' +
+        '<stop offset="0" style="stop-color:var(--trace-3);stop-opacity:.9"/><stop offset=".5" style="stop-color:var(--trace-3);stop-opacity:.42"/>' +
+        '<stop offset="1" style="stop-color:var(--trace-3);stop-opacity:0"/></radialGradient>' +
+        '<radialGradient id="' + id('face') + '" cx=".5" cy="1" r="1">' +
+        '<stop offset="0" stop-color="#15231f"/><stop offset="1" stop-color="#09110f"/></radialGradient>' +
         '<filter id="' + id('bs') + '" x="-80%" y="-30%" width="260%" height="160%"><feGaussianBlur stdDeviation="5"/></filter>' +
         '<filter id="' + id('bm') + '" x="-120%" y="-40%" width="340%" height="180%"><feGaussianBlur stdDeviation="9"/></filter>' +
         '<filter id="' + id('bl') + '" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="22"/></filter>';
 
-      /* circuito esterno (sotto la valvola) */
+      /* circuito esterno */
       const gc = s('g', { class: 'storia-circ' }, svg);
       // placca → RL → batteria B (o generatore Vs nel diodo) → massa
-      p.wPlate = wire(gc, [cap, [tx, Y_TOP], [xR, Y_TOP], [xR, 36]]);
+      p.wPlate = wire(gc, [cap, [tx, G.yTop], [xR, G.yTop], [xR, 36]]);
       sym.resistor(gc, { x: xR, y: 36, rot: 90, len: 64 });
       p.wB = wire(gc, [[xR, 100], [xR, 150]]);
       p.srcPos = s('g', null, gc);
@@ -508,10 +590,15 @@
       sym.source(p.srcNeg, { x: xR, y: 210, rot: 270, len: 60, kind: 'dc' });
       p.srcAC = s('g', null, gc);
       sym.source(p.srcAC, { x: xR, y: 150, rot: 90, len: 60, kind: 'ac' });
-      p.wBret = wire(gc, [[xR, 210], [xR, Y_RAIL]]);
-      p.wRailR = wire(gc, [[pin(2)[0], Y_RAIL], [xR, Y_RAIL]]);
-      p.wK = wire(gc, [pin(2), [pin(2)[0], Y_RAIL]]);
-      sym.ground(gc, { x: G.gndX, y: Y_RAIL });
+      p.wBret = wire(gc, [[xR, 210], [xR, yR]]);
+      p.wRailR = wire(gc, [[K[0], yR], [xR, yR]]);
+      // catodo: nel triodo va dritto a massa, nel diodo passa dal galvanometro (come negli esperimenti di Edison e Fleming)
+      p.gKT = s('g', null, gc);
+      p.wK = wire(p.gKT, [K, [K[0], yR]]);
+      p.gKD = s('g', { class: 'storia-fade' }, gc);
+      p.wKd = wire(p.gKD, [K, [K[0], yK], [postP[0], yK], postP]);
+      p.wRailD = wire(p.gKD, [postN, [postN[0], yR], [K[0], yR]]);
+      sym.ground(gc, { x: K[0], y: yR });
       // griglia: segnale e batteria C in serie (solo nel triodo)
       p.gGridC = s('g', { class: 'storia-fade' }, gc);
       p.wG = wire(p.gGridC, [gExit, [xL, gExit[1]], [xL, 112]]);
@@ -522,21 +609,62 @@
       sym.source(p.biasNeg, { x: xL, y: 264, rot: 270, len: 60, kind: 'dc' });
       p.biasPos = s('g', null, p.gGridC);
       sym.source(p.biasPos, { x: xL, y: 204, rot: 90, len: 60, kind: 'dc' });
-      p.wGret = wire(p.gGridC, [[xL, 264], [xL, Y_RAIL], [pin(2)[0], Y_RAIL]]);
-      EI.dot(p.gGridC, pin(2)[0], Y_RAIL);
-      // filamento: batteria A e interruttore
-      const lx = G.loopX;
-      p.wH1 = wire(gc, [pin(0), [pin(0)[0], Y_LOOP[0]], [G.sw[1], Y_LOOP[0]]]);
-      p.sw = sym.switch(gc, { x: G.sw[0], y: Y_LOOP[0], len: G.sw[1] - G.sw[0], closed: true });
-      p.wHA = wire(gc, [[G.sw[0], Y_LOOP[0]], [lx, Y_LOOP[0]]]);
-      sym.source(gc, { x: lx, y: Y_LOOP[0], rot: 90, len: Y_LOOP[1] - Y_LOOP[0], kind: 'dc' });
-      p.wH2 = wire(gc, [[lx, Y_LOOP[1]], [pin(1)[0], Y_LOOP[1]], pin(1)]);
+      p.wGret = wire(p.gGridC, [[xL, 264], [xL, yR], [K[0], yR]]);
+      EI.dot(gc, K[0], yR);
+      // filamento: batteria A e interruttore, sui due piedini a destra del catodo
+      p.wH1 = wire(gc, [H1, [H1[0], hz.y0], [hz.sw[0], hz.y0]]);
+      p.sw = sym.switch(gc, { x: hz.sw[0], y: hz.y0, len: hz.sw[1] - hz.sw[0], closed: true });
+      p.wHA = wire(gc, [[hz.sw[1], hz.y0], [hz.bx, hz.y0]]);
+      sym.source(gc, { x: hz.bx, y: hz.y0, rot: 90, len: hz.y1 - hz.y0, kind: 'dc' });
+      p.wH2 = wire(gc, [[hz.bx, hz.y1], [H0[0], hz.y1], H0]);
+
+      /* galvanometro (solo nel diodo): ago con lo zero al centro, in milliampere */
+      p.gGalv = s('g', { class: 'storia-galv storia-fade' }, svg);
+      s('rect', { x: gv.x, y: gv.y, width: gv.w, height: gv.h, rx: 12, class: 'storia-panel' }, p.gGalv);
+      s('text', { x: gv.x + (narrow ? 9 : 14), y: gv.y + 22, class: 'storia-ptitle', text: 'GALVANOMETRO' }, p.gGalv);
+      // quadrante come negli strumenti veri: arco della scala, tacche verso l'esterno e numeri sopra le tacche,
+      // così l'ago (che arriva fino all'arco) non copre mai i numeri
+      const R = gv.R;
+      const A = gv.deg;
+      const cx = gv.x + gv.w / 2;
+      const cy = gv.y + 38 + gv.fr;
+      const at = (deg, r) => [cx + r * Math.sin(deg * Math.PI / 180), cy - r * Math.cos(deg * Math.PI / 180)];
+      s('path', { d: 'M' + cx + ' ' + (cy + 6) + 'L' + P(at(-gv.fa, gv.fr)) + 'A' + gv.fr + ' ' + gv.fr + ' 0 0 1 ' + P(at(gv.fa, gv.fr)) + 'Z', class: 'storia-face', fill: 'url(#' + id('face') + ')' }, p.gGalv);
+      s('path', { d: 'M' + P(at(0, R - 3)) + 'A' + (R - 3) + ' ' + (R - 3) + ' 0 0 1 ' + P(at(A, R - 3)), class: 'storia-arc on' }, p.gGalv);
+      s('path', { d: 'M' + P(at(-A, R)) + 'A' + R + ' ' + R + ' 0 0 1 ' + P(at(A, R)), class: 'storia-arc' }, p.gGalv);
+      for (let k = -10; k <= 10; k++) {
+        const major = k % 5 === 0;
+        if (narrow && !major && k % 2) continue;
+        const deg = k / 10 * A;
+        s('path', { d: 'M' + P(at(deg, R)) + 'L' + P(at(deg, R + gv.tick[major ? 0 : 1])), class: 'storia-tick' + (major ? ' major' : '') }, p.gGalv);
+        if (major && (!narrow || k % 10 === 0)) {
+          const q = at(deg, gv.lr);
+          s('text', { x: q[0].toFixed(1), y: (q[1] + 4).toFixed(1), class: 'storia-ticklbl', 'text-anchor': 'middle', text: k === 0 ? '0' : (k > 0 ? '+' : '−') + Math.abs(k) }, p.gGalv);
+        }
+      }
+      // l'unità sta nella metà sinistra del quadrante, dove l'ago della valvola non va mai (la corrente non si inverte)
+      if (!narrow) {
+        const u = at(-A * 0.55, R * 0.52);
+        s('text', { x: u[0].toFixed(1), y: (u[1] + 4).toFixed(1), class: 'storia-unit', 'text-anchor': 'middle', text: 'mA' }, p.gGalv);
+      }
+      p.needle = s('g', { transform: 'rotate(0 ' + cx + ' ' + cy + ')' }, p.gGalv);
+      s('path', { d: 'M' + cx + ' ' + (cy + R * 0.2).toFixed(1) + 'V' + (cy + 4), class: 'storia-needle tail' }, p.needle);
+      s('path', { d: 'M' + cx + ' ' + cy + 'V' + (cy - R - 1), class: 'storia-needle' }, p.needle);
+      s('circle', { cx: cx, cy: cy, r: narrow ? 4.5 : 5.5, class: 'storia-pivot' }, p.gGalv);
+      p.galvC = [cx, cy];
+      p.gVal = s('text', { x: cx, y: cy + (narrow ? 32 : 42), class: 'storia-gval', 'text-anchor': 'middle' }, p.gGalv);
+      const cap0 = s('text', { x: cx, y: cy + (narrow ? 52 : 64), class: 'storia-gcap', 'text-anchor': 'middle' }, p.gGalv);
+      p.gCap = [s('tspan', { x: cx }, cap0), s('tspan', { x: cx, dy: narrow ? 16 : 15 }, cap0)];
+      [[postN, '−'], [postP, '+']].forEach((q) => {
+        s('text', { x: q[0][0], y: q[0][1] - 11, class: 'storia-unit', 'text-anchor': 'middle', text: q[1] }, p.gGalv);
+        s('circle', { cx: q[0][0], cy: q[0][1], r: 5, class: 'storia-pivot' }, p.gGalv);
+      });
 
       /* etichette */
       const gl = s('g', { class: 'storia-labels' }, svg);
-      const rx = G.out ? xR + 22 : xR - 22;
+      const rx = G.out ? xR + 26 : xR - 24;
       const ra = G.out ? 'start' : 'end';
-      const lxl = G.out ? xL - 22 : xL + 22;
+      const lxl = G.out ? xL - 24 : xL + 24;
       const la = G.out ? 'end' : 'start';
       p.lRL = nameValue(gl, rx, 63, ra, dyLbl);
       p.lRL.name.textContent = 'RL';
@@ -546,21 +674,24 @@
       p.lSig.name.textContent = G.names.sig;
       p.lBias = nameValue(p.gGridL, lxl, 231, la, dyLbl);
       p.lBias.name.textContent = G.names.bias;
-      const aMid = (lx + 12 + pin(0)[0]) / 2;
-      const tA = s('text', { x: aMid, y: (Y_LOOP[0] + Y_LOOP[1]) / 2 + 5, class: 'storia-lbl', 'text-anchor': 'middle' }, gl);
+      const tA = s('text', { x: (H0[0] + hz.bx) / 2, y: hz.y1 - 11, class: 'storia-lbl', 'text-anchor': 'middle' }, gl);
       s('tspan', { class: 'name', text: G.names.A + ' ' }, tA);
-      s('tspan', { class: 'storia-val', text: num(model.HEATER.v, 1) + ' V' }, tA);
-      s('text', { x: tx + 16, y: ty + T.capTop + 13, class: 'storia-lbl', text: 'placca' }, gl);
-      s('text', { x: G.gLabel[0], y: G.gLabel[1], class: 'storia-lbl storia-fade', 'text-anchor': 'middle', text: 'griglia' }, p.gGridL);
-      s('text', { x: pin(2)[0] + 9, y: 360, class: 'storia-lbl', text: 'catodo' }, gl);
-      p.tagVp = s('text', { x: G.tagVp[0], y: G.tagVp[1], class: 'storia-tag', 'text-anchor': 'middle' }, gl);
-      p.tagVg = s('text', { x: G.tagVg[0], y: G.tagVg[1], class: 'storia-tag', 'text-anchor': 'middle' }, p.gGridL);
-      // legenda: elettroni (nel vuoto) e cariche della corrente nei fili
+      s('tspan', { class: 'storia-val', text: num(model.HEATER.v, 1) + ' V' }, tA);
+      s('text', { x: G.placca[0], y: G.placca[1], class: 'storia-lbl', 'text-anchor': G.placca[2], text: 'placca' }, gl);
+      s('text', { x: G.gLabel[0], y: G.gLabel[1], class: 'storia-lbl', 'text-anchor': G.gLabel[2], text: 'griglia' }, p.gGridL);
+      s('text', { x: K[0] + G.catodo, y: K[1] + 17, class: 'storia-lbl', 'text-anchor': 'end', text: 'catodo' }, gl);
+      p.tagVp = s('text', { x: G.tagVp[0], y: G.tagVp[1], class: 'storia-tag', 'text-anchor': G.tagVp[2] }, gl);
+      p.tagVg = s('text', { x: G.tagVg[0], y: G.tagVg[1], class: 'storia-tag', 'text-anchor': G.tagVg[2] }, p.gGridL);
+      // legenda: elettroni nel vuoto, nuvola della carica spaziale, cariche della corrente nei fili
       const lg = s('g', { class: 'storia-legend' }, svg);
-      s('circle', { cx: G.leg[0], cy: G.leg[1] - 4, r: 3.4, class: 'ei-e' }, lg);
-      s('text', { x: G.leg[0] + 10, y: G.leg[1], class: 'storia-leg', text: G.names.leg[0] }, lg);
-      s('circle', { cx: G.leg[0], cy: G.leg[1] + (narrow ? 18 : 16), r: 3, class: 'storia-legdot' }, lg);
-      s('text', { x: G.leg[0] + 10, y: G.leg[1] + (narrow ? 22 : 20), class: 'storia-leg', text: G.names.leg[1] }, lg);
+      const lgPos = (i) => (G.leg.row ? [G.leg.x + G.leg.gaps[i], G.leg.y] : [G.leg.x, G.leg.y + i * G.leg.dy]);
+      G.names.leg.forEach((txt, i) => {
+        const q = lgPos(i);
+        if (i === 0) s('circle', { cx: q[0], cy: q[1] - 4, r: 3.4, class: 'ei-e' }, lg);
+        else if (i === 1) s('ellipse', { cx: q[0], cy: q[1] - 4, rx: 8, ry: 7, fill: 'url(#' + id('cloud') + ')' }, lg);
+        else s('circle', { cx: q[0], cy: q[1] - 4, r: 3, class: 'storia-legdot' }, lg);
+        s('text', { x: q[0] + 10, y: q[1], class: 'storia-leg', text: txt }, lg);
+      });
 
       /* la valvola (coordinate locali) */
       const gt = s('g', { class: 'storia-tube', transform: 'translate(' + tx + ' ' + ty + ')' }, svg);
@@ -573,9 +704,10 @@
       s('rect', { x: -77, y: T.micaT, width: 154, height: 5, rx: 1.5, class: 'storia-mica' }, gt);
       s('rect', { x: -77, y: T.micaB, width: 154, height: 5, rx: 1.5, class: 'storia-mica' }, gt);
       s('rect', { x: -T.px, y: -T.pe, width: 2 * T.px, height: 2 * T.pe, class: 'storia-back', fill: 'url(#' + id('back') + ')' }, gt);
-      p.cloud = s('ellipse', { cx: 0, cy: 0, rx: 22, ry: 70, class: 'storia-cloud', filter: 'url(#' + id('bs') + ')' }, gt);
       p.gfield = [-1, 1].map((sd) => s('rect', { x: sd * T.gx - 5, y: -66, width: 10, height: 132, rx: 5, filter: 'url(#' + id('bs') + ')', opacity: 0 }, gt));
       p.halo = s('ellipse', { cx: 0, cy: 0, rx: 16, ry: 80, filter: 'url(#' + id('bm') + ')', opacity: 0 }, gt);
+      // la nuvola di elettroni attorno al catodo (carica spaziale): luce che si somma al bagliore del catodo
+      p.cloud = s('ellipse', { cx: 0, cy: 0, rx: 22, ry: 76, fill: 'url(#' + id('cloud') + ')', opacity: 0, style: 'mix-blend-mode:screen' }, gt);
       p.cath = s('rect', { x: -T.cw, y: -T.ce, width: 2 * T.cw, height: 2 * T.ce, rx: 3, class: 'storia-cath', fill: rgb(METAL) }, gt);
       p.heat = s('path', { d: 'M-2 62V-60Q0 -64 2 -60V62', class: 'storia-heater', stroke: 'none' }, gt);
       s('path', { d: 'M0 -68l-3 -2.4l6 -2.4l-6 -2.4l6 -2.4l-3 -2.4', class: 'storia-rod' }, gt);
@@ -613,14 +745,23 @@
       /* cariche che scorrono nei fili (verso convenzionale) */
       const ghost = (d) => s('path', { d: d, class: 'ei-wire', style: 'opacity:0' }, gc);
       p.flows = {
-        plate: new EI.Flow(gc, ghost('M' + xR + ' 150V' + Y_TOP + 'H' + tx + 'V' + cap[1])),
-        ret: new EI.Flow(gc, ghost('M' + pin(2)[0] + ' ' + Y_RAIL + 'H' + xR + 'V210')),
-        k: new EI.Flow(gc, ghost('M' + pin(2)[0] + ' ' + pin(2)[1] + 'V' + Y_RAIL)),
-        grid: new EI.Flow(p.gGridC, ghost('M' + pin(2)[0] + ' ' + Y_RAIL + 'H' + xL + 'V' + gExit[1] + 'H' + gExit[0])),
-        h1: new EI.Flow(gc, ghost('M' + lx + ' ' + Y_LOOP[0] + 'H' + pin(0)[0] + 'V' + pin(0)[1])),
-        h2: new EI.Flow(gc, ghost('M' + pin(1)[0] + ' ' + pin(1)[1] + 'V' + Y_LOOP[1] + 'H' + lx)),
+        plate: new EI.Flow(gc, ghost('M' + xR + ' 150V' + G.yTop + 'H' + tx + 'V' + cap[1])),
+        ret: new EI.Flow(gc, ghost('M' + K[0] + ' ' + yR + 'H' + xR + 'V210')),
+        k: new EI.Flow(gc, ghost('M' + K[0] + ' ' + K[1] + 'V' + yR)),
+        kd: new EI.Flow(gc, ghost('M' + P(K) + 'V' + yK + 'H' + postP[0] + 'V' + postY)),
+        railD: new EI.Flow(gc, ghost('M' + P(postN) + 'V' + yR + 'H' + K[0])),
+        grid: new EI.Flow(p.gGridC, ghost('M' + K[0] + ' ' + yR + 'H' + xL + 'V' + gExit[1] + 'H' + gExit[0])),
+        h1: new EI.Flow(gc, ghost('M' + hz.bx + ' ' + hz.y0 + 'H' + H1[0] + 'V' + H1[1])),
+        h2: new EI.Flow(gc, ghost('M' + P(H0) + 'V' + hz.y1 + 'H' + hz.bx)),
       };
       Object.values(p.flows).forEach((f) => f.set(0));
+
+      // l'interruttore del filamento si può azionare anche sul disegno
+      p.swHit = s('g', { class: 'storia-switch', role: 'button', tabindex: 0, 'aria-label': 'Interruttore del filamento', 'aria-pressed': 'true' }, svg);
+      s('rect', { x: hz.sw[0] - 4, y: hz.y0 - 24, width: hz.sw[1] - hz.sw[0] + 8, height: 34, rx: 9, class: 'storia-switch-halo' }, p.swHit);
+      const flip = (e) => { e.preventDefault(); heaterCtl.set(!st.heater); lab.invalidate(); };
+      p.swHit.addEventListener('click', flip);
+      p.swHit.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') flip(e); });
 
       /* elettroni: una riserva di pallini riutilizzati */
       p.pool = [];
@@ -869,7 +1010,8 @@
       options: [{ value: 'diodo', label: 'Diodo di Fleming (1904)' }, { value: 'triodo', label: 'Triodo di De Forest (1906)' }],
       onChange: (v) => { st.mode = v; buf.length = 0; layout(); },
     });
-    lab.toggle({
+    // anche l'interruttore disegnato sul banco usa questo comando
+    const heaterCtl = lab.toggle({
       into: g0, label: 'Filamento', on: 'Filamento acceso', off: 'Filamento spento', value: true,
       onChange: (v) => { st.heater = v; if (reduced) st.warm = v ? 1 : 0; },
     });
@@ -898,7 +1040,7 @@
     lab.challenges(CHALLENGES.map((c) => ({ id: c.id, text: c.text, check: checks[c.id] })));
 
     // figure storiche sotto il banco
-    const figs = EI.h('div', { class: 'storia-figs' }, figureEl(FIGURES[0], figFleming()), figureEl(FIGURES[1], figSymbols()));
+    const figs = EI.h('div', { class: 'storia-figs' }, FIGURES.map(figureEl));
     container.append(figs);
 
     function layout() {
@@ -911,6 +1053,12 @@
         parts.gGridT.classList.toggle('storia-hide', !tri);
         parts.gGridC.classList.toggle('storia-hide', !tri);
         parts.gGridL.classList.toggle('storia-hide', !tri);
+        // nel diodo il catodo va a massa passando dal galvanometro, nel triodo direttamente
+        parts.gGalv.classList.toggle('storia-hide', tri);
+        parts.gKD.classList.toggle('storia-hide', tri);
+        parts.gKT.classList.toggle('storia-hide', !tri);
+        parts.gCap[0].textContent = parts.G.key === 'narrow' ? 'corrente' : st.ac ? 'corrente media' : 'corrente di placca';
+        parts.gCap[1].textContent = parts.G.key === 'narrow' ? (st.ac ? 'media' : 'di placca') : st.ac ? 'in un periodo' : '';
         parts.last = {};
       }
       setLabel(rX, tri ? 'Griglia Vg' : 'Tensione su RL');
@@ -920,7 +1068,8 @@
       setTitle(charac, tri ? 'Caratteristiche di placca' : 'Caratteristica del diodo');
       scope.setLegend(tri
         ? [{ label: 'segnale sulla griglia', color: 'var(--trace-4)' }, { label: 'uscita sulla placca', color: 'var(--trace-1)' }]
-        : [{ label: 'Vs applicata', color: 'var(--trace-2)' }, { label: 'tensione su RL', color: 'var(--trace-1)' }]);
+        : [{ label: 'Vs applicata', color: 'var(--trace-2)' }, { label: 'tensione su RL', color: 'var(--trace-1)' }]
+          .concat(st.ac ? [{ label: 'media (il galvanometro)', color: 'var(--trace-3)' }] : []));
       charac.setLegend(tri
         ? [{ label: 'Vg scelta', color: 'var(--trace-4)' }, { label: 'altre Vg', color: '#5f746d' }, { label: 'retta di carico', color: 'var(--trace-2)' }]
         : [{ label: 'legge dei 3/2', color: 'var(--trace-3)' }, { label: 'retta di carico', color: 'var(--trace-2)' }]);
@@ -954,6 +1103,8 @@
       st.phase = 0;
       st.edisonArmed = false;
       st.edison = false;
+      st.gal = 0;
+      st.galW = 0;
       buf.length = 0;
       if (parts) {
         parts.pool.forEach(kill);
@@ -963,6 +1114,16 @@
     });
 
     /* --- calcolo dello stato --- */
+
+    const avgMemo = { key: '', v: 0 };
+    function acAverage() {
+      const key = st.vac + '|' + st.warm.toFixed(3);
+      if (avgMemo.key !== key) {
+        avgMemo.key = key;
+        avgMemo.v = model.diodeAverage(st.vac, st.warm);
+      }
+      return avgMemo.v;
+    }
 
     function compute(phase) {
       st.T = model.temperature(st.warm);
@@ -975,7 +1136,9 @@
         st.ig = 0;
         st.vgi = 0;
         st.sw = null;
+        st.avg = st.ac ? acAverage() : st.ip;
       } else {
+        st.avg = 0;
         st.vgi = st.vg + (st.sig ? st.amp * Math.sin(phase) : 0);
         const op = model.triodeOP(st.B, st.vgi, st.warm, st.RL);
         st.vp = op.vp;
@@ -1021,12 +1184,17 @@
       const col = (w, v, m) => { w.style.stroke = EI.vcolor(v, m); };
       col(p.wPlate, st.vp, vmax);
       col(p.wB, supply, vmax);
-      [p.wBret, p.wRailR, p.wK, p.wGret, p.wH2].forEach((w) => col(w, 0, 1));
+      [p.wBret, p.wRailR, p.wK, p.wKd, p.wRailD, p.wGret, p.wH2].forEach((w) => col(w, 0, 1));
       col(p.wG, st.vgi, 12);
       col(p.wGmid, st.vg, 12);
       col(p.wHA, model.HEATER.v, model.HEATER.v);
       col(p.wH1, st.heater ? model.HEATER.v : 0, model.HEATER.v);
-      p.sw.set(st.heater);
+      if (L.heater !== st.heater) {
+        L.heater = st.heater;
+        p.sw.set(st.heater);
+        p.swHit.setAttribute('aria-pressed', String(st.heater));
+        p.swHit.setAttribute('aria-label', st.heater ? 'Interruttore del filamento: chiuso, premi per spegnere' : 'Interruttore del filamento: aperto, premi per accendere');
+      }
 
       // simboli e valori dei generatori
       const srcMode = tri ? 'pos' : st.ac ? 'ac' : st.vs < 0 ? 'neg' : 'pos';
@@ -1045,16 +1213,18 @@
       p.lSrc.value.textContent = tri ? num(st.B, 0) + ' V' : st.ac ? '±' + num(st.vac, 0) + ' V' : (st.vs > 0 ? '+' : st.vs < 0 ? '−' : '') + num(Math.abs(st.vs), 0) + ' V';
       p.lSig.value.textContent = st.sig && st.amp > 0 ? '±' + num(st.amp, 2) + ' V' : 'spento';
       p.lBias.value.textContent = sv1(st.vg);
-      p.tagVp.textContent = 'Vp = ' + fmtV(st.vp);
+      p.tagVp.textContent = 'Vp' + p.G.eq + fmtV(st.vp);
       p.tagVp.style.fill = P.t1;
-      p.tagVg.textContent = 'Vg = ' + sv1(st.vgi);
+      p.tagVg.textContent = 'Vg' + p.G.eq + sv1(st.vgi);
       p.tagVg.style.fill = P.t4;
 
       // cariche nei fili (verso convenzionale): placca, catodo, griglia, filamento
       const sp = EI.speedFor(st.ip, IREF);
       p.flows.plate.set(sp);
       p.flows.ret.set(sp);
-      p.flows.k.set(EI.speedFor(st.ip + st.ig, IREF));
+      p.flows.k.set(tri ? EI.speedFor(st.ip + st.ig, IREF) : 0);
+      p.flows.kd.set(tri ? 0 : sp);
+      p.flows.railD.set(tri ? 0 : sp);
       p.flows.grid.set(tri ? EI.speedFor(st.ig, 0.002) : 0);
       const sh = st.heater ? EI.speedFor(model.HEATER.i, 0.6) : 0;
       p.flows.h1.set(sh);
@@ -1071,6 +1241,10 @@
         });
         const zc = EI.mix('#c9d2d6', st.vgi < 0 ? P.t4 : P.t1, Math.min(0.75, a));
         p.zig.forEach((z) => z.setAttribute('stroke', zc));
+      } else if (L.field !== 0) {
+        // nel diodo non c'è griglia: spegne il bagliore lasciato dal triodo
+        L.field = 0;
+        p.gfield.forEach((r) => r.setAttribute('opacity', 0));
       }
 
       // elettroni
@@ -1080,10 +1254,33 @@
       } else stepSwarm(p, dt, F);
       let live = 0;
       for (const e of p.pool) if (e.on && (e.mode === 'cloud' || e.mode === 'static')) live++;
-      p.cloud.setAttribute('rx', (T.cw + 4 + F.rc).toFixed(1));
-      p.cloud.style.opacity = (0.32 * clamp01(live / 40) * (F.emN > 0.01 ? 1 : 0)).toFixed(3);
+      p.cloud.setAttribute('rx', (T.cw + 6 + 1.15 * F.rc).toFixed(1));
+      p.cloud.style.opacity = (0.8 * clamp01(live / 34) * (F.emN > 0.01 ? 1 : 0)).toFixed(3);
       const hit = Math.pow(clamp01(st.ip / 0.008), 0.5) * 0.9;
       p.hit.forEach((h) => { h.style.opacity = hit.toFixed(3); });
+
+      // galvanometro: l'ago (una molla smorzata) insegue la corrente media; con il movimento ridotto salta subito lì
+      if (!tri) {
+        const target = EI.clamp(st.avg / GAL_FS, -1.08, 1.08) * p.G.galv.deg;
+        if (reduced) {
+          st.gal = target;
+          st.galW = 0;
+        } else if (dt > 0) {
+          const h = Math.min(dt, 0.04);
+          st.galW += (60 * (target - st.gal) - 11 * st.galW) * h;
+          st.gal += st.galW * h;
+        }
+        const ang = st.gal.toFixed(2);
+        if (L.gal !== ang) {
+          L.gal = ang;
+          p.needle.setAttribute('transform', 'rotate(' + ang + ' ' + p.galvC[0] + ' ' + p.galvC[1] + ')');
+        }
+        const val = num(st.avg * 1000, 2) + ' mA';
+        if (L.gVal !== val) {
+          L.gVal = val;
+          p.gVal.textContent = val;
+        }
+      }
     }
 
     function paintReadouts() {
@@ -1152,6 +1349,8 @@
       } else {
         scope.line(a, { color: P.t2, width: 2, samples: 240 });
         scope.line(b, { color: P.t1, width: 2.6, fill: P.t1, fillAlpha: 0.1, samples: 240 });
+        // in alternata: il valore medio della tensione su RL, quello che "vede" il galvanometro
+        if (st.ac && st.avg > 1e-6) scope.hline(st.avg * model.RL_DIODE, { color: P.t3, alpha: 0.95, width: 1.6, dash: [6, 4], label: 'media ' + fmtV(st.avg * model.RL_DIODE), at: 'left' });
       }
     }
 
@@ -1182,7 +1381,7 @@
           ctx.fillStyle = color;
           ctx.textAlign = x >= 319 ? 'right' : 'center';
           ctx.textBaseline = 'bottom';
-          ctx.fillText((vgk === 0 ? '0' : '−' + num(Math.abs(vgk), Number.isInteger(vgk) ? 0 : 1)) + (x >= 319 ? ' V' : ''), c.X(x) - (x >= 319 ? 4 : 0), c.Y(y) - 3);
+          ctx.fillText((vgk === 0 ? '0' : (vgk > 0 ? '+' : '−') + num(Math.abs(vgk), Number.isInteger(vgk) ? 0 : 1)) + (x >= 319 ? ' V' : ''), c.X(x) - (x >= 319 ? 4 : 0), c.Y(y) - 3);
           ctx.restore();
         };
         for (const vgk of VG_FAMILY) {
@@ -1230,11 +1429,11 @@
       if (!tri) {
         if (st.ac) {
           const pk = model.diodeOP(st.vac, st.warm).ip;
-          return 'Tensione alternata, al rallentatore (il segnale radio vero oscillava centinaia di migliaia di volte al secondo). Nella semionda positiva la placca attira gli elettroni e la corrente passa, fino a <b>' + fmtI(pk) + '</b>; in quella negativa li respinge e la corrente si ferma. Su RL restano solo le semionde positive: la valvola raddrizza. Fleming la usò così nel 1904, perché l\'ago di un galvanometro potesse seguire le oscillazioni della radio.';
+          return 'Tensione alternata, al rallentatore (il segnale radio vero oscillava centinaia di migliaia di volte al secondo). Nella semionda positiva la placca attira gli elettroni e la corrente passa, fino a <b>' + fmtI(pk) + '</b>; in quella negativa li respinge e la corrente si ferma. Su RL restano solo le semionde positive: la valvola raddrizza. L\'ago del galvanometro è troppo lento per seguire le oscillazioni e segna la media, <b>' + fmtI(st.avg) + '</b>; senza la valvola la media sarebbe zero. Era il problema di Fleming nel 1904: con la valvola le oscillazioni della radio diventano una corrente che l\'ago riesce a mostrare.';
         }
         if (st.vs < 0) return 'La placca è a <b>' + sv1(st.vs).replace(',0', '') + '</b>: negativa, respinge gli elettroni, che ricadono sul catodo. Restano schiacciati in una nuvola sottile attorno al filamento e la corrente è <b>zero</b>. È il senso unico che Fleming cercava: per questo la chiamò valvola, come quella che lascia passare l\'acqua in un verso solo.';
         if (st.vs === 0) return 'Placca a 0 V: gli elettroni escono dal catodo caldo ma, senza un richiamo, ricadono. Attorno al catodo resta una nuvola di elettroni, la <b>carica spaziale</b>: con la sua carica negativa respinge quelli che escono dopo. Dai tensione alla placca e guarda la nuvola svuotarsi verso di lei.';
-        return 'La placca, positiva, attira gli elettroni della nuvola: attraversano il vuoto e la colpiscono, e nel circuito passano <b>' + fmtI(st.ip) + '</b>. Non partono tutti quelli emessi: la carica spaziale frena gli altri, e la corrente cresce con la potenza 3/2 della tensione sulla valvola (legge di Child-Langmuir): con il doppio dei volt, 2,8 volte la corrente. Sulla valvola restano <b>' + fmtV(st.vp) + '</b>, il resto cade su RL.';
+        return 'La placca, positiva, attira gli elettroni della nuvola: attraversano il vuoto e la colpiscono, e nel circuito passano <b>' + fmtI(st.ip) + '</b>. Non partono tutti quelli emessi: la carica spaziale frena gli altri, e la corrente cresce con la potenza 3/2 della tensione sulla valvola (legge di Child-Langmuir): con il doppio dei volt, 2,8 volte la corrente. Sulla valvola restano <b>' + fmtV(st.vp) + '</b>, il resto cade su RL; il galvanometro, in serie con il catodo, misura la corrente.';
       }
       const sw = st.sw;
       const q = sw.q;

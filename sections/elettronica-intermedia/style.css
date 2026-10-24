@@ -228,7 +228,7 @@
 .ei-challenge.just { animation: ei-shine 1.3s ease; }
 
 /* simboli dei circuiti */
-.ei-wire { fill: none; stroke: var(--wire); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; transition: stroke var(--t-normal) ease; }
+.ei-wire { fill: none; stroke: var(--wire); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; } /* niente transizione: i laboratori aggiornano il colore a ogni fotogramma */
 .ei-wire.thin { stroke-width: 2; }
 .ei-wire.dashed { stroke-dasharray: 6 6; }
 .ei-node { fill: var(--sym); }

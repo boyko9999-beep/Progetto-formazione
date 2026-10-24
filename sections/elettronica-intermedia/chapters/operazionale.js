@@ -460,6 +460,7 @@
       const cmp = v === 'cmp';
       relabel(rGi, cmp ? 'Guadagno A' : 'Guadagno ideale');
       relabel(rGm, cmp ? 'Soglia Vref' : 'Guadagno reale');
+      rGm.el.style.setProperty('--rc', cmp ? 'var(--trace-3)' : 'var(--trace-1)'); // la soglia ha il colore di Vref
       relabel(rPk, cmp ? 'Vout adesso' : 'Vout di picco');
       relabel(rBw, cmp ? 'Uscita alta per' : 'Banda a −3 dB');
       relabel(rSt, cmp ? 'Uscita' : 'Stato');
@@ -501,13 +502,13 @@
       const want = Math.abs(g) * q.amp;
       if (tc.sat) {
         const fix = q.mode === 'seg' ? 'Abbassa l\'ampiezza o alza l\'alimentazione.' : 'Abbassa il guadagno o l\'ampiezza, oppure alza l\'alimentazione.';
-        return 'L\'uscita dovrebbe arrivare a <b>' + fmtV(want) + '</b>, ma il 741 si ferma circa 1 V prima delle alimentazioni: <b>±' + num(vsat, 0) + ' V</b>. I picchi vengono tagliati: è la [[saturazione-uscita|saturazione]]. Mentre l\'uscita è bloccata la retroazione non può più correggere e V+ − V− sale fino a <b>' + fmtV(tc.maxVd) + '</b>. ' + fix;
+        return 'L\'uscita dovrebbe arrivare a <b>' + fmtV(want) + '</b> di picco, ma il 741 si ferma circa 1 V prima delle alimentazioni: <b>±' + num(vsat, 0) + ' V</b>. I picchi vengono tagliati: è la [[saturazione-uscita|saturazione]]. Mentre l\'uscita è bloccata la retroazione non può più correggere e V+ − V− sale fino a <b>' + fmtV(tc.maxVd) + '</b>. ' + fix;
       }
       let msg;
       if (q.mode === 'inv') {
         msg = '<b>Invertente</b>: il + è a massa e la [[retroazione-negativa]] tiene anche il − a 0 V, la [[massa-virtuale]] (scarto massimo ' + fmtV(tc.maxVd) + '). In Rin scorrono Vin/Rin = ' + si(q.amp / q.r1, 'A', { trim: true }) + ' di picco che, non potendo entrare nell\'operazionale, attraversano Rf. Così Vout = −Rf/Rin · Vin = <b>' + fmtNum(q.gid, 4) + ' × Vin</b>, capovolta.';
       } else if (q.mode === 'non') {
-        msg = '<b>Non invertente</b>: il segnale entra nel +. L\'operazionale sposta l\'uscita finché il partitore Rf–Rg riporta sul − la stessa tensione: è il [[cortocircuito-virtuale]] (scarto massimo ' + fmtV(tc.maxVd) + '). Serve Vout = (1 + Rf/Rg) · Vin = <b>' + fmtNum(q.gid, 4) + ' × Vin</b>, in fase. In più il generatore non fornisce corrente: il morsetto + non ne assorbe.';
+        msg = '<b>Non invertente</b>: il segnale entra nel + e l\'operazionale sposta l\'uscita finché il partitore Rf–Rg riporta sul − la stessa tensione, il [[cortocircuito-virtuale]] (scarto massimo ' + fmtV(tc.maxVd) + '). Così Vout = (1 + Rf/Rg) · Vin = <b>' + fmtNum(q.gid, 4) + ' × Vin</b>, in fase, e il generatore non fornisce corrente: il morsetto + non ne assorbe.';
       } else {
         msg = '<b>[[inseguitore|Inseguitore]]</b>: l\'uscita è collegata al −, quindi Vout = Vin (scarto massimo ' + fmtV(tc.maxVd) + '). Sembra inutile, ma guarda le cariche: il generatore non dà corrente, mentre RL riceve fino a ' + si(tc.peak / OPAMP.RL, 'A', { trim: true }) + ' dall\'operazionale, che la prende dalle alimentazioni. Così un sensore delicato non viene «caricato».';
       }
@@ -516,7 +517,7 @@
       const bw = model.bandwidth(OPAMP.GBW, ng);
       const fp = model.fullPower(OPAMP.SR, Math.max(tc.peak, 1e-6));
       if (ng >= 100 || tc.peak >= 5) {
-        if (fp < bw) msg += ' Con ' + fmtV(tc.peak) + ' di picco il limite più stretto è lo [[slew-rate]]: oltre circa <b>' + si(fp, 'Hz', { trim: true, sig: 2 }) + '</b> l\'uscita non starebbe più al passo e la sinusoide diventerebbe un triangolo.';
+        if (fp < bw) msg += ' Con ' + fmtV(tc.peak) + ' di picco il limite più stretto è lo [[slew-rate]]: sopra circa <b>' + si(fp, 'Hz', { trim: true, sig: 2 }) + '</b> l\'uscita non starebbe al passo e la sinusoide diventerebbe un triangolo.';
         else msg += ' Il prezzo di tanto guadagno è la banda: con il [[prodotto-guadagno-banda]] di 1' + NB + 'MHz il 741 amplifica bene solo fino a circa <b>' + si(bw, 'Hz', { trim: true }) + '</b>.';
       }
       return msg;
@@ -626,14 +627,17 @@
       // 30% di margine oltre le alimentazioni: i titoli degli assi non toccano le linee tratteggiate
       const yMax = 1.3 * p.vs;
       const railTxt = num(st.vs, 0) + NB + 'V';
+      // Vin piccolo rispetto alle alimentazioni si ingrandisce; nel comparatore sempre, per vedere
+      // dove incrocia la soglia (Vref con lo stesso fattore)
       let k = 1;
-      if (amp < 0.05 * yMax) MAG.forEach((m) => { if (amp * m <= 0.55 * yMax) k = m; });
+      if (cmp || amp < 0.05 * yMax) MAG.forEach((m) => { if (amp * m <= 0.55 * yMax) k = m; });
       const showIdeal = !cmp && cyc.sat;
-      const lk = k + '|' + showIdeal;
+      const lk = k + '|' + showIdeal + '|' + cmp;
       if (lk !== legendKey) {
         legendKey = lk;
         const items = [{ label: k > 1 ? 'Vin × ' + k : 'Vin', color: 'var(--trace-2)' }, { label: 'Vout', color: 'var(--trace-1)' }];
         if (showIdeal) items.push({ label: 'Vout senza limiti', color: '#7d918a' });
+        if (cmp) items.push({ label: k > 1 ? 'Vref × ' + k : 'Vref', color: 'var(--trace-3)' });
         scope.setLegend(items);
       }
       const vinK = (t) => k * vinAt(t);
@@ -649,6 +653,7 @@
       scope.hline(p.vs, { color: P.t1, alpha: 0.55 });
       scope.hline(-p.vs, { color: P.t4, alpha: 0.55 });
       railLabels(scope, p.vs, railTxt, P.t1, P.t4);
+      if (cmp) scope.hline(k * p.vref, { color: P.t3, alpha: 0.85 });
       if (showIdeal) scope.line((t) => model.solve(p, vinAt(t)).vlin, { color: '#7d918a', width: 1.4, dash: [5, 5], glow: false, alpha: 0.9 });
       if (lab.reduced) {
         scope.line(vinK, vinSt);
@@ -697,9 +702,12 @@
         rSt.state(r.vout > 0 ? 'ok' : '');
         rSt.el.style.setProperty('--rc', r.vout > 0 ? 'var(--trace-1)' : 'var(--trace-4)');
         rVd.state('');
+        rGm.state('');
       } else {
         rGi.text(fmtNum(q.gid, 4));
+        // in saturazione è il rapporto tra i picchi: l'onda tagliata «guadagna» meno
         rGm.text(fmtNum(cyc.gain, 6));
+        rGm.state(cyc.sat ? 'warn' : '');
         pkOpts.max = vsat || 1;
         rPk.set(cyc.peak);
         rBw.text(si(model.bandwidth(OPAMP.GBW, model.noiseGain(mode, st.r1, st.rf)), 'Hz'));
@@ -848,11 +856,13 @@
     id: 'operazionale',
     icon: 'opamp',
     minutes: 15,
-    summary: 'Un [[amplificatore-operazionale]] moltiplica la differenza tra i suoi due ingressi per un numero enorme, circa 200' + NB + '000 nel classico 741: usato così, basta un soffio per mandare l\'uscita contro le alimentazioni. Con la [[retroazione-negativa]] una parte dell\'uscita torna all\'ingresso e il guadagno lo decidono due resistenze, preciso e stabile. Così lo stesso chip diventa amplificatore, separatore, mixer o [[comparatore]].',
+    summary: 'Un [[amplificatore-operazionale]] moltiplica la differenza tra i suoi due ingressi per un numero enorme, circa 200' + NB + '000 nel classico 741: da solo, basta un soffio per mandare l\'uscita contro le alimentazioni. Con la [[retroazione-negativa]] una parte dell\'uscita torna all\'ingresso e il guadagno, preciso e stabile, lo decidono due resistenze. Così lo stesso chip diventa amplificatore, separatore, mixer o [[comparatore]].',
     keywords: ['amplificatore-operazionale', 'retroazione-negativa', 'cortocircuito-virtuale', 'massa-virtuale', 'guadagno-ad-anello-aperto', 'saturazione-uscita', 'comparatore', 'prodotto-guadagno-banda'],
     model: model,
     css: [
       '.operazionale-sch { transition: opacity .4s var(--ease); }',
+      // il colore dei fili cambia a ogni fotogramma con il segnale: senza transizione resta al passo con l'oscilloscopio
+      '.operazionale-sch .ei-wire { transition: none; }',
       '.operazionale-fb { fill: none; stroke: var(--trace-3); stroke-width: 14; stroke-linecap: round; stroke-linejoin: round; opacity: .17; transition: opacity .35s ease, stroke .35s ease; }',
       '.operazionale-fb.off { stroke: var(--trace-4); opacity: .08; }',
       '.operazionale-chev { fill: none; stroke: var(--trace-3); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; transition: stroke .35s ease, opacity .35s ease; }',
@@ -879,8 +889,6 @@
       '.operazionale-eq .note { fill: var(--scope-text); font-weight: 600; }',
       '.operazionale-legend-title { fill: var(--scope-text); font: 800 9px var(--mono); letter-spacing: .12em; }',
       '.operazionale-legend-tick { fill: var(--scope-text); font: 700 10px var(--mono); }',
-      // core: style.css ridefinisce --fill sul cursore e la barra resta sempre a metà; qui la si fa ereditare
-      '.operazionale-lab .ei-slider input[type="range"] { --fill: inherit; }',
       '.ei-plots.operazionale-plots { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); }',
       '@media (max-width: 900px) { .ei-plots.operazionale-plots { grid-template-columns: 1fr; } }',
       '@media (max-width: 640px) {',
@@ -922,12 +930,12 @@
     },
     how: [
       'Un [[amplificatore-operazionale|operazionale]] ha due ingressi, il non invertente (+) e l\'invertente (−), e un\'uscita. Amplifica solo la differenza: Vout = A · (V+ − V−), con un [[guadagno-ad-anello-aperto]] A enorme, circa 200' + NB + '000 nel 741. Gli ingressi assorbono pochissima corrente (nel 741 la resistenza d\'ingresso è di circa 2 MΩ) e l\'uscita, con una resistenza interna di circa 75 Ω, regge un carico senza cedere.',
-      'Da solo è ingestibile: con A = 200' + NB + '000 bastano 0,1 mV di differenza per chiedere 20 V all\'uscita, che finisce contro le alimentazioni. E A cambia da un chip all\'altro e con la temperatura. Senza retroazione l\'operazionale è un [[comparatore]]: uscita al massimo o al minimo.',
+      'Da solo è ingestibile: con A = 200' + NB + '000 bastano 0,1 mV di differenza per chiedere 20 V all\'uscita, che finisce contro le alimentazioni. Per di più A cambia da un chip all\'altro e con la temperatura. Senza retroazione l\'operazionale è un [[comparatore]]: uscita al massimo o al minimo.',
       'Il trucco è la [[retroazione-negativa]]: una parte dell\'uscita torna sul morsetto −. Se l\'uscita sale troppo, sale anche V−: la differenza V+ − V− cala e l\'uscita viene riportata giù. Se scende troppo, succede il contrario. Il circuito si assesta da solo dove V+ e V− sono quasi uguali.',
-      'Ne nascono due regole d\'oro, valide finché c\'è retroazione e l\'uscita non satura: V+ = V− (il [[cortocircuito-virtuale]]) e nessuna corrente entra negli ingressi. Con queste due frasi si calcola quasi ogni circuito.',
+      'Ne nascono due regole d\'oro, valide finché c\'è retroazione e l\'uscita non satura: V+ = V− (il [[cortocircuito-virtuale]]) e nessuna corrente entra negli ingressi. Con queste due regole si calcola quasi ogni circuito.',
       'Amplificatore invertente: il + è a massa, quindi anche il − sta a 0 V, la [[massa-virtuale]]. La corrente Vin/Rin non può entrare nell\'operazionale e passa tutta in Rf: Vout = −Rf/Rin · Vin. Con più ingressi, ognuno con la sua resistenza, le correnti si sommano: è il cuore di un mixer audio.',
       'Amplificatore non invertente: il segnale entra nel + e il partitore Rf–Rg riporta sul − una frazione dell\'uscita. Perché V− sia uguale a Vin serve Vout = (1 + Rf/Rg) · Vin, in fase. Con Rf = 0 e senza Rg diventa l\'[[inseguitore]]: guadagno 1, ma il generatore non fornisce corrente.',
-      'I limiti veri: l\'uscita non supera le alimentazioni (il 741 si ferma 1–2 V prima, gli operazionali rail-to-rail quasi a contatto: è la [[saturazione-uscita|saturazione]]); il [[prodotto-guadagno-banda]] è circa 1 MHz, quindi con guadagno 100 la banda scende a 10 kHz; lo [[slew-rate]] di 0,5 V/µs frena i segnali grandi e veloci.',
+      'I limiti reali: l\'uscita non supera le alimentazioni (il 741 si ferma 1–2 V prima, gli operazionali rail-to-rail quasi a contatto: è la [[saturazione-uscita|saturazione]]); il [[prodotto-guadagno-banda]] è circa 1 MHz, quindi con guadagno 100 la banda scende a 10 kHz; lo [[slew-rate]] di 0,5 V/µs frena i segnali grandi e veloci.',
     ],
     formulas: [
       {
@@ -945,7 +953,7 @@
       {
         name: 'Retroazione negativa',
         expr: '<var>G</var> = <span class="frac"><span><var>A</var></span><span>1 + <var>A</var> · <var>β</var></span></span> ≈ <span class="frac"><span>1</span><span><var>β</var></span></span>',
-        legend: [['A', '[[guadagno-ad-anello-aperto]] dell\'operazionale (circa 200' + NB + '000 nel 741)'], ['β', 'frazione dell\'uscita riportata all\'ingresso, nel non invertente R<sub>g</sub>/(R<sub>g</sub> + R<sub>f</sub>)']],
+        legend: [['A', '[[guadagno-ad-anello-aperto]] dell\'operazionale (circa 200' + NB + '000 nel 741)'], ['β', 'frazione dell\'uscita riportata all\'ingresso, nel non invertente R<sub>g</sub>/(R<sub>g</sub> + R<sub>f</sub>); da non confondere con il guadagno β dei transistor']],
         note: 'Con A = 200' + NB + '000 e β = 0,1: G = 9,9995. Se A si dimezza, G scende a 9,9990: cambia di 5 parti su centomila.',
       },
     ],
@@ -967,14 +975,14 @@
       text: [
         'Tutto comincia con un problema del telefono. Negli anni Venti le linee a lunga distanza usano molti amplificatori a valvole in fila, i ripetitori, e ognuno aggiunge un po\' di distorsione. Harold S. Black, giovane ingegnere dei Bell Labs, ci lavora da tempo quando, una mattina d\'agosto del 1927, attraversando l\'Hudson in traghetto per andare al lavoro, annota l\'idea su una pagina del New York Times: riportare all\'ingresso una parte dell\'uscita, capovolta. Si perde guadagno, ma la distorsione cala nella stessa proporzione.',
         'Il brevetto, depositato nel 1928, arriva solo nel 1937. Intanto la retroazione conquista i calcolatori analogici: nel 1941 Karl D. Swartzel Jr., anche lui ai Bell Labs, deposita il brevetto di un «amplificatore sommatore» a valvole, e durante la guerra circuiti di questo tipo calcolano il tiro della contraerea. Nel 1947 un articolo di John R. Ragazzini e due colleghi della Columbia University li chiama «amplificatori operazionali», perché nei calcolatori eseguono operazioni matematiche: somme, integrali, derivate.',
-        'Nel 1952 la George A. Philbrick Researches mette in vendita il K2-W, considerato il primo operazionale commerciale: un modulo a innesto con due doppi triodi. Poi arriva il silicio. Alla Fairchild Bob Widlar progetta nel 1963 il µA702, il primo operazionale integrato su un solo chip, e poi il µA709 (1965), il primo a vendere in grandi quantità; nel 1967, passato alla National Semiconductor, crea l\'LM101, che per restare stabile chiede un solo condensatore esterno da 30 pF.',
+        'Intorno al 1952 la George A. Philbrick Researches mette in vendita il K2-W, considerato il primo operazionale commerciale: un modulo a innesto con due doppi triodi. Poi arriva il silicio. Alla Fairchild Bob Widlar progetta nel 1963 il µA702, il primo operazionale integrato su un solo chip, e poi il µA709 (1965), il primo a essere venduto in grandi quantità; nel 1967, passato alla National Semiconductor, crea l\'LM101, che per restare stabile chiede un solo condensatore esterno da 30 pF.',
         'Nel 1968 Dave Fullagar, alla Fairchild, porta quel condensatore dentro il chip: nasce il µA741, con la compensazione interna. Si collega e funziona, senza componenti in più per la stabilità. Diventa lo standard dell\'elettronica analogica, e dopo più di cinquant\'anni è ancora in produzione.',
       ],
       events: [
-        { year: 1927, title: 'La retroazione negativa', who: 'Harold S. Black, Bell Labs', text: 'Su un traghetto diretto a Manhattan annota l\'idea su una pagina del New York Times: rinunciare a un po\' di guadagno per avere un amplificatore preciso e senza distorsione.' },
-        { year: 1941, title: 'L\'amplificatore sommatore', who: 'Karl D. Swartzel Jr., Bell Labs', text: 'Deposita il brevetto di un amplificatore a valvole che somma più tensioni: l\'antenato diretto dell\'operazionale.' },
+        { year: 1927, title: 'La retroazione negativa', who: 'Harold S. Black, Bell Labs', text: 'Su un traghetto diretto a Manhattan annota l\'idea su una pagina del New York Times: rinunciare a un po\' di guadagno per avere un amplificatore preciso e quasi senza distorsione.' },
+        { year: 1941, title: 'L\'amplificatore sommatore', who: 'Karl D. Swartzel Jr., Bell Labs', text: 'Deposita il brevetto di un amplificatore a valvole che somma più tensioni: uno dei primi antenati dell\'operazionale.' },
         { year: 1947, title: 'Il nome «operazionale»', who: 'John R. Ragazzini, Robert H. Randall, Frederick A. Russell', text: 'Nei calcolatori analogici questi amplificatori eseguono operazioni matematiche: somme, integrali, derivate.' },
-        { year: 1952, title: 'Il primo operazionale in vendita', who: 'George A. Philbrick Researches', text: 'Il K2-W: due doppi triodi in un modulo a innesto, pensato per i calcolatori analogici.' },
+        { year: 1952, title: 'Un operazionale da catalogo', who: 'George A. Philbrick Researches', text: 'Il K2-W, considerato il primo operazionale commerciale: due doppi triodi in un modulo a innesto, pensato per i calcolatori analogici.' },
         { year: 1963, title: 'L\'operazionale diventa un chip', who: 'Bob Widlar, Fairchild', text: 'Il µA702 mette l\'operazionale su un solo chip di silicio. Il suo successore, il µA709 del 1965, è il primo operazionale integrato di grande successo.' },
         { year: 1968, title: 'Il µA741', who: 'Dave Fullagar, Fairchild', text: 'Il condensatore di compensazione da 30 pF entra nel chip: basta collegarlo e funziona. Diventa lo standard dell\'analogico.' },
       ],
@@ -992,7 +1000,7 @@
       'amplificatore-operazionale': { term: 'Amplificatore operazionale', def: 'Amplificatore integrato con due ingressi (+ e −) e un\'uscita, che moltiplica la loro differenza per un guadagno enorme, da centomila a oltre un milione. Si usa quasi sempre con la retroazione negativa: il guadagno lo decidono le resistenze.' },
       'retroazione-negativa': { term: 'Retroazione negativa', def: 'Riportare all\'ingresso una parte dell\'uscita, sottraendola al segnale. Riduce il guadagno ma lo rende preciso e stabile, e abbassa la distorsione. L\'idea è di Harold Black, nel 1927.' },
       'guadagno-ad-anello-aperto': { term: 'Guadagno ad anello aperto', def: 'Il guadagno A dell\'operazionale senza retroazione: quante volte moltiplica la differenza V+ − V−. Nel 741 vale tipicamente 200' + NB + '000, ma cambia molto da un esemplare all\'altro e con la temperatura.' },
-      'cortocircuito-virtuale': { term: 'Cortocircuito virtuale', def: 'Con la retroazione negativa l\'operazionale porta l\'uscita dove serve perché V+ e V− siano quasi uguali: nel 741 differiscono di poche decine di microvolt, anche se tra i due ingressi non c\'è nessun filo.' },
+      'cortocircuito-virtuale': { term: 'Cortocircuito virtuale', def: 'Con la retroazione negativa l\'operazionale porta l\'uscita dove serve perché V+ e V− siano quasi uguali, anche se tra i due ingressi non c\'è nessun filo. La differenza vale Vout/A: con A = 200' + NB + '000 e 10 V in uscita, 50 µV. Nei chip veri si aggiunge l\'offset, circa 1 mV nel 741.' },
       'massa-virtuale': { term: 'Massa virtuale', def: 'Nell\'amplificatore invertente il morsetto − resta a 0 V senza essere collegato a massa: è il cortocircuito virtuale con il morsetto + a massa.' },
       'saturazione-uscita': { term: 'Saturazione dell\'uscita', def: 'Quando il segnale chiederebbe più tensione di quella che l\'operazionale può dare, l\'uscita si ferma e i picchi vengono tagliati (clipping). Il 741 si ferma 1–2 V prima delle alimentazioni; gli operazionali rail-to-rail arrivano a qualche decina di millivolt.' },
       'inseguitore': { term: 'Inseguitore di tensione', def: 'Operazionale con l\'uscita collegata direttamente al morsetto −: Vout = Vin, guadagno 1. Non amplifica la tensione ma separa: il segnale non fornisce corrente e il carico è alimentato dall\'operazionale. Si chiama anche buffer.' },
