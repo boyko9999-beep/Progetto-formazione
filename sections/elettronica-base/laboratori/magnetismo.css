@@ -1,0 +1,122 @@
+/* Capitolo 7 · laboratorio "L'esperimento di Faraday". */
+
+.mag-banco {
+  position: relative; border-radius: 12px; overflow: hidden;
+  background: radial-gradient(110% 95% at 50% 40%, #10201b 0%, #0b1411 58%, #080e0c 100%);
+  box-shadow: inset 0 0 0 1px var(--lab-line), inset 0 0 70px rgb(0 0 0 / 45%);
+}
+.mag-svg { display: block; width: 100%; height: auto; }
+.mag-nascosto { display: none !important; }
+.mag-entra { animation: mag-entra .45s var(--ease-out) both; }
+@keyframes mag-entra { from { opacity: 0; transform: translateY(8px); } }
+
+/* scelta dell'esperimento */
+.mag-modo { --lab-accent: var(--lab-b); margin: 2px 2px 10px; }
+.mag-modo legend { float: left; width: auto; margin: 0 6px 0 0; font: 700 .7rem var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--lab-dim); }
+.mag-modo span { padding: 7px 16px; }
+.mag-modo input:checked + span { color: #03150c; }
+
+/* testi, fili, righello */
+.mag-t { font: 600 12.5px var(--font); fill: var(--lab-text); }
+.mag-t-rame { fill: color-mix(in srgb, var(--rame) 62%, #fff); paint-order: stroke; stroke: var(--lab-bg); stroke-width: 4px; stroke-linejoin: round; }
+.mag-t-i { font: 700 13px var(--mono); fill: var(--lab-i); }
+.mag-t-b { fill: var(--lab-b); }
+.mag-asse { stroke: #1d2c27; stroke-width: 1.5; stroke-dasharray: 2 7; stroke-linecap: round; }
+.mag-righello path { fill: none; stroke: var(--lab-text); stroke-width: 1.3; opacity: .7; }
+.mag-righello text { font: 600 12px var(--mono); fill: var(--lab-text); }
+.mag-filo { fill: none; stroke: #2a3b35; stroke-width: 6; stroke-linecap: round; stroke-linejoin: round; }
+.mag-filo-rame { fill: none; stroke: var(--rame); stroke-width: 2; opacity: .6; stroke-linecap: round; stroke-linejoin: round; }
+.mag-filo.mag-filo-grosso { stroke-width: 10; }
+.mag-filo-rame.mag-filo-grosso { stroke-width: 4.5; opacity: .9; }
+.mag-nodo { fill: var(--rame); }
+.mag-morsetto { fill: #9aa8a2; stroke: #2a3b35; stroke-width: 1.5; }
+
+/* bobina e corrente indotta */
+.mag-spire-dietro { fill: none; stroke: color-mix(in srgb, var(--rame) 42%, #0b1210); stroke-linecap: round; }
+.mag-spire { fill: none; stroke: var(--rame); stroke-linecap: round; filter: drop-shadow(0 1px 1px rgb(0 0 0 / 60%)); }
+.mag-tubo { fill: #0f1d19; opacity: .55; }
+.mag-corrente { fill: none; stroke: var(--lab-i); stroke-width: 2.2; stroke-dasharray: 4 9; stroke-linecap: round; filter: drop-shadow(0 0 3px color-mix(in srgb, var(--lab-i) 70%, transparent)); }
+.mag-freccia-i { fill: var(--lab-i); stroke: var(--lab-bg); stroke-width: 2px; paint-order: stroke; stroke-linejoin: round; }
+.mag-polo-b rect { fill: #0b1411; stroke: var(--lab-b); stroke-width: 1.5; }
+.mag-polo-b text { font: 800 13px var(--mono); fill: var(--lab-b); }
+.mag-spire, .mag-spire-dietro, .mag-tubo, .mag-corrente, .mag-freccia-i, .mag-polo-b, .mag-polo-c, .mag-campo { pointer-events: none; }
+
+/* calamita e linee di campo */
+.mag-n1 { stop-color: #f2887c; }
+.mag-n2 { stop-color: #d6463c; }
+.mag-n3 { stop-color: #86241e; }
+.mag-s1 { stop-color: #8db0ea; }
+.mag-s2 { stop-color: #3f6fb5; }
+.mag-s3 { stop-color: #1f3b68; }
+.mag-m1 { stop-color: #fff; }
+.mag-l1 { stop-color: var(--lab-luce); }
+.mag-riflesso { fill: #fff; opacity: .22; }
+.mag-giunto { stroke: rgb(0 0 0 / 45%); stroke-width: 1.5; }
+.mag-campo path { fill: none; stroke: var(--lab-b); stroke-width: 1.3; opacity: .5; }
+.mag-campo .mag-campo-f { fill: var(--lab-b); stroke: none; opacity: .85; }
+.mag-polo-c text { font: 800 13px var(--mono); fill: #fff; paint-order: stroke; stroke: rgb(0 0 0 / 55%); stroke-width: 3px; stroke-linejoin: round; }
+.mag-presa { fill: transparent; }
+.mag-anello { fill: none; stroke: #fff; stroke-width: 2; opacity: 0; transition: opacity .15s ease; }
+.mag-indizio { fill: none; stroke: var(--lab-strong); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; opacity: .35; transition: opacity .15s ease; }
+.mag-calamita:hover .mag-anello { opacity: .3; }
+.mag-calamita:hover .mag-indizio, .mag-calamita:focus-visible .mag-indizio { opacity: .85; }
+.eb-lab svg .mag-calamita:focus-visible { outline: none; }
+.mag-calamita:focus-visible .mag-anello { opacity: 1; }
+
+/* galvanometro e LED */
+.mag-g-cassa { fill: #141f1c; stroke: #3a4f48; stroke-width: 2; }
+.mag-g-quadrante { fill: #091110; stroke: #22322d; stroke-width: 1; }
+.mag-g-arco { fill: none; stroke: var(--lab-dim); stroke-width: 1.5; }
+.mag-g-tacca { fill: none; stroke: #8fa59c; stroke-width: 1.6; stroke-linecap: round; }
+.mag-g-segno { font: 800 14px var(--mono); fill: var(--lab-text); }
+.mag-ago path { stroke: var(--lab-v); stroke-width: 2.6; stroke-linecap: round; filter: drop-shadow(0 0 4px color-mix(in srgb, var(--lab-v) 70%, transparent)); }
+.mag-perno { fill: #e8f2ee; }
+.mag-picco { stroke: color-mix(in srgb, var(--lab-v) 55%, #0b1210); stroke-width: 3.5; stroke-linecap: round; }
+.mag-led { fill: color-mix(in srgb, var(--lab-luce) 20%, #17120a); stroke: color-mix(in srgb, var(--lab-luce) 40%, #0b1210); stroke-width: 1.2; transition: fill .12s ease; }
+.mag-led.acceso { fill: var(--lab-luce); filter: drop-shadow(0 0 6px var(--lab-luce)); }
+.mag-led-base { fill: #6f7c77; }
+.mag-led-luce { pointer-events: none; }
+
+/* Ørsted: tavolo, filo, bussole */
+.mag-tavolo { fill: #12201b; stroke: #2a3b35; stroke-width: 1.5; vector-effect: non-scaling-stroke; }
+.mag-tavolo-lato { fill: #07100d; stroke: #1b2a25; stroke-width: 1; vector-effect: non-scaling-stroke; }
+.mag-assi { fill: none; stroke: #20322c; stroke-width: 1; stroke-dasharray: 4 6; vector-effect: non-scaling-stroke; }
+.mag-cerchio { fill: none; stroke: var(--lab-b); stroke-width: 1.6; vector-effect: non-scaling-stroke; }
+.mag-cerchio-f { fill: none; stroke: var(--lab-b); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+.mag-foro { fill: #040907; stroke: #2a3b35; stroke-width: 1; vector-effect: non-scaling-stroke; }
+.mag-bussola { fill: #182722; stroke: #5b786e; stroke-width: 1.5; vector-effect: non-scaling-stroke; }
+.mag-bussola-lato { fill: #0a1411; stroke: #2a3b35; stroke-width: 1; vector-effect: non-scaling-stroke; }
+.mag-bussola-t { stroke: #5b786e; stroke-width: 1.2; vector-effect: non-scaling-stroke; }
+.mag-ago-n { fill: #e5493e; }
+.mag-ago-s { fill: #dfe7e3; }
+.mag-ago-perno { fill: #0b1210; stroke: #dfe7e3; stroke-width: 1; vector-effect: non-scaling-stroke; }
+.mag-pila { fill: #141f1c; stroke: #3a4f48; stroke-width: 2; }
+.mag-pila-s { font: 800 15px var(--mono); }
+.mag-pila-s.pos { fill: var(--lab-pos); }
+.mag-pila-s.neg { fill: var(--lab-neg); }
+.mag-leva { fill: none; stroke: #cfd8d4; stroke-width: 3.5; stroke-linecap: round; transform-box: view-box; transform-origin: 130px 31px; transition: transform .25s var(--ease-out); }
+.mag-leva.aperta { transform: rotate(-30deg); }
+.mag-nord { fill: none; stroke: var(--lab-b); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; opacity: .85; }
+
+/* legenda sotto il banco */
+.mag-legenda { display: flex; flex-wrap: wrap; gap: 6px 20px; margin: 10px 4px 2px; font-size: .8rem; line-height: 1.35; color: var(--lab-dim); }
+.mag-leg { display: inline-flex; align-items: center; gap: 8px; }
+.mag-leg-i { position: relative; flex: none; width: 22px; height: 10px; }
+.mag-leg-campo { height: 2px; background: var(--lab-b); border-radius: 1px; opacity: .8; }
+.mag-leg-corr { height: 2px; background: repeating-linear-gradient(90deg, var(--lab-i) 0 5px, transparent 5px 9px); }
+.mag-leg-polo { width: 16px; height: 15px; display: grid; place-items: center; border: 1.5px solid var(--lab-b); border-radius: 4px; }
+.mag-leg-polo::after { content: "N"; font: 800 9px/1 var(--mono); color: var(--lab-b); }
+.mag-leg-g { width: 20px; height: 11px; border: 1.5px solid var(--lab-dim); border-bottom: 0; border-radius: 11px 11px 0 0; }
+.mag-leg-g::after { content: ""; position: absolute; left: 9px; bottom: 0; width: 2px; height: 9px; background: var(--lab-v); transform: rotate(28deg); transform-origin: 50% 100%; }
+.mag-leg-anello { width: 20px; height: 11px; border: 1.5px solid var(--lab-b); border-radius: 50%; }
+.mag-leg-ago { height: 7px; background: linear-gradient(90deg, #dfe7e3 50%, #e5493e 50%); clip-path: polygon(0 50%, 50% 0, 100% 50%, 50% 100%); }
+.mag-leg-nord { background: var(--lab-b); opacity: .85; clip-path: polygon(0 40%, 62% 40%, 62% 0, 100% 50%, 62% 100%, 62% 60%, 0 60%); }
+
+/* pannello e comandi */
+.mag-formula { font-size: 1rem; }
+.mag-azioni { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.mag-vivo .eb-lettura.cambia .eb-lettura-v { animation: none; }
+
+@media (max-width: 640px) {
+  .mag-legenda { gap: 4px 14px; font-size: .76rem; }
+}

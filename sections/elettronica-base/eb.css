@@ -249,6 +249,8 @@
 .eb-lab-nota:empty { display: none; }
 .eb-lab-nota strong { color: #fff; }
 .eb-lab-stato { margin: 0; padding: 40px 16px; text-align: center; color: var(--lab-dim); }
+/* I controlli impostano display: senza questa regola l'attributo hidden non li nasconderebbe. */
+.eb-lab [hidden] { display: none !important; }
 .eb-trascinabile { cursor: grab; }
 .eb-trascinabile.in-presa { cursor: grabbing; }
 .eb-lab svg :where([tabindex]):focus { outline: none; }

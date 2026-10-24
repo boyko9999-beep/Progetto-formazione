@@ -262,7 +262,8 @@
     function frame(ora) {
       raf = 0;
       if (!attivo || !visibile || document.hidden) return;
-      const dt = Math.min(0.05, Math.max(0, (ora - ultimo) / 1000));
+      // Il primo fotogramma dopo una ripresa vale 1/60 s: così dt non è mai zero.
+      const dt = ultimo ? Math.min(0.05, Math.max(0.001, (ora - ultimo) / 1000)) : 1 / 60;
       ultimo = ora;
       tempo += dt;
       passo(dt, tempo);
@@ -270,7 +271,7 @@
     }
     function riprendi() {
       if (attivo && visibile && !document.hidden && !raf) {
-        ultimo = performance.now();
+        ultimo = 0;
         raf = requestAnimationFrame(frame);
       }
     }
@@ -350,17 +351,23 @@
       o.sposta(d[0], d[1]);
       if (o.fine) o.fine();
     };
+    // touch-action non vale sugli elementi interni di un SVG: senza questo il dito farebbe scorrere la pagina.
+    const ferma = (e) => { if (e.cancelable) e.preventDefault(); };
     el.addEventListener('pointerdown', giu);
     el.addEventListener('pointermove', muovi);
     el.addEventListener('pointerup', su);
     el.addEventListener('pointercancel', su);
     el.addEventListener('keydown', tasto);
+    el.addEventListener('touchstart', ferma, { passive: false });
+    el.addEventListener('touchmove', ferma, { passive: false });
     return () => {
       el.removeEventListener('pointerdown', giu);
       el.removeEventListener('pointermove', muovi);
       el.removeEventListener('pointerup', su);
       el.removeEventListener('pointercancel', su);
       el.removeEventListener('keydown', tasto);
+      el.removeEventListener('touchstart', ferma);
+      el.removeEventListener('touchmove', ferma);
     };
   };
 
@@ -485,6 +492,8 @@
 
   // Lettura digitale da strumento: etichetta piccola, valore grande a cifre fisse.
   // nota(testo) cambia la riga piccola sotto il valore (la crea se manca, la toglie se il testo è vuoto).
+  // Il valore lampeggia piano quando cambia; { lampo: false } lo evita per le letture che cambiano di continuo
+  // (nell'opzione della lettura o in imposta(testo, { lampo: false })).
   ui.lettura = function (o) {
     const val = EB.h('span', { class: 'eb-lettura-v' }, o.valore || '–');
     let notaEl = o.nota ? EB.h('span', { class: 'eb-lettura-n' }, o.nota) : null;
@@ -493,11 +502,12 @@
     let ultimo = val.textContent;
     return {
       el: el,
-      imposta(testo) {
+      imposta(testo, opz) {
         if (testo === ultimo) return;
         ultimo = testo;
         val.textContent = testo;
-        if (!EB.ridotto()) {
+        const lampo = (opz && opz.lampo !== undefined) ? opz.lampo : o.lampo !== false;
+        if (lampo && !EB.ridotto()) {
           el.classList.remove('cambia');
           void el.offsetWidth;
           el.classList.add('cambia');

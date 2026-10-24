@@ -1,0 +1,154 @@
+/* Capitolo 10 · laboratorio "Il multimetro virtuale". */
+
+.mis-scena {
+  position: relative; border-radius: 12px; overflow: hidden;
+  background: radial-gradient(120% 110% at 32% 30%, #12211c 0%, #0b1411 62%, #080e0c 100%);
+  box-shadow: inset 0 0 0 1px var(--lab-line), inset 0 0 60px rgb(0 0 0 / 40%);
+}
+.mis-svg { display: block; width: 100%; height: auto; }
+.mis-cliccabile { cursor: pointer; }
+
+/* basetta */
+.mis-tavola { fill: #15201c; stroke: #2c3c36; stroke-width: 1.5; filter: drop-shadow(0 14px 18px rgb(0 0 0 / 45%)); }
+.mis-foro { fill: #0a110f; }
+.mis-filo { fill: none; stroke: #2a3b35; stroke-width: 7; stroke-linecap: round; stroke-linejoin: round; }
+.mis-filo-rame { fill: none; stroke: var(--rame); stroke-width: 2; opacity: .6; stroke-linecap: round; stroke-linejoin: round; }
+.mis-percorso { fill: none; stroke: none; }
+.mis-punto-i { fill: var(--lab-i); }
+.mis-freccia-i { fill: var(--lab-i); }
+
+.mis-pila { fill: #1c2623; stroke: #4a5d56; stroke-width: 1.5; }
+.mis-pila-fascia { fill: color-mix(in srgb, var(--lab-v) 78%, #2a1d00); }
+.mis-pila-t { font: 800 16px var(--mono); fill: var(--lab-v); }
+.mis-segno { font: 800 13px var(--mono); }
+.mis-segno.pos { fill: var(--lab-pos); }
+.mis-segno.neg { fill: var(--lab-neg); }
+.mis-morsetto { fill: #c9d3cf; stroke: #5d6f68; stroke-width: 1; }
+
+.mis-cavetto { fill: none; stroke-width: 3.5; stroke-linecap: round; }
+.mis-cavetto.rosso { stroke: #d9463c; }
+.mis-cavetto.nero { stroke: #3a4340; filter: drop-shadow(0 0 1px rgb(200 222 214 / 55%)); }
+.mis-clip rect { fill: #252c29; stroke: #4d5c56; stroke-width: 1.2; transition: stroke .15s ease; }
+.mis-clip-r { fill: #e0483e; }
+.mis-clip-n { fill: #070b0a; stroke: #8d9a95; stroke-width: 1; }
+.mis-clip:hover rect { stroke: #a9c3b9; }
+
+.mis-res-corpo { fill: #d8c49c; stroke: #8c7a55; stroke-width: 1.5; }
+.mis-et, .mis-lettera, .mis-leg { paint-order: stroke; stroke: #15201c; stroke-width: 4px; stroke-linejoin: round; }
+.mis-et { font: 700 13px var(--mono); fill: var(--lab-strong); }
+.mis-r { fill: var(--lab-r); }
+.mis-leg { font: 600 12px var(--font); fill: var(--lab-text); }
+.mis-i { fill: var(--lab-i); }
+
+/* ponticello tra A e D */
+.mis-ponte-presa { fill: none; stroke: transparent; stroke-width: 24; pointer-events: stroke; }
+.mis-ponte-filo { fill: none; stroke: color-mix(in srgb, var(--rame) 80%, #fff); stroke-width: 4.5; stroke-linecap: round; filter: drop-shadow(0 2px 2px rgb(0 0 0 / 60%)); transition: stroke .15s ease; }
+.mis-ponte-capo { fill: #c9d3cf; }
+.mis-ponte:hover .mis-ponte-filo { stroke: color-mix(in srgb, var(--rame) 55%, #fff); }
+.mis-ponte-ombra { fill: none; stroke: var(--lab-dim); stroke-width: 1.5; stroke-dasharray: 3 4; }
+
+/* punti di prova */
+.mis-anello { fill: rgb(255 255 255 / 3%); stroke: #3f564e; stroke-width: 1.5; stroke-dasharray: 3 3.6; transition: stroke .2s ease, fill .2s ease; }
+.mis-anello.rosso { stroke: #ff5a4e; stroke-width: 2.5; stroke-dasharray: none; fill: rgb(255 90 78 / 12%); }
+.mis-anello.nero { stroke: #dfe7e3; stroke-width: 2.5; stroke-dasharray: none; fill: rgb(223 231 227 / 10%); }
+.mis-anello.mira { stroke: #fff; stroke-width: 2.5; stroke-dasharray: none; fill: rgb(255 255 255 / 16%); }
+.mis-pad { fill: #c9d3cf; stroke: #0b1210; stroke-width: 2; }
+.mis-lettera { font: 800 15px var(--mono); fill: var(--lab-strong); }
+
+/* multimetro */
+.mis-guscio { fill: #27312d; stroke: #44544e; stroke-width: 1.5; filter: drop-shadow(0 16px 20px rgb(0 0 0 / 55%)); }
+.mis-faccia { fill: #141c19; stroke: #2f3f39; stroke-width: 1.2; }
+.mis-lcd-cornice { fill: #090e0d; stroke: #34443e; stroke-width: 1; }
+.mis-vetro-a { stop-color: #c9d6b6; }
+.mis-vetro-b { stop-color: #a3b392; }
+.mis-lcd-ombra { fill: #0a0f0e; opacity: 0; transition: opacity .4s ease; }
+.mis-lcd.spento .mis-lcd-ombra { opacity: .38; }
+.mis-lcd-cifre, .mis-lcd-fantasma { font: 700 34px var(--mono); fill: #18210f; transform: skewX(-7deg); transform-box: fill-box; transform-origin: 50% 100%; }
+.mis-lcd-fantasma { opacity: .08; }
+.mis-lcd-unita { font: 800 14px var(--mono); fill: #18210f; }
+.mis-lcd-ind { font: 800 10px var(--mono); fill: #18210f; letter-spacing: .08em; }
+.mis-buio { animation: mis-buio 1.1s ease-out; }
+@keyframes mis-buio { 0% { opacity: 1; } 12% { opacity: .08; } 55% { opacity: .08; } 100% { opacity: 1; } }
+
+.mis-ghiera { fill: #0e1513; stroke: #2f3f39; stroke-width: 2; }
+.mis-tacca { stroke: #5d756c; stroke-width: 2; stroke-linecap: round; }
+.mis-pos { font: 800 13px var(--mono); fill: var(--qc, var(--lab-text)); opacity: .5; transition: opacity .2s ease; pointer-events: bounding-box; }
+.mis-pos:hover { opacity: .85; }
+.mis-pos.attiva { opacity: 1; filter: drop-shadow(0 0 5px color-mix(in srgb, var(--qc, #fff) 60%, transparent)); }
+.mis-manopola { transform-box: fill-box; transform-origin: center; transform: rotate(-90deg); transition: transform .55s cubic-bezier(.34, 1.56, .64, 1); }
+.mis-manopola-base { fill: #222b28; stroke: #3f4e49; stroke-width: 1.5; filter: drop-shadow(0 5px 6px rgb(0 0 0 / 55%)); }
+.mis-manopola-presa { fill: #313c38; stroke: #52635c; stroke-width: 1.2; }
+.mis-manopola-segno { stroke: #f2f7f5; stroke-width: 3; stroke-linecap: round; }
+
+.mis-fus-vetro { fill: rgb(200 230 220 / 10%); stroke: #6f8a80; stroke-width: 1; transition: fill .3s ease; }
+.mis-fus-capo { fill: #b9c4bf; }
+.mis-fus-filo { fill: none; stroke: #e6dcc4; stroke-width: 1.2; }
+path.mis-fus-rotto { fill: none; stroke: #e6dcc4; stroke-width: 1.2; opacity: 0; }
+circle.mis-fus-rotto { fill: #2b201a; opacity: 0; }
+.mis-fusibile.rotto .mis-fus-vetro { fill: rgb(70 48 34 / 55%); }
+.mis-fusibile.rotto .mis-fus-filo { opacity: 0; }
+.mis-fusibile.rotto .mis-fus-rotto { opacity: 1; }
+.mis-fus-t { font: 600 11px var(--font); fill: var(--lab-dim); }
+.mis-fus-t.rotto { fill: var(--lab-pos); font-weight: 700; }
+.mis-scintilla { fill: var(--lab-luce); opacity: 0; transform-box: fill-box; transform-origin: center; filter: drop-shadow(0 0 8px var(--lab-luce)); }
+.mis-scintilla.mis-lampo { animation: mis-lampo .7s ease-out; }
+@keyframes mis-lampo { 0% { opacity: 0; transform: scale(.3); } 18% { opacity: .9; transform: scale(1); } 100% { opacity: 0; transform: scale(1.7); } }
+
+.mis-boccola { fill: #111816; stroke-width: 3; }
+.mis-boccola.rossa { stroke: #e0483e; }
+.mis-boccola.nera { stroke: #5f6a66; }
+.mis-boccola-foro { fill: #040706; stroke: #2a3330; }
+.mis-boc-t { font: 800 11px var(--mono); fill: var(--lab-text); }
+.mis-spina > circle:first-child { stroke-width: 1.5; }
+.mis-spina.rossa > circle:first-child { fill: #d9463c; stroke: #8f241d; }
+.mis-spina.nera > circle:first-child { fill: #2d3431; stroke: #75817c; }
+.mis-spina-luce { fill: #fff; opacity: .32; }
+
+/* puntali e cavi */
+.mis-cavo { fill: none; stroke-width: 4.5; stroke-linecap: round; }
+.mis-cavo.rosso { stroke: #c23d34; }
+.mis-cavo.nero { stroke: #39413e; filter: drop-shadow(0 0 1px rgb(200 222 214 / 50%)); }
+.mis-presa { fill: transparent; }
+.mis-fuoco { fill: none; stroke: #fff; stroke-width: 2; stroke-dasharray: 5 4; opacity: 0; }
+.eb-lab .mis-svg .mis-puntale:focus-visible { outline: none; }
+.mis-puntale:focus-visible .mis-fuoco { opacity: 1; }
+.mis-punta { fill: #e3eae7; }
+.mis-riflesso { fill: #fff; opacity: .28; }
+.mis-puntale.rosso .mis-manico { fill: #d9463c; }
+.mis-puntale.rosso .mis-guardia { fill: #b5362e; }
+.mis-puntale.rosso .mis-coda { fill: #9c2c25; }
+.mis-puntale.nero .mis-manico { fill: #353d3a; stroke: #75817c; stroke-width: 1; }
+.mis-puntale.nero .mis-guardia { fill: #272d2b; stroke: #75817c; stroke-width: 1; }
+.mis-puntale.nero .mis-coda { fill: #1f2523; stroke: #5f6a66; stroke-width: 1; }
+.mis-puntale:hover .mis-manico { filter: brightness(1.15); }
+.mis-puntale.in-presa { filter: drop-shadow(0 12px 8px rgb(0 0 0 / 55%)); }
+
+/* schermi stretti: scritte un po' più grandi, la scena è rimpicciolita */
+.mis-svg[data-disp="stretto"] .mis-et { font-size: 15px; }
+.mis-svg[data-disp="stretto"] .mis-lettera { font-size: 18px; }
+.mis-svg[data-disp="stretto"] .mis-leg { font-size: 13px; }
+.mis-svg[data-disp="stretto"] .mis-pos { font-size: 15px; }
+.mis-svg[data-disp="stretto"] .mis-lcd-ind { font-size: 11.5px; }
+.mis-svg[data-disp="stretto"] .mis-boc-t, .mis-svg[data-disp="stretto"] .mis-fus-t { font-size: 12.5px; }
+/* sullo stretto il puntale su B scende verso sinistra: le scritte gli fanno spazio */
+.mis-svg[data-disp="stretto"] .mis-et-r1 { transform: translateY(-56px); }
+.mis-svg[data-disp="stretto"] .mis-et-r2 { transform: translateY(29px); }
+.mis-svg[data-disp="stretto"] .mis-leg { text-anchor: start; stroke: none; transform: translate(-449px, 62px); }
+
+/* comandi */
+.eb-lab-comandi:has(.mis-gruppo) { align-items: stretch; }
+.mis-gruppo { display: flex; flex-direction: column; gap: 12px; min-width: 0; padding: 12px 14px 14px; border-radius: 12px; background: #0d1714; border: 1px solid var(--lab-line); }
+.mis-gruppo .eb-switch { align-self: flex-start; }
+.mis-gruppo .eb-btn { align-self: flex-start; }
+.mis-strumento { --lab-accent: #cfd8d4; }
+.mis-strumento[data-modo="v"] { --lab-accent: var(--lab-v); }
+.mis-strumento[data-modo="ma"] { --lab-accent: var(--lab-i); }
+.mis-strumento[data-modo="ohm"] { --lab-accent: var(--lab-r); }
+.mis-strumento .eb-btn:not(:disabled) { border-color: var(--lab-pos); background: color-mix(in srgb, var(--lab-pos) 20%, #15221e); }
+.mis-scelta-rosso input:checked + span { background: var(--lab-pos); color: #1d0703; }
+.mis-scelta-nero input:checked + span { background: #39423f; color: #fff; border-color: #c9d3cf; }
+.eb-lab-pannello .mis-formula { grid-column: 1 / -1; }
+
+@media (max-width: 640px) {
+  .eb-lab-pannello .mis-lettura-i { grid-column: 1 / -1; }
+}
