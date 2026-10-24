@@ -1,0 +1,31 @@
+/* Capitolo 6 · Il battito del tempo */
+
+.clock-lab-canvas { aspect-ratio: 3 / 2; }
+
+/* Sei display in righe sempre complete: 6, poi 3, poi 2 per riga. */
+.clock-lab .ea-lab-readouts { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+
+/* Etichette su due righe: i valori restano allineati in basso. */
+.clock-lab .ea-ro { align-content: space-between; }
+
+/* Il pulsante del disturbo prende il colore del capitolo. */
+.clock-lab .ea-btn.primary { background: #ff9f43; border-color: #ff9f43; color: #2a1405; }
+.clock-lab .ea-btn.primary:hover { filter: brightness(1.08); }
+.clock-lab .ea-btn.primary:focus-visible { outline-color: #ff9f43; }
+
+@media (max-width: 1100px) {
+  .clock-lab .ea-lab-readouts { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+@media (max-width: 900px) {
+  .clock-lab-canvas { aspect-ratio: 4 / 3; }
+}
+
+/* Sugli schermi stretti i tre strumenti stanno uno sotto l'altro. */
+@media (max-width: 640px) {
+  .clock-lab-canvas { aspect-ratio: 3 / 4; }
+}
+
+@media (max-width: 560px) {
+  .clock-lab .ea-lab-readouts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
