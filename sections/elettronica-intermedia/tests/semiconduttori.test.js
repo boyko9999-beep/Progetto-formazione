@@ -121,3 +121,55 @@ test('semiconduttori: la barretta di 1 cm × 1 mm²: R = 100·ρ, I = V/R, deriv
   const vth = Math.sqrt(3 * 1.380649e-23 * 300 / (0.26 * 9.1093837e-31));
   assert.ok(vth > 1e5);
 });
+
+test('semiconduttori: lo stato del laboratorio mette insieme cristallo, corrente, maggioritari e minoritari', () => {
+  const n = m.state(25, 'n', 1e15, 3);
+  rel(n.I, m.current(3, n.rho), 1e-12);
+  assert.strictEqual(n.maj, n.n);
+  assert.strictEqual(n.min, n.p);
+  const p = m.state(25, 'p', 1e15, -2);
+  assert.strictEqual(p.maj, p.p);
+  assert.strictEqual(p.min, p.n);
+  assert.ok(p.I < 0, 'con la tensione negativa la corrente va verso sinistra');
+  // il silicio puro ignora la concentrazione del cursore del drogante
+  rel(m.state(25, 'puro', 1e18, 3).rho, m.state(25, 'puro', 1e12, 3).rho, 1e-12);
+  // nessun valore impossibile agli estremi dei cursori
+  for (const type of ['puro', 'n', 'p']) {
+    for (const Tc of [-50, 25, 250]) {
+      for (const N of [1e12, 1e18]) {
+        for (const V of [-5, 0, 5]) {
+          const q = m.state(Tc, type, N, V);
+          for (const k of ['ni', 'n', 'p', 'rho', 'I', 'maj', 'min', 'mn', 'mp']) assert.ok(Number.isFinite(q[k]), k + ' non è un numero a ' + [type, Tc, N, V].join(', '));
+          assert.ok(q.n > 0 && q.p > 0 && q.rho > 0 && q.mn > 0 && q.mp > 0);
+          assert.ok(q.maj >= q.min);
+        }
+      }
+    }
+  }
+});
+
+test('semiconduttori: ogni sfida si vince con i cursori, e nessuna è già vinta all\'inizio', () => {
+  const ids = m.challenges.map((c) => c.id);
+  assert.deepStrictEqual(ids, ['mille', 'verso', 'boro', 'rari', 'caldo']);
+  // il laboratorio parte da silicio puro, 25 °C, 3 V
+  const start = m.state(25, 'puro', 1e15, 3);
+  m.challenges.forEach((c) => assert.ok(!c.check(start), 'la sfida ' + c.id + ' è già vinta all\'inizio'));
+  // valori raggiungibili con i cursori: −50…250 °C a passi di 1, 10¹²…10¹⁸ cm⁻³ in scala logaritmica, ±5 V a passi di 0,1
+  const Ts = [];
+  for (let t = -50; t <= 250; t += 5) Ts.push(t);
+  const Ns = [];
+  for (let k = 0; k <= 1000; k += 25) Ns.push(Number((1e12 * Math.pow(1e6, k / 1000)).toPrecision(3)));
+  const Vs = [-5, -0.5, 0, 3, 5];
+  const win = (c) => {
+    for (const type of ['puro', 'n', 'p']) for (const T of Ts) for (const N of Ns) for (const V of Vs) if (c.check(m.state(T, type, N, V))) return { type: type, T: T, N: N, V: V };
+    return null;
+  };
+  m.challenges.forEach((c) => assert.ok(win(c), 'la sfida ' + c.id + ' non si può vincere'));
+  // casi tipici: 150 °C per la sfida "mille"; il boro scende sotto 1 Ω·cm da circa 1,4·10¹⁶ cm⁻³; minoritari sotto 1 a −50 °C
+  const by = (id) => m.challenges.find((c) => c.id === id);
+  assert.ok(by('mille').check(m.state(150, 'puro', 1e15, 3)) && !by('mille').check(m.state(140, 'puro', 1e15, 3)));
+  assert.ok(by('verso').check(m.state(25, 'n', 1e15, -1)) && !by('verso').check(m.state(25, 'p', 1e15, -1)));
+  assert.ok(by('boro').check(m.state(25, 'p', 2e16, 3)) && !by('boro').check(m.state(25, 'p', 1e16, 3)));
+  assert.ok(by('rari').check(m.state(-50, 'n', 1e15, 3)) && !by('rari').check(m.state(25, 'n', 1e18, 3)));
+  assert.ok(by('caldo').check(m.state(250, 'p', 1e14, 3)) && !by('caldo').check(m.state(25, 'p', 1e14, 3)));
+});

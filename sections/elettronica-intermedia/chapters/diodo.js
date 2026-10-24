@@ -131,6 +131,9 @@
   const fmtV3 = (v) => (Math.abs(v) < 0.0005 ? '0,000 V' : (v < 0 ? '−' : '') + num(Math.abs(v), 3) + ' V');
   const fmtI = (v) => (Math.abs(v) < 5e-14 ? '0 A' : si(v, 'A'));
   const hillH = (b) => HMAX * Math.log1p(b / 0.25) / Math.log1p(5.8 / 0.25);
+  // Spazio indivisibile tra un numero e la sua unità: «1000 V» o «25 °C» non vanno mai a capo a metà.
+  const UNIT_GAP = /(\d) (?=(?:°C|mV|mA|µA|nA|pA|µm|kΩ|Ω|V|A)(?![\wµ]))/g;
+  const nb = (str) => String(str).replace(UNIT_GAP, '$1\u00a0');
 
   // Il punto di lavoro durante il passaggio silicio ↔ germanio: i parametri sfumano (m da 0 a 1).
   function blendState(m, Vs, R, Tc) {
@@ -154,7 +157,7 @@
 
   function mount(lab) {
     const svg = lab.svg;
-    const P = EI.palette();
+    let P = EI.palette();
     const reduced = lab.reduced;
     const mq = typeof window !== 'undefined' && window.matchMedia ? window.matchMedia('(max-width: 640px)') : null;
     svg.classList.add('diodo-svg');
@@ -198,7 +201,8 @@
       svg.classList.toggle('diodo-tall', tall);
       lab.view(G.W, G.H);
       const p = { tall: tall, flipDrawn: null, glowK: -1, tint: '', fieldOp: -1 };
-      const fs = (px) => 'font-size:' + (px / G.cs).toFixed(2) + 'px';
+      // dimensione dei testi del cristallo in pixel dello schermo (sul telefono un po' più grandi)
+      const fs = (px, k) => 'font-size:' + ((tall ? px * (k || 1.12) : px) / G.cs).toFixed(2) + 'px';
       const xL = G.xL;
       const xR = G.xR;
       const yT = G.yT;
@@ -224,7 +228,7 @@
         p.supWrap = s('g', {}, gc);
         sym.source(p.supWrap, { x: xL, y: 214, rot: 90, len: 60, kind: 'dc' });
         p.supC = [xL, 244];
-        p.supVal = nameValue(gc, xL + 20, 240, 'Vs', 'start', 16);
+        p.supVal = nameValue(gc, xL + 28, 240, 'Vs', 'start', 16);
         sym.resistor(gc, { x: xR, y: 78, rot: 90, len: 64 });
         p.resVal = nameValue(gc, xR - 20, 104, 'R', 'end', 16);
         sym.meter(gc, { x: xR, y: 190, rot: 90, len: 56, kind: 'A' });
@@ -246,6 +250,8 @@
         sym.ground(gc, { x: 121, y: yB });
         p.flows = [p.wA, p.wK[0], p.wK[1], p.w0[0]].map((w) => new EI.Flow(gc, w));
       }
+      // spente finché il primo fotogramma non dice quanta corrente passa
+      p.flows.forEach((f) => f.set(0));
       p.diode = sym.diode(gc, { x: dA, y: yT, len: 64 });
 
       /* legenda */
@@ -302,7 +308,7 @@
       s('rect', { x: CW, y: 0, width: 8, height: TOP + CH, rx: 2, class: 'diodo-metal' }, gx);
       s('text', { x: 6, y: 14.5, class: 'ei-zone-label p', style: fs(12), text: 'P · anodo' }, gx);
       s('text', { x: CW - 6, y: 14.5, class: 'ei-zone-label n', 'text-anchor': 'end', style: fs(12), text: 'N · catodo' }, gx);
-      s('text', { x: XJ, y: 14, class: 'diodo-zt', 'text-anchor': 'middle', style: fs(10), text: 'zona di svuotamento' }, gx);
+      s('text', { x: XJ, y: 14, class: 'diodo-zt', 'text-anchor': 'middle', style: fs(10, 1), text: 'zona di svuotamento' }, gx);
       // misura della zona
       p.dim = s('path', { d: '', class: 'diodo-dim' }, gx);
       p.wTag = s('text', { x: XJ, y: TOP + CH + 28, class: 'diodo-wtag', 'text-anchor': 'middle', style: fs(11.5) }, gx);
@@ -441,6 +447,28 @@
       fix(elecs, false, ctx.nE);
     }
 
+    // Le cariche dello stesso segno si respingono un poco: niente grumi, il "gas" resta uniforme.
+    function spread(list, R, dt) {
+      const act = list.filter((c) => !c.dead && (c.st === 'live' || c.st === 'in'));
+      const k = 900 * dt;
+      for (let i = 0; i < act.length; i++) {
+        const a = act[i];
+        for (let j = i + 1; j < act.length; j++) {
+          const b = act[j];
+          const dx = b.x - a.x;
+          const dy = b.y - a.y;
+          if (dx > R || dx < -R || dy > R || dy < -R) continue;
+          const dd = Math.hypot(dx, dy);
+          if (dd >= R || dd < 1e-3) continue;
+          const f = k * (1 - dd / R) / dd;
+          a.vx -= dx * f;
+          a.vy -= dy * f;
+          b.vx += dx * f;
+          b.vy += dy * f;
+        }
+      }
+    }
+
     function stepCarriers(dt, ctx) {
       const th = Math.sqrt(ctx.T / T0);
       const acc = 380 * th;
@@ -448,6 +476,8 @@
       const damp = Math.exp(-2.2 * dt);
       const y0 = TOP + 5;
       const y1 = TOP + CH - 5;
+      spread(holes, 13, dt);
+      spread(elecs, 11, dt);
       for (const list of [holes, elecs]) {
         for (const c of list) {
           if (c.dead) continue;
@@ -551,8 +581,10 @@
               c.a = 0;
             }
           } else if (have > n && st.form >= 1) {
-            const c = pick(list, h, false);
-            if (c) c.st = 'out';
+            for (let k = 0; k < Math.min(3, have - n); k++) {
+              const c = pick(list, h, false);
+              if (c) c.st = 'out';
+            }
           }
         });
         sweep();
@@ -605,7 +637,7 @@
     build();
     if (reduced) reducedLayout(XJ - 43, XJ + 43);
     else seedCarriers(XJ, XJ);
-    const onMq = () => { build(); lab.invalidate(); };
+    const onMq = () => { build(); fitLabels(); lab.invalidate(); };
     if (mq) {
       if (mq.addEventListener) mq.addEventListener('change', onMq);
       else if (mq.addListener) mq.addListener(onMq);
@@ -621,6 +653,10 @@
     const rV = lab.readout({ label: 'Tensione sul diodo', fmt: fmtV3, color: 'var(--trace-1)' });
     const rI = lab.readout({ label: 'Corrente', fmt: fmtI, color: 'var(--trace-3)' });
     const rW = lab.readout({ label: 'Zona di svuotamento', fmt: (v) => num(v, 2) + ' µm', color: 'var(--trace-2)', max: 1.4 });
+    // sul telefono le etichette lunghe verrebbero tagliate
+    const rWLabel = rW.el.querySelector('.ei-readout-label');
+    function fitLabels() { rWLabel.textContent = mq && mq.matches ? 'Larghezza zona' : 'Zona di svuotamento'; }
+    fitLabels();
     const rS = lab.readout({ label: 'Stato del diodo', fmt: (x) => x });
     const rc = new Map();
     const setColor = (r, c) => { if (rc.get(r) !== c) { rc.set(r, c); r.el.style.setProperty('--rc', c); } };
@@ -657,8 +693,8 @@
       { id: 'inversa', text: 'Polarizza il diodo al contrario con <b>−5 V</b>: quanta corrente passa davvero?', check: (q) => q.Vs <= -4.95 },
       { id: 'germanio', text: 'Con una R piccola, trova una tensione a cui il <b>germanio</b> conduce già più di 1 mA, mentre il silicio nello stesso circuito resterebbe sotto 0,1 mA.', check: (q) => q.mat === 'ge' && q.I >= 1e-3 && model.state(MATERIALS.si, q.Vs, q.R, q.Tc).I < 1e-4 },
       { id: 'larga', text: 'Allarga la [[zona-di-svuotamento]] a più del doppio di quella a riposo.', check: (q) => q.form >= 1 && q.W > 2 * q.W0 },
-      { id: 'caldo', text: 'Fai passare almeno <b>1 mA</b> nel diodo al <b>silicio</b> con meno di <b>0,55 V</b> ai suoi capi.', check: (q) => q.mat === 'si' && q.I >= 1e-3 && q.V < 0.55 },
-    ]);
+      { id: 'caldo', text: 'Fai passare almeno <b>1 mA</b> nel diodo al <b>silicio</b> con meno di <b>0,55 V</b> ai suoi capi. A 25 °C è impossibile: che cosa puoi cambiare?', check: (q) => q.mat === 'si' && q.I >= 1e-3 && q.V < 0.55 },
+    ].map((c) => Object.assign(c, { text: nb(c.text) })));
 
     function startFormation() {
       st.dVs = st.Vs;
@@ -691,7 +727,7 @@
         msg = 'Giunzione a riposo: la [[zona-di-svuotamento]] è larga ' + W + ' e contiene solo ioni fissi, negativi dal lato P e positivi dal lato N. Il loro campo elettrico <b>E</b> crea una [[barriera-di-potenziale]] di ' + B + ' che respinge le cariche: nessuna corrente. Prova a spostare il generatore verso il positivo.';
         if (Math.abs(dT) >= 3) extra = ' A ' + num(st.Tc, 0) + ' °C la [[tensione-di-soglia]] è ' + num(tg.soglia, 2) + ' V.';
       } else if (st.Vs > 0 && tg.I < 1e-4) {
-        msg = '[[polarizzazione-diretta|Polarizzazione diretta]]: il + del generatore spinge sull\'[[anodo]] e la barriera scende a ' + B + ', ma è ancora alta: passano appena <b>' + fmtI(tg.I) + '</b>. Sotto la [[tensione-di-soglia]], qui ' + num(tg.soglia, 2) + ' V, il diodo è quasi spento: quasi tutta la tensione del generatore resta sul diodo.';
+        msg = '[[polarizzazione-diretta|Polarizzazione diretta]]: il + del generatore sull\'[[anodo]] spinge le cariche verso la giunzione e la barriera scende a ' + B + ', ma è ancora alta: passano appena <b>' + fmtI(tg.I) + '</b>. Sotto la [[tensione-di-soglia]], qui ' + num(tg.soglia, 2) + ' V, il diodo è quasi spento e quasi tutta la tensione del generatore resta ai suoi capi.';
       } else if (st.Vs > 0) {
         const dec = tg.n * model.vt(tg.T) * Math.LN10;
         msg = 'La barriera è scesa a ' + B + ' e la zona si è stretta a ' + W + ': lacune ed elettroni la attraversano e si ricombinano' + (reduced ? ' al centro' : ' (i lampi)') + '. Passano <b>' + fmtI(tg.I) + '</b>. Al diodo bastano <b>' + num(tg.V, 2) + ' V</b>; il resto, ' + num(st.Vs - tg.V, 2) + ' V, cade sulla resistenza: I = (Vs − Vd)/R. Ogni ' + num(dec, 2) + ' V in più sul diodo la corrente si moltiplica per 10.';
@@ -702,7 +738,7 @@
           extra = ' A ' + num(st.Tc, 0) + ' °C la stessa corrente richiede ' + num(Math.abs(dv), 0) + ' mV ' + (dv < 0 ? 'in meno' : 'in più') + ' che a 25 °C: circa ' + num(Math.abs(dv / dT), 1) + ' mV per grado.';
         }
       } else {
-        msg = '[[polarizzazione-inversa|Polarizzazione inversa]]: il generatore tira le lacune verso l\'[[anodo]] e gli elettroni verso il [[catodo]], lontano dalla giunzione. La zona si allarga a ' + W + ' e la barriera sale a ' + B + '. Passa solo la [[corrente-di-saturazione]], <b>' + fmtI(Math.abs(tg.I)) + '</b>: ' + (reduced ? 'le rare coppie' : 'le rare coppie (i cerchi chiari)') + ' create dal calore nella zona e separate subito dal campo. Il diodo blocca, fino al breakdown dei <a href="#led-zener">diodi Zener</a>.';
+        msg = '[[polarizzazione-inversa|Polarizzazione inversa]]: il generatore tira le lacune verso l\'[[anodo]] e gli elettroni verso il [[catodo]], lontano dalla giunzione. La zona si allarga a ' + W + ' e la barriera sale a ' + B + '. Passa solo la [[corrente-di-saturazione]], <b>' + fmtI(Math.abs(tg.I)) + '</b>: ' + (reduced ? 'le rare coppie' : 'le rare coppie (i cerchi chiari)') + ' create dal calore nella zona e separate subito dal campo. Il diodo blocca: cederebbe solo a tensioni inverse molto più alte, con il breakdown che sfruttano i <a href="#led-zener">diodi Zener</a>.';
         if (Math.abs(dT) >= 3) {
           const k = model.isat(mat, tg.T) / model.isat(mat, T0);
           extra = k >= 1
@@ -735,13 +771,18 @@
       return out;
     }
 
+    // Scritta sul grafico con un alone del colore di fondo, leggibile anche sopra le curve.
     function plotText(c, x, y, text, color, align) {
       c.save();
       c.font = '700 10.5px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace';
-      c.fillStyle = color;
-      c.globalAlpha = 0.85;
       c.textAlign = align;
       c.textBaseline = 'middle';
+      c.lineJoin = 'round';
+      c.lineWidth = 4;
+      c.strokeStyle = P.bg;
+      c.strokeText(text, x, y);
+      c.fillStyle = color;
+      c.globalAlpha = 0.9;
       c.fillText(text, x, y);
       c.restore();
     }
@@ -751,7 +792,7 @@
       const yTarget = 2.3 / R;
       st.ymax = dt > 0 ? Math.exp(EI.approach(Math.log(st.ymax), Math.log(yTarget), dt, 7)) : yTarget;
       plot.opts.y = log
-        ? { min: -12, max: -1, count: 11, label: 'corrente, scala logaritmica', fmt: (v) => si(Math.pow(10, v), 'A', { sig: 1, trim: true }) }
+        ? { min: -12.4, max: -0.6, count: 11, label: 'corrente, scala logaritmica', fmt: (v) => si(Math.pow(10, v), 'A', { sig: 1, trim: true }) }
         : { min: -0.08 * st.ymax, max: st.ymax, unit: 'A', label: 'corrente' };
       const yv = (I) => (log ? (Math.abs(I) > 1e-14 ? Math.log10(Math.abs(I)) : NaN) : I);
       plot.clear();
@@ -763,7 +804,6 @@
       plotText(c, x0 - 8, plot.py0 + 12, '← inversa', P.t4, 'right');
       plotText(c, x0 + 8, plot.py0 + 12, 'diretta →', P.t1, 'left');
 
-      const mat = MATERIALS[st.mat];
       const other = MATERIALS[st.mat === 'si' ? 'ge' : 'si'];
       const Io = model.isat(other, Tk);
       plot.line((V) => yv(model.shockley(V, Io, other.n, Tk)), { color: GHOST, width: 1.6, glow: false, dash: [6, 5] });
@@ -776,26 +816,37 @@
       plot.line((V) => yv((st.dVs - V) / R), { color: P.t2, width: 1.8, dash: [7, 5], glow: false });
       // soglia (1 mA) e corrente di saturazione
       plot.vline(d.soglia, { color: P.t1, alpha: 0.4 });
-      plot.tag(plot.X(d.soglia), plot.py0 + 34, 'soglia ' + num(d.soglia, 2) + ' V', P.t1, 'right');
-      if (log) plot.hline(Math.log10(d.Is), { color: P.t3, alpha: 0.65, label: 'Is = ' + si(d.Is, 'A'), at: 'left' });
-      // etichette delle curve
-      const iTag = log ? Math.pow(10, -2.6) : 0.62 * st.ymax;
+      // in scala logaritmica in alto passa la retta di carico: l'etichetta va in basso, dove non c'è niente
+      plot.tag(plot.X(d.soglia), log ? plot.py1 - 30 : plot.py0 + 34, 'soglia ' + num(d.soglia, 2) + ' V', P.t1, 'right');
+      if (log) {
+        // la corrente di saturazione: il tratto piatto della curva in inversa, con l'etichetta sopra e
+        // lontana dal punto di lavoro
+        const yIs = Math.log10(d.Is);
+        plot.hline(yIs, { color: P.t3, alpha: 0.65 });
+        plot.tag(plot.X(d.V < -2.6 ? -1.3 : -3.9), plot.Y(yIs), 'Is = ' + si(d.Is, 'A'), P.t3, 'up');
+      }
+      // etichette delle curve, fuori dallo spazio tra le due: Si a destra della sua, Ge a sinistra
+      // in scala logaritmica le etichette stanno ben sopra i tratti piatti della corrente inversa
+      let iTag = log ? clamp(300 * Math.max(d.Is, Io), 1e-5, 3e-3) : 0.62 * st.ymax;
+      // se il punto di lavoro passa proprio di lì, le etichette scendono un po'
+      if (log ? d.I > 0 && Math.abs(Math.log10(d.I / iTag)) < 0.9 : d.I > 0.45 * st.ymax) iTag = log ? iTag / 16 : 0.3 * st.ymax;
       const vMine = model.voltageAt(iTag, d.Is, d.n, Tk);
       const vOther = model.voltageAt(iTag, Io, other.n, Tk);
-      const sMine = st.dm < 0.5 ? 'Si' : 'Ge';
-      plot.tag(plot.X(vMine) + 2, plot.Y(yv(iTag)), sMine, P.t1, 'right');
-      plot.tag(plot.X(vOther) - 2, plot.Y(yv(iTag)), sMine === 'Si' ? 'Ge' : 'Si', GHOST, 'left');
+      const mineSi = st.dm < 0.5;
+      const yTag = plot.Y(yv(iTag));
+      plot.tag(plot.X(vMine) + (mineSi ? 2 : -2), yTag, mineSi ? 'Si' : 'Ge', P.t1, mineSi ? 'right' : 'left');
+      plot.tag(plot.X(vOther) + (mineSi ? -2 : 2), yTag, mineSi ? 'Ge' : 'Si', GHOST, mineSi ? 'left' : 'right');
       // punto di lavoro
       const yq = yv(d.I);
       const lbl = 'Q ' + num(d.V, 2) + ' V · ' + fmtI(d.I);
       if (isFinite(yq)) plot.point(d.V, yq, { color: P.t2, r: 5, label: lbl, labelPos: d.V > 0.05 ? 'left' : 'right' });
       else plot.point(d.V, -12, { color: P.t2, r: 5, label: lbl, labelPos: 'up' });
-      void mat;
     }
 
     /* --- aggiornamento --- */
 
     lab.loop((dt) => {
+      P = EI.palette(); // segue il tema chiaro o scuro
       const moving = dt > 0 && !reduced;
       if (moving) {
         st.dVs = EI.approach(st.dVs, st.Vs, dt, 9);
@@ -821,8 +872,11 @@
 
       // zona di svuotamento: larghezza (con la formazione all'inizio)
       const Wgoal = Math.min(d.W * UM, CW - 30) * easeOut(st.form);
+      const halfOld = st.Wd / 2;
       st.Wd = moving ? EI.approach(st.Wd, Wgoal, dt, 7) : Wgoal;
       const half = st.Wd / 2;
+      // velocità del bordo della zona: le cariche neutre lo seguono (si allarga: si ritirano verso i contatti)
+      const vEdge = moving && st.form >= 1 ? (half - halfOld) / dt : 0;
       const edgeP = XJ - half;
       const edgeN = XJ + half;
       parts.zone.setAttribute('x', edgeP.toFixed(2));
@@ -888,12 +942,17 @@
       } else parts.drift.setAttribute('d', '');
 
       // cariche mobili
+      // in diretta le coppie si annullano alla giunzione a un ritmo che segue la corrente; le cariche
+      // delle zone neutre scorrono verso la giunzione alla velocità che serve a rimpiazzarle (flusso =
+      // densità × velocità), così la loro densità resta uniforme come nel cristallo vero. In più
+      // seguono il bordo della zona quando si sposta.
+      const rate = d.I > 1e-6 && st.form >= 1 ? 22 * Math.sqrt(Math.min(d.I, 0.05) / IREF) : 0;
       updateCarriers(dt, {
         edgeP: edgeP, edgeN: edgeN, T: Tk,
         nH: Math.round(DENS * Math.max(0, edgeP - 2)),
         nE: Math.round(DENS * Math.max(0, CW - edgeN - 2)),
-        vd: d.I > 1e-6 ? 12 * Math.sqrt(Math.min(1, d.I / IREF)) : 0,
-        rate: d.I > 1e-6 && st.form >= 1 ? 22 * Math.sqrt(Math.min(d.I, 0.05) / IREF) : 0,
+        vd: rate / DENS - vEdge,
+        rate: rate,
         gen: d.V < -0.05 && st.form >= 1 ? clamp(1.4 * Math.pow(d.Is / 1e-6, 0.4), 0.05, 6) : 0,
       });
       if (moving) stepFlashes(dt);
@@ -937,7 +996,7 @@
       if (lk !== legendKey) { legendKey = lk; plot.setLegend(legendFor()); }
       drawPlot(d, R, Tk, moving ? dt : 0);
 
-      lab.explain(explainFor(tg));
+      lab.explain(nb(explainFor(tg)));
       lab.check({ mat: st.mat, Vs: st.Vs, R: st.R, Tc: st.Tc, V: tg.V, I: tg.I, W: tg.W, W0: tg.W0, form: st.form });
     });
   }
@@ -979,8 +1038,8 @@
       '<text class="f-p-text" x="30" y="22">Lato P · lacune</text>' +
       '<text class="f-small" x="230" y="22" text-anchor="middle">zona di svuotamento</text>' +
       '<text class="f-n-text" x="430" y="22" text-anchor="end">Lato N · elettroni</text>' +
-      '<rect class="f-p" x="30" y="32" width="206" height="120" rx="8"/>' +
-      '<rect class="f-n" x="224" y="32" width="206" height="120" rx="8"/>' +
+      '<path class="f-p" d="M38 32H230V152H38A8 8 0 0 1 30 144V40A8 8 0 0 1 38 32Z"/>' +
+      '<path class="f-n" d="M230 32H422A8 8 0 0 1 430 40V144A8 8 0 0 1 422 152H230Z"/>' +
       '<rect class="f-accent-soft" x="186" y="32" width="88" height="120" fill-opacity=".55" stroke-dasharray="5 4"/>' +
       carriers + ions +
       // la lacuna e l'elettrone che provano a passare e vengono respinti
@@ -1004,7 +1063,6 @@
   }
 
   function partsFigure() {
-    const flow = (y) => '<path class="diodo-fig-flow" d="M26 ' + y + 'H206"/>';
     return '<svg viewBox="0 0 460 340">' +
       // 1N4007: corpo nero, fascia grigia dal lato del catodo
       '<path class="diodo-fig-lead" d="M24 56H112M270 56H340"/>' +
@@ -1012,13 +1070,13 @@
       '<rect class="diodo-fig-shine" x="120" y="40" width="142" height="7" rx="3.5"/>' +
       '<rect class="diodo-fig-band" x="238" y="36" width="18" height="40"/>' +
       '<text class="diodo-fig-print" x="174" y="61" text-anchor="middle">1N4007</text>' +
-      '<text class="f-small" x="191" y="96" text-anchor="middle">1N4007: raddrizzatore, 1 A e 1000 V</text>' +
+      '<text class="f-small" x="191" y="24" text-anchor="middle">1N4007: raddrizzatore, 1 A e 1000 V</text>' +
       // 1N4148: vetro arancio con la fascia nera
       '<path class="diodo-fig-lead thin" d="M354 56H384M424 56H450"/>' +
       '<rect class="diodo-fig-glass" x="384" y="47" width="40" height="18" rx="8"/>' +
       '<rect class="diodo-fig-die" x="399" y="53" width="6" height="6" rx="1"/>' +
       '<rect class="diodo-fig-blackband" x="412" y="47" width="6" height="18"/>' +
-      '<text class="f-small" x="404" y="96" text-anchor="middle">1N4148: segnali</text>' +
+      '<text class="f-small" x="404" y="24" text-anchor="middle">1N4148: segnali</text>' +
       // il simbolo, allineato al componente
       '<path class="f-dash" d="M247 80V112"/>' +
       '<text class="f-text" x="24" y="128">anodo (A)</text>' +
@@ -1028,28 +1086,28 @@
       '<path class="f-line" stroke-width="3.4" d="M247 118V162"/>' +
       '<path class="f-accent" d="M60 156H150M142 151L150 156L142 161"/>' +
       '<text class="f-accent-text" x="105" y="174" text-anchor="middle">verso della corrente</text>' +
-      // la valvola di non ritorno
+      // la valvola di non ritorno: una sfera che una molla tiene premuta contro la sede
       '<text class="f-text" x="20" y="206">Diretta: la valvola si apre</text>' +
       '<rect class="diodo-fig-water" x="20" y="222" width="200" height="56"/>' +
-      flow(238) + flow(250) + flow(262) +
+      '<path class="diodo-fig-flow" d="M26 244H114C120 244 122 231 132 230H182C190 230 196 236 206 238"/>' +
+      '<path class="diodo-fig-flow" d="M26 256H114C120 256 122 269 132 270H182C190 270 196 264 206 262"/>' +
       '<path class="f-line" d="M20 222H220M20 278H220"/>' +
-      '<rect class="f-fill" x="112" y="222" width="6" height="11"/>' +
-      '<rect class="f-fill" x="112" y="267" width="6" height="11"/>' +
-      '<path class="f-line" stroke-width="4" d="M120 225L152 261"/>' +
-      '<path class="f-line" stroke-width="1.3" d="M124 223l7 3l-7 3l7 3l-7 3"/>' +
-      '<circle class="f-fill" cx="120" cy="225" r="3"/>' +
+      '<path class="f-fill" d="M104 222H112V238H104ZM104 262H112V278H104Z"/>' +
+      '<circle class="f-paper" cx="142" cy="250" r="14"/>' +
+      '<path class="f-line" stroke-width="1.6" d="M156 250l3.4 -7l6.6 14l6.6 -14l6.6 14l6.6 -14l6.6 14l3.6 -7"/>' +
+      '<path class="f-thin" d="M198 222V241M198 259V278"/><rect class="f-fill" x="196" y="241" width="4" height="18"/>' +
       '<path class="f-n" d="M206 244L215 250L206 256Z"/>' +
       '<text class="f-text" x="240" y="206">Inversa: la valvola si chiude</text>' +
       '<rect class="diodo-fig-water" x="240" y="222" width="200" height="56"/>' +
       '<path class="f-line" d="M240 222H440M240 278H440"/>' +
-      '<rect class="f-fill" x="332" y="222" width="6" height="11"/>' +
-      '<rect class="f-fill" x="332" y="267" width="6" height="11"/>' +
-      '<path class="f-line" stroke-width="4" d="M341 225V275"/>' +
-      '<circle class="f-fill" cx="341" cy="225" r="3"/>' +
-      '<path class="f-n" stroke-dasharray="7 6" d="M434 240H360M434 260H360"/>' +
-      '<path class="f-n" d="M366 235L357 240L366 245ZM366 255L357 260L366 265Z"/>' +
-      '<text class="f-small" x="286" y="254" text-anchor="middle">niente</text>' +
-      '<text class="f-small" x="286" y="267" text-anchor="middle">flusso</text>' +
+      '<path class="f-fill" d="M324 222H332V238H324ZM324 262H332V278H324Z"/>' +
+      '<circle class="f-paper" cx="340" cy="250" r="14"/>' +
+      '<path class="f-line" stroke-width="1.6" d="M354 250l4.4 -7l8.8 14l8.8 -14l8.8 14l8.8 -14l8.8 14l4.6 -7"/>' +
+      '<path class="f-thin" d="M418 222V241M418 259V278"/><rect class="f-fill" x="416" y="241" width="4" height="18"/>' +
+      '<path class="f-n" stroke-dasharray="7 6" d="M434 232H372M434 268H372"/>' +
+      '<path class="f-n" d="M372 227L363 232L372 237ZM372 263L363 268L372 273Z"/>' +
+      '<text class="f-small" x="280" y="248" text-anchor="middle">niente</text>' +
+      '<text class="f-small" x="280" y="261" text-anchor="middle">flusso</text>' +
       '<text class="f-small" x="230" y="304" text-anchor="middle">La molla tiene chiusa la valvola finché la spinta non supera una soglia:</text>' +
       '<text class="f-small" x="230" y="320" text-anchor="middle">per il diodo è la tensione di soglia, circa 0,6 V nel silicio.</text>' +
       '</svg>';
@@ -1057,11 +1115,26 @@
 
   /* ---------- capitolo ---------- */
 
-  EI.chapter({
+  // i testi passano da nb() per gli spazi indivisibili tra numeri e unità
+  function withNbsp(c) {
+    c.summary = nb(c.summary);
+    c.lab.intro = nb(c.lab.intro);
+    c.how = c.how.map(nb);
+    c.formulas.forEach((f) => { f.note = nb(f.note); f.legend = f.legend.map((l) => [l[0], nb(l[1])]); });
+    c.figures.forEach((f) => { f.caption = nb(f.caption); f.alt = nb(f.alt); });
+    c.history.text = c.history.text.map(nb);
+    c.history.events.forEach((e) => { e.text = nb(e.text); });
+    c.fun = nb(c.fun);
+    c.uses = nb(c.uses);
+    Object.keys(c.glossary).forEach((k) => { c.glossary[k].def = nb(c.glossary[k].def); });
+    return c;
+  }
+
+  EI.chapter(withNbsp({
     id: 'diodo',
     icon: 'diode',
     minutes: 13,
-    summary: 'Quando un cristallo P tocca un cristallo N, al confine nasce una sottile [[zona-di-svuotamento]] con una [[barriera-di-potenziale]]. Se spingi nel verso giusto la barriera si abbassa e la corrente cresce in modo esponenziale; nel verso opposto la barriera si alza e non passa quasi niente. È il diodo: una valvola di non ritorno per la corrente.',
+    summary: 'Quando una zona P e una zona N si toccano nello stesso cristallo, al confine nasce una sottile [[zona-di-svuotamento]] con una [[barriera-di-potenziale]]. Con la tensione nel verso giusto la barriera si abbassa e la corrente cresce in modo esponenziale; nel verso opposto la barriera si alza e non passa quasi niente. È il diodo: una valvola di non ritorno per la corrente.',
     keywords: ['giunzione-pn', 'zona-di-svuotamento', 'barriera-di-potenziale', 'polarizzazione-diretta', 'polarizzazione-inversa', 'tensione-di-soglia', 'corrente-di-saturazione', 'equazione-di-shockley'],
     model: model,
     css: [
@@ -1129,16 +1202,16 @@
     lab: {
       title: 'La giunzione sotto tensione',
       svgLabel: 'Un circuito con generatore, diodo, resistenza e amperometro; sotto, il diodo ingrandito: la giunzione tra il cristallo P e il cristallo N con le cariche, gli ioni fissi e la barriera di potenziale',
-      intro: 'Muovi il generatore: in positivo la [[zona-di-svuotamento]] si stringe e le cariche attraversano la giunzione ricombinandosi; in negativo la zona si allarga e la corrente si ferma. Nel grafico la curva del diodo incrocia la retta di carico della resistenza: l\'incrocio è il punto di lavoro. Poi prova il germanio e scalda il diodo.',
+      intro: 'Muovi il generatore: in positivo la [[zona-di-svuotamento]] si stringe e le cariche attraversano la giunzione, ricombinandosi; in negativo la zona si allarga e la corrente si ferma quasi del tutto. Nel grafico la curva del diodo incrocia la retta di carico della resistenza: l\'incrocio è il punto di lavoro. Poi prova il germanio e scalda il diodo.',
       mount: mount,
     },
     how: [
-      'Prendi un cristallo di silicio drogato <b>P</b>, pieno di [[lacuna|lacune]], e uno drogato <b>N</b>, pieno di [[elettrone-libero|elettroni liberi]], e uniscili: ottieni una [[giunzione-pn]]. Al confine le cariche mobili si spargono dall\'altra parte, come un profumo in una stanza, e incontrandosi si annullano a coppie: è la [[ricombinazione]].',
-      'Vicino al confine restano solo gli ioni fissi del [[drogaggio]], che non possono muoversi: negativi dal lato P (gli atomi [[accettore|accettori]]), positivi dal lato N (i [[donatore|donatori]]). È la [[zona-di-svuotamento]], larga meno di mezzo micrometro.',
-      'Gli ioni scoperti creano un campo elettrico che respinge le altre cariche, e la diffusione si ferma. Tra i due lati resta una [[barriera-di-potenziale]]: circa 0,7 V nel silicio e 0,3 V nel germanio.',
-      'In [[polarizzazione-diretta]], con il + sull\'[[anodo]] (il lato P), la barriera si abbassa e la zona si stringe: le cariche attraversano la giunzione e la corrente cresce in modo esponenziale, come dice l\'[[equazione-di-shockley]]. Oltre la [[tensione-di-soglia]], circa 0,6–0,7 V per il silicio, pochi centesimi di volt in più bastano a raddoppiarla: per questo il diodo si usa sempre con una resistenza in serie, che limita la corrente con la legge di Ohm.',
-      'In [[polarizzazione-inversa]], con il + sul [[catodo]], la barriera cresce e la zona si allarga: passa solo la [[corrente-di-saturazione]], pochi nanoampere nel silicio. Solo a tensioni molto alte la giunzione cede: è il breakdown, che i diodi Zener sfruttano apposta.',
-      'Il risultato è una valvola di non ritorno per la corrente. Sul componente una fascia indica il catodo: il piccolo 1N4148, in vetro, lavora con i segnali; il robusto 1N4007, nero, porta 1 A e regge 1000 V in inversa.',
+      'Immagina di prendere un cristallo di silicio drogato <b>P</b>, pieno di [[lacuna|lacune]], e uno drogato <b>N</b>, pieno di [[elettrone-libero|elettroni liberi]], e di unirli: ottieni una [[giunzione-pn|giunzione P-N]]. Nei componenti veri le due zone stanno in un unico cristallo, drogato in modo diverso nelle due parti. Al confine le cariche mobili si spargono dall\'altra parte, come un profumo in una stanza; quando un elettrone incontra una lacuna la riempie e la coppia sparisce: è la [[ricombinazione]].',
+      'Vicino al confine restano scoperti gli ioni fissi del [[drogaggio]], che non possono muoversi: negativi dal lato P (gli atomi [[accettore|accettori]]), positivi dal lato N (i [[donatore|donatori]]). È la [[zona-di-svuotamento]]: nel laboratorio è larga circa 0,4 micrometri, meno di un centesimo dello spessore di un capello.',
+      'Gli ioni scoperti creano un campo elettrico, diretto da N verso P, che respinge le cariche in arrivo: la diffusione si ferma quando il campo la bilancia. Tra i due lati resta una [[barriera-di-potenziale]], circa 0,7 V nel silicio e 0,3 V nel germanio. Un voltmetro non la vede: ai contatti metallici nascono altre piccole barriere che la compensano.',
+      'In [[polarizzazione-diretta]], con il + sull\'[[anodo]] (il lato P), la barriera si abbassa e la zona si stringe: le cariche attraversano la giunzione e la corrente cresce in modo esponenziale, come dice l\'[[equazione-di-shockley|equazione di Shockley]]. Oltre la [[tensione-di-soglia]], circa 0,6–0,7 V nel silicio, bastano pochi centesimi di volt in più per raddoppiarla. Per questo un diodo non si collega mai direttamente a una pila: serve qualcosa in serie, per esempio una resistenza, che limiti la corrente con la legge di Ohm.',
+      'In [[polarizzazione-inversa]], con il + sul [[catodo]], la barriera cresce e la zona si allarga: passa solo la [[corrente-di-saturazione]], pochi nanoampere in un piccolo diodo al silicio. Se però la tensione inversa supera un limite, la giunzione cede di colpo: è il breakdown, che i diodi Zener sfruttano apposta (lo trovi nel capitolo <a href="#led-zener">LED e Zener</a>).',
+      'Il risultato è una valvola di non ritorno per la corrente. Sul componente una fascia indica il catodo: il piccolo 1N4148, in vetro, è veloce e lavora con i segnali; il robusto 1N4007, nero, porta 1 A e regge 1000 V in inversa. Quattro diodi come lui, messi a ponte, raddrizzano la tensione di rete negli <a href="#alimentatore">alimentatori</a>.',
       'Anche la temperatura conta: a parità di corrente, la tensione di un diodo al silicio scende di circa 2 mV per ogni grado in più, mentre la corrente inversa cresce in fretta.',
     ],
     formulas: [
@@ -1146,11 +1219,12 @@
         name: 'Equazione di Shockley',
         expr: '<var>I</var> = <var>I</var><sub>S</sub> · (<var>e</var><sup><var>V</var> / (<var>n</var>·<var>V</var><sub>T</sub>)</sup> − 1)',
         legend: [
-          ['I<sub>S</sub>', '[[corrente-di-saturazione]]: 1 nA nel diodo al silicio del laboratorio, 1 µA in quello al germanio'],
+          ['I<sub>S</sub>', '[[corrente-di-saturazione]] a 25 °C: 1 nA nel diodo al silicio del laboratorio, 1 µA in quello al germanio'],
+          ['V', 'tensione ai capi del diodo: positiva in diretta, negativa in inversa'],
           ['n', 'fattore di idealità, tra 1 e 2 (qui 1,7 per il silicio e 1,3 per il germanio)'],
           ['V<sub>T</sub>', 'tensione termica kT/q: circa 25,7 mV a 25 °C'],
         ],
-        note: 'Con n = 1,7 ogni 0,1 V in più la corrente si moltiplica per 10: 1 mA a 0,60 V, 10 mA a 0,70 V. In inversa l\'esponenziale sparisce e resta I ≈ −I<sub>S</sub>.',
+        note: 'Con n = 1,7 ogni 0,1 V in più la corrente si moltiplica per 10: 1 mA a 0,60 V, 10 mA a 0,70 V. In inversa l\'esponenziale sparisce e resta I&nbsp;≈&nbsp;−I<sub>S</sub>.',
       },
       {
         name: 'Barriera di potenziale',
@@ -1189,9 +1263,9 @@
     history: {
       text: [
         'Che certi cristalli lascino passare la corrente meglio in un verso che nell\'altro lo scoprì nel 1874 il fisico tedesco Ferdinand Braun, appoggiando una punta di metallo su cristalli di solfuri metallici come la galena. Per quasi trent\'anni rimase una curiosità di laboratorio, senza una spiegazione.',
-        'Con la radio quei cristalli trovarono un lavoro: rivelare i deboli segnali captati dall\'antenna. Jagadish Chandra Bose usò la galena, Greenleaf W. Pickard il silicio; nelle radio a galena un filo sottile, il "baffo di gatto", andava appoggiato a tentativi sul punto giusto del cristallo. Nel 1904 arrivò anche la valvola di Fleming, più stabile ma ingombrante e calda.',
-        'Negli anni Trenta, ai Bell Labs, Russell Ohl cercava rivelatori migliori per le onde cortissime: provò più di cento materiali e scoprì che il silicio purificato era il più sensibile. Il 23 febbraio 1940 una barretta di silicio incrinata produsse corrente sotto la luce di una lampada: al confine tra due zone con impurità diverse c\'era una barriera. Ohl e il metallurgista Jack Scaff chiamarono le due zone P (positiva) e N (negativa).',
-        'Durante la guerra milioni di diodi a cristallo di silicio e germanio finirono nei radar. Nel 1949 William Shockley pubblicò la teoria della giunzione P-N con l\'equazione che porta il suo nome: la stessa che fa funzionare il laboratorio di questa pagina, e la base del transistor a giunzione.',
+        'Con la radio quei cristalli trovarono un lavoro: rivelare i deboli segnali captati dall\'antenna. Jagadish Chandra Bose usò la galena, Greenleaf W. Pickard il silicio; nelle radio a galena un filo sottile, il «baffo di gatto», andava appoggiato a tentativi sul punto giusto del cristallo. Dal 1904 il cristallo ebbe un concorrente, la <a href="#storia">valvola di Fleming</a>: più stabile, ma ingombrante e calda.',
+        'Negli anni Trenta, ai Bell Labs, Russell Ohl cercava rivelatori migliori per le onde radio cortissime: provò più di cento materiali e trovò che il silicio era il migliore, tanto più quanto era puro. Il 23 febbraio 1940 una barretta di silicio incrinata produsse corrente appena illuminata. Ohl e il metallurgista Jack Scaff capirono che la crepa separava due zone con impurità diverse, chiamate poi P (positiva) e N (negativa): al loro confine c\'era una barriera.',
+        'Durante la seconda guerra mondiale milioni di diodi a cristallo, con un filo di metallo appoggiato su una scheggia di silicio o di germanio, finirono nei ricevitori radar degli Alleati. Nel 1949 William Shockley pubblicò la teoria della giunzione P-N con l\'equazione che porta il suo nome: la stessa che fa funzionare il laboratorio di questa pagina, e la base del transistor a giunzione.',
       ],
       events: [
         { year: 1874, title: 'La conduzione a senso unico', who: 'Ferdinand Braun', text: 'Una punta di metallo su un cristallo di galena lascia passare la corrente più facilmente in un verso che nell\'altro.' },
@@ -1201,8 +1275,8 @@
         { year: 1949, title: 'La teoria della giunzione', who: 'William Shockley', text: 'Sul Bell System Technical Journal spiega come funziona la giunzione P-N e scrive l\'equazione del diodo.' },
       ],
     },
-    fun: 'La giunzione P-N è nata insieme alla cella solare. La barretta di silicio di Russell Ohl produceva corrente se la illuminavi: la stessa giunzione che fa da valvola trasforma la luce in elettricità. Il brevetto della sua cella solare fu concesso nel 1946, e ancora oggi ogni cella di un pannello fotovoltaico è un grande diodo.',
-    uses: 'Negli alimentatori, dove quattro diodi a ponte raddrizzano la tensione di rete; contro la pila montata al contrario; accanto alle bobine di relè e motori, per assorbire il picco di tensione quando si spengono; nelle radio AM come rivelatore; sugli ingressi dei chip, per scaricare le scintille elettrostatiche. E come termometro: molti sensori di temperatura sfruttano proprio la tensione di una giunzione, che cambia di circa 2 mV per grado.',
+    fun: 'La giunzione P-N è nata insieme alla cella solare. La barretta di silicio di Russell Ohl produceva corrente se la illuminavi: la stessa giunzione che fa da valvola trasforma la luce in elettricità. Il brevetto della sua cella solare, chiesto nel 1941, fu concesso nel 1946; ancora oggi ogni cella di un pannello fotovoltaico è, in fondo, un grande diodo.',
+    uses: 'Negli alimentatori, dove quattro diodi messi <a href="#alimentatore">a ponte</a> raddrizzano la tensione di rete; contro la pila montata al contrario; accanto alle bobine di relè e motori, per assorbire il picco di tensione quando si spengono; nelle radio AM come rivelatore; sugli ingressi dei chip, per deviare le scariche elettrostatiche. E come termometro: molti sensori di temperatura sfruttano proprio la tensione di una giunzione, che cambia di circa 2 mV per grado.',
     links: [
       { href: '#semiconduttori', section: 'Questa sezione', title: 'Semiconduttori e drogaggio: da dove vengono lacune ed elettroni' },
       { href: '#led-zener', section: 'Questa sezione', title: 'LED e Zener: il diodo che fa luce e quello che lavora in inversa' },
@@ -1213,14 +1287,14 @@
     glossary: {
       'giunzione-pn': { term: 'Giunzione P-N', def: 'Il confine tra una zona drogata P e una drogata N nello stesso cristallo semiconduttore. Lì nasce una barriera che lascia passare la corrente in un solo verso: è il cuore del diodo e del transistor.' },
       'zona-di-svuotamento': { term: 'Zona di svuotamento', def: 'La fascia attorno alla giunzione P-N rimasta senza cariche mobili: contiene solo ioni fissi, negativi dal lato P e positivi dal lato N. È larga meno di un micrometro, si stringe in diretta e si allarga in inversa.' },
-      'barriera-di-potenziale': { term: 'Barriera di potenziale', def: 'La differenza di potenziale creata dagli ioni della zona di svuotamento, che si oppone al passaggio delle cariche. Vale circa 0,7 V nel silicio e 0,3 V nel germanio.' },
+      'barriera-di-potenziale': { term: 'Barriera di potenziale', def: 'La differenza di potenziale creata dagli ioni della zona di svuotamento, che si oppone al passaggio delle cariche. Con i drogaggi tipici vale circa 0,7 V nel silicio e 0,3 V nel germanio.' },
       'polarizzazione-diretta': { term: 'Polarizzazione diretta', def: 'Il diodo è collegato con il + sull\'anodo (lato P) e il − sul catodo (lato N): la barriera si abbassa e la corrente cresce in modo esponenziale con la tensione.' },
       'polarizzazione-inversa': { term: 'Polarizzazione inversa', def: 'Il diodo è collegato con il + sul catodo e il − sull\'anodo: la zona di svuotamento si allarga, la barriera cresce e passa solo una minuscola corrente di saturazione.' },
       'tensione-di-soglia': { term: 'Tensione di soglia', def: 'La tensione diretta oltre la quale un diodo conduce in modo apprezzabile: circa 0,6–0,7 V per il silicio e 0,2–0,3 V per il germanio. Oltre la soglia pochi centesimi di volt in più moltiplicano la corrente.' },
       'corrente-di-saturazione': { term: 'Corrente di saturazione', def: 'La piccolissima corrente, indicata con Is, che attraversa un diodo polarizzato in inversa: nanoampere nel silicio, microampere nel germanio. Cresce in fretta con la temperatura.' },
       'equazione-di-shockley': { term: 'Equazione di Shockley', def: 'La legge del diodo, I = Is·(e^(V/nVT) − 1): la corrente cresce in modo esponenziale con la tensione. VT = kT/q vale circa 25,7 mV a 25 °C; n, tra 1 e 2, dipende dal diodo.' },
-      'anodo': { term: 'Anodo', def: 'Il terminale del diodo collegato al lato P, da cui entra la corrente quando il diodo conduce. Nel simbolo è il lato del triangolo.' },
+      'anodo': { term: 'Anodo', def: 'Il terminale del diodo collegato al lato P, da cui entra la corrente quando il diodo conduce. Nel simbolo è il lato della base del triangolo.' },
       'catodo': { term: 'Catodo', def: 'Il terminale del diodo collegato al lato N, da cui esce la corrente quando il diodo conduce. Nel simbolo è la sbarretta; sul componente lo indica una fascia colorata.' },
     },
-  });
+  }));
 })();

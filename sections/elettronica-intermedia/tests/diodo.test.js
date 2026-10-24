@@ -173,3 +173,34 @@ test('diodo: ogni sfida si può vincere con i valori dei cursori', () => {
   assert.strictEqual(find(SI, 25, (q) => q.I >= 1e-3 && q.V < 0.55), null);
   assert.ok(find(SI, 100, (q) => q.I >= 1e-3 && q.V < 0.55));
 });
+
+test('diodo: con qualsiasi posizione dei cursori lo stato è un numero finito e sensato', () => {
+  const Rs = EI.seriesValues('E12', 47, 10000);
+  [SI, GE].forEach((mat) => {
+    [0, 25, 60, 100].forEach((Tc) => {
+      Rs.forEach((R) => {
+        for (let k = -500; k <= 200; k += 5) {
+          const Vs = k / 100;
+          const q = m.state(mat, Vs, R, Tc);
+          ['V', 'I', 'W', 'W0', 'barrier', 'vbi', 'soglia', 'Is'].forEach((key) => assert.ok(Number.isFinite(q[key]), mat.id + ' ' + Tc + ' °C ' + R + ' Ω ' + Vs + ' V: ' + key + ' = ' + q[key]));
+          // la zona non sparisce mai e la barriera disegnata resta positiva
+          assert.ok(q.W > 0 && q.barrier > 0);
+          // la soglia cala scaldando ma resta una tensione da diodo
+          between(q.soglia, 0.1, 0.75);
+        }
+      });
+    });
+  });
+});
+
+test('diodo: testi con lo spazio indivisibile tra numero e unità, tappe in ordine', () => {
+  const c = chapter('diodo');
+  const texts = [c.summary, c.lab.intro, c.fun, c.uses]
+    .concat(c.how, c.history.text, c.history.events.map((e) => e.text))
+    .concat(...c.formulas.map((f) => [f.note].concat(f.legend.map((l) => l[1]))))
+    .concat(...c.figures.map((f) => [f.caption, f.alt]))
+    .concat(Object.values(c.glossary).map((g) => g.def));
+  texts.forEach((t) => assert.ok(!/\d (°C|mV|mA|µA|nA|µm|V|A)(?![\wµ])/.test(t), 'manca lo spazio indivisibile in: ' + t.slice(0, 90)));
+  const years = c.history.events.map((e) => e.year);
+  assert.deepStrictEqual(years, years.slice().sort((a, b) => a - b));
+});

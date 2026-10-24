@@ -101,16 +101,20 @@
   const TWO_PI = 2 * Math.PI;
 
   // Due composizioni dello schema: larga per lo schermo, stretta e più alta per il telefono.
+  // In alto la formula del guadagno con i valori scelti (e, se c'è posto, la legenda dei colori);
+  // right è il bordo destro del disegno, per centrare le configurazioni con meno componenti.
   const GEO = {
     wide: {
       W: 640, H: 350, OX: 300, OY: 190, Yfb: 96, Ygnd: 318, xN: 236, xs0: 132, xs1: 196,
       xGenInv: 62, genInvTop: 214, xGenNon: 214, genNonTop: 236, glen: 64, xPlusGnd: 256,
       xOut: 436, xRL: 532, rlTop: 222, rlen: 64, xTerm: 604, xGnd: 400, stub: 20, narrow: false,
+      eqX: 18, eqY: 30, right: 634, legend: true,
     },
     narrow: {
-      W: 420, H: 366, OX: 196, OY: 178, Yfb: 70, Ygnd: 336, xN: 148, xs0: 72, xs1: 128,
-      xGenInv: 30, genInvTop: 210, xGenNon: 118, genNonTop: 226, glen: 60, xPlusGnd: 160,
-      xOut: 314, xRL: 346, rlTop: 206, rlen: 56, xTerm: 0, xGnd: 250, stub: 18, narrow: true,
+      W: 420, H: 400, OX: 196, OY: 212, Yfb: 104, Ygnd: 370, xN: 148, xs0: 72, xs1: 128,
+      xGenInv: 30, genInvTop: 244, xGenNon: 118, genNonTop: 260, glen: 60, xPlusGnd: 160,
+      xOut: 314, xRL: 346, rlTop: 240, rlen: 56, xTerm: 0, xGnd: 250, stub: 18, narrow: true,
+      eqX: 10, eqY: 26, right: 420, legend: false,
     },
   };
 
@@ -125,7 +129,22 @@
     const r = Math.abs(v) < Math.pow(10, -d) / 2 ? 0 : v;
     return (r > 0 ? '+' : r < 0 ? '−' : '') + num(Math.abs(r), d) + (unit ? NB + unit : '');
   }
-  const thousands = (n) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, NB);
+  const ohm = (v) => si(v, 'Ω', { trim: true });
+  const MONO = 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace';
+
+  // Etichette delle alimentazioni nel margine destro del grafico, fuori dalla traccia.
+  function railLabels(pl, vs, label, cTop, cBot) {
+    const c = pl.ctx;
+    c.save();
+    c.font = '700 10.5px ' + MONO;
+    c.textAlign = 'left';
+    c.textBaseline = 'middle';
+    c.fillStyle = cTop;
+    c.fillText('+' + label, pl.px1 + 6, pl.Y(vs));
+    c.fillStyle = cBot;
+    c.fillText('−' + label, pl.px1 + 6, pl.Y(-vs));
+    c.restore();
+  }
 
   /* ---------- laboratorio ---------- */
 
@@ -145,26 +164,29 @@
     }
     snap();
 
+    lab.root.classList.add('operazionale-lab');
+
     /* --- grafici --- */
+    // Margine destro largo: lì vanno le etichette delle alimentazioni, lontano dalle tracce.
     const scope = lab.plot({
-      title: 'Oscilloscopio · Vin e Vout', height: 210,
+      title: 'Oscilloscopio · Vin e Vout', height: 210, pad: { r: 46 },
       x: { min: 0, max: 2 * T_SIG, unit: 's', div: 8, label: 'tempo' },
-      y: { min: -13.5, max: 13.5, unit: 'V', count: 6 },
+      y: { min: -15.6, max: 15.6, unit: 'V', count: 6 },
       legend: [{ label: 'Vin', color: 'var(--trace-2)' }, { label: 'Vout', color: 'var(--trace-1)' }],
       aria: 'Oscilloscopio: due periodi della tensione d\'ingresso e di quella d\'uscita',
     });
     const trans = lab.plot({
-      title: 'Transcaratteristica', height: 210,
+      title: 'Transcaratteristica', height: 210, pad: { r: 46 },
       x: { min: -1.25, max: 1.25, unit: 'V', count: 4, label: 'Vin' },
-      y: { min: -13.5, max: 13.5, unit: 'V', count: 6, label: 'Vout' },
-      legend: [{ label: 'Vout in funzione di Vin', color: 'var(--trace-1)' }, { label: 'adesso', color: 'var(--trace-2)' }],
+      y: { min: -15.6, max: 15.6, unit: 'V', count: 6, label: 'Vout' },
+      legend: [{ label: 'Vout(Vin)', color: 'var(--trace-1)' }, { label: 'punto di lavoro', color: 'var(--trace-2)' }],
       aria: 'Caratteristica di trasferimento: Vout in funzione di Vin, con il punto di lavoro',
     });
     lab.plotsEl.classList.add('operazionale-plots');
 
     /* --- strumenti --- */
     const rGi = lab.readout({ label: 'Guadagno ideale', color: 'var(--trace-2)' });
-    const rGm = lab.readout({ label: 'Guadagno misurato', color: 'var(--trace-1)' });
+    const rGm = lab.readout({ label: 'Guadagno reale', color: 'var(--trace-1)' });
     const pkOpts = { label: 'Vout di picco', unit: 'V', color: 'var(--trace-1)', max: 11 };
     const rPk = lab.readout(pkOpts);
     const rVd = lab.readout({ label: 'V+ − V−', color: 'var(--trace-3)' });
@@ -205,6 +227,11 @@
     /* --- lo schema --- */
     let S = null;
 
+    // Sfumatura della legenda: gli stessi colori dei fili, da −Valim a +Valim.
+    const defs = s('defs', null, svg);
+    const grad = s('linearGradient', { id: 'operazionale-vgrad', x1: 0, x2: 1, y1: 0, y2: 0 }, defs);
+    [-1, -0.6, -0.3, -0.1, 0, 0.1, 0.3, 0.6, 1].forEach((t) => s('stop', { offset: ((t + 1) / 2).toFixed(3), 'stop-color': EI.vcolor(t, 1) }, grad));
+
     function build() {
       const G = GEO[mq && mq.matches ? 'narrow' : 'wide'];
       lab.view(G.W, G.H);
@@ -229,11 +256,15 @@
       const big = G.narrow;
 
       const root = s('g', { class: 'operazionale-sch' }, svg);
-      const lGlow = s('g', null, root);
-      const lWire = s('g', null, root);
-      const lSym = s('g', null, root);
-      const lFlow = s('g', null, root);
-      const lTop = s('g', null, root);
+      // con meno componenti a sinistra (inseguitore, comparatore) il disegno si sposta e resta centrato
+      const left = mode === 'inv' ? G.xGenInv - 20 : mode === 'seg' ? G.xGenNon - 20 : G.xs0 - 4;
+      const dx = Math.min(0, Math.round((G.W - left - G.right) / 2));
+      const circ = s('g', dx ? { transform: 'translate(' + dx + ' 0)' } : null, root);
+      const lGlow = s('g', null, circ);
+      const lWire = s('g', null, circ);
+      const lSym = s('g', null, circ);
+      const lFlow = s('g', null, circ);
+      const lTop = s('g', null, circ);
       const wires = [];
       const flows = [];
       const addWire = (pts, key) => { wires.push({ el: wire(lWire, pts), key: key }); };
@@ -263,24 +294,28 @@
       // la "casella" a sinistra del morsetto −: Rin, Rg o la pila della soglia
       let slot = null;
       let refTag = null;
+      let refSign = 0;
       if (mode === 'inv' || mode === 'non') {
-        slot = sym.resistor(lSym, { x: G.xs0, y: Yi, len: rlen, label: mode === 'inv' ? 'Rin' : 'Rg', value: '' });
+        slot = sym.resistor(lSym, { x: G.xs0, y: Yi, len: rlen, label: mode === 'inv' ? 'Rin' : 'Rg', value: ohm(st.r1) });
         if (mode === 'non') addWire([[G.xs0, Yi], [G.xs0, G.Ygnd]], 'gnd');
         addWire([[G.xs1, Yi], [pinX, Yi]], 'vn');
       } else if (mode === 'cmp') {
-        sym.source(lSym, { x: G.xs1, y: Yi, rot: 180, len: rlen, kind: 'dc' });
+        // la pila della soglia ha il + verso il morsetto − se Vref è positiva, verso massa se è negativa
+        refSign = st.vref < 0 ? -1 : 1;
+        if (refSign > 0) sym.source(lSym, { x: G.xs1, y: Yi, rot: 180, len: rlen, kind: 'dc' });
+        else sym.source(lSym, { x: G.xs0, y: Yi, len: rlen, kind: 'dc' });
         addWire([[G.xs0, Yi], [G.xs0, G.Ygnd]], 'gnd');
         addWire([[G.xs1, Yi], [pinX, Yi]], 'vref');
         const cx = (G.xs0 + G.xs1) / 2;
-        name(cx, Yi - (big ? 46 : 36), 'Vref', 'middle');
-        refTag = tag(cx, Yi - (big ? 26 : 22), 'middle', 'ref');
+        name(cx, Yi - (big ? 48 : 42), 'Vref', 'middle');
+        refTag = tag(cx, Yi - 28, 'middle', 'ref');
       }
 
       // anello di retroazione
       let rf = null;
       if (mode === 'inv' || mode === 'non') {
         addWire([[G.xN, Yi], [G.xN, G.Yfb], [rfA, G.Yfb]], 'vn');
-        rf = sym.resistor(lSym, { x: rfA, y: G.Yfb, len: rlen, label: 'Rf', value: '' });
+        rf = sym.resistor(lSym, { x: rfA, y: G.Yfb, len: rlen, label: 'Rf', value: ohm(st.rf) });
         addWire([[rfB, G.Yfb], [G.xOut, G.Yfb], [G.xOut, G.OY]], 'vout');
       } else if (mode === 'seg') {
         addWire([[pinX, Yi], [G.xN, Yi], [G.xN, G.Yfb], [G.xOut, G.Yfb], [G.xOut, G.OY]], 'vout');
@@ -361,10 +396,22 @@
       addFlow('M' + vX + ' ' + top + 'V' + vpY, 'iP', { spacing: 10 });
       addFlow('M' + vX + ' ' + vnY + 'V' + bot, 'iN', { spacing: 10 });
 
+      // in alto, fuori dal disegno spostato: la formula con i valori scelti e la legenda dei colori
+      const hud = s('g', { class: 'operazionale-hud' }, root);
+      const eq = s('text', { x: G.eqX, y: G.eqY, class: 'operazionale-eq' }, hud);
+      let leg = null;
+      if (G.legend) {
+        const bx1 = G.W - 18;
+        const bw = 128;
+        s('text', { x: bx1, y: 19, class: 'operazionale-legend-title', 'text-anchor': 'end', text: 'TENSIONE DEI FILI' }, hud);
+        s('rect', { x: bx1 - bw, y: 27, width: bw, height: 6, rx: 3, fill: 'url(#operazionale-vgrad)' }, hud);
+        leg = ['start', 'middle', 'end'].map((a, i) => s('text', { x: bx1 - bw + i * bw / 2, y: 46, class: 'operazionale-legend-tick', 'text-anchor': a }, hud));
+      }
+
       S = {
         root: root, wires: wires, flows: flows, slot: slot, rf: rf, refTag: refTag, vinTag: vinTag, voutTag: voutTag,
         railP: railP, railN: railN, hitP: hitP, hitN: hitN, band: band, chev: chev, fbLabel: fbLabel, bridge: bridge,
-        broken: null, now: {},
+        eq: eq, leg: leg, refSign: refSign, broken: null, now: {},
       };
       values();
       // dissolvenza d'ingresso quando cambia la configurazione (niente con il movimento ridotto)
@@ -375,19 +422,34 @@
       }
     }
 
+    // La formula della configurazione, in pezzi [classe, testo]: simboli, numeri, note.
+    function eqParts() {
+      const m = st.mode;
+      if (m === 'inv') return [['sym', 'G = −Rf/Rin'], ['num', ' = −' + ohm(st.rf) + '/' + ohm(st.r1) + ' = ' + fmtNum(model.ideal(m, st.r1, st.rf), 4)]];
+      if (m === 'non') return [['sym', 'G = 1 + Rf/Rg'], ['num', ' = 1 + ' + ohm(st.rf) + '/' + ohm(st.r1) + ' = ' + fmtNum(model.ideal(m, st.r1, st.rf), 4)]];
+      if (m === 'seg') return [['sym', 'G = 1'], ['note', ' · l\'uscita torna tutta sul −']];
+      const v = num(model.vsat(st.vs), 0) + NB + 'V';
+      return [['sym', 'Vin > Vref ⇒ '], ['num', '+' + v], ['note', ' · altrimenti '], ['num', '−' + v]];
+    }
+
     // Scritte che dipendono dai valori scelti (non dal tempo).
     function values() {
       if (!S) return;
+      // la pila della soglia cambia verso quando Vref cambia segno: si ridisegna lo schema
+      if (S.refSign && (st.vref < 0 ? -1 : 1) !== S.refSign) { build(); return; }
       const setVal = (part, v) => {
         if (!part || !part.label) return;
         const t = part.label.querySelector('.value');
-        if (t) t.textContent = si(v, 'Ω', { trim: true });
+        if (t) t.textContent = ohm(v);
       };
       setVal(S.slot, st.r1);
       setVal(S.rf, st.rf);
       if (S.refTag) S.refTag.textContent = fmtSigned(st.vref, 1, 'V');
       S.railP.textContent = '+' + st.vs + NB + 'V';
       S.railN.textContent = '−' + st.vs + NB + 'V';
+      S.eq.textContent = '';
+      eqParts().forEach((p) => s('tspan', { class: p[0], text: p[1] }, S.eq));
+      if (S.leg) ['−' + st.vs + NB + 'V', '0' + NB + 'V', '+' + st.vs + NB + 'V'].forEach((t, i) => { S.leg[i].textContent = t; });
     }
 
     function setMode(v) {
@@ -397,7 +459,7 @@
       r1Ctl.el.querySelector('.ei-slider-label').textContent = v === 'non' ? 'Rg, verso massa' : 'Rin, in ingresso';
       const cmp = v === 'cmp';
       relabel(rGi, cmp ? 'Guadagno A' : 'Guadagno ideale');
-      relabel(rGm, cmp ? 'Soglia Vref' : 'Guadagno misurato');
+      relabel(rGm, cmp ? 'Soglia Vref' : 'Guadagno reale');
       relabel(rPk, cmp ? 'Vout adesso' : 'Vout di picco');
       relabel(rBw, cmp ? 'Uscita alta per' : 'Banda a −3 dB');
       relabel(rSt, cmp ? 'Uscita' : 'Stato');
@@ -423,10 +485,17 @@
       const vsat = model.vsat(q.vs);
       const fmtV = (v) => si(v, 'V', { sig: 3, trim: true });
       if (q.mode === 'cmp') {
-        if (Math.abs(q.vref) >= q.amp) {
-          return 'La soglia Vref = <b>' + fmtSigned(q.vref, 1, 'V') + '</b> è fuori dall\'escursione del segnale (±' + fmtV(q.amp) + '): il confronto dà sempre lo stesso risultato e l\'uscita resta ferma <b>' + (q.vref >= q.amp ? 'in basso' : 'in alto') + '</b>. Avvicina Vref a zero, o alza l\'ampiezza, per vederla scattare.';
+        const rail = num(vsat, 0) + NB + 'V';
+        const more = q.amp < AMPS[AMPS.length - 1] ? ', o alza l\'ampiezza,' : '';
+        if (q.vref >= q.amp) {
+          return 'La soglia Vref = <b>' + fmtSigned(q.vref, 1, 'V') + '</b> non viene mai superata: il segnale arriva al massimo a ' + fmtSigned(q.amp, 2, 'V') + '. Il confronto dà sempre lo stesso risultato e l\'uscita resta ferma <b>in basso</b>, a −' + rail + '. Abbassa Vref' + more + ' per vederla scattare.';
         }
-        return '<b>Comparatore</b>: niente retroazione, quindi lavora tutto il [[guadagno-ad-anello-aperto]], A = 200' + NB + '000. Bastano <b>' + fmtV(vsat / OPAMP.A) + '</b> di differenza per mandare l\'uscita al massimo: è <b>alta</b> (+' + num(vsat, 0) + ' V) quando Vin supera Vref = ' + fmtSigned(q.vref, 1, 'V') + ', <b>bassa</b> quando è sotto. Così un segnale continuo diventa un sì o un no: ora l\'uscita è alta per il <b>' + num(q.duty * 100, 0) + '%</b> del tempo.';
+        if (q.vref <= -q.amp) {
+          return 'La soglia Vref = <b>' + fmtSigned(q.vref, 1, 'V') + '</b> è sempre superata: il segnale non scende mai sotto ' + fmtSigned(-q.amp, 2, 'V') + '. Il confronto dà sempre lo stesso risultato e l\'uscita resta ferma <b>in alto</b>, a +' + rail + '. Alza Vref' + more + ' per vederla scattare.';
+        }
+        const pct = Math.round(q.duty * 100);
+        const art = pct === 1 || pct === 8 || pct === 11 || (pct >= 80 && pct <= 89) ? 'l\'' : 'il ';
+        return '<b>Comparatore</b>: niente retroazione, quindi lavora tutto il [[guadagno-ad-anello-aperto]], A = 200' + NB + '000. Bastano <b>' + fmtV(vsat / OPAMP.A) + '</b> di differenza per mandare l\'uscita al massimo: è <b>alta</b> (+' + rail + ') quando Vin supera Vref = ' + fmtSigned(q.vref, 1, 'V') + ', <b>bassa</b> (−' + rail + ') quando è sotto. Così un segnale analogico diventa un sì o un no: ora l\'uscita è alta per ' + art + '<b>' + pct + '%</b> del tempo.';
       }
       const g = model.closedLoop(q.mode, q.r1, q.rf, OPAMP.A);
       const want = Math.abs(g) * q.amp;
@@ -438,15 +507,17 @@
       if (q.mode === 'inv') {
         msg = '<b>Invertente</b>: il + è a massa e la [[retroazione-negativa]] tiene anche il − a 0 V, la [[massa-virtuale]] (scarto massimo ' + fmtV(tc.maxVd) + '). In Rin scorrono Vin/Rin = ' + si(q.amp / q.r1, 'A', { trim: true }) + ' di picco che, non potendo entrare nell\'operazionale, attraversano Rf. Così Vout = −Rf/Rin · Vin = <b>' + fmtNum(q.gid, 4) + ' × Vin</b>, capovolta.';
       } else if (q.mode === 'non') {
-        msg = '<b>Non invertente</b>: il segnale entra nel +. L\'operazionale sposta l\'uscita finché il partitore Rf–Rg riporta sul − la stessa tensione: è il [[cortocircuito-virtuale]] (scarto massimo ' + fmtV(tc.maxVd) + '). Serve Vout = (1 + Rf/Rg) · Vin = <b>' + fmtNum(q.gid, 4) + ' × Vin</b>, in fase. E il generatore non fornisce corrente.';
+        msg = '<b>Non invertente</b>: il segnale entra nel +. L\'operazionale sposta l\'uscita finché il partitore Rf–Rg riporta sul − la stessa tensione: è il [[cortocircuito-virtuale]] (scarto massimo ' + fmtV(tc.maxVd) + '). Serve Vout = (1 + Rf/Rg) · Vin = <b>' + fmtNum(q.gid, 4) + ' × Vin</b>, in fase. In più il generatore non fornisce corrente: il morsetto + non ne assorbe.';
       } else {
         msg = '<b>[[inseguitore|Inseguitore]]</b>: l\'uscita è collegata al −, quindi Vout = Vin (scarto massimo ' + fmtV(tc.maxVd) + '). Sembra inutile, ma guarda le cariche: il generatore non dà corrente, mentre RL riceve fino a ' + si(tc.peak / OPAMP.RL, 'A', { trim: true }) + ' dall\'operazionale, che la prende dalle alimentazioni. Così un sensore delicato non viene «caricato».';
       }
+      // limiti di velocità: si cita il più stretto tra la banda e lo slew rate
       const ng = model.noiseGain(q.mode, q.r1, q.rf);
-      if (ng >= 100) {
-        msg += ' Il prezzo di tanto guadagno è la banda: con il [[prodotto-guadagno-banda]] di 1 MHz il 741 arriva solo a <b>' + si(model.bandwidth(OPAMP.GBW, ng), 'Hz', { trim: true }) + '</b>.';
-      } else if (tc.peak >= 5) {
-        msg += ' Con ' + fmtV(tc.peak) + ' di picco il limite vero è lo [[slew-rate]]: oltre circa <b>' + si(model.fullPower(OPAMP.SR, tc.peak), 'Hz', { trim: true, sig: 2 }) + '</b> l\'onda si deformerebbe.';
+      const bw = model.bandwidth(OPAMP.GBW, ng);
+      const fp = model.fullPower(OPAMP.SR, Math.max(tc.peak, 1e-6));
+      if (ng >= 100 || tc.peak >= 5) {
+        if (fp < bw) msg += ' Con ' + fmtV(tc.peak) + ' di picco il limite più stretto è lo [[slew-rate]]: oltre circa <b>' + si(fp, 'Hz', { trim: true, sig: 2 }) + '</b> l\'uscita non starebbe più al passo e la sinusoide diventerebbe un triangolo.';
+        else msg += ' Il prezzo di tanto guadagno è la banda: con il [[prodotto-guadagno-banda]] di 1' + NB + 'MHz il 741 amplifica bene solo fino a circa <b>' + si(bw, 'Hz', { trim: true }) + '</b>.';
       }
       return msg;
     }
@@ -552,7 +623,9 @@
       S.voutTag.style.fill = r.vout >= 0 ? P.t1 : P.t4;
 
       /* oscilloscopio */
-      const yMax = p.vs + 1.5;
+      // 30% di margine oltre le alimentazioni: i titoli degli assi non toccano le linee tratteggiate
+      const yMax = 1.3 * p.vs;
+      const railTxt = num(st.vs, 0) + NB + 'V';
       let k = 1;
       if (amp < 0.05 * yMax) MAG.forEach((m) => { if (amp * m <= 0.55 * yMax) k = m; });
       const showIdeal = !cmp && cyc.sat;
@@ -565,22 +638,27 @@
       }
       const vinK = (t) => k * vinAt(t);
       const voutF = (t) => model.solve(p, vinAt(t)).vout;
+      // nell'inseguitore Vout copre Vin: Vin resta visibile come un alone attorno alla traccia
+      const halo = mode === 'seg' && k === 1;
+      const vinSt = halo ? { color: P.t2, width: 7, alpha: 0.45, glow: false } : { color: P.t2, width: 2 };
+      scope.opts.x.div = scope.w < 520 ? 4 : 8; // sul telefono una tacca al secondo
       scope.setRange('y', -yMax, yMax);
       scope.clear();
       scope.band(vsat, p.vs, { color: P.t1, alpha: 0.07 });
       scope.band(-p.vs, -vsat, { color: P.t4, alpha: 0.07 });
-      scope.hline(p.vs, { color: P.t1, alpha: 0.55, label: '+' + num(st.vs, 0) + ' V', at: 'left' });
-      scope.hline(-p.vs, { color: P.t4, alpha: 0.55, label: '−' + num(st.vs, 0) + ' V', at: 'left' });
+      scope.hline(p.vs, { color: P.t1, alpha: 0.55 });
+      scope.hline(-p.vs, { color: P.t4, alpha: 0.55 });
+      railLabels(scope, p.vs, railTxt, P.t1, P.t4);
       if (showIdeal) scope.line((t) => model.solve(p, vinAt(t)).vlin, { color: '#7d918a', width: 1.4, dash: [5, 5], glow: false, alpha: 0.9 });
       if (lab.reduced) {
-        scope.line(vinK, { color: P.t2, width: 2 });
+        scope.line(vinK, vinSt);
         scope.line(voutF, { color: P.t1, width: 2.4, samples: 480 });
       } else {
         // traccia "con persistenza": il fascio ridisegna l'onda, il resto sbiadisce
-        scope.line(vinK, { color: P.t2, width: 1.5, alpha: 0.28, glow: false });
+        scope.line(vinK, { color: P.t2, width: halo ? 7 : 1.5, alpha: halo ? 0.16 : 0.28, glow: false });
         scope.line(voutF, { color: P.t1, width: 1.7, alpha: 0.28, glow: false, samples: 480 });
         const n = Math.max(2, Math.ceil(tNow / (2 * T_SIG) * 320));
-        scope.line(series(vinK, 0, tNow, n), { color: P.t2, width: 2 });
+        scope.line(series(vinK, 0, tNow, n), vinSt);
         scope.line(series(voutF, 0, tNow, n), { color: P.t1, width: 2.4 });
         scope.vline(tNow, { color: P.ink, alpha: 0.2, dash: [3, 4] });
       }
@@ -596,6 +674,7 @@
       trans.band(-p.vs, -vsat, { color: P.t4, alpha: 0.07 });
       trans.hline(p.vs, { color: P.t1, alpha: 0.5 });
       trans.hline(-p.vs, { color: P.t4, alpha: 0.5 });
+      railLabels(trans, p.vs, railTxt, P.t1, P.t4);
       if (cmp) trans.vline(p.vref, { color: P.t3, alpha: 0.85, label: 'Vref' });
       else {
         const g = model.closedLoop(mode, p.r1, p.rf, OPAMP.A);
@@ -667,21 +746,21 @@
     const H = 438;
     let g = '';
     // tre zone, una per stadio
-    g += R(36, 42, 178, 176, 'operazionale-zone', 10) + R(222, 42, 116, 176, 'operazionale-zone', 10) + R(346, 42, 140, 176, 'operazionale-zone', 10);
+    g += R(20, 42, 194, 176, 'operazionale-zone', 10) + R(222, 42, 116, 176, 'operazionale-zone', 10) + R(346, 42, 160, 176, 'operazionale-zone', 10);
     // alimentazioni
-    g += L('M30 34H486') + L('M30 226H486');
+    g += L('M30 34H506') + L('M30 226H506');
     g += T(24, 38, '+V', 'f-mono', 'end') + T(24, 230, '−V', 'f-mono', 'end');
-    g += T(486, 24, '+V · piedino 7', 'f-small', 'end') + T(486, 244, '−V · piedino 4', 'f-small', 'end');
+    g += T(506, 24, '+V · piedino 7', 'f-small', 'end') + T(506, 244, '−V · piedino 4', 'f-small', 'end');
 
     // 1 · stadio differenziale: due transistor con gli emettitori uniti
     g += bjtGlyph(92, 128, 1) + bjtGlyph(156, 128, -1);
-    g += L('M62 128H92M156 128H186');
+    g += L('M62 128H92M156 128H180');
     g += L('M106 112V72M142 112V72M106 144V160M142 144V160M106 160H142M124 160V174M124 198V226');
     g += C(124, 186, 12) + L('M124 179V188') + ARROW(124, 194, 90);
-    g += R(94, 50, 60, 22, 'f-paper', 4) + T(124, 65, 'specchio', 'f-small', 'middle') + L('M124 50V34');
-    g += C(62, 128, 3.5) + C(186, 128, 3.5);
-    g += T(54, 124, 'IN+', 'f-mono', 'end') + T(54, 140, 'piedino 3', 'f-small', 'end');
-    g += T(186, 152, 'IN−', 'f-mono', 'middle') + T(186, 167, 'piedino 2', 'f-small', 'middle');
+    g += R(88, 50, 72, 22, 'f-paper', 4) + T(124, 65, 'specchio', 'f-small', 'middle') + L('M124 50V34');
+    g += C(62, 128, 3.5) + C(180, 128, 3.5);
+    g += T(62, 152, 'IN+', 'f-mono', 'middle') + T(62, 167, 'piedino 3', 'f-small', 'middle');
+    g += T(180, 152, 'IN−', 'f-mono', 'middle') + T(180, 167, 'piedino 2', 'f-small', 'middle');
     g += L('M142 86H232') + NODE(142, 86);
 
     // 2 · stadio di guadagno con il condensatore di compensazione (effetto Miller)
@@ -701,15 +780,15 @@
     g += bjtGlyph(400, 96, 1) + bjtGlyph(400, 160, 1, true);
     g += L('M372 96H400M372 160H400M414 80V34M414 112V144M414 176V226M414 128H462');
     g += NODE(372, 96) + NODE(372, 160) + NODE(414, 128) + C(466, 128, 3.5);
-    g += T(512, 116, 'OUT', 'f-mono', 'end') + T(512, 150, 'piedino 6', 'f-small', 'end');
+    g += T(466, 114, 'OUT', 'f-mono', 'middle') + T(466, 150, 'piedino 6', 'f-small', 'middle');
 
     // il segnale attraversa i tre stadi
     g += '<path class="operazionale-flow" d="M142 86H232V128H250M298 128H346V160H372M414 128H462"/>';
 
     // didascalie degli stadi
-    g += T(124, 262, '1 · Ingresso differenziale', 'f-text', 'middle') + T(124, 278, 'confronta V+ e V−', 'f-small', 'middle');
-    g += T(280, 262, '2 · Guadagno', 'f-text', 'middle') + T(280, 278, 'amplifica, Cc lo stabilizza', 'f-small', 'middle');
-    g += T(424, 262, '3 · Uscita push-pull', 'f-text', 'middle') + T(424, 278, 'spinge e tira la corrente', 'f-small', 'middle');
+    g += T(124, 262, '1 · Differenziale', 'f-text', 'middle') + T(124, 278, 'confronta V+ e V−', 'f-small', 'middle');
+    g += T(280, 262, '2 · Guadagno', 'f-text', 'middle') + T(280, 278, 'amplifica molto', 'f-small', 'middle');
+    g += T(426, 262, '3 · Uscita push-pull', 'f-text', 'middle') + T(426, 278, 'spinge e tira', 'f-small', 'middle');
     g += T(260, 302, 'In tutto una ventina di transistor e un solo condensatore.', 'f-small', 'middle');
 
     // il contenitore DIP-8 visto dall'alto
@@ -727,7 +806,7 @@
     g += '<path class="f-paper" d="M232 362L232 404L270 383Z"/>';
     g += L('M214 374H232M214 392H232M270 383H288V392H306');
     g += T(240, 378, '−', 'f-mono', 'middle') + T(240, 397, '+', 'f-mono', 'middle');
-    return '<svg viewBox="0 0 ' + W + ' ' + H + '">' + g + '</svg>';
+    return '<svg class="operazionale-fig" viewBox="0 0 ' + W + ' ' + H + '">' + g + '</svg>';
   }
 
   function feedbackFigure() {
@@ -742,24 +821,25 @@
     g += L('M146 80H195') + ARROW(202, 80, 0) + T(174, 70, 'e', 'f-accent-text', 'middle');
     g += R(202, 52, 100, 56, 'f-accent-soft', 10) + T(252, 80, 'A', 'f-title', 'middle', 'font-size:22px') + T(252, 99, '≈ 200' + NB + '000', 'f-mono', 'middle');
     g += L('M302 80H409') + ARROW(416, 80, 0) + NODE(380, 80) + T(422, 85, 'Vout', 'f-text');
-    g += T(346, 66, 'Vout = A · e', 'f-mono', 'middle');
+    g += T(357, 66, 'Vout = A · e', 'f-mono', 'middle');
     // anello di retroazione: una parte dell'uscita torna indietro e si sottrae
     g += L('M380 80V178H309') + ARROW(303, 178, 180);
     g += R(202, 152, 100, 52, 'f-paper', 10) + T(252, 177, 'β', 'f-title', 'middle', 'font-size:22px') + T(252, 196, '= 0,1', 'f-mono', 'middle');
     g += L('M202 178H128V105') + ARROW(128, 99, -90);
     g += T(166, 170, 'β · Vout', 'f-mono', 'middle');
     g += T(116, 146, 'retroazione', 'f-accent-text', 'end');
-    g += T(392, 132, 'β = Rg / (Rg + Rf)', 'f-small');
+    g += T(390, 132, 'β = Rg/(Rg + Rf)', 'f-small');
     g += '<path class="operazionale-flow" d="M46 80H102M146 80H195M302 80H409"/>';
     g += '<path class="operazionale-flow" d="M380 80V178H309M202 178H128V105"/>';
     // A cambia molto, G quasi per niente
-    g += T(260, 230, 'Con β = 0,1 il guadagno resta 10 anche se A cambia di 20 volte:', 'f-small', 'middle');
+    g += T(260, 230, 'Con β = 0,1, G resta quasi 10 anche se A varia di 20 volte:', 'f-small', 'middle');
     [['50' + NB + '000', '9,998'], ['200' + NB + '000', '9,9995'], ['1' + NB + '000' + NB + '000', '9,9999']].forEach((c, i) => {
       const x = 22 + i * 164;
       g += R(x, 240, 148, 48, 'f-soft', 10);
       g += T(x + 74, 259, 'A = ' + c[0], 'f-mono', 'middle') + T(x + 74, 279, 'G = ' + c[1], 'f-accent-text', 'middle');
     });
-    return '<svg viewBox="0 0 ' + W + ' ' + H + '">' + g + '</svg>';
+    // il disegno comincia a y = 52: la cornice parte poco sopra, senza una fascia vuota
+    return '<svg class="operazionale-fig" viewBox="0 40 ' + W + ' ' + (H - 40) + '">' + g + '</svg>';
   }
 
   /* ---------- capitolo ---------- */
@@ -768,7 +848,7 @@
     id: 'operazionale',
     icon: 'opamp',
     minutes: 15,
-    summary: 'Un [[amplificatore-operazionale]] moltiplica la differenza tra i suoi due ingressi per un numero enorme, circa 200' + NB + '000 nel classico 741: da solo è troppo, e l\'uscita va subito contro le alimentazioni. Con la [[retroazione-negativa]] una parte dell\'uscita torna all\'ingresso e il guadagno lo decidono due resistenze, preciso e stabile. Così lo stesso chip diventa amplificatore, separatore, mixer o [[comparatore]].',
+    summary: 'Un [[amplificatore-operazionale]] moltiplica la differenza tra i suoi due ingressi per un numero enorme, circa 200' + NB + '000 nel classico 741: usato così, basta un soffio per mandare l\'uscita contro le alimentazioni. Con la [[retroazione-negativa]] una parte dell\'uscita torna all\'ingresso e il guadagno lo decidono due resistenze, preciso e stabile. Così lo stesso chip diventa amplificatore, separatore, mixer o [[comparatore]].',
     keywords: ['amplificatore-operazionale', 'retroazione-negativa', 'cortocircuito-virtuale', 'massa-virtuale', 'guadagno-ad-anello-aperto', 'saturazione-uscita', 'comparatore', 'prodotto-guadagno-banda'],
     model: model,
     css: [
@@ -793,9 +873,19 @@
       '.ei-sym-label.operazionale-val { fill: var(--trace-2); font: 700 11.5px var(--mono); }',
       '.operazionale-chip { fill: var(--scope-text); font: 700 9px var(--mono); opacity: .8; }',
       '.operazionale-term { fill: var(--scope-bg); stroke: var(--sym); stroke-width: 2.2; }',
+      '.operazionale-eq { font: 700 14px var(--font); }',
+      '.operazionale-eq .sym { fill: #fff; }',
+      '.operazionale-eq .num { fill: var(--trace-2); font-family: var(--mono); font-size: 13px; }',
+      '.operazionale-eq .note { fill: var(--scope-text); font-weight: 600; }',
+      '.operazionale-legend-title { fill: var(--scope-text); font: 800 9px var(--mono); letter-spacing: .12em; }',
+      '.operazionale-legend-tick { fill: var(--scope-text); font: 700 10px var(--mono); }',
+      // core: style.css ridefinisce --fill sul cursore e la barra resta sempre a metà; qui la si fa ereditare
+      '.operazionale-lab .ei-slider input[type="range"] { --fill: inherit; }',
       '.ei-plots.operazionale-plots { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); }',
       '@media (max-width: 900px) { .ei-plots.operazionale-plots { grid-template-columns: 1fr; } }',
       '@media (max-width: 640px) {',
+      '  .ei-stage .operazionale-eq { font-size: 16px; }',
+      '  .ei-stage .operazionale-eq .num { font-size: 15px; }',
       '  .ei-stage .operazionale-tag { font-size: 16px; }',
       '  .ei-stage .operazionale-tag.rail { font-size: 15px; }',
       '  .ei-stage .operazionale-fb-label { font-size: 13px; }',
@@ -803,9 +893,22 @@
       '  .ei-stage .operazionale-chip { font-size: 12px; }',
       '  .ei-stage .ei-sym-label.operazionale-val { font-size: 16px; }',
       '}',
+      // telefoni stretti (320-359 px): le etichette degli strumenti stanno su una riga senza puntini
+      '@media (max-width: 359px) {',
+      '  .operazionale-lab .ei-readout { padding-inline: 9px; }',
+      '  .operazionale-lab .ei-readout-label { letter-spacing: .02em; }',
+      '}',
+      '.operazionale-nobr { white-space: nowrap; }',
       '.ei-figure .operazionale-zone { fill: color-mix(in srgb, var(--ei-bright) 6%, transparent); stroke: var(--ei-line); stroke-width: 1; stroke-dasharray: 4 4; }',
       '.ei-figure .operazionale-flow { fill: none; stroke: var(--ei-bright); stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 2 12; animation: operazionale-dash 1.2s linear infinite; }',
       '@keyframes operazionale-dash { to { stroke-dashoffset: -28; } }',
+      // sul telefono le figure scendono a circa il 63%: scritte più grandi, dove il disegno ha spazio
+      '@media (max-width: 640px) {',
+      '  .ei-figure .operazionale-fig .f-small { font-size: 13.5px; }',
+      '  .ei-figure .operazionale-fig .f-text { font-size: 15px; }',
+      '  .ei-figure .operazionale-fig .f-mono { font-size: 13.5px; }',
+      '  .ei-figure .operazionale-fig .f-accent-text { font-size: 14.5px; }',
+      '}',
       '@media (prefers-reduced-motion: reduce) {',
       '  .operazionale-sch { transition: none; }',
       '  .ei-figure .operazionale-flow { animation: none; }',
@@ -813,18 +916,18 @@
     ].join('\n'),
     lab: {
       title: 'Il guadagno si sceglie con due resistenze',
-      intro: 'Scegli una configurazione e gira le manopole: le cariche scorrono in Rin e Rf al ritmo del segnale, rallentato a mezzo ciclo al secondo. Nell\'<b>invertente</b> guarda il nodo tra Rin e Rf: resta grigio, a 0 V, mentre ingresso e uscita oscillano. Poi alza il guadagno finché l\'onda sbatte contro le alimentazioni.',
+      intro: 'Scegli una configurazione e sposta i cursori: le cariche scorrono in Rin e Rf al ritmo del segnale, rallentato a mezzo ciclo al secondo. Nell\'<b>invertente</b> guarda il nodo tra Rin e Rf: resta grigio, a 0 V, mentre ingresso e uscita oscillano. Poi alza il guadagno finché l\'onda sbatte contro le alimentazioni: la fascia azzurra della retroazione diventa rosa, perché con l\'uscita bloccata l\'anello non corregge più.',
       svgLabel: 'Schema: amplificatore operazionale con generatore, resistenze, carico e alimentazioni',
       mount: mount,
     },
     how: [
-      'Dentro il contenitore c\'è un [[amplificatore-operazionale|operazionale]]: due ingressi, il non invertente (+) e l\'invertente (−), e un\'uscita. Amplifica solo la differenza: Vout = A · (V+ − V−), con un [[guadagno-ad-anello-aperto]] A enorme, circa 200' + NB + '000 nel 741. Gli ingressi assorbono pochissima corrente e l\'uscita regge un carico senza cedere.',
+      'Un [[amplificatore-operazionale|operazionale]] ha due ingressi, il non invertente (+) e l\'invertente (−), e un\'uscita. Amplifica solo la differenza: Vout = A · (V+ − V−), con un [[guadagno-ad-anello-aperto]] A enorme, circa 200' + NB + '000 nel 741. Gli ingressi assorbono pochissima corrente (nel 741 la resistenza d\'ingresso è di circa 2 MΩ) e l\'uscita, con una resistenza interna di circa 75 Ω, regge un carico senza cedere.',
       'Da solo è ingestibile: con A = 200' + NB + '000 bastano 0,1 mV di differenza per chiedere 20 V all\'uscita, che finisce contro le alimentazioni. E A cambia da un chip all\'altro e con la temperatura. Senza retroazione l\'operazionale è un [[comparatore]]: uscita al massimo o al minimo.',
-      'Il trucco è la [[retroazione-negativa]]: una parte dell\'uscita torna sul morsetto −. Se l\'uscita sale troppo, sale anche V− e la differenza si riduce; se scende troppo, succede il contrario. Il circuito si assesta da solo dove V+ e V− sono quasi uguali.',
+      'Il trucco è la [[retroazione-negativa]]: una parte dell\'uscita torna sul morsetto −. Se l\'uscita sale troppo, sale anche V−: la differenza V+ − V− cala e l\'uscita viene riportata giù. Se scende troppo, succede il contrario. Il circuito si assesta da solo dove V+ e V− sono quasi uguali.',
       'Ne nascono due regole d\'oro, valide finché c\'è retroazione e l\'uscita non satura: V+ = V− (il [[cortocircuito-virtuale]]) e nessuna corrente entra negli ingressi. Con queste due frasi si calcola quasi ogni circuito.',
       'Amplificatore invertente: il + è a massa, quindi anche il − sta a 0 V, la [[massa-virtuale]]. La corrente Vin/Rin non può entrare nell\'operazionale e passa tutta in Rf: Vout = −Rf/Rin · Vin. Con più ingressi, ognuno con la sua resistenza, le correnti si sommano: è il cuore di un mixer audio.',
       'Amplificatore non invertente: il segnale entra nel + e il partitore Rf–Rg riporta sul − una frazione dell\'uscita. Perché V− sia uguale a Vin serve Vout = (1 + Rf/Rg) · Vin, in fase. Con Rf = 0 e senza Rg diventa l\'[[inseguitore]]: guadagno 1, ma il generatore non fornisce corrente.',
-      'I limiti veri: l\'uscita non supera le alimentazioni (il 741 si ferma 1–2 V prima, la [[saturazione-uscita|saturazione]]); il [[prodotto-guadagno-banda]] è circa 1 MHz, quindi con guadagno 100 la banda scende a 10 kHz; lo [[slew-rate]] di 0,5 V/µs frena i segnali grandi e veloci.',
+      'I limiti veri: l\'uscita non supera le alimentazioni (il 741 si ferma 1–2 V prima, gli operazionali rail-to-rail quasi a contatto: è la [[saturazione-uscita|saturazione]]); il [[prodotto-guadagno-banda]] è circa 1 MHz, quindi con guadagno 100 la banda scende a 10 kHz; lo [[slew-rate]] di 0,5 V/µs frena i segnali grandi e veloci.',
     ],
     formulas: [
       {
@@ -850,13 +953,13 @@
       {
         title: 'Dentro il µA741',
         svg: insideFigure(),
-        caption: 'Tre stadi su un solo chip. La coppia differenziale confronta i due ingressi; lo stadio di guadagno amplifica, e il condensatore Cc da circa 30 pF lo rallenta quanto basta perché con la retroazione non oscilli; lo stadio push-pull spinge o assorbe la corrente del carico. Sotto, i piedini del contenitore DIP-8.',
+        caption: 'Tre stadi su un solo chip. La coppia differenziale confronta i due ingressi; lo stadio di guadagno amplifica, e il condensatore Cc da circa 30 pF lo rallenta quanto basta perché con la retroazione non oscilli; lo stadio push-pull spinge o assorbe la corrente del carico. Sotto, i piedini del contenitore <span class="operazionale-nobr">DIP-8</span>: l\'1 e il 5 servono ad azzerare l\'offset, il piccolo squilibrio dei transistor d\'ingresso che equivale a circa 1 mV tra V+ e V−.',
         alt: 'Schema semplificato del 741: stadio differenziale, stadio di guadagno con condensatore di compensazione, uscita push-pull; sotto, la piedinatura del contenitore a otto piedini',
       },
       {
         title: 'La retroazione in un disegno',
         svg: feedbackFigure(),
-        caption: 'L\'amplificatore A vede solo l\'errore e = Vin − β · Vout. Con A enorme basta un errore minuscolo, così l\'uscita si sistema dove β · Vout ≈ Vin, cioè G ≈ 1/β: il guadagno lo decidono le resistenze, non i transistor.',
+        caption: 'L\'amplificatore A vede solo l\'errore e = Vin − β · Vout. Con A enorme basta un errore minuscolo, così l\'uscita si sistema dove β · Vout ≈ Vin, cioè <span class="operazionale-nobr">G ≈ 1/β</span>: il guadagno lo decidono le resistenze, non i transistor.',
         alt: 'Schema a blocchi della retroazione negativa: nodo sommatore, amplificatore A, rete di retroazione beta e tre esempi numerici',
       },
     ],
@@ -864,19 +967,19 @@
       text: [
         'Tutto comincia con un problema del telefono. Negli anni Venti le linee a lunga distanza usano molti amplificatori a valvole in fila, i ripetitori, e ognuno aggiunge un po\' di distorsione. Harold S. Black, giovane ingegnere dei Bell Labs, ci lavora da tempo quando, una mattina d\'agosto del 1927, attraversando l\'Hudson in traghetto per andare al lavoro, annota l\'idea su una pagina del New York Times: riportare all\'ingresso una parte dell\'uscita, capovolta. Si perde guadagno, ma la distorsione cala nella stessa proporzione.',
         'Il brevetto, depositato nel 1928, arriva solo nel 1937. Intanto la retroazione conquista i calcolatori analogici: nel 1941 Karl D. Swartzel Jr., anche lui ai Bell Labs, deposita il brevetto di un «amplificatore sommatore» a valvole, e durante la guerra circuiti di questo tipo calcolano il tiro della contraerea. Nel 1947 un articolo di John R. Ragazzini e due colleghi della Columbia University li chiama «amplificatori operazionali», perché nei calcolatori eseguono operazioni matematiche: somme, integrali, derivate.',
-        'Nel 1952 la George A. Philbrick Researches mette in vendita il K2-W, il primo operazionale commerciale: un modulo a innesto con due doppi triodi. Poi arriva il silicio. Alla Fairchild Bob Widlar progetta il µA702 e poi il µA709 (1965), i primi operazionali integrati su un solo chip; nel 1967, passato alla National Semiconductor, crea l\'LM101, che per restare stabile chiede un solo condensatore esterno da 30 pF.',
-        'Nel 1968 Dave Fullagar, alla Fairchild, porta quel condensatore dentro il chip: nasce il µA741, il primo operazionale con compensazione interna. Si collega e funziona, senza componenti in più per la stabilità. Diventa lo standard dell\'elettronica analogica, e dopo più di cinquant\'anni è ancora in produzione.',
+        'Nel 1952 la George A. Philbrick Researches mette in vendita il K2-W, considerato il primo operazionale commerciale: un modulo a innesto con due doppi triodi. Poi arriva il silicio. Alla Fairchild Bob Widlar progetta nel 1963 il µA702, il primo operazionale integrato su un solo chip, e poi il µA709 (1965), il primo a vendere in grandi quantità; nel 1967, passato alla National Semiconductor, crea l\'LM101, che per restare stabile chiede un solo condensatore esterno da 30 pF.',
+        'Nel 1968 Dave Fullagar, alla Fairchild, porta quel condensatore dentro il chip: nasce il µA741, con la compensazione interna. Si collega e funziona, senza componenti in più per la stabilità. Diventa lo standard dell\'elettronica analogica, e dopo più di cinquant\'anni è ancora in produzione.',
       ],
       events: [
         { year: 1927, title: 'La retroazione negativa', who: 'Harold S. Black, Bell Labs', text: 'Su un traghetto diretto a Manhattan annota l\'idea su una pagina del New York Times: rinunciare a un po\' di guadagno per avere un amplificatore preciso e senza distorsione.' },
         { year: 1941, title: 'L\'amplificatore sommatore', who: 'Karl D. Swartzel Jr., Bell Labs', text: 'Deposita il brevetto di un amplificatore a valvole che somma più tensioni: l\'antenato diretto dell\'operazionale.' },
         { year: 1947, title: 'Il nome «operazionale»', who: 'John R. Ragazzini, Robert H. Randall, Frederick A. Russell', text: 'Nei calcolatori analogici questi amplificatori eseguono operazioni matematiche: somme, integrali, derivate.' },
         { year: 1952, title: 'Il primo operazionale in vendita', who: 'George A. Philbrick Researches', text: 'Il K2-W: due doppi triodi in un modulo a innesto, pensato per i calcolatori analogici.' },
-        { year: 1965, title: 'L\'operazionale diventa un chip', who: 'Bob Widlar, Fairchild', text: 'Il µA709, successore del µA702, è il primo operazionale integrato di grande successo.' },
+        { year: 1963, title: 'L\'operazionale diventa un chip', who: 'Bob Widlar, Fairchild', text: 'Il µA702 mette l\'operazionale su un solo chip di silicio. Il suo successore, il µA709 del 1965, è il primo operazionale integrato di grande successo.' },
         { year: 1968, title: 'Il µA741', who: 'Dave Fullagar, Fairchild', text: 'Il condensatore di compensazione da 30 pF entra nel chip: basta collegarlo e funziona. Diventa lo standard dell\'analogico.' },
       ],
     },
-    fun: 'Il brevetto di Black arrivò dopo più di nove anni: l\'idea di buttare via guadagno per migliorare un amplificatore sembrava così strana che, raccontò lui stesso, in Inghilterra la sua domanda fu trattata come quella di una macchina a moto perpetuo.',
+    fun: 'Il brevetto di Black arrivò dopo più di nove anni: l\'idea di buttare via guadagno per migliorare un amplificatore sembrava così strana che, raccontò lui stesso, la sua domanda fu trattata come quella di una macchina a moto perpetuo.',
     uses: 'Preamplificatori per microfoni e chitarre, mixer e amplificatori per cuffie, filtri attivi, la lettura di sensori deboli come termocoppie, estensimetri e fotodiodi, gli elettrocardiografi, i comparatori di termostati e caricabatterie, l\'amplificatore d\'errore dentro ogni regolatore di tensione, i convertitori analogico-digitali.',
     links: [
       { href: '#bjt', section: 'Questa sezione', title: 'Il transistor bipolare: i mattoni dentro il 741' },
@@ -889,9 +992,9 @@
       'amplificatore-operazionale': { term: 'Amplificatore operazionale', def: 'Amplificatore integrato con due ingressi (+ e −) e un\'uscita, che moltiplica la loro differenza per un guadagno enorme, da centomila a oltre un milione. Si usa quasi sempre con la retroazione negativa: il guadagno lo decidono le resistenze.' },
       'retroazione-negativa': { term: 'Retroazione negativa', def: 'Riportare all\'ingresso una parte dell\'uscita, sottraendola al segnale. Riduce il guadagno ma lo rende preciso e stabile, e abbassa la distorsione. L\'idea è di Harold Black, nel 1927.' },
       'guadagno-ad-anello-aperto': { term: 'Guadagno ad anello aperto', def: 'Il guadagno A dell\'operazionale senza retroazione: quante volte moltiplica la differenza V+ − V−. Nel 741 vale tipicamente 200' + NB + '000, ma cambia molto da un esemplare all\'altro e con la temperatura.' },
-      'cortocircuito-virtuale': { term: 'Cortocircuito virtuale', def: 'Con la retroazione negativa l\'operazionale porta l\'uscita dove serve perché V+ e V− siano quasi uguali: differiscono di pochi microvolt, anche se tra i due ingressi non c\'è nessun filo.' },
+      'cortocircuito-virtuale': { term: 'Cortocircuito virtuale', def: 'Con la retroazione negativa l\'operazionale porta l\'uscita dove serve perché V+ e V− siano quasi uguali: nel 741 differiscono di poche decine di microvolt, anche se tra i due ingressi non c\'è nessun filo.' },
       'massa-virtuale': { term: 'Massa virtuale', def: 'Nell\'amplificatore invertente il morsetto − resta a 0 V senza essere collegato a massa: è il cortocircuito virtuale con il morsetto + a massa.' },
-      'saturazione-uscita': { term: 'Saturazione dell\'uscita', def: 'Quando il segnale chiederebbe più tensione di quella che l\'operazionale può dare, l\'uscita si ferma e i picchi vengono tagliati (clipping). Il 741 si ferma 1–2 V prima delle alimentazioni; gli operazionali rail-to-rail arrivano a pochi millivolt.' },
+      'saturazione-uscita': { term: 'Saturazione dell\'uscita', def: 'Quando il segnale chiederebbe più tensione di quella che l\'operazionale può dare, l\'uscita si ferma e i picchi vengono tagliati (clipping). Il 741 si ferma 1–2 V prima delle alimentazioni; gli operazionali rail-to-rail arrivano a qualche decina di millivolt.' },
       'inseguitore': { term: 'Inseguitore di tensione', def: 'Operazionale con l\'uscita collegata direttamente al morsetto −: Vout = Vin, guadagno 1. Non amplifica la tensione ma separa: il segnale non fornisce corrente e il carico è alimentato dall\'operazionale. Si chiama anche buffer.' },
       'comparatore': { term: 'Comparatore', def: 'Circuito che confronta due tensioni e risponde con due soli livelli: alto se V+ supera V−, basso altrimenti. Un operazionale senza retroazione è il comparatore più semplice.' },
       'prodotto-guadagno-banda': { term: 'Prodotto guadagno-banda', def: 'In un operazionale compensato il guadagno moltiplicato per la banda resta costante: circa 1 MHz nel 741. Con guadagno 10 il segnale passa fino a circa 100 kHz, con guadagno 1000 solo fino a 1 kHz.' },

@@ -73,6 +73,14 @@
     },
     resistance: (rho) => rho * BAR.L / BAR.A,
     current: (V, rho) => V / model.resistance(rho),
+    // Tutto lo stato del laboratorio: cristallo, corrente nella barretta, portatori maggioritari e minoritari.
+    state: (Tc, type, N, V) => {
+      const c = model.crystal(Tc, type, N);
+      return Object.assign(c, {
+        Tc: Tc, type: type, N: N, V: V, I: model.current(V, c.rho),
+        maj: type === 'p' ? c.p : c.n, min: type === 'p' ? c.n : c.p,
+      });
+    },
     // Velocità di deriva v = μ·E con il campo E = V / L, in cm/s.
     drift: (mu, V) => mu * V / BAR.L,
     // Quanti atomi di silicio per ogni atomo drogante (o per ogni elettrone libero).
@@ -86,30 +94,41 @@
   const pow10 = (v) => { const k = Math.round(v); return k === 0 ? '1' : '10' + sup(k); };
 
   // 8,7·10⁹ oppure 75 oppure 0,50: notazione scientifica solo quando serve.
+  // Ogni scelta (quanti decimali, quale potenza di 10) si fa sul valore arrotondato come lo scrive Intl,
+  // che porta 9,95 a "10,0" anche quando toFixed darebbe "9,9": così non compare mai "10,0·10¹⁶".
+  const SIG = {};
+  const roundSig = (y, d) => Number((SIG[d] || (SIG[d] = new Intl.NumberFormat('en-US', { maximumSignificantDigits: d, useGrouping: false }))).format(y));
+  const exp10 = (v) => Math.floor(Math.log10(v) + 1e-9);
   function sci(x, sig) {
     const d = sig || 2;
     if (!isFinite(x)) return '—';
     if (x === 0) return '0';
     const ax = Math.abs(x);
-    if (ax >= 0.1 && ax < 1000) return (x < 0 ? '−' : '') + num(ax, Math.max(0, d - 1 - Math.floor(Math.log10(ax))));
-    let e = Math.floor(Math.log10(ax));
-    let m = ax / Math.pow(10, e);
-    if (Number(m.toFixed(d - 1)) >= 10) { e += 1; m /= 10; }
-    return (x < 0 ? '−' : '') + num(m, d - 1) + '·10' + sup(e);
+    const sign = x < 0 ? '−' : '';
+    const v = roundSig(ax, d);
+    const e = exp10(v);
+    // tra 0,1 e 1000 si scrive il numero intero, senza buttare le cifre delle unità (754, non 750)
+    if (v >= 0.1 && v < 1000) return sign + num(ax, Math.max(0, d - 1 - e));
+    return sign + num(v / Math.pow(10, e), d - 1) + '·10' + sup(e);
   }
-  const rhoText = (r) => (r >= 1000 ? sci(r) : num(r, Math.max(0, 2 - Math.floor(Math.log10(r))))) + ' Ω·cm';
-  const round2 = (v) => Number(v.toPrecision(2));
+  function rhoText(r) {
+    const v = roundSig(r, 3);
+    return (v >= 1000 ? sci(r) : num(r, Math.max(0, 2 - exp10(v)))) + ' Ω·cm';
+  }
+  const round2 = (v) => roundSig(v, 2);
   const decimal = (v) => num(v, Number.isInteger(v) ? 0 : 1);
-  // "50 milioni di atomi", "5.800 miliardi di atomi", "50.000 atomi"
+  // "50 milioni di atomi", "5800 miliardi di atomi", "50.000 atomi"
   function atomsText(x) {
-    if (x >= 1e13) return sci(x) + ' atomi';
-    if (x >= 1e9) { const v = round2(x / 1e9); return decimal(v) + (v === 1 ? ' miliardo' : ' miliardi') + ' di atomi'; }
-    if (x >= 1e6) { const v = round2(x / 1e6); return decimal(v) + (v === 1 ? ' milione' : ' milioni') + ' di atomi'; }
-    return num(round2(x), 0) + ' atomi';
+    const r = round2(x);
+    if (r >= 1e13) return sci(x) + ' atomi';
+    if (r >= 1e9) { const v = round2(r / 1e9); return decimal(v) + (v === 1 ? ' miliardo' : ' miliardi') + ' di atomi'; }
+    if (r >= 1e6) { const v = round2(r / 1e6); return decimal(v) + (v === 1 ? ' milione' : ' milioni') + ' di atomi'; }
+    return num(r, 0) + ' atomi';
   }
   function timesText(f) {
-    if (f < 10) return num(f, 1) + ' volte';
-    if (f < 1e6) return num(round2(f), 0) + ' volte';
+    const v = round2(f);
+    if (v < 10) return num(v, 1) + ' volte';
+    if (v < 1e6) return num(v, 0) + ' volte';
     return 'circa ' + sci(f) + ' volte';
   }
   const voltText = (v) => (v > 0.04 ? '+' : v < -0.04 ? '−' : '') + num(Math.abs(v), 1) + ' V';
@@ -126,6 +145,18 @@
   const GE_COLOR = '#b497ea';
   const HOP_T = 0.3; // durata di un salto di lacuna, s
   const CAP = 22; // cariche disegnate al massimo per tipo
+
+  // Le sfide: funzioni pure dello stato del laboratorio (provate in tests/semiconduttori.test.js).
+  model.challenges = [
+    { id: 'mille', text: 'Scalda il silicio puro finché i portatori liberi diventano 1000 volte quelli a 25 °C.', check: (q) => q.type === 'puro' && q.ni / model.ni(ROOM) >= 1000 },
+    { id: 'verso', text: 'Rendi il cristallo di tipo N e fai correre gli elettroni verso destra. In che verso scorre la corrente?', check: (q) => q.type === 'n' && q.V <= -0.5 },
+    { id: 'boro', text: 'Con il boro (tipo P) porta la resistività sotto 1 Ω·cm. Ne serve più o meno che di fosforo?', check: (q) => q.type === 'p' && q.rho < 1 },
+    { id: 'rari', text: 'Fai scendere i portatori minoritari sotto 1 per cm³: ricorda che n·p = nᵢ².', check: (q) => q.type !== 'puro' && q.min < 1 },
+    { id: 'caldo', text: 'Drogato ma troppo caldo: fai salire i minoritari fino a un decimo dei maggioritari.', check: (q) => q.type !== 'puro' && q.min / q.maj >= 0.1 },
+  ];
+
+  // Temperature con il segno meno tipografico: "−50 °C".
+  const degC = (v) => (v < 0 ? '−' : '') + num(Math.abs(v), 0) + ' °C';
 
   // Quante coppie disegnare: scala logaritmica, perché i numeri veri vanno da 10⁶ a 10¹⁸ per cm³.
   const pairsFor = (x) => clamp(Math.round((Math.log10(Math.max(x, 1)) - 9.5) * 2.2), 0, 12);
@@ -222,17 +253,15 @@
   function mount(lab) {
     const svg = lab.svg;
     svg.classList.add('semiconduttori-svg');
+    lab.root.classList.add('semiconduttori-lab');
     const P = EI.palette();
     const reduced = lab.reduced;
     const mq = typeof window !== 'undefined' && window.matchMedia ? window.matchMedia('(max-width: 600px)') : null;
 
     const st = { type: 'puro', N: 1e15, Tc: 25, V: 3, shownT: 25 };
     function compute() {
-      Object.assign(st, model.crystal(st.Tc, st.type, st.N));
-      st.I = model.current(st.V, st.rho);
-      st.maj = st.type === 'p' ? st.p : st.n;
-      st.min = st.type === 'p' ? st.n : st.p;
-      st.D = st.type === 'puro' ? 0 : dopantsFor(st.N);
+      Object.assign(st, model.state(st.Tc, st.type, st.N, st.V));
+      st.D =st.type === 'puro' ? 0 : dopantsFor(st.N);
       if (st.type === 'puro') { st.tE = pairsFor(st.ni); st.tH = st.tE; }
       else if (st.type === 'n') { st.tH = pairsFor(st.p); st.tE = st.D + st.tH; }
       else { st.tE = pairsFor(st.n); st.tH = st.D + st.tE; }
@@ -357,8 +386,10 @@
       if (L.batt && sign === L.battSign) return;
       if (L.batt) L.batt.g.remove();
       L.battSign = sign;
-      // il polo + (tratto lungo) è sempre dalla parte del contatto positivo
-      L.batt = sym.source(L.circuit, sign > 0 ? { x: G.bx, y: G.wy, len: 60, kind: 'dc' } : { x: G.bx + 60, y: G.wy, rot: 180, len: 60, kind: 'dc' });
+      // il polo + (tratto lungo) è sempre dalla parte del contatto positivo; con la tensione negativa
+      // la pila è specchiata (non ruotata), così il segno + resta sopra il filo e non copre la scritta V
+      L.batt = sym.source(L.circuit, { x: G.bx, y: G.wy, len: 60, kind: 'dc' });
+      if (sign < 0) L.batt.g.setAttribute('transform', 'translate(' + (G.bx + 60) + ',' + G.wy + ') scale(-1,1)');
     }
 
     function drawLegend() {
@@ -765,10 +796,15 @@
       if (h.to) {
         h.k += dt / HOP_T;
         const k = ease(clamp(h.k, 0, 1));
-        h.x = h.slot.x + (h.to.x - h.slot.x) * k;
-        h.y = h.slot.y + (h.to.y - h.slot.y) * k;
-        h.hp.setAttribute('cx', (h.to.x + (h.slot.x - h.to.x) * k).toFixed(1));
-        h.hp.setAttribute('cy', (h.to.y + (h.slot.y - h.to.y) * k).toFixed(1));
+        // la lacuna e l'elettrone che la riempie si scambiano il posto lungo la stessa curva, in versi opposti
+        const a = h.slot;
+        const b = h.to;
+        const c = h.ctrl;
+        const bez = (u, p0, p2) => [(1 - u) * (1 - u) * p0.x + 2 * u * (1 - u) * c[0] + u * u * p2.x, (1 - u) * (1 - u) * p0.y + 2 * u * (1 - u) * c[1] + u * u * p2.y];
+        [h.x, h.y] = bez(k, a, b);
+        const e = bez(k, b, a);
+        h.hp.setAttribute('cx', e[0].toFixed(1));
+        h.hp.setAttribute('cy', e[1].toFixed(1));
         h.hp.style.opacity = '1';
         if (h.k >= 1) {
           const from = h.slot;
@@ -823,8 +859,33 @@
       }
       h.to = pick;
       h.k = 0;
+      h.ctrl = hopCtrl(sl, pick);
       pick.busy = true;
       showSlot(pick, false);
+    }
+
+    // Punto di controllo della curva di un salto: se la linea diritta passerebbe sopra un atomo,
+    // la curva gli gira attorno (il suo punto di mezzo sta a G.r + 10 dal nucleo).
+    function hopCtrl(a, b) {
+      const mx = (a.x + b.x) / 2;
+      const my = (a.y + b.y) / 2;
+      const at = nearestAtom(mx, my);
+      const dx = mx - at.x;
+      const dy = my - at.y;
+      const d = Math.hypot(dx, dy);
+      const want = G.r + 10;
+      if (d >= want) return [mx, my];
+      let ux;
+      let uy;
+      if (d > 0.5) { ux = dx / d; uy = dy / d; } else {
+        // da una parte all'altra dell'atomo: si gira da un lato, a caso
+        const L = Math.hypot(b.x - a.x, b.y - a.y) || 1;
+        const side = R() < 0.5 ? -1 : 1;
+        ux = side * -(b.y - a.y) / L;
+        uy = side * (b.x - a.x) / L;
+      }
+      // in una curva quadratica il punto di mezzo sta a metà tra il punto medio della corda e il controllo
+      return [at.x + ux * (2 * want - d), at.y + uy * (2 * want - d)];
     }
 
     /* --- aggiornamento del disegno --- */
@@ -910,7 +971,7 @@
       }
       // intestazione
       const typeTxt = st.type === 'puro' ? 'SILICIO PURO' : st.type === 'n' ? 'TIPO N · FOSFORO' : 'TIPO P · BORO';
-      const tTxt = num(st.Tc, 0) + ' °C';
+      const tTxt = degC(st.Tc);
       setText(L.headA, typeTxt);
       if (L.temp) setText(L.temp, tTxt);
       else setText(L.headB, '  ·  ' + tTxt);
@@ -933,22 +994,38 @@
     const rR = lab.readout({ label: 'Resistività ρ', color: 'var(--trace-1)', fmt: () => txt.rho });
     const rI = lab.readout({ label: 'Corrente I', color: 'var(--flow)', fmt: () => txt.i });
 
-    const xAxis = { min: T_MIN, max: T_MAX, fmt: (v) => num(v, 0) + ' °C', label: 'temperatura' };
+    // Etichette corte ("−50°"): sul telefono le sette tacche restano tutte leggibili.
+    const xAxis = { min: T_MIN, max: T_MAX, fmt: (v) => (v < 0 ? '−' : '') + num(Math.abs(v), 0) + '°', label: 'temperatura (°C)' };
+    const GREY = '#8fa79f';
     const plotC = lab.plot({
       title: 'Portatori liberi · per cm³', height: 220,
       x: Object.assign({}, xAxis),
-      y: { min: 0, max: 20, count: 10, fmt: pow10 },
-      legend: [{ label: 'n elettroni', color: 'var(--trace-3)' }, { label: 'p lacune', color: 'var(--trace-2)' }, { label: 'nᵢ silicio puro', color: '#8fa79f' }, { label: 'nᵢ germanio', color: GE_COLOR }],
+      y: { min: 0, max: 20, count: 5, fmt: pow10 },
       aria: 'Concentrazione di elettroni e lacune in funzione della temperatura, in scala logaritmica',
     });
     const plotR = lab.plot({
       title: 'Resistività · Ω·cm', height: 220,
       x: Object.assign({}, xAxis),
       y: { min: -3, max: 10, count: 7, fmt: pow10 },
-      legend: [{ label: 'ρ del cristallo', color: 'var(--trace-1)' }, { label: 'ρ silicio puro', color: '#8fa79f' }],
       aria: 'Resistività del cristallo in funzione della temperatura, in scala logaritmica',
     });
     lab.plotsEl.classList.add('cols-2');
+    // Legende: le curve tratteggiate hanno il campione tratteggiato; la riga del drogante compare solo quando c'è.
+    function legend(plot, items) {
+      plot.setLegend(items);
+      plot.figure.querySelectorAll('.ei-legend-item').forEach((el, k) => el.classList.toggle('semiconduttori-dash', !!items[k].dash));
+    }
+    let legendType = '';
+    function drawLegends() {
+      if (legendType === st.type) return;
+      legendType = st.type;
+      const itemsC = [{ label: 'n elettroni', color: 'var(--trace-3)' }, { label: 'p lacune', color: 'var(--trace-2)' }, { label: 'nᵢ silicio puro', color: GREY, dash: true }, { label: 'nᵢ germanio', color: GE_COLOR, dash: true }];
+      if (st.type !== 'puro') itemsC.push({ label: st.type === 'n' ? 'atomi di fosforo' : 'atomi di boro', color: st.type === 'n' ? 'var(--trace-3)' : 'var(--trace-4)', dash: true });
+      legend(plotC, itemsC);
+      const itemsR = [{ label: 'ρ del cristallo', color: 'var(--trace-1)' }];
+      if (st.type !== 'puro') itemsR.push({ label: 'ρ silicio puro', color: GREY, dash: true });
+      legend(plotR, itemsR);
+    }
 
     let plotKey = '';
     function drawPlots() {
@@ -960,10 +1037,12 @@
       const lg = Math.log10;
       const at = (Tc) => model.crystal(Tc, type, N);
       const c = at(st.shownT);
-      const grey = '#8fa79f';
+      const grey = GREY;
+      drawLegends();
       plotC.clear();
       plotC.vline(25, { color: grey, alpha: 0.35, dash: [2, 4] });
-      if (type !== 'puro') plotC.hline(lg(N), { color: type === 'n' ? P.t3 : P.t4, alpha: 0.5, dash: [3, 5], label: (type === 'n' ? 'N_D' : 'N_A') + ' = ' + sci(N), at: 'left' });
+      // la riga del drogante non ha etichetta: la spiega la legenda e il punto di lavoro ne riporta il valore
+      if (type !== 'puro') plotC.hline(lg(N), { color: type === 'n' ? P.t3 : P.t4, alpha: 0.55, dash: [3, 5] });
       plotC.line((T) => lg(model.ni(model.kelvin(T), 'ge')), { color: GE_COLOR, width: 1.5, dash: [2, 4], glow: false, alpha: 0.85 });
       plotC.line((T) => lg(model.ni(model.kelvin(T))), { color: grey, width: 1.5, dash: [6, 5], glow: false, alpha: 0.85 });
       plotC.line((T) => lg(at(T).p), { color: P.t2, width: 2.3 });
@@ -975,14 +1054,15 @@
       }
       plotR.clear();
       plotR.vline(25, { color: grey, alpha: 0.35, dash: [2, 4] });
-      plotR.hline(0, { color: P.t1, alpha: 0.45, label: '1 Ω·cm', at: 'left' });
       if (type !== 'puro') plotR.line((T) => lg(model.crystal(T, 'puro', 0).rho), { color: grey, width: 1.5, dash: [6, 5], glow: false, alpha: 0.85 });
       plotR.line((T) => lg(at(T).rho), { color: P.t1, width: 2.4, fill: P.t1, fillTo: -3, fillAlpha: 0.07 });
+      // riferimento di 1 Ω·cm sopra le curve; l'etichetta sta dalla parte opposta al punto di lavoro
+      plotR.hline(0, { color: P.t1, alpha: 0.45, label: '1 Ω·cm', at: st.shownT > 100 ? 'left' : 'right' });
       plotR.point(st.shownT, lg(c.rho), { color: P.t1, label: rhoText(c.rho), labelPos: 'up' });
     }
 
     function explainText() {
-      const T = num(st.Tc, 0) + ' °C';
+      const T = degC(st.Tc);
       let a;
       if (st.type === 'puro') {
         if (st.ni < 1e8) {
@@ -996,7 +1076,10 @@
         const isN = st.type === 'n';
         const ratio = st.min / st.maj;
         if (ratio >= 0.01) {
-          a = 'Troppo caldo per questo drogaggio: a ' + T + ' le coppie create dal calore (nᵢ = ' + sci(st.ni) + ' per cm³) competono con i ' + sci(st.N) + ' atomi di ' + (isN ? 'fosforo' : 'boro') + ' per cm³. I minoritari sono già il ' + num(ratio * 100, ratio < 0.1 ? 1 : 0) + '% dei maggioritari: scaldando ancora il drogaggio non comanda più e il cristallo torna a comportarsi come silicio puro.';
+          a = 'Troppo caldo per questo drogaggio: a ' + T + ' le coppie create dal calore (nᵢ = ' + sci(st.ni) + ' per cm³) competono con gli atomi di ' + (isN ? 'fosforo' : 'boro') + ' (' + sci(st.N) + ' per cm³). ';
+          a += ratio > 0.9
+            ? 'Elettroni e lacune ormai sono quasi alla pari: il drogaggio non comanda più e il cristallo si comporta come silicio puro.'
+            : 'Ci sono già ' + num(ratio * 100, ratio < 0.1 ? 1 : 0) + (isN ? ' lacune ogni 100 elettroni' : ' elettroni ogni 100 lacune') + ': scaldando ancora, il drogaggio smette di comandare e il cristallo torna a comportarsi come silicio puro.';
         } else if (isN) {
           a = 'Ogni atomo di fosforo ha 5 elettroni di valenza: 4 entrano nei legami, il quinto si libera con pochissima energia. Il fosforo resta uno ione positivo fisso, un [[donatore]]. Gli elettroni sono i [[portatori-maggioritari]] (n ≈ ' + sci(st.n) + ' per cm³), le lacune sono rarissime: p = nᵢ²/n = ' + sci(st.p) + ' per cm³.';
         } else {
@@ -1008,8 +1091,10 @@
       let b;
       if (Math.abs(st.V) < 0.05) b = 'Senza tensione elettroni e lacune vagano a caso: in media non si spostano e la corrente è zero.';
       else {
-        const vd = model.drift(st.mn, Math.abs(st.V)) / 100;
-        b = 'La tensione spinge gli elettroni verso il polo + e le lacune verso il −: la corrente, ' + si(Math.abs(st.I), 'A') + ', scorre ' + (st.I > 0 ? 'verso destra' : 'verso sinistra') + '. Nel disegno la deriva è esagerata: davvero gli elettroni avanzano di circa ' + num(vd, vd < 10 ? 1 : 0) + ' m/s, mentre il calore li fa sfrecciare a oltre 100 km/s.';
+        // la velocità di deriva dei portatori maggioritari: le lacune nel tipo P, altrimenti gli elettroni
+        const holes = st.type === 'p';
+        const vd = model.drift(holes ? st.mp : st.mn, Math.abs(st.V)) / 100;
+        b = 'La tensione spinge gli elettroni verso il polo + e le lacune verso il −: la corrente, ' + si(Math.abs(st.I), 'A') + ', scorre ' + (st.I > 0 ? 'verso destra' : 'verso sinistra') + '. Nel disegno la deriva è esagerata: in realtà ' + (holes ? 'le lacune avanzano' : 'gli elettroni avanzano') + ' a circa ' + num(vd, vd < 10 ? 1 : 0) + '\u00a0m/s, mentre il calore ' + (holes ? 'le' : 'li') + ' fa sfrecciare a oltre 100\u00a0km/s in tutte le direzioni.';
       }
       return a + ' ' + b;
     }
@@ -1046,7 +1131,7 @@
     const gCond = lab.group('Le condizioni');
     lab.slider({
       into: gCond, label: 'Temperatura', min: T_MIN, max: T_MAX, step: 1, value: 25,
-      fmt: (v) => num(v, 0) + ' °C · ' + num(model.kelvin(v), 0) + ' K',
+      fmt: (v) => degC(v) + ' · ' + num(model.kelvin(v), 0) + ' K',
       onInput: (v) => { st.Tc = v; changed(); },
     });
     lab.slider({
@@ -1065,13 +1150,7 @@
       lab.invalidate();
     }
 
-    lab.challenges([
-      { id: 'mille', text: 'Scalda il silicio puro finché i portatori liberi diventano 1000 volte quelli a 25 °C.', check: (q) => q.type === 'puro' && q.ni / model.ni(ROOM) >= 1000 },
-      { id: 'verso', text: 'Rendi il cristallo di tipo N e fai correre gli elettroni verso destra. In che verso scorre la corrente?', check: (q) => q.type === 'n' && q.V <= -0.5 },
-      { id: 'boro', text: 'Con il boro (tipo P) porta la resistività sotto 1 Ω·cm. Ne serve più o meno che di fosforo?', check: (q) => q.type === 'p' && q.rho < 1 },
-      { id: 'rari', text: 'Fai scendere i portatori minoritari sotto 1 per cm³: ricorda che n·p = nᵢ².', check: (q) => q.type !== 'puro' && q.min < 1 },
-      { id: 'caldo', text: 'Drogato ma troppo caldo: fai salire i minoritari fino a un decimo dei maggioritari.', check: (q) => q.type !== 'puro' && q.min / q.maj >= 0.1 },
-    ]);
+    lab.challenges(model.challenges);
 
     lab.onReset(() => {
       st.shownT = st.Tc;
@@ -1159,24 +1238,24 @@
         }
       }
       const col = n ? 'var(--fig-n)' : 'var(--fig-p)';
+      // la carica dello ione sta in alto a sinistra: a destra c'è posto per l'elettrone o per la lacuna
       atoms += '<circle class="' + (n ? 'f-n' : 'f-p') + '" cx="' + cx + '" cy="' + cy + '" r="15.5" style="stroke-width:2"/>' +
         '<text class="' + (n ? 'f-n-text' : 'f-p-text') + '" x="' + cx + '" y="' + (cy + 4.5) + '" text-anchor="middle">' + (n ? 'P' : 'B') + '</text>' +
-        '<circle cx="' + (cx + 12.5) + '" cy="' + (cy - 12.5) + '" r="6.5" style="fill:' + col + '"/>' +
-        '<text x="' + (cx + 12.5) + '" y="' + (cy - 9) + '" text-anchor="middle" style="fill:var(--fig-paper);font:900 10.5px var(--mono)">' + (n ? '+' : '−') + '</text>';
+        '<circle cx="' + (cx - 12.5) + '" cy="' + (cy - 12.5) + '" r="6.5" style="fill:' + col + '"/>' +
+        '<text x="' + (cx - 12.5) + '" y="' + (cy - 9) + '" text-anchor="middle" style="fill:var(--fig-paper);font:900 10.5px var(--mono)">' + (n ? '+' : '−') + '</text>';
       let extra = '';
       if (n) {
-        // il quinto elettrone: libero di vagare nel cristallo
+        // il quinto elettrone si stacca dal fosforo e vaga nello spazio tra gli atomi
         const ex = cx + sx * 0.52;
-        const ey = cy - sx * 0.5;
-        extra += '<path class="f-dash" d="M' + (cx + 15) + ' ' + (cy - 4) + 'Q' + (cx + 30) + ' ' + (cy - 8) + ' ' + (ex - 5) + ' ' + (ey + 7) + '"/>' +
-          '<g class="semiconduttori-fig-wander"><circle class="f-n" cx="' + ex + '" cy="' + ey + '" r="8" style="stroke:none;opacity:.7"/><circle class="f-n-dot" cx="' + ex + '" cy="' + ey + '" r="4.2"/></g>';
+        const ey = cy - sx * 0.52;
+        extra += '<path class="f-dash" d="M' + (cx + 11.5) + ' ' + (cy - 11.5) + 'Q' + (cx + 13) + ' ' + (cy - 25) + ' ' + (ex - 7) + ' ' + (ey + 1) + '" style="stroke-dasharray:2.5 3"/>' +
+          '<g class="semiconduttori-fig-wander"><circle class="f-n" cx="' + ex.toFixed(1) + '" cy="' + ey.toFixed(1) + '" r="8" style="stroke:none;opacity:.7"/><circle class="f-n-dot" cx="' + ex.toFixed(1) + '" cy="' + ey.toFixed(1) + '" r="4.2"/></g>';
       } else {
-        // un elettrone del legame vicino è saltato nel legame del boro: il posto vuoto è la lacuna
+        // un elettrone del legame vicino salta nel legame del boro (freccia): il posto rimasto vuoto è la lacuna
         const tx = cx + sx * 0.64;
-        const ty = cy;
-        extra += '<path class="f-dash" d="M' + (hole[0] - 6) + ' ' + (hole[1] + 3) + 'Q' + (cx + sx * 0.82) + ' ' + (cy - 4) + ' ' + (tx + 5) + ' ' + (ty - 5) + '"/>' +
-          '<path class="f-line" d="M' + (tx + 5) + ' ' + (ty - 5) + 'l1 -6m-1 6l-6 -1" style="stroke-width:1.4"/>' +
-          '<circle class="f-p-dot semiconduttori-fig-pulse" cx="' + hole[0] + '" cy="' + hole[1] + '" r="4.6"/>';
+        const ty = cy - 7;
+        extra += '<path class="f-line" d="M' + (hole[0] - 6) + ' ' + (hole[1] - 2) + 'Q' + (tx + 1) + ' ' + (hole[1] - 3) + ' ' + tx + ' ' + ty + 'M' + (tx - 3.5) + ' ' + (ty - 5.5) + 'L' + tx + ' ' + ty + 'L' + (tx + 3.5) + ' ' + (ty - 5.5) + '" style="stroke-width:1.5"/>' +
+          '<circle class="f-p-dot semiconduttori-fig-pulse" cx="' + hole[0] + '" cy="' + hole[1].toFixed(1) + '" r="4.6"/>';
       }
       const title = n ? 'Tipo N · fosforo, 5 elettroni' : 'Tipo P · boro, 3 elettroni';
       const leg = n
@@ -1218,7 +1297,9 @@
       }
       return out;
     };
-    const head = (cx, t, sub) => '<text class="f-title" x="' + cx + '" y="22" text-anchor="middle">' + t + '</text><text class="f-small" x="' + cx + '" y="39" text-anchor="middle">' + sub + '</text>';
+    // sotto il titolo i materiali con il loro salto: il primo è quello disegnato
+    const head = (cx, t, sub1, sub2) => '<text class="f-title" x="' + cx + '" y="20" text-anchor="middle">' + t + '</text>' +
+      '<text class="f-small" x="' + cx + '" y="37" text-anchor="middle">' + sub1 + '</text><text class="f-small" x="' + cx + '" y="51" text-anchor="middle">' + sub2 + '</text>';
     const box = (cx, y0, y1) => '<rect class="f-soft" x="' + (cx - bw / 2) + '" y="' + y0 + '" width="' + bw + '" height="' + (y1 - y0) + '" rx="5"/>';
     const gap = (cx, y0, y1, label) => {
       const mid = (y0 + y1) / 2;
@@ -1228,13 +1309,13 @@
     };
     // conduttore: una banda piena a metà
     const c1 = 116;
-    let out = head(c1, 'Conduttore', 'rame, alluminio') + box(c1, 120, yB) + fill(c1, 186, yB) +
+    let out = head(c1, 'Conduttore', 'rame, alluminio', 'nessun salto') + box(c1, 120, yB) + fill(c1, 186, yB) +
       '<text class="f-small" x="' + c1 + '" y="156" text-anchor="middle">posti liberi</text>' +
       '<text class="f-small" x="' + c1 + '" y="170" text-anchor="middle">subito sopra</text>';
     // semiconduttore: salto piccolo, il calore porta qualche elettrone di sopra
     const c2 = 262;
     const yC2 = yV - 1.12 * eV;
-    out += head(c2, 'Semiconduttore', 'silicio · germanio 0,66 eV') + box(c2, yC2 - 42, yC2) + box(c2, yV, yB) + fill(c2, yV, yB, [3, 7]) +
+    out += head(c2, 'Semiconduttore', 'silicio: 1,12 eV', 'germanio: 0,66 eV') + box(c2, yC2 - 42, yC2) + box(c2, yV, yB) + fill(c2, yV, yB, [3, 7]) +
       gap(c2, yC2, yV, '1,12 eV') +
       '<circle class="f-n-dot" cx="' + (c2 - 45 + 27) + '" cy="' + (yC2 - 12) + '" r="3.2"/>' +
       '<circle class="f-p-dot" cx="' + (c2 - 45 + 27) + '" cy="' + (yV + 7.5) + '" r="3.4"/>' +
@@ -1244,7 +1325,7 @@
     // isolante: salto enorme, nessun elettrone libero
     const c3 = 408;
     const yC3 = yV - 5.5 * eV;
-    out += head(c3, 'Isolante', 'diamante · silice ≈ 9 eV') + box(c3, yC3 - 40, yC3) + box(c3, yV, yB) + fill(c3, yV, yB) + gap(c3, yC3, yV, '5,5 eV') +
+    out += head(c3, 'Isolante', 'diamante: 5,5 eV', 'silice: circa 9 eV') + box(c3, yC3 - 40, yC3) + box(c3, yV, yB) + fill(c3, yV, yB) + gap(c3, yC3, yV, '5,5 eV') +
       '<text class="f-small" x="' + c3 + '" y="' + (yC3 - 46) + '" text-anchor="middle">conduzione: vuota</text>';
     // asse dell'energia e banda di valenza
     out += '<path class="f-line" d="M24 ' + (yB + 2) + 'V64M19 72l5 -8l5 8"/>' +
@@ -1259,11 +1340,13 @@
     id: 'semiconduttori',
     icon: 'lattice',
     minutes: 12,
-    summary: 'Il silicio puro conduce pochissimo: i suoi elettroni sono quasi tutti impegnati nei [[legame-covalente|legami]] del cristallo. Il calore ne libera qualcuno, lasciando al suo posto una [[lacuna]]. Ma basta un atomo di fosforo o di boro ogni pochi milioni per riempire il cristallo di cariche libere: è il [[drogaggio]], il trucco su cui si basano tutti i componenti elettronici.',
+    summary: 'Il silicio puro conduce pochissimo: i suoi elettroni sono quasi tutti impegnati nei [[legame-covalente|legami]] del cristallo. Il calore ne libera qualcuno, lasciando al suo posto una [[lacuna]]. Ma basta un atomo di fosforo o di boro ogni qualche milione di atomi di silicio per riempire il cristallo di cariche libere: è il [[drogaggio]], il trucco su cui si basano diodi, transistor e chip.',
     keywords: ['semiconduttore', 'banda-proibita', 'legame-covalente', 'lacuna', 'drogaggio', 'donatore', 'accettore', 'portatori-maggioritari'],
     model: model,
     css: [
       '.semiconduttori-svg { user-select: none; -webkit-user-select: none; }',
+      // style.css fissa --fill: 50% sul cursore stesso e copre il valore che core.js scrive sul contenitore
+      '.semiconduttori-lab .ei-slider input[type="range"] { --fill: inherit; }',
       '@media (max-width: 640px) { .ei-stage-svg.semiconduttori-svg.tall { max-height: 640px; } }',
       '.semiconduttori-crystal { fill: #0c1714; stroke: #2a3e37; stroke-width: 1.5; }',
       '.semiconduttori-zone { transition: opacity .5s ease; }',
@@ -1301,6 +1384,7 @@
       '.semiconduttori-drift { fill: none; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }',
       '.semiconduttori-drift.e { stroke: var(--trace-3); }',
       '.semiconduttori-drift.h { stroke: var(--trace-2); }',
+      '.semiconduttori-lab .ei-legend-item.semiconduttori-dash::before { background: repeating-linear-gradient(90deg, var(--lc) 0 4px, transparent 4px 7px); box-shadow: none; }',
       '.ei-slider.semiconduttori-off input, .ei-slider.semiconduttori-off label { opacity: .45; }',
       '.semiconduttori-fig-wander { animation: semiconduttori-wander 6s ease-in-out infinite; }',
       '.semiconduttori-fig-pulse { transform-box: fill-box; transform-origin: center; animation: semiconduttori-pulse 2.4s ease-in-out infinite; }',
@@ -1309,25 +1393,26 @@
       '@keyframes semiconduttori-march { to { stroke-dashoffset: -16; } }',
       '@keyframes semiconduttori-wander { 0%, 100% { transform: translate(0, 0); } 25% { transform: translate(9px, -7px); } 50% { transform: translate(15px, 5px); } 75% { transform: translate(4px, 9px); } }',
       '@keyframes semiconduttori-pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.4); opacity: .5; } }',
-      '@keyframes semiconduttori-jump { 0%, 22% { transform: translateY(54px); } 46%, 84% { transform: translateY(0); } 100% { transform: translateY(54px); } }',
+      // l'elettrone parte dal posto della lacuna (42 px più in basso) e torna lì quando si ricombina
+      '@keyframes semiconduttori-jump { 0%, 22% { transform: translateY(42px); } 46%, 84% { transform: translateY(0); } 100% { transform: translateY(42px); } }',
       '@keyframes semiconduttori-hole { 0%, 26% { opacity: 0; } 44%, 84% { opacity: 1; } 96%, 100% { opacity: 0; } }',
       '@media (prefers-reduced-motion: reduce) { .semiconduttori-fig-wander, .semiconduttori-fig-pulse, .semiconduttori-fig-jump, .semiconduttori-fig-hole, .semiconduttori-field { animation: none; } }',
     ].join('\n'),
     lab: {
       title: 'Dentro il cristallo di silicio',
-      intro: 'Un pezzetto di cristallo visto da vicinissimo: i cerchi sono gli atomi di silicio, le linee i [[legame-covalente|legami]] con i loro due elettroni. Scalda il cristallo e guarda i legami che si rompono; poi scegli il drogaggio N o P e cambia la tensione. L\'amperometro misura la corrente in una barretta lunga 1 cm con 1 mm² di sezione.',
+      intro: 'Un pezzetto di cristallo visto da vicinissimo: i cerchi sono gli atomi di silicio, le linee i [[legame-covalente|legami]], ciascuno con i suoi due elettroni (i puntini). Scalda il cristallo e guarda i legami che si rompono; poi scegli il drogaggio N o P e cambia la tensione. L\'amperometro misura la corrente in una barretta lunga 1 cm con 1 mm² di sezione.',
       svgLabel: 'Reticolo del cristallo di silicio con atomi, legami, elettroni liberi e lacune, collegato a una pila e a un amperometro',
-      viewBox: [700, 420],
+      viewBox: [700, 446],
       mount: mount,
     },
     how: [
       'In un metallo moltissimi elettroni sono liberi di muoversi e la corrente passa facilmente; in un isolante, come il vetro, ogni elettrone resta legato al suo atomo. Un [[semiconduttore]] sta in mezzo: a temperatura ambiente ha poche cariche libere, ma il loro numero si può cambiare enormemente.',
       'Il silicio ha 4 elettroni esterni, detti di valenza. Nel cristallo ogni atomo li mette in comune con 4 vicini: ogni [[legame-covalente]] è una coppia di elettroni condivisa. Nel disegno il reticolo è piatto; in realtà i quattro legami puntano ai vertici di un tetraedro.',
-      'Per strappare un elettrone da un legame serve un\'energia minima, la [[banda-proibita]]: 1,12 eV nel silicio, 0,66 eV nel germanio, più di 5 eV negli isolanti. Ogni tanto l\'agitazione termica la fornisce: l\'elettrone diventa un [[elettrone-libero]] e al suo posto resta una [[lacuna]].',
+      'Per strappare un elettrone da un legame serve un\'energia minima, la [[banda-proibita]]: 1,12 eV nel silicio, 0,66 eV nel germanio, più di 5 eV negli isolanti. Ogni tanto l\'agitazione termica la fornisce: nasce un [[elettrone-libero]] e al suo posto, nel legame, resta una [[lacuna]].',
       'Anche la lacuna si muove. Un elettrone del legame vicino salta nel posto vuoto e lascia un vuoto dietro di sé: è come la sedia libera in una fila al cinema, che "viaggia" verso destra mentre le persone si spostano di un posto verso sinistra. Per questo la lacuna si comporta come una carica positiva.',
       'Più il cristallo è caldo, più coppie nascono: vicino ai 25 °C il loro numero più che raddoppia ogni 10 °C. Intanto elettroni e lacune si incontrano e si [[ricombinazione|ricombinano]], così il numero resta in equilibrio. Per questo la resistenza di un semiconduttore puro scende quando si scalda, al contrario di quella dei metalli.',
       'Il [[drogaggio]] cambia tutto. Un atomo di fosforo (5 elettroni di valenza) al posto di un silicio è un [[donatore]]: il quinto elettrone resta libero e il fosforo diventa uno ione positivo fisso. Un atomo di boro (3 elettroni) è un [[accettore]]: in un legame manca un elettrone, nasce una lacuna e il boro diventa uno ione negativo fisso.',
-      'Nel tipo N gli elettroni sono i [[portatori-maggioritari]] e le lacune i minoritari; nel tipo P il contrario. Il prodotto n·p resta sempre uguale a nᵢ²: più elettroni ci sono, meno lacune sopravvivono. Basta un atomo di fosforo ogni 10 milioni per far scendere la resistività da circa 400 000 a circa 1 Ω·cm.',
+      'Nel tipo N gli elettroni sono i [[portatori-maggioritari]] e le lacune i minoritari; nel tipo P il contrario. Il prodotto n·p resta sempre uguale a nᵢ²: più elettroni ci sono, meno lacune sopravvivono. Basta un atomo di fosforo ogni 10 milioni per far scendere la resistività da circa 400.000 a circa 1 Ω·cm.',
     ],
     formulas: [
       {
@@ -1345,7 +1430,7 @@
       {
         name: 'Resistività',
         expr: '<var>ρ</var> = <span class="frac"><span>1</span><span><var>q</var> · (<var>n</var> · <var>μ</var><sub>n</sub> + <var>p</var> · <var>μ</var><sub>p</sub>)</span></span>',
-        legend: [['q', 'carica dell\'elettrone, 1,602·10⁻¹⁹ C'], ['μ<sub>n</sub>, μ<sub>p</sub>', 'mobilità di elettroni e lacune: circa 1340 e 460 cm²/(V·s) nel silicio poco drogato a 300 K'], ['ρ', 'resistività in Ω·cm: un cubetto di 1 cm di lato ha resistenza ρ']],
+        legend: [['q', 'carica elementare, 1,602·10⁻¹⁹ C'], ['μ<sub>n</sub>, μ<sub>p</sub>', 'mobilità di elettroni e lacune: circa 1340 e 460 cm²/(V·s) nel silicio poco drogato a 300 K'], ['ρ', 'resistività in Ω·cm: un cubetto di 1 cm di lato ha resistenza ρ']],
         note: 'Silicio puro a 300 K: circa 3,5·10⁵ Ω·cm. Con 10¹⁶ atomi di fosforo per cm³: circa 0,5 Ω·cm. Il rame: 1,7·10⁻⁶ Ω·cm.',
       },
     ],
@@ -1356,26 +1441,26 @@
     history: {
       text: [
         'La storia comincia con una stranezza. Nel 1833 Michael Faraday nota che il solfuro d\'argento conduce meglio quando lo scalda, il contrario di quello che fanno i metalli. Arrivano poi altre sorprese: nel 1873 Willoughby Smith scopre che il selenio conduce di più se è illuminato, e nel 1874 Ferdinand Braun vede che un cristallo di galena toccato da una punta metallica fa passare la corrente meglio in un verso che nell\'altro (la storia continua nel capitolo sul diodo). Sono materiali capricciosi: due campioni "uguali" si comportano in modo diverso, e nessuno sa perché.',
-        'La spiegazione arriva con la meccanica quantistica. Felix Bloch e Rudolf Peierls studiano come si muovono gli elettroni in un cristallo; nel 1929 Peierls, analizzando l\'effetto Hall, mostra che una banda quasi piena si comporta come se portasse cariche positive: è l\'idea della lacuna, che Werner Heisenberg riprende nel 1931. Nello stesso anno Alan Wilson, un fisico di Cambridge che lavora a Lipsia, spiega con le bande di energia la differenza tra conduttori, isolanti e semiconduttori, e il ruolo delle impurezze.',
-        'Restava un problema pratico: la purezza. Alla fine degli anni Trenta i Bell Labs cercano rivelatori a cristallo per le microonde, presto indispensabili nei radar. Nel 1940 Russell Ohl trova un campione di silicio diviso in due zone che si comportano in modo opposto; Jack Scaff e Henry Theuerer capiscono il perché: tracce di fosforo danno un eccesso di elettroni, tracce di boro un difetto. Le due varietà vengono chiamate "n" (negativo) e "p" (positivo), e il loro confine è la giunzione P-N del prossimo capitolo.',
-        'Poi servivano cristalli perfetti. Il metodo per "tirarli" da un bagno fuso lo aveva trovato Jan Czochralski a Berlino nel 1916; alla fine degli anni Quaranta Gordon Teal e John Little, ai Bell Labs, lo usano per far crescere cristalli singoli di germanio. Intorno al 1951 William Pfann inventa la purificazione a zone. Il germanio, più facile da purificare, è il materiale dei primi transistor; dal 1954 arrivano quelli al silicio, che regge temperature più alte e ha un ossido, la silice, perfetto per isolare e proteggere i chip.',
+        'La spiegazione arriva con la meccanica quantistica. Felix Bloch e Rudolf Peierls studiano come si muovono gli elettroni in un cristallo; nel 1929 Peierls, analizzando l\'effetto Hall, mostra che una banda quasi piena si comporta come se portasse cariche positive: è l\'idea della lacuna, che Werner Heisenberg riprende nel 1931. Nello stesso anno Alan Wilson, un fisico di Cambridge ospite dell\'istituto di Heisenberg a Lipsia, spiega con le bande di energia la differenza tra conduttori, isolanti e semiconduttori, e il ruolo delle impurezze.',
+        'Restava un problema pratico: la purezza. Alla fine degli anni Trenta i Bell Labs cercano rivelatori a cristallo per le microonde, presto indispensabili nei radar. Nel 1940 Russell Ohl trova un campione di silicio diviso in due zone che si comportano in modo opposto; con Jack Scaff e il chimico Henry Theuerer si capisce il perché: tracce di fosforo danno un piccolo eccesso di elettroni, tracce di boro un piccolo difetto. Le due varietà vengono chiamate "n" (negativo) e "p" (positivo), e il loro confine è la giunzione P-N del prossimo capitolo.',
+        'Poi servivano cristalli perfetti. Il metodo per "tirarli" da un bagno fuso lo aveva trovato Jan Czochralski a Berlino nel 1916; alla fine degli anni Quaranta Gordon Teal e John Little, ai Bell Labs, lo perfezionano partendo da un piccolo cristallo-seme e ottengono monocristalli di germanio. Intorno al 1951 William Pfann mette a punto la purificazione a zone. Il germanio, più facile da purificare, è il materiale dei primi transistor; dal 1954 arrivano quelli al silicio, che è abbondantissimo, regge temperature più alte e ha un ossido, la silice, perfetto per isolare e proteggere i chip.',
       ],
       events: [
-        { year: 1833, title: 'Un cristallo che conduce meglio se scaldato', who: 'Michael Faraday', text: 'Nel solfuro d\'argento la conduzione cresce con la temperatura: è il primo effetto da semiconduttore mai descritto.' },
-        { year: 1916, title: 'Il cristallo tirato dal fuso', who: 'Jan Czochralski', text: 'Un pennino immerso per sbaglio nello stagno fuso suggerisce il metodo che oggi produce la maggior parte dei lingotti di silicio.' },
+        { year: 1833, title: 'Un cristallo che conduce meglio se scaldato', who: 'Michael Faraday', text: 'Nel solfuro d\'argento la conduzione cresce con la temperatura: è considerato il primo effetto da semiconduttore documentato.' },
+        { year: 1916, title: 'Il cristallo tirato dal fuso', who: 'Jan Czochralski, AEG, Berlino', text: 'Si racconta che tutto sia partito da un pennino intinto per sbaglio nello stagno fuso invece che nel calamaio. Il suo metodo produce oggi la maggior parte dei lingotti di silicio.' },
         { year: 1929, title: 'L\'idea della lacuna', who: 'Rudolf Peierls', text: 'Studiando l\'effetto Hall mostra che il posto vuoto in una banda quasi piena si comporta come una carica positiva.' },
         { year: 1931, title: 'La teoria dei semiconduttori', who: 'Alan H. Wilson', text: 'Conduttori, isolanti e semiconduttori spiegati con le bande di energia e la [[banda-proibita]]; le impurezze aggiungono o tolgono elettroni.' },
         { year: 1951, title: 'La purificazione a zone', who: 'William G. Pfann, Bell Labs', text: 'Una zona fusa che scorre lungo la barra si porta via le impurezze: germanio e silicio diventano purissimi.' },
       ],
     },
     fun: 'Per fare i chip il silicio viene purificato fino a "undici nove", il 99,999999999%: resta circa un atomo estraneo ogni 100 miliardi. Poi lo si sporca di nuovo, apposta e con precisione: un atomo di fosforo ogni 10 milioni di silicio è come una sola persona in tutta la Lombardia, eppure basta a far condurre il cristallo centinaia di migliaia di volte di più.',
-    uses: 'Ogni diodo, transistor, LED, cella solare e circuito integrato nasce da silicio drogato: i wafer dei chip sono fette di un unico lingotto cresciuto con il metodo Czochralski. Il silicio è il secondo elemento più abbondante della crosta terrestre, dopo l\'ossigeno. La conduzione che cresce con il calore è sfruttata nei termistori NTC, piccoli sensori di temperatura fatti di ossidi semiconduttori.',
+    uses: 'Diodi, transistor, celle solari e circuiti integrati nascono quasi tutti da silicio drogato: i wafer dei chip sono fette di lingotti cresciuti di solito con il metodo Czochralski. I LED invece usano altri semiconduttori, come l\'arseniuro e il nitruro di gallio, perché nel silicio la ricombinazione produce quasi solo calore. Il silicio è il secondo elemento più abbondante della crosta terrestre, dopo l\'ossigeno. La conduzione che cresce con il calore è sfruttata nei termistori NTC, piccoli sensori di temperatura fatti di ossidi semiconduttori.',
     links: [
       { href: '../elettronica-base/index.html#corrente', section: 'Elettronica base', title: 'La corrente: cariche che si muovono' },
       { href: '../elettronica-base/index.html#ohm', section: 'Elettronica base', title: 'Resistenza e legge di Ohm' },
       { href: '#diodo', section: 'Questa sezione', title: 'Un pezzo P e uno N a contatto: il diodo' },
       { href: '#led-zener', section: 'Questa sezione', title: 'Quando la ricombinazione fa luce: i LED' },
-      { href: '../porte-logiche/index.html#fabbrica', section: 'Porte logiche e chip', title: 'Dal lingotto di silicio al chip' },
+      { href: '../porte-logiche/index.html#integrato', section: 'Porte logiche e chip', title: 'Dal lingotto di silicio al chip' },
     ],
     glossary: {
       'semiconduttore': { term: 'Semiconduttore', def: 'Materiale che conduce molto meno di un metallo e molto più di un isolante, come il silicio e il germanio. Le sue cariche libere aumentano con la temperatura e si controllano con il drogaggio.' },
