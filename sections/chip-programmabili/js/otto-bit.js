@@ -187,19 +187,23 @@
         return dd;
       });
 
+      // min: dove le fonti danno due cifre, la barra piena arriva alla più bassa e una parte tratteggiata alla più alta
       const PANELS = [
-        { id: 'tr', title: 'Transistor', max: 9000, val: (c) => c.transistors, fmt: (c) => (c.id === '6502' ? '' : '≈ ') + O.num(c.transistors), cls: 'tr' },
+        { id: 'tr', title: 'Transistor', max: 9000, val: (c) => c.transistors, min: (c) => c.transistorsMin || null, fmt: (c) => (c.transistorsMin ? O.num(c.transistorsMin) + '–' + O.num(c.transistors) : (c.id === '6502' ? '' : '≈ ') + O.num(c.transistors)), cls: 'tr' },
         { id: 'ck', title: 'Clock al lancio', max: 2.5, val: (c) => c.clock, fmt: (c) => O.dec(c.clock, 1) + ' MHz', cls: 'ck' },
         { id: 'mem', title: 'Memoria indirizzabile', max: 64, val: (c) => c.memKB, fmt: (c) => c.memKB + ' KB', cls: 'mem' },
         { id: 'pw', title: 'Alimentazioni', matrix: true, cls: 'pw' },
+        { id: 'pin', title: 'Piedini', max: 40, val: (c) => c.pins, fmt: (c) => String(c.pins), cls: 'pin' },
+        { id: 'pr', title: 'Prezzo di lancio', max: 400, val: (c) => c.price, fmt: (c) => (c.price == null ? 'fonti discordi' : (c.priceApprox ? '≈ ' : '') + c.price + ' $'), cls: 'pr' },
       ];
       let mode = '';
       let parts = [];
       let entered = false;
 
       function geom(m) {
-        if (m === 'narrow') return { W: 340, H: 8 + 3 * 134 + 126, pw: 320, pos: (i) => [10, 10 + i * 134] };
-        return { W: 640, H: 278, pw: 300, pos: (i) => [12 + (i % 2) * 316, 10 + Math.floor(i / 2) * 138] };
+        const n = PANELS.length;
+        if (m === 'narrow') return { W: 340, H: 8 + (n - 1) * 134 + 126, pw: 320, pos: (i) => [10, 10 + i * 134] };
+        return { W: 640, H: 2 + Math.ceil(n / 2) * 138, pw: 300, pos: (i) => [12 + (i % 2) * 316, 10 + Math.floor(i / 2) * 138] };
       }
 
       function build(m) {
@@ -222,15 +226,20 @@
             part.band = band;
             O.CHIPS.forEach((c, i) => {
               const cy = 31 + i * 18;
-              const w = Math.max(2, (P.val(c) / P.max) * maxW);
+              const v = P.val(c);
+              const known = v != null;
+              const w = known ? Math.max(2, (v / P.max) * maxW) : 0;
+              const lo = P.min && P.min(c);
+              const wMin = lo ? Math.max(2, (lo / P.max) * maxW) : w;
               const row = s('g', { class: 'otto-bit-row', 'data-chip': c.id });
               const lbl = s('text', { class: 'otto-bit-row-lbl', x: 0, y: cy + 4 }, c.short);
-              const bar = s('rect', { class: 'otto-bit-bar', x: x0, y: cy - 5, width: w, height: 10, rx: 2.5 });
-              const val = s('text', { class: 'otto-bit-row-val', x: x0 + w + 6, y: cy + 4 }, P.fmt(c));
+              const ext = lo ? s('rect', { class: 'otto-bit-bar-ext', x: x0, y: cy - 5, width: w, height: 10, rx: 2.5 }) : null;
+              const bar = s('rect', { class: 'otto-bit-bar', x: x0, y: cy - 5, width: wMin, height: 10, rx: 2.5 });
+              const val = s('text', { class: 'otto-bit-row-val' + (known ? '' : ' is-unknown'), x: x0 + w + 6, y: cy + 4 }, P.fmt(c));
               const glow = s('circle', { class: 'otto-bit-glow', cx: x0 + w, cy: cy, r: 7 });
-              row.append(lbl, bar, glow, val);
+              row.append(lbl, ext, bar, known ? glow : null, val);
               g.append(row);
-              part.rows.push({ id: c.id, row: row, bar: bar, val: val, glow: glow, w: w, x0: x0, cy: cy });
+              part.rows.push({ id: c.id, row: row, bar: bar, ext: ext, val: val, glow: known ? glow : null, w: w, k: w ? wMin / w : 1, x0: x0, cy: cy });
             });
           } else {
             const step = (W - 100) / 4;
@@ -289,7 +298,7 @@
           }
         });
         const c = O.CHIP[id];
-        svg.setAttribute('aria-label', 'Confronto tra i cinque chip, evidenziato ' + c.name + ': ' + c.transistorsText + ' transistor, clock ' + c.clockText + ', memoria ' + c.memKB + ' KB, alimentazione ' + O.railsText(c) + '.');
+        svg.setAttribute('aria-label', 'Confronto tra i cinque chip, evidenziato ' + c.name + ': ' + c.transistorsText + ' transistor, clock ' + c.clockText + ', memoria ' + c.memKB + ' KB, alimentazione ' + O.railsText(c) + ', ' + c.pins + ' piedini, prezzo di lancio: ' + c.priceText + '.');
       }
 
       function sheetFor(id, animate) {
@@ -318,9 +327,15 @@
             return;
           }
           part.rows.forEach((r, i) => {
+            if (!r.w) return;
             CP.tween({
               from: 0, to: r.w, duration: CP.dur.slow, delay: pi * 80 + i * 50, ease: 'smooth',
-              onUpdate: (v) => { r.bar.setAttribute('width', Math.max(0.1, v).toFixed(2)); r.glow.setAttribute('cx', (r.x0 + v).toFixed(2)); r.val.setAttribute('x', (r.x0 + v + 6).toFixed(2)); },
+              onUpdate: (v) => {
+                r.bar.setAttribute('width', Math.max(0.1, v * r.k).toFixed(2));
+                if (r.ext) r.ext.setAttribute('width', Math.max(0.1, v).toFixed(2));
+                if (r.glow) r.glow.setAttribute('cx', (r.x0 + v).toFixed(2));
+                r.val.setAttribute('x', (r.x0 + v + 6).toFixed(2));
+              },
             });
           });
         });
@@ -548,7 +563,7 @@
         clear(diffList);
         const d = prev && prev !== id ? O.describeDiff(prev, id) : [];
         if (!d.length) {
-          diffList.append(h('li', { class: 'hint' }, 'Scegli un altro chip qui sopra: le caselle comuni restano al loro posto, le altre compaiono o spariscono.'));
+          diffList.append(h('li', { class: 'hint' }, 'Scegli un altro chip nella fila in alto: le caselle comuni restano al loro posto, le altre compaiono o spariscono.'));
         }
         const SYM = { add: '+', del: '−', mod: '↻' };
         const WORD = { add: 'Arriva', del: 'Sparisce', mod: 'Cambia' };
@@ -691,7 +706,7 @@
         evList.append(h('li', null, b));
         return b;
       });
-      const exFoot = h('p', { class: 'otto-bit-ev-foot' }, 'Solo prezzi verificati, per un chip singolo; «≈» vuol dire circa. Con processori così economici costruire un computer in casa diventa possibile: lo racconta la sezione ', h('a', { href: '../storia-pc/index.html#primi-pc' }, 'Architettura e storia del PC'), '.');
+      const exFoot = h('p', { class: 'otto-bit-ev-foot' }, 'Solo prezzi verificati, in dollari dell’epoca; «≈» vuol dire circa. Con processori così economici costruire un computer in casa diventa possibile: lo racconta la sezione ', h('a', { href: '../storia-pc/index.html#primi-pc' }, 'Architettura e storia del PC'), '.');
       ex.append(exStep, exTitle, exText, evList, exFoot);
 
       const TAGS = ['8080', '6800', '6502'];
@@ -751,7 +766,7 @@
         }
         [1974, 1975, 1976].forEach((yr, i) => axis.append(s('text', { class: 'yr', x: xOf(i * 12 + 5.5), y: G.axisY + 39, 'text-anchor': 'middle' }, String(yr))));
         const evDots = s('g', { class: 'otto-bit-evdots' });
-        const evLabels = [['6800 · 8080', 2.5], ['6502', 20], ['Z80', 28]];
+        const evLabels = [['6800 · 8080', 2.5], ['6502', 20], ['Z80', 30]];
         evLabels.forEach(([txt, mo]) => evDots.append(s('text', { class: 'evl', x: xOf(mo), y: G.axisY + 20, 'text-anchor': 'middle' }, txt)));
         O.PRICE_EVENTS.forEach((e) => evDots.append(s('circle', { class: 'evd', cx: xOf(e.t), cy: G.axisY, r: 4 })));
         axis.append(evDots);
@@ -777,9 +792,11 @@
           const string = s('line', { class: 'otto-bit-string', x1: x, x2: x, y1: G.rail, y2: G.rail });
           const g = s('g', { class: 'otto-bit-tag t-' + id, opacity: 0 });
           g.append(s('path', { class: 'shape', d: tagShape(G.tagW) }), s('circle', { class: 'hole', cx: 0, cy: -14, r: 3.2 }), s('text', { class: 'nm', x: 0, y: 2, 'text-anchor': 'middle' }, O.CHIP[id].short), s('text', { class: 'pr', x: 0, y: 18, 'text-anchor': 'middle' }, ''));
-          const note = s('text', { class: 'otto-bit-tagnote', x: x, y: 0, 'text-anchor': 'middle' }, '');
+          // nota accanto al cartellino (sotto, sugli schermi stretti, dove a destra non c'è posto)
+          const side = m !== 'narrow';
+          const note = s('text', { class: 'otto-bit-tagnote', x: side ? x + G.tagW / 2 + 10 : x, y: 0, 'text-anchor': side ? 'start' : 'middle' }, '');
           svg.append(ghost, arrow, string, g, note);
-          tags[id] = { x: x, g: g, ghost: ghost, arrow: arrow, string: string, note: note, pr: g.querySelector('.pr'), y: G.rail, on: false, p: null, tw: null };
+          tags[id] = { x: x, g: g, ghost: ghost, arrow: arrow, string: string, note: note, side: side, pr: g.querySelector('.pr'), y: G.rail, on: false, p: null, tw: null };
         });
         paint(false);
       }
@@ -792,7 +809,7 @@
         tg.y = y;
         tg.g.setAttribute('transform', 'translate(' + tg.x + ' ' + y.toFixed(2) + ')');
         tg.string.setAttribute('y2', (y - 14).toFixed(2));
-        tg.note.setAttribute('y', (y + 42).toFixed(2));
+        tg.note.setAttribute('y', (tg.side ? y + 6 : y + 42).toFixed(2));
       }
 
       function paint(animate) {
@@ -1038,7 +1055,7 @@
           ? 'Nel linguaggio di MOS i numeri esadecimali iniziano con $: $80 è la cella 0080h, in pagina zero, quindi basta un byte per scriverla.'
           : 'I numeri che finiscono con h sono esadecimali: 0080h è la cella 128. HL è la coppia di registri H e L usata come puntatore alla memoria.';
         say('Sfida · ' + c.name, 'Come si gioca', [
-          'Clicca le istruzioni qui a sinistra nell’ordine in cui vuoi eseguirle; clicca una riga del programma per toglierla. Quando sono tutte al loro posto premi ▶︎ Esegui, oppure «Un passo» per andare piano.',
+          'Clicca le «Istruzioni da sistemare» nell’ordine in cui vuoi eseguirle; clicca una riga del programma per toglierla. Quando sono tutte al loro posto premi ▶︎ Esegui, oppure «Un passo» per andare piano.',
           hexNote,
           'Durante l’esecuzione vedi gli indirizzi (ambra) e i dati (azzurro) viaggiare sul bus, e i contatori di byte e cicli che salgono.',
         ]);
@@ -1435,7 +1452,7 @@
           const rest = IDS.filter((id) => !P[id].solved).map((id) => O.CHIP[id].short);
           say('Risultato', 'Giusto: ' + addr(O.ADDR.zp + 2) + ' contiene ' + res.result, [
             O.CHIP[cur].name + ': ' + tt.bytes + ' byte e ' + tt.cycles + ' ' + O.CYCLE_WORD[cur] + ' di clock. A ' + O.dec(tt.mhz, 1) + ' MHz sono ' + O.dec(tt.us, 1) + ' microsecondi.',
-            rest.length ? 'Ora prova con ' + rest.join(' e ') + ': scegli il chip qui sopra.' : 'Hai risolto tutti e tre i programmi: guarda il confronto qui sotto.',
+            rest.length ? 'Ora prova con ' + rest.join(' e ') + ': scegli il suo nome sopra il programma.' : 'Hai risolto tutti e tre i programmi: guarda il riquadro «3 · Confronta».',
           ], first ? 'Programma corretto: ' + tt.bytes + ' byte e ' + tt.cycles + ' cicli di clock.' : null);
           progress();
         } else {
@@ -1503,11 +1520,12 @@
             IDS.forEach((id, i) => {
               const y = 32 + i * 26;
               const x0 = 40;
-              const maxW = G.gw - x0 - 78;
+              const maxW = G.gw - x0 - 86;
               const lbl = s('text', { class: 'otto-bit-row-lbl', x: 0, y: y + 4 }, O.CHIP[id].short);
               const track = s('rect', { class: 'otto-bit-cmp-track', x: x0, y: y - 7, width: maxW, height: 14, rx: 3 });
               const bar = s('rect', { class: 'otto-bit-cmp-bar m-' + me.k, x: x0, y: y - 7, width: 0, height: 14, rx: 3 });
-              const val = s('text', { class: 'otto-bit-cmp-val', x: x0 + 6, y: y + 4 }, '?');
+              // valori in colonna dopo la pista: si confrontano a colpo d'occhio
+              const val = s('text', { class: 'otto-bit-cmp-val', x: x0 + maxW + 8, y: y + 4 }, '?');
               g.append(lbl, track, bar, val);
               rows.push({ id: id, k: me.k, me: me, bar: bar, val: val, x0: x0, maxW: maxW, w: 0 });
             });
@@ -1526,10 +1544,9 @@
             const from = r.w;
             r.w = w;
             if (animate && !reduced() && Math.abs(from - w) > 0.5) {
-              CP.tween({ from: from, to: w, duration: CP.dur.slow, delay: (i % 3) * 60 + Math.floor(i / 3) * 80, ease: 'smooth', onUpdate: (x) => { r.bar.setAttribute('width', x.toFixed(2)); r.val.setAttribute('x', (r.x0 + x + 6).toFixed(2)); } });
+              CP.tween({ from: from, to: w, duration: CP.dur.slow, delay: (i % 3) * 60 + Math.floor(i / 3) * 80, ease: 'smooth', onUpdate: (x) => { r.bar.setAttribute('width', x.toFixed(2)); } });
             } else {
               r.bar.setAttribute('width', w.toFixed(2));
-              r.val.setAttribute('x', (r.x0 + w + 6).toFixed(2));
             }
             const best = all && bests[r.k].indexOf(r.id) >= 0;
             setText(r.val, solved ? r.me.fmt(v) + (best ? ' ★' : '') : '?');

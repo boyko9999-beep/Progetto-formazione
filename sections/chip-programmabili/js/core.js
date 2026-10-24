@@ -180,13 +180,15 @@
 
   /* ---------- formati ---------- */
 
-  const nf = (typeof Intl !== 'undefined') ? new Intl.NumberFormat('it-IT') : null;
   const fmt = {
-    /** 2300 → "2.300", 0.74 → "0,74" */
+    /** 2300 → "2.300", 0.74 → "0,74", 0.5, 2 → "0,50". Raggruppa anche le migliaia a 4 cifre,
+     *  come nei testi: Intl con 'it-IT' scriverebbe "2300" ma "10.000". */
     num(n, digits) {
-      if (!nf) return String(n);
-      if (digits == null) return nf.format(n);
-      return new Intl.NumberFormat('it-IT', { minimumFractionDigits: digits, maximumFractionDigits: digits }).format(n);
+      if (typeof n !== 'number' || !isFinite(n)) return String(n);
+      const abs = Math.abs(n);
+      const txt = digits == null ? String(Math.round(abs * 1000) / 1000) : abs.toFixed(digits);
+      const [int, dec] = txt.split('.');
+      return (n < 0 && Number(txt) !== 0 ? '-' : '') + int.replace(/\B(?=(\d{3})+(?!\d))/g, '.') + (dec ? ',' + dec : '');
     },
     /** 10, 2 → "0A" */
     hex(n, digits) { return (n >>> 0).toString(16).toUpperCase().padStart(digits || 2, '0'); },
@@ -338,7 +340,8 @@
    *   bottom: riga sotto ("© 1971"), body: 'plastic' | 'ceramic' | 'violet',
    *   lid: coperchio dorato (bool), window: finestra di quarzo delle EPROM (bool),
    *   wide: corpo largo 0,6" (di default dai 24 piedini in su), title: testo alternativo,
-   *   pinNames: array opzionale di nomi (indice 0 = piedino 1) mostrati nel tooltip.
+   *   pinNames: array opzionale di nomi (indice 0 = piedino 1) mostrati nel tooltip,
+   *   legible: scritte più grandi sui chip lunghi (attivo di default per gli elementi data-dip).
    * Restituisce un <svg> già pronto; con opts.group: true restituisce un <g> da inserire in un altro svg
    * (dimensioni in g.size = { w, h }).
    */
@@ -378,12 +381,14 @@
 
     const ink = o.body === 'ceramic' ? '#2b2925' : '#d8dde2';
     let textX = L / 2;
+    let avail = L - 10; // spazio in lunghezza per le scritte
     if (o.lid) {
       const lw = Math.min(L * 0.42, W * 1.25);
       const lh = W * 0.62;
       g.append(s('rect', { x: L / 2 - lw / 2, y: W / 2 - lh / 2, width: lw, height: lh, rx: 1.6, fill: 'url(#cp-g-lid)', class: 'cp-dip-lid' }));
       g.append(s('rect', { x: L / 2 - lw / 2 + 1.4, y: W / 2 - lh / 2 + 1.4, width: lw - 2.8, height: lh - 2.8, rx: 1, fill: 'none', stroke: '#fff3c4', 'stroke-opacity': 0.5, 'stroke-width': 0.6 }));
       textX = L / 2 + lw / 2 + (L / 2 - lw / 2) / 2;
+      avail = L / 2 - lw / 2 - 6;
     }
     if (o.window) {
       const r = W * 0.27;
@@ -398,15 +403,21 @@
       }
       g.append(s('ellipse', { cx: cx - r * 0.35, cy: cy - r * 0.4, rx: r * 0.32, ry: r * 0.16, fill: '#fff', opacity: 0.45, transform: 'rotate(-30 ' + (cx - r * 0.35) + ' ' + (cy - r * 0.4) + ')' }));
       textX = cx + r + (L - cx - r) / 2;
+      avail = L - cx - r - 7;
     }
 
-    // scritte centrate in verticale: produttore, sigla, riga piccola
-    const big = wide ? 9.5 : 7.4;
-    const small = wide ? 5.6 : 4.6;
+    // scritte centrate in verticale: produttore, sigla, riga piccola.
+    // Con legible (campioni e cassetto, disegnati a larghezza fissa) crescono con la lunghezza del chip,
+    // così la sigla resta leggibile anche su un 40 o un 64 piedini.
+    const k = o.legible ? Math.min(Math.max(1, L / (o.window ? 140 : 100)), wide ? 2.4 : 1.3) : 1;
+    const big = (wide ? 9.5 : 7.4) * k;
+    const small = (wide ? 5.6 : 4.6) * k;
+    // ogni riga si rimpicciolisce se non sta nello spazio libero (caratteri monospaziati, ~0,64 em)
+    const fit = (size, t) => Math.min(size, avail / (String(t).length * 0.64));
     const lines = [];
-    if (o.top) lines.push({ t: o.top, size: small, cls: 'cp-dip-maker', op: 0.85 });
-    if (o.label) lines.push({ t: o.label, size: big, cls: 'cp-dip-label', op: 1 });
-    if (o.bottom) lines.push({ t: o.bottom, size: small * 0.9, cls: 'cp-dip-sub', op: 0.7 });
+    if (o.top) lines.push({ t: o.top, size: fit(small, o.top), cls: 'cp-dip-maker', op: 0.85 });
+    if (o.label) lines.push({ t: o.label, size: fit(big, o.label), cls: 'cp-dip-label', op: 1 });
+    if (o.bottom) lines.push({ t: o.bottom, size: fit(small * 0.9, o.bottom), cls: 'cp-dip-sub', op: 0.7 });
     const gap = wide ? 2.2 : 1.4;
     let y = W / 2 - (lines.reduce((a, l) => a + l.size, 0) + gap * (lines.length - 1)) / 2;
     lines.forEach((l) => {
@@ -657,7 +668,7 @@
     doc.querySelectorAll('[data-dip]').forEach((el) => {
       let o;
       try { o = JSON.parse(el.dataset.dip); } catch (e) { console.error('data-dip non valido', el); return; }
-      el.prepend(dip(o));
+      el.prepend(dip(Object.assign({ legible: true }, o)));
     });
   }
 

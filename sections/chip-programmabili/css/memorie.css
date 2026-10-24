@@ -299,7 +299,8 @@
   #memorie .mem-tag { font-size: 13px; }
   #memorie .mem-lamp-t { font-size: 13.5px; }
   #memorie .mem-lens text { font-size: 13.5px; }
-  #memorie .mem-lens text.s { font-size: 12.5px; }
+  #memorie .mem-lens text.s { font-size: 13px; }
+  #memorie .mem-lens .mem-l-mark text { font-size: 13.5px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

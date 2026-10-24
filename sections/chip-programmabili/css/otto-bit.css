@@ -11,6 +11,23 @@
 #otto-bit .otto-bit-fig .cp-art { padding: 14px; }
 #otto-bit .otto-bit-fig-tree .cp-art svg { overflow: visible; }
 
+/* i piedini di 8008 e 8080, sullo sfondo da strumento: stessi colori dei segnali del laboratorio */
+#otto-bit .otto-bit-fig-pins { max-width: 560px; }
+#otto-bit .otto-bit-fig-pins .nm { fill: var(--lab-ink); font-size: 14px; font-weight: 800; }
+#otto-bit .otto-bit-fig-pins .n { fill: var(--lab-gold); font: 700 12px var(--mono); }
+#otto-bit .otto-bit-fig-pins .pa { fill: var(--sig-addr); }
+#otto-bit .otto-bit-fig-pins .pd { fill: var(--sig-data); }
+#otto-bit .otto-bit-fig-pins .pp { fill: #8fa59c; }
+#otto-bit .otto-bit-fig-pins .pc { fill: var(--sig-ctrl); }
+#otto-bit .otto-bit-fig-pins .br { fill: none; stroke: var(--lab-dim); stroke-width: 1.2; }
+#otto-bit .otto-bit-fig-pins .cnt { fill: var(--lab-ink); font: 700 12.5px var(--mono); }
+#otto-bit .otto-bit-fig-pins .lg { fill: var(--lab-text); font-size: 12px; }
+#otto-bit .otto-bit-fig-pins .lg.dim { fill: var(--lab-dim); }
+#otto-bit .otto-bit-fig-pins .seq rect { stroke-width: 1.2; }
+#otto-bit .otto-bit-fig-pins .seq .sa { fill: color-mix(in srgb, var(--sig-addr) 18%, var(--lab-bg)); stroke: var(--sig-addr); }
+#otto-bit .otto-bit-fig-pins .seq .sd { fill: color-mix(in srgb, var(--sig-data) 18%, var(--lab-bg)); stroke: var(--sig-data); }
+#otto-bit .otto-bit-fig-pins .seq text { fill: var(--lab-ink); font-size: 12px; font-weight: 700; }
+
 /* ---------- laboratorio: struttura comune ---------- */
 
 #otto-bit .otto-bit-views button { white-space: nowrap; }
@@ -80,6 +97,11 @@
 #otto-bit .otto-bit-col-lbl { fill: var(--lab-text); font: 700 12px var(--mono); }
 #otto-bit .otto-bit-col-n { fill: var(--lab-text); font: 700 12px var(--mono); }
 #otto-bit .otto-bit-bar { fill: #46645a; transition: fill var(--t-fast); }
+/* dove le fonti danno due cifre: la parte incerta è tratteggiata */
+#otto-bit .otto-bit-bar-ext { fill: rgba(70, 100, 90, .35); stroke: #6f8a80; stroke-width: 1; stroke-dasharray: 3 2; transition: fill var(--t-fast), stroke var(--t-fast); }
+#otto-bit .otto-bit-row.is-sel .otto-bit-bar-ext { fill: rgba(62, 224, 143, .22); stroke: var(--sig-on); }
+#otto-bit .otto-bit-row-val.is-unknown { fill: var(--lab-dim); font-style: italic; }
+#otto-bit .otto-bit-row.is-sel .otto-bit-row-val.is-unknown { fill: var(--lab-text); }
 #otto-bit .otto-bit-glow { fill: var(--sig-on); opacity: 0; pointer-events: none; }
 #otto-bit .otto-bit-rail-line { stroke: var(--lab-line); stroke-width: 1; }
 #otto-bit .otto-bit-dot { fill: #2b3b36; transition: fill var(--t-fast); }
@@ -301,6 +323,13 @@
 #otto-bit .otto-bit-mach-cap b { display: block; font: 750 .9rem var(--mono); color: var(--lab-ink); }
 #otto-bit .otto-bit-mach-cap .long { display: none; margin-top: 2px; }
 #otto-bit .otto-bit-runbar { margin-top: 14px; padding: 12px 0 0; border-bottom: 0; border-top: 1px solid var(--lab-line); }
+
+/* sugli schermi larghi il racconto dei passi resta in vista accanto al programma
+   (overflow: clip invece di hidden, altrimenti position: sticky non funziona) */
+@media (min-width: 901px) {
+  #otto-bit .cp-lab { overflow: clip; }
+  #otto-bit .cp-lab-mount[data-view="sfida"]:not(.otto-bit-narrow) .otto-bit-explain > .otto-bit-ex { position: sticky; top: calc(var(--stick, 53px) + 64px); }
+}
 
 /* confronto */
 #otto-bit .otto-bit-cmp-title { fill: var(--lab-ink); font-size: 12.5px; font-weight: 750; }

@@ -1002,8 +1002,8 @@
         txt(190, 131, 'gate flottante', 'mem-l-t s'), // sopra gli elettroni in movimento, così resta leggibile
         s('line', { x1: 60, y1: 252, x2: 320, y2: 252, class: 'mem-l-track' }),
         s('line', { x1: 60, y1: 252, x2: 190, y2: 252, class: 'mem-l-zone' }),
-        s('line', { x1: 190, y1: 240, x2: 190, y2: 264, class: 'mem-l-readline' }),
-        txt(196, 246, 'lettura', 'mem-l-t s dim', 'start'),
+        s('line', { x1: 190, y1: 243, x2: 190, y2: 259, class: 'mem-l-readline' }),
+        txt(190, 270, 'lettura', 'mem-l-t s dim'),
         txt(50, 257, '1', 'mem-l-t b one', 'end'), txt(330, 257, '0', 'mem-l-t b', 'start'),
         mark, flashL);
 
@@ -1079,7 +1079,9 @@
       };
 
       function value() { return M.bit(chips[tech].mem[sel.a], sel.b); }
-      function setMark(x) { mark.setAttribute('transform', 'translate(' + x.toFixed(1) + ' 252)'); }
+      function setPill(v) { pill.textContent = 'si legge ' + v; pill.classList.toggle('one', v === 1); }
+      // la pillola segue la soglia: la cella si legge 1 finché la soglia resta sotto la tensione di lettura (x = 190)
+      function setMark(x) { mark.setAttribute('transform', 'translate(' + x.toFixed(1) + ' 252)'); setPill(x < 190 ? 1 : 0); }
       function hot(names, cls) {
         Object.keys(term).forEach((k) => term[k].classList.remove('is-hot', 'is-read'));
         (names || []).forEach((k) => term[k].classList.add(cls || 'is-hot'));
@@ -1087,17 +1089,16 @@
       function hide(list) { list.forEach((el) => el.setAttribute('opacity', 0)); }
 
       function staticCaption(v) {
-        if (lt === 'rom') return v ? 'C\'è un diodo: quando la riga si accende, la corrente arriva alla colonna e la cella si legge 1.' : 'Nessun diodo a questo incrocio: la colonna resta spenta e la cella si legge 0.';
-        if (lt === 'prom') return v ? 'Fusibile bruciato: il collegamento tra riga e colonna è aperto e la cella si legge 1.' : 'Fusibile intatto: la riga è collegata alla colonna e la cella si legge 0.';
-        return v ? 'Gate flottante vuoto: soglia bassa. In lettura il canale si apre e la cella si legge 1.' : 'Elettroni intrappolati sul gate flottante: soglia alta. In lettura il canale resta chiuso e la cella si legge 0.';
+        if (lt === 'rom') return v ? 'C\'è un diodo: quando la riga si accende, la corrente arriva alla colonna e la cella si legge\u00a01.' : 'Nessun diodo a questo incrocio: la colonna resta spenta e la cella si legge\u00a00.';
+        if (lt === 'prom') return v ? 'Fusibile bruciato: il collegamento è aperto e la corrente non arriva alla colonna. Il circuito di lettura lo traduce in\u00a01.' : 'Fusibile intatto: la corrente passa dalla riga alla colonna. In queste PROM il circuito di lettura lo traduce in 0, al contrario della ROM.';
+        return v ? 'Gate flottante vuoto: soglia bassa. In lettura il canale si apre e la cella si legge\u00a01.' : 'Elettroni intrappolati sul gate flottante: soglia alta. In lettura il canale resta chiuso e la cella si legge\u00a00.';
       }
 
       /** Stato fermo della cella selezionata. */
       L.render = () => {
         const v = value();
         idText.textContent = hex2(sel.a) + ' · bit ' + sel.b;
-        pill.textContent = 'si legge ' + v;
-        pill.classList.toggle('one', v === 1);
+        setPill(v);
         cap.textContent = staticCaption(v);
         svgL.setAttribute('aria-label', 'Lente sulla cella all\'indirizzo ' + hex2(sel.a) + ', bit ' + sel.b + '. ' + staticCaption(v));
         if (FG[lt]) {
@@ -1151,6 +1152,7 @@
           : 'Scrittura: alta tensione su riga e colonna. Gli elettroni corrono nel canale e alcuni, vicino al drain, saltano oltre l\'ossido e restano sul gate flottante.';
         hot(tunnel ? ['cg'] : ['cg', 'dr']);
         slots.forEach((el) => el.setAttribute('opacity', 0));
+        setMark(104);
         const n = tunnel ? 6 : 8;
         for (let i = 0; i < n; i++) {
           const em = movers[i];
@@ -1177,6 +1179,7 @@
       function playEraseFG(kind, D) {
         const v0 = slots.map((el) => +el.getAttribute('opacity') > 0.5);
         if (!v0.some(Boolean)) slots.forEach((el) => el.setAttribute('opacity', 1)); // la cella era carica prima dell'operazione
+        setMark(286);
         if (kind === 'uv') {
           cap.textContent = 'Luce ultravioletta: ogni fotone dà a un elettrone l\'energia per superare l\'ossido e lasciare il gate flottante.';
           const step = Math.max(240, (D - 1000) / 6);
@@ -1235,11 +1238,11 @@
 
       function playRead() {
         const v = value();
-        cap.textContent = 'Lettura: sul gate di controllo arriva la tensione di lettura. ' + (FG[lt]
-          ? (v ? 'La soglia è bassa, il canale si apre e passa corrente: 1.' : 'La soglia è alta, il canale resta chiuso e non passa corrente: 0.')
+        cap.textContent = (FG[lt] ? 'Lettura: sul gate di controllo arriva la tensione di lettura. ' : 'Lettura: il decodificatore accende la riga. ') + (FG[lt]
+          ? (v ? 'La soglia è bassa, il canale si apre e passa corrente:\u00a01.' : 'La soglia è alta, il canale resta chiuso e non passa corrente:\u00a00.')
           : lt === 'prom'
-            ? (v ? 'Il fusibile è aperto, la corrente non arriva alla colonna: 1.' : 'La corrente passa dal fusibile alla colonna: 0.')
-            : (v ? 'La corrente attraversa il diodo e arriva alla colonna: 1.' : 'Nessun diodo, nessuna corrente: 0.'));
+            ? (v ? 'Il fusibile è aperto, la corrente non arriva alla colonna e il circuito di lettura dà\u00a01.' : 'La corrente passa dal fusibile alla colonna e il circuito di lettura dà\u00a00.')
+            : (v ? 'La corrente attraversa il diodo e arriva alla colonna:\u00a01.' : 'Nessun diodo, nessuna corrente:\u00a00.'));
         if (FG[lt]) {
           hot(['cg'], 'is-read');
           if (v) {
@@ -1288,6 +1291,9 @@
         fuseWhole.style.display = '';
         fuseTop.style.display = fuseBot.style.display = 'none';
         soot.style.display = 'none';
+        fuseLabel.textContent = 'fusibile intatto';
+        promOut.textContent = 'uscita: 0';
+        setPill(0);
         promPath.classList.add('is-hot');
         runDots([[150, 60], [150, 150]], 'is-hot');
         later(fxL, 360, () => fuseWhole.classList.add('is-hot'));
@@ -1298,6 +1304,7 @@
           soot.style.display = '';
           fuseLabel.textContent = 'fusibile bruciato';
           promOut.textContent = 'uscita: 1';
+          setPill(1);
           tw(fxL, {
             duration: 460, ease: 'sharp',
             onUpdate: (v) => { sparkL.setAttribute('transform', 'translate(150 152) scale(' + (0.4 + v).toFixed(3) + ')'); sparkL.setAttribute('opacity', (v < 0.15 ? v / 0.15 : (1 - v) / 0.85).toFixed(2)); },
@@ -1357,9 +1364,9 @@
         const v = value();
         if (FG[lt]) chan.setAttribute('opacity', v ? 1 : 0);
         cap.textContent = 'Lettura: ' + (FG[lt]
-          ? (v ? 'la soglia è bassa, il canale si apre e passa corrente, quindi 1.' : 'la soglia è alta, il canale resta chiuso, quindi 0.')
-          : lt === 'prom' ? (v ? 'il fusibile è aperto e la colonna resta spenta, quindi 1.' : 'la corrente passa dal fusibile alla colonna, quindi 0.')
-            : (v ? 'la corrente attraversa il diodo, quindi 1.' : 'nessun diodo, nessuna corrente, quindi 0.'));
+          ? (v ? 'la soglia è bassa, il canale si apre e passa corrente, quindi\u00a01.' : 'la soglia è alta, il canale resta chiuso, quindi\u00a00.')
+          : lt === 'prom' ? (v ? 'il fusibile è aperto e la colonna resta spenta, quindi\u00a01.' : 'la corrente passa dal fusibile alla colonna, quindi\u00a00.')
+            : (v ? 'la corrente attraversa il diodo, quindi\u00a01.' : 'nessun diodo, nessuna corrente, quindi\u00a00.'));
       }
 
       return L;

@@ -3,7 +3,7 @@
     "q": "Perché il MOS 6502 fece scalpore alla fiera WESCON del settembre 1975?",
     "options": ["Costava 25 dollari, contro quasi 200 di 8080 e 6800", "Era il primo microprocessore a 16 bit in vendita", "Aveva più transistor di tutti i concorrenti"],
     "answer": 0,
-    "why": "MOS vendeva il 6502 a 25 dollari (il 6501 a 20) mentre 8080 e 6800 costavano quasi 200 dollari: un prezzo così basso che qualcuno pensò a uno scherzo.",
+    "why": "MOS vendeva il 6502 a 25 dollari (il 6501 a 20) mentre 8080 e 6800 costavano quasi 200 dollari: otto volte tanto.",
     "chapter": "otto-bit",
     "level": 1,
     "topic": "prezzo del 6502"

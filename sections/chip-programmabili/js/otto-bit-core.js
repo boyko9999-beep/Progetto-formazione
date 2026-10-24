@@ -41,38 +41,38 @@
     {
       id: '8008', name: 'Intel 8008', short: '8008', maker: 'Intel', year: 1972, when: 'aprile 1972',
       dip: { pins: 18, label: 'C8008', top: 'intel', body: 'ceramic' },
-      people: 'Hal Feeney, poi Federico Faggin; istruzioni del Datapoint 2200 di CTC',
+      people: 'Hal Feeney e Federico Faggin; istruzioni del Datapoint 2200 di CTC',
       tech: 'PMOS', transistors: 3500, transistorsText: 'circa 3.500',
       clock: 0.5, clockText: '0,5 MHz (0,8 nell’8008-1)',
       pins: 18, supplies: ['+5', '-9'], memKB: 16, memText: '16 KB (indirizzi a 14 bit)',
-      price: 120, priceText: '120 dollari',
+      price: 120, priceApprox: false, priceText: '120 dollari',
       modes: 'registro, immediato e memoria solo tramite H e L',
       blurb: 'Nato per il terminale Datapoint 2200, che alla fine non lo usò. Con 18 piedini gli stessi 8 fili portano a turno due pezzi d’indirizzo e il dato.',
-      where: 'terminali e strumenti; le sue istruzioni, via 8080 e 8086, arrivano fino all’x86.',
+      where: 'i primi microcomputer, come il Micral N e il Mark-8; le sue istruzioni, via 8080 e 8086, arrivano fino all’x86.',
     },
     {
       id: '8080', name: 'Intel 8080', short: '8080', maker: 'Intel', year: 1974, when: 'aprile 1974',
       dip: { pins: 40, label: 'C8080A', top: 'intel', body: 'violet', lid: true },
       people: 'Federico Faggin (idea e guida) e Masatoshi Shima (progetto dettagliato)',
-      tech: 'NMOS', transistors: 6000, transistorsText: 'circa 6.000 (secondo Intel)',
+      tech: 'NMOS', transistors: 6000, transistorsMin: 4500, transistorsText: 'tra 4.500 e 6.000, a seconda delle fonti',
       clock: 2, clockText: '2 MHz',
       pins: 40, supplies: ['+12', '+5', '-5'], memKB: 64, memText: '64 KB (indirizzi a 16 bit)',
-      price: 360, priceText: '360 dollari',
+      price: 360, priceApprox: false, priceText: '360 dollari',
       modes: 'registro, immediato, diretto e indiretto tramite le coppie di registri',
       blurb: 'Dieci volte più veloce dell’8008, con indirizzi e dati su piedini separati e la pila spostata in memoria. Il prezzo: tre tensioni di alimentazione.',
       where: 'l’Altair 8800 e tanti sistemi industriali; poi l’8085 e l’8086.',
     },
     {
-      id: '6800', name: 'Motorola 6800', short: '6800', maker: 'Motorola', year: 1974, when: '1974',
+      id: '6800', name: 'Motorola 6800', short: '6800', maker: 'Motorola', year: 1974, when: 'marzo 1974 (annuncio)',
       dip: { pins: 40, label: 'MC6800', top: 'MOTOROLA', body: 'ceramic' },
       people: 'il gruppo Motorola guidato dall’architetto Tom Bennett',
       tech: 'NMOS', transistors: 4100, transistorsText: 'circa 4.100',
       clock: 1, clockText: '1 MHz',
       pins: 40, supplies: ['+5'], memKB: 64, memText: '64 KB (indirizzi a 16 bit)',
-      price: 360, priceText: 'circa 360 dollari',
+      price: 360, priceApprox: true, priceText: 'circa 360 dollari',
       modes: '7: tra questi diretto, esteso e indicizzato con X',
       blurb: 'Una sola alimentazione da +5 V, come i normali chip logici: alimentatore e scheda diventano più semplici. Due accumulatori e un indice da 16 bit.',
-      where: 'il kit SWTPC 6800, l’Altair 680, auto e strumenti.',
+      where: 'il kit SWTPC 6800, l’Altair 680, periferiche e strumenti di misura.',
     },
     {
       id: '6502', name: 'MOS 6502', short: '6502', maker: 'MOS Technology', year: 1975, when: 'settembre 1975',
@@ -81,21 +81,21 @@
       tech: 'NMOS', transistors: 3510, transistorsText: '3.510',
       clock: 1, clockText: '1 MHz',
       pins: 40, supplies: ['+5'], memKB: 64, memText: '64 KB (indirizzi a 16 bit)',
-      price: 25, priceText: '25 dollari (il 6501: 20)',
+      price: 25, priceApprox: false, priceText: '25 dollari (il 6501: 20)',
       modes: '13, tra cui la pagina zero e gli indiretti indicizzati',
       blurb: 'Pochi registri e una scorciatoia: la pagina zero, i primi 256 byte di memoria raggiunti con indirizzi di un byte solo. Chip piccolo, resa alta, prezzo stracciato.',
       where: 'Apple II, Commodore PET e, con le varianti 6510 e 2A03, Commodore 64 e NES.',
     },
     {
-      id: 'z80', name: 'Zilog Z80', short: 'Z80', maker: 'Zilog', year: 1976, when: '1976 (maggio o luglio)',
+      id: 'z80', name: 'Zilog Z80', short: 'Z80', maker: 'Zilog', year: 1976, when: 'luglio 1976',
       dip: { pins: 40, label: 'Z80 CPU', top: 'ZILOG', body: 'plastic' },
-      people: 'Federico Faggin (architettura) e Masatoshi Shima (logica e circuiti)',
+      people: 'Federico Faggin (idea e architettura) e Masatoshi Shima (microarchitettura, logica e circuiti)',
       tech: 'NMOS', transistors: 8500, transistorsText: 'circa 8.500',
       clock: 2.5, clockText: '2,5 MHz (Z80A: 4 MHz)',
       pins: 40, supplies: ['+5'], memKB: 64, memText: '64 KB, con il refresh delle DRAM',
-      price: null, priceText: 'le fonti non concordano',
+      price: null, priceApprox: false, priceText: 'le fonti non concordano',
       modes: 'quelli dell’8080 più indicizzato con IX e IY, relativo e sui bit',
-      blurb: 'Esegue i programmi dell’8080 byte per byte e aggiunge un set di registri di riserva, IX e IY, istruzioni sui bit e il rinfresco automatico delle DRAM.',
+      blurb: 'Esegue quasi tutti i programmi dell’8080 byte per byte e aggiunge un set di registri di riserva, IX e IY, istruzioni sui bit e il rinfresco automatico delle DRAM.',
       where: 'TRS-80, Osborne 1, computer MSX; un parente Sharp nel Game Boy.',
     },
   ];
@@ -223,7 +223,7 @@
   const GEOM = {
     wide: { W: 640, U: 10, BH: 36, RG: 16, Y0: 62, X0: 30, X1: 238, X2: 446, H: 322 },
     // nella disposizione stretta i registri d'indirizzo vanno sotto: GAP lascia posto alla loro intestazione
-    narrow: { W: 340, U: 8, BH: 32, RG: 14, Y0: 58, X0: 20, X1: 182, GAP: 16, H: 396 },
+    narrow: { W: 340, U: 8, BH: 32, RG: 14, Y0: 58, X0: 20, X1: 182, GAP: 26, H: 406 },
   };
 
   function layoutRegs(chipId, mode) {
@@ -331,6 +331,12 @@
     return groups;
   }
 
+  // nome del ruolo di un gruppo di registri; SP da solo è «il puntatore della pila»
+  function roleName(g) {
+    if (g.length > 1) return ROLE_PLURAL[g[0].role];
+    return g[0].k === 'SP' ? 'puntatore della pila' : ROLE_NAMES[g[0].role];
+  }
+
   /** Frasi brevi che spiegano che cosa cambia passando da un chip all'altro: [{ kind: 'add'|'del'|'mod', text }]. */
   function describeDiff(fromId, toId) {
     if (fromId === toId) return [];
@@ -347,8 +353,7 @@
     if (alt.length) out.push({ kind: 'add', text: 'set alternativo di ' + alt.length + ' registri: ' + listIt(alt.map((k) => B[k].label)) });
     groupRegs(d.added.filter((k) => !special[B[k].role]), B).forEach((g) => {
       const names = listIt(g.map((r) => r.label));
-      const what = g.length > 1 ? ROLE_PLURAL[g[0].role] : ROLE_NAMES[g[0].role];
-      out.push({ kind: 'add', text: names + ': ' + what + ' da ' + g[0].bits + ' bit' });
+      out.push({ kind: 'add', text: names + ': ' + roleName(g) + ' da ' + g[0].bits + ' bit' });
     });
     if (d.added.indexOf('zp') >= 0) out.push({ kind: 'add', text: 'pagina zero: 256 byte di memoria raggiunti con indirizzi da 1 byte' });
     if (d.added.indexOf('stack') >= 0) out.push({ kind: 'add', text: 'pila interna di 7 livelli, dentro il chip' });
@@ -358,8 +363,7 @@
     if (altGone.length) out.push({ kind: 'del', text: 'il set alternativo (' + altGone.length + ' registri)' });
     groupRegs(d.removed.filter((k) => !special[A[k].role]), A).forEach((g) => {
       const names = listIt(g.map((r) => r.label));
-      const what = g.length > 1 ? ROLE_PLURAL[g[0].role] : ROLE_NAMES[g[0].role];
-      out.push({ kind: 'del', text: names + ' (' + what + ')' });
+      out.push({ kind: 'del', text: names + ' (' + roleName(g) + ')' });
     });
     if (d.removed.indexOf('zp') >= 0) out.push({ kind: 'del', text: 'la pagina zero come scorciatoia' });
     if (d.removed.indexOf('stack') >= 0) out.push({ kind: 'del', text: 'la pila interna: ora la pila sta in memoria, indicata da SP' });
@@ -401,10 +405,10 @@
   };
 
   const PRICE_EVENTS = [
-    { t: 2, id: 'm6800', title: 'Arriva il Motorola 6800', text: 'Motorola presenta il 6800: una sola alimentazione da +5 V e un prezzo di circa 360 dollari per un chip singolo.', say: 'Primavera 1974: il Motorola 6800 costa circa 360 dollari.' },
+    { t: 2, id: 'm6800', title: 'Arriva il Motorola 6800', text: 'Marzo 1974: Motorola annuncia il 6800, con una sola alimentazione da +5 V. Il prezzo di lancio è di circa 360 dollari.', say: 'Primavera 1974: il Motorola 6800 costa circa 360 dollari.' },
     { t: 3, id: 'i8080', title: 'Intel lancia l’8080', text: 'Aprile 1974: l’8080 costa 360 dollari. Due anni prima l’8008 ne costava 120: il chip migliore ha un listino più alto.', say: 'Aprile 1974: l’Intel 8080 costa 360 dollari.' },
-    { t: 20, id: 'm6502', title: 'Il 6502 a 25 dollari', text: 'Settembre 1975, fiera WESCON: MOS vende il 6502 a 25 dollari e il 6501 a 20. Intanto 8080 e 6800 sono scesi a quasi 200 dollari, ma costano ancora otto volte tanto. Motorola risponde tagliando il prezzo del 6800 e facendo causa a MOS.', say: 'Settembre 1975: il 6502 costa 25 dollari, otto volte meno di 8080 e 6800.' },
-    { t: 28, id: 'z80', title: 'Arriva lo Z80', text: 'Nel 1976 Zilog lancia lo Z80, compatibile con l’8080 e con una sola alimentazione. I listini continuano a scendere, ma per i prezzi di questi mesi le fonti danno cifre diverse: qui non le riportiamo.', say: 'Nel 1976 arriva lo Z80: i prezzi continuano a scendere.' },
+    { t: 20, id: 'm6502', title: 'Il 6502 a 25 dollari', text: 'Settembre 1975, fiera WESCON: MOS vende il 6502 a 25 dollari e il 6501 a 20. Intanto 8080 e 6800 sono scesi a quasi 200 dollari, ma costano ancora otto volte tanto. Motorola risponde tagliando il prezzo del 6800 e facendo causa a MOS per il 6501.', say: 'Settembre 1975: il 6502 costa 25 dollari, otto volte meno di 8080 e 6800.' },
+    { t: 30, id: 'z80', title: 'Arriva lo Z80', text: 'Luglio 1976: Zilog lancia lo Z80, compatibile con l’8080 e con una sola alimentazione. I listini continuano a scendere, ma per i prezzi di questi mesi le fonti danno cifre diverse: qui non le riportiamo.', say: 'Luglio 1976: arriva lo Z80. I prezzi continuano a scendere.' },
   ];
 
   /** Il prezzo noto di un chip al mese t: { p, approx, since } oppure null se non è ancora in vendita. */
@@ -577,7 +581,11 @@
     const load = r.steps.find((st) => st.op === 'movam');
     const add = r.steps.find((st) => st.op === 'add');
     const store = r.steps.find((st) => st.op === 'movma');
-    if (first('movma') < first('add')) return { ok: false, code: 'store-early', text: name('movma') + ' ha scritto A prima della somma: il risultato non è ancora pronto.' };
+    if (first('movma') < first('add')) {
+      const w = store.writes[0];
+      const lost = w.addr === base ? ': ha cancellato il primo numero' : w.addr === base + 1 ? ': ha cancellato il secondo numero' : '';
+      return { ok: false, code: 'store-early', text: name('movma') + ' ha scritto ' + w.val + ' in ' + at(w.addr) + ' prima della somma' + lost + '. La scrittura va per ultima.' };
+    }
     if (first('add') < first('movam')) return { ok: false, code: 'load-late', text: name('add') + ' ha sommato a un A ancora vuoto, poi ' + name('movam') + ' l’ha sovrascritto.' };
     if (load && load.reads[0].addr !== base) return { ok: false, code: 'bad-load', text: name('movam') + ' ha letto ' + at(load.reads[0].addr) + ' invece di ' + at(base) + ': HL era già andato avanti.' };
     if (add && add.reads[0].addr !== base + 1) return { ok: false, code: 'bad-add', text: name('add') + ' ha sommato il byte in ' + at(add.reads[0].addr) + ' invece di quello in ' + at(base + 1) + ': controlla dove metti ' + name('inx') + '.' };

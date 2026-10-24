@@ -56,13 +56,13 @@
   {
     "q": "Come ottenne Intel il diritto di vendere i chip MCS-4 a tutti i clienti?",
     "options": [
-      "Nel maggio 1971 restituì a Busicom circa 60.000 dollari, escludendo le calcolatrici",
+      "Nel maggio 1971 restituì a Busicom i 60.000 dollari, escluse le calcolatrici",
       "Nel 1974 comprò Busicom e il suo marchio, dopo il fallimento dell'azienda",
       "Depositò il brevetto del chip prima di Busicom, nel novembre 1969",
       "Riprogettò da zero il chip in modo che fosse diverso da quello di Busicom"
     ],
     "answer": 0,
-    "why": "Busicom era in difficoltà e chiese di rinegoziare: Intel le restituì i circa 60.000 dollari investiti e in cambio ottenne il diritto di vendere i chip per ogni uso tranne le calcolatrici.",
+    "why": "Busicom chiese di rinegoziare il contratto: Intel le restituì i 60.000 dollari investiti nello sviluppo e in cambio ottenne il diritto di vendere i chip per ogni uso tranne le calcolatrici.",
     "chapter": "idea",
     "level": 3,
     "topic": "i diritti sul chip"

@@ -39,12 +39,12 @@
       bus: ['M316 124 H744', 'M470 100 V124', 'M428 124 V148', 'M638 124 V148'],
       busLabel: [334, 116],
       links: ['M590 236 V368', 'M692 236 V422'],
-      wireText: [356, 292],
+      badge: { x: 352, y: 262, w: 214, h: 58 },
       disp: { x: 16, y: 368, w: 600, h: 160, lx: 36, ly: 388, p: 20, r: 7.2, capX: 16, capY: 549 },
       key: { cx: 692, cy: 452, r: 30, cap: [692, 504, 'middle'], mean: [692, 522, 'middle'] },
       wiredGeo: { orient: 'h', x: 16, y: 12, w: 728, h: 340 },
       wiredLink: (e) => 'M' + e[0] + ' ' + e[1] + ' V360 H600 V368',
-      feedLabel: [22, 28, 'start', 'ingressi'], outLabel: [740, 28, 'end', 'uscite'],
+      feedLabel: [22, 28, 'start', 'ingressi: tasto e clock'], outLabel: [740, 28, 'end', 'uscite verso il display'],
       paths: {
         romOut: (y) => [[214, y], [322, y], [322, 124], [470, 124], [470, 92]],
         cpuToRam: (i) => [[470, 92], [470, 124], [428, 124], [428, 156], [372 + i * 39, 204]],
@@ -62,10 +62,10 @@
       io: { x: 266, y: 400, w: 124, h: 84, titleX: 278, titleY: 420, outX: 286, outY: 448, outStep: 14, keyX: 372, keyY: 448, ledR: 4.5, outLbl: [278, 472, 'start'], keyLbl: [384, 472, 'end'] },
       bus: ['M72 382 H328', 'M200 364 V400', 'M72 382 V400', 'M328 382 V400'],
       busLabel: null,
-      links: ['M382 484 V576', 'M346 484 V502'],
-      wireText: [16, 524],
+      links: ['M382 484 V576', 'M346 484 V500'],
+      badge: { x: 10, y: 499, w: 200, h: 56 },
       disp: { x: 10, y: 576, w: 380, h: 104, lx: 20.8, ly: 589.6, p: 12.8, r: 5, capX: 12, capY: 704 },
-      key: { cx: 346, cy: 528, r: 26, cap: [310, 522, 'end'], mean: [310, 540, 'end'] },
+      key: { cx: 346, cy: 528, r: 28, cap: [306, 522, 'end'], mean: [306, 541, 'end'] },
       wiredGeo: { orient: 'v', x: 10, y: 10, w: 380, h: 474, feed: 18, out: 18, padFlow: 46, padTop: 24, padBot: 24, bu: 34, bv: 52, gapMax: 18 },
       wiredLink: (e) => 'M' + e[0] + ' ' + e[1] + ' H382 V576',
       feedLabel: [14, 20, 'start', 'ingressi: tasto e clock'], outLabel: [14, 481, 'start', 'uscite verso il display'],
@@ -110,8 +110,8 @@
       ['1969 · la richiesta', "Busicom, cioè la Nippon Calculating Machine Corporation, progetta la 141-PF, una calcolatrice da tavolo con stampante, e chiede a Intel di fabbricarne i chip: tutti su misura, ognuno con un compito fisso."],
       ["L'intuizione di Hoff", "Ted Hoff, l'ingegnere di Intel che segue il progetto, lo trova troppo complicato. Usa già un minicomputer, il PDP-8, e pensa: un processore semplice e generico potrebbe fare tutto, se le funzioni della calcolatrice diventassero un programma."],
       ['Il prezzo dei fili', "È quello che vedi qui: con il chip programmabile l'hardware resta fermo e cambia solo la ROM. Con la logica cablata ogni funzione nuova è un circuito nuovo, da disegnare, fabbricare e collaudare da capo."],
-      ['Quattro chip', "Con Stan Mazor, Hoff riduce tutto a quattro chip: la CPU 4004 a 4 bit, la ROM 4001 per il programma, la RAM 4002 per i dati e il registro 4003 per le uscite. Busicom accetta la proposta."],
-      ['Un chip, mille usi', "Il chip non sa di essere una calcolatrice: lo decide il programma. Per questo, nel maggio 1971, Intel restituisce a Busicom circa 60.000 dollari e ottiene il diritto di venderlo a tutti, per ogni uso tranne le calcolatrici."],
+      ['Quattro chip', "Con Stan Mazor, Hoff riduce tutto a quattro chip: la CPU 4004 a 4 bit, la ROM 4001 per il programma, la RAM 4002 per i dati e il registro 4003 per le uscite. Nell'autunno del 1969 Busicom sceglie questa proposta."],
+      ['Un chip, mille usi', "Il chip non sa di essere una calcolatrice: lo decide il programma. Per questo, nel maggio 1971, Intel restituisce a Busicom i 60.000 dollari investiti nello sviluppo e ottiene il diritto di venderlo a tutti, per ogni uso tranne le calcolatrici."],
     ];
     const WIRED_WHAT = {
       calcolatrice: 'sommare due numeri cifra per cifra',
@@ -201,8 +201,19 @@
       v.links = L.links.map((d) => s('path', { d: d, class: 'cp-bus on idea-link' }));
       gProg.append(...v.bus, ...v.links);
       if (L.busLabel) gProg.append(txt(L.busLabel[0], L.busLabel[1], 'idea-s', 'bus dati · 4 fili'));
-      v.wireText = txt(L.wireText[0], L.wireText[1], 'idea-s idea-wtext', '');
-      gProg.append(v.wireText);
+
+      // targhetta dei collegamenti: un lucchetto chiuso, perché tra un programma e l'altro i fili non cambiano
+      const B = L.badge;
+      const lx = B.x + 25, ly = B.y + B.h / 2 - 1;
+      v.badgeT = txt(B.x + 48, B.y + 25, 'idea-badge-t', '');
+      v.badgeS = txt(B.x + 48, B.y + 43, 'idea-s idea-badge-s', '');
+      v.badge = s('g', { class: 'idea-badge' },
+        s('rect', { x: B.x, y: B.y, width: B.w, height: B.h, rx: 10, class: 'idea-badge-box' }),
+        s('path', { d: 'M' + (lx - 6.5) + ' ' + ly + ' v-6 a6.5 6.5 0 0 1 13 0 v6', class: 'idea-lock-arc' }),
+        s('rect', { x: lx - 10, y: ly, width: 20, height: 15, rx: 3, class: 'idea-lock-body' }),
+        s('circle', { cx: lx, cy: ly + 7, r: 2, class: 'idea-lock-hole' }),
+        v.badgeT, v.badgeS);
+      gProg.append(v.badge);
 
       const gRom = s('g', { class: 'idea-rom' });
       gRom.append(s('rect', { x: R.x, y: R.y, width: R.w, height: R.h, rx: 10, class: 'idea-box' }));
@@ -230,6 +241,7 @@
         v.rows.push(row);
         gRom.append(row.g);
       }
+      v.gRom = gRom;
       gProg.append(gRom);
 
       const gCpu = s('g', { class: 'idea-cpu' });
@@ -306,7 +318,7 @@
       v.gProg = gProg;
 
       stageBox.innerHTML = '';
-      stageBox.append(svg, toast);
+      stageBox.append(h('div', { class: 'idea-stage-in' }, svg, toast));
       toast.style.left = (D.x / L.W) * 100 + '%';
       toast.style.top = (D.y / L.H) * 100 + '%';
       toast.style.width = (D.w / L.W) * 100 + '%';
@@ -332,7 +344,7 @@
       lay.chips.forEach((c) => {
         const cg = s('g', { class: 'idea-chip' },
           s('rect', { x: c.x, y: c.y, width: c.w, height: c.h, rx: 8, class: 'idea-chipbox' }),
-          s('circle', { cx: c.x, cy: c.y, r: 9, class: 'idea-chipnum' }),
+          s('circle', { cx: c.x, cy: c.y, r: L === NARROW ? 10 : 9.5, class: 'idea-chipnum' }),
           txt(c.x, c.y + 4, 'idea-chipnum-t', String(c.n), 'middle'),
           s('title', null, 'chip su misura ' + c.n + ': ' + c.gates + ' porte'));
         els.chips.push(cg);
@@ -340,9 +352,12 @@
       });
       const gW = s('g', { class: 'idea-ws' });
       gW.append(s('path', { d: lay.feed, class: 'idea-rail' }), s('path', { d: lay.collect, class: 'idea-rail' }), s('path', { d: L.wiredLink(lay.collectEnd), class: 'idea-rail is-out' }));
+      const C = lay.chips.length;
       lay.wires.forEach((w) => {
         const p = s('path', { d: w.d, class: 'idea-w is-' + w.kind });
         p.len = w.len;
+        // gruppo lungo il flusso del segnale: 0 ingressi, 1…C-1 tra una colonna e l'altra, C uscite
+        p.grp = w.kind === 'in' ? 0 : w.kind === 'out' ? C : +String(w.to).split('-')[0].slice(1);
         els.wires.push(p);
         gW.append(p);
       });
@@ -353,6 +368,8 @@
           txt(b.x + b.w / 2, b.y + b.h / 2 + 5, 'idea-gate-t mono', b.sym, 'middle'),
           s('title', null, b.name));
         if (b.type === 'not') bg.append(s('circle', { cx: vert ? b.x + b.w / 2 : b.x + b.w + 3, cy: vert ? b.y + b.h + 3 : b.y + b.h / 2, r: 3, class: 'idea-bubble' }));
+        bg.col = b.col;
+        bg.row = b.row;
         els.blocks.push(bg);
         gB.append(bg);
       });
@@ -361,12 +378,13 @@
         txt(L.outLabel[0], L.outLabel[1], 'idea-s', L.outLabel[3], L.outLabel[2]));
       V.wiredEls = els;
       if (!animate || ctx.reduced) return Promise.resolve(true);
+      // il montaggio segue il segnale da sinistra a destra: chip, poi porte colonna per colonna, poi i fili a gruppi
       const all = [];
       els.chips.forEach((el, i) => all.push(anim(el, [{ opacity: 0 }, { opacity: 1 }], { duration: CP.dur.normal, delay: i * 90 })));
-      els.blocks.forEach((el, i) => all.push(anim(el, [{ opacity: 0, transform: 'scale(.8)' }, { opacity: 1, transform: 'none' }], { duration: CP.dur.normal, delay: 160 + Math.min(i * 50, 750), easing: 'cubic-bezier(.34,1.56,.64,1)' })));
-      els.wires.forEach((el, i) => {
+      els.blocks.forEach((el) => all.push(anim(el, [{ opacity: 0, transform: 'scale(.8)' }, { opacity: 1, transform: 'none' }], { duration: CP.dur.normal, delay: 140 + el.col * 100 + el.row * 50, easing: 'cubic-bezier(.34,1.56,.64,1)' })));
+      els.wires.forEach((el) => {
         const da = el.len + ' ' + el.len;
-        all.push(anim(el, [{ strokeDasharray: da, strokeDashoffset: el.len }, { strokeDasharray: da, strokeDashoffset: 0 }], { duration: 380, delay: 420 + Math.min(i * 24, 900) }));
+        all.push(anim(el, [{ strokeDasharray: da, strokeDashoffset: el.len }, { strokeDasharray: da, strokeDashoffset: 0 }], { duration: 420, delay: 420 + el.grp * 100 }));
       });
       return Promise.all(all);
     }
@@ -374,14 +392,15 @@
     function tearDown() {
       const els = V && V.wiredEls;
       if (!els || ctx.reduced) return Promise.resolve(true);
+      // smontaggio: i fili tagliati diventano arancio e si ritirano a ondate, poi spariscono porte e chip
       const all = [];
-      els.wires.forEach((el, i) => {
+      els.wires.forEach((el) => {
         el.classList.add('is-cut');
         const da = el.len + ' ' + el.len;
-        all.push(anim(el, [{ strokeDasharray: da, strokeDashoffset: 0, opacity: 1 }, { strokeDasharray: da, strokeDashoffset: -el.len, opacity: 0.35 }], { duration: 340, delay: Math.min(i * 18, 520), fill: 'forwards', easing: 'cubic-bezier(.4,0,.2,1)' }));
+        all.push(anim(el, [{ strokeDasharray: da, strokeDashoffset: 0, opacity: 1 }, { strokeDasharray: da, strokeDashoffset: -el.len, opacity: 0.35 }], { duration: 340, delay: el.grp * 70, fill: 'forwards', easing: 'cubic-bezier(.4,0,.2,1)' }));
       });
-      els.blocks.forEach((el, i) => all.push(anim(el, [{ opacity: 1, transform: 'none' }, { opacity: 0, transform: 'scale(.8)' }], { duration: 260, delay: 240 + Math.min(i * 35, 520), fill: 'forwards', easing: 'cubic-bezier(.4,0,.2,1)' })));
-      els.chips.forEach((el, i) => all.push(anim(el, [{ opacity: 1 }, { opacity: 0 }], { duration: 260, delay: 480 + i * 60, fill: 'forwards' })));
+      els.blocks.forEach((el) => all.push(anim(el, [{ opacity: 1, transform: 'none' }, { opacity: 0, transform: 'scale(.8)' }], { duration: 260, delay: 220 + el.col * 80 + el.row * 50, fill: 'forwards', easing: 'cubic-bezier(.4,0,.2,1)' })));
+      els.chips.forEach((el, i) => all.push(anim(el, [{ opacity: 1 }, { opacity: 0 }], { duration: 260, delay: 460 + i * 80, fill: 'forwards' })));
       return Promise.all(all);
     }
 
@@ -390,8 +409,8 @@
     function travel(pts, label, kind, duration, delay) {
       if (ctx.reduced || !V) return Promise.resolve();
       const t = s('g', { class: 'idea-token is-' + kind },
-        s('rect', { x: -15, y: -9, width: 30, height: 18, rx: 5 }),
-        txt(0, 4.5, 'idea-token-t mono', label, 'middle'));
+        s('rect', { x: -17, y: -10, width: 34, height: 20, rx: 6 }),
+        txt(0, 4.2, 'idea-token-t mono', label, 'middle'));
       if (delay) t.style.opacity = '0';
       V.tok.append(t);
       const segs = [];
@@ -514,7 +533,13 @@
       sc.designs.textContent = score.designs;
       sc.chips.textContent = score.chips;
       sc.wires.textContent = score.wires;
-      if (V) V.wireText.textContent = (L.bus.length + L.links.length) + ' collegamenti · rifatti: 0';
+      if (V) paintBadge();
+    }
+
+    function paintBadge() {
+      const locked = V.badge.classList.contains('is-locked');
+      V.badgeT.textContent = (L.bus.length + L.links.length) + ' collegamenti fissi';
+      V.badgeS.textContent = locked ? 'cambia solo la ROM' : 'rifatti finora: 0';
     }
 
     function paintGoal() {
@@ -547,7 +572,9 @@
 
     function lock(on) {
       V.bus.concat(V.links).forEach((p) => p.classList.toggle('is-locked', on));
-      V.wireText.classList.toggle('is-locked', on);
+      V.badge.classList.toggle('is-locked', on);
+      V.gRom.classList.toggle('is-writing', on);
+      paintBadge();
     }
 
     function paintMode() {
@@ -621,7 +648,7 @@
       }
       const W = M.PROGRAMS[wiredLay.id];
       const c = wiredLay.counts;
-      return tell('Logica cablata · ' + W.name, running ? W.name + ', fatta di fili' : 'Circuito pronto',
+      return tell('Logica cablata · ' + W.name, running ? 'Il circuito ' + OF[W.id] + ' in funzione' : 'Circuito pronto',
         'Per ' + WIRED_WHAT[W.id] + ' servono ' + c.chips + ' chip su misura, ' + c.gates + ' porte e flip-flop e ' + c.wires + ' collegamenti. Funziona, ma sa fare solo questo.',
         running ? 'Ora scegli un\'altra funzione e guarda che cosa succede ai fili.' : 'Premi ▶︎ Esegui.');
     }
@@ -666,7 +693,7 @@
       score.bits += diff;
       paintScore();
       resetMachine(info.bytes);
-      V.romSub.textContent = 'scrittura del programma ' + OF[id] + '…';
+      V.romSub.textContent = 'scrittura: ' + NAMES[id] + '…';
       V.head.classList.add('is-on');
       lock(true);
       paintBus();
@@ -777,7 +804,11 @@
       hideToast();
       paintMode();
       if (mode === 'wired') {
-        if (fn) redesign(fn);
+        if (fn && wiredLay && wiredLay.id === fn) {
+          // il circuito di questa funzione è già montato: niente da riprogettare
+          resetMachine(M.assemble(fn).bytes);
+          if (!ctx.reduced) startRun(); else explainState();
+        } else if (fn) redesign(fn);
         else { resetMachine(new Array(M.ROWS).fill(0)); explainState(); }
         advanceBeat();
       } else if (fn && (!romInfo || romInfo.id !== fn)) {
@@ -897,6 +928,7 @@
     }
 
     function tick(detailed) {
+      stageBox.classList.toggle('is-glide', !!detailed); // al rallentatore il riquadro del PC scivola di riga in riga
       const ev = M.step(m, mRom);
       ticksSinceLoad++;
       paintMachine(ev, detailed);

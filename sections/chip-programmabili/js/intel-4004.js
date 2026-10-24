@@ -23,7 +23,7 @@
     {
       id: 'reg', title: 'Registri indice', lines: ['Registri', 'indice'], sub: '16 × 4 bit', short: ['Registri', 'indice'],
       box: [0.05, 0.10, 0.33, 0.66], tex: 'cells',
-      text: '16 registri da 4 bit, da R0 a R15: la memoria di lavoro più veloce del chip. Si possono usare anche a coppie, da P0 a P7, per tenere 8 bit, per esempio un indirizzo. Sono celle dinamiche: il 4004 le rinfresca da solo, di continuo.',
+      text: '16 registri da 4 bit, da R0 a R15: la memoria di lavoro dentro il processore, a portata di ogni istruzione. Si possono usare anche a coppie, da P0 a P7, per tenere 8 bit, per esempio un indirizzo.',
       tie: 'Nel ciclo di istruzione li vedi nella fila R0–R15.',
     },
     {
@@ -63,9 +63,9 @@
       tie: 'È vicino ai piedini del clock, di SYNC, RESET e TEST.',
     },
     {
-      id: 'pad', title: 'Piazzole e fili d\'oro', lines: ['Piazzole', 'e fili d\'oro'], short: ['Piazzole e fili d\'oro'],
+      id: 'pad', title: 'Piazzole e fili di collegamento', lines: ['Piazzole', 'e fili'], short: ['Piazzole e fili'],
       ring: true,
-      text: 'Sul bordo del silicio ci sono 16 piazzole metalliche. Fili d\'oro più sottili di un capello, saldati uno per uno, le collegano al contenitore e da lì ai 16 piedini. Nell\'angolo, accanto all\'ultima piazzola, ci sono le iniziali F.F. di Federico Faggin.',
+      text: 'Sul bordo del silicio ci sono 16 piazzole metalliche. Fili metallici più sottili di un capello, saldati uno per uno, le collegano al contenitore e da lì ai 16 piedini. In un angolo ci sono anche le iniziali F.F. di Federico Faggin.',
       tie: 'Segui un filo: clicca uno dei piedini.',
     },
   ];
@@ -111,27 +111,29 @@
           ? { x: x, side: 'bottom', lead: [x - 7, 382, 14, 20], num: [x, 421], name: [x, 373], finger: [214 + i * 47.4, 340] }
           : { x: x, side: 'top', lead: [x - 7, 36, 14, 20], num: [x, 28], name: [x, 76], finger: [214 + i * 47.4, 98] };
       },
-      padLabel: { x: 158, y: 214, lines: ['Piazzole', 'e fili d\'oro'], leader: 'M194 220 H231', ok: [158, 196] },
-      ff: [507, 320],
+      padLabel: { x: 158, y: 214, lines: ['Piazzole', 'e fili'], leader: 'M186 220 H231', ok: [158, 196] },
+      ff: [511, 321],
       notch: 'M104 205 a14 14 0 0 1 0 28 Z',
       dot: [124, 360],
     },
+    // I nomi dei piedini a destra (CM-RAM0…) sono i più lunghi: la cavità è spostata a sinistra per lasciare
+    // loro spazio, e l'asse u è compresso un poco per liberare in basso la fascia delle iniziali F.F.
     narrow: {
-      vb: [0, 8, 380, 436],
+      vb: [-2, 8, 384, 436],
       body: { x: 34, y: 16, w: 312, h: 420 },
-      cav: { x: 94, y: 94, w: 180, h: 270 },
-      die: { x: 109, y: 126, w: 150, h: 206 },
-      map: (d, u, v) => [d.x + (1 - v) * d.w, d.y + u * d.h],
+      cav: { x: 84, y: 94, w: 184, h: 270 },
+      die: { x: 98, y: 126, w: 156, h: 206 },
+      map: (d, u, v) => [d.x + (1 - v) * d.w, d.y + (0.005 + u * 0.955) * d.h],
       pin(n) {
         const left = n <= 8;
         const i = left ? n - 1 : 16 - n;
         const y = 66 + i * 46;
         return left
-          ? { y: y, side: 'left', lead: [18, y - 7, 16, 14], num: [14, y + 4], name: [40, y + 4], finger: [100, 116 + i * 32.3] }
-          : { y: y, side: 'right', lead: [346, y - 7, 16, 14], num: [366, y + 4], name: [340, y + 4], finger: [268, 116 + i * 32.3] };
+          ? { y: y, side: 'left', lead: [18, y - 7, 16, 14], num: [14, y + 4], name: [40, y + 4], finger: [90, 116 + i * 32.3] }
+          : { y: y, side: 'right', lead: [346, y - 7, 16, 14], num: [366, y + 4], name: [340, y + 4], finger: [262, 116 + i * 32.3] };
       },
-      padLabel: { x: 184, y: 66, lines: ['Piazzole e fili d\'oro'], leader: 'M184 72 V125', ok: [252, 66] },
-      ff: [125, 322],
+      padLabel: { x: 176, y: 50, lines: ['Piazzole e fili'], leader: 'M176 56 V125', ok: [232, 50] },
+      ff: [120, 328],
       notch: 'M176 16 a14 14 0 0 0 28 0 Z',
       dot: [52, 36],
     },
@@ -189,7 +191,7 @@
 
     /* ================= 1. Esploratore del die ================= */
 
-    const die = { layout: null, svg: null, areas: {}, pins: [], wires: [], reticle: null, centers: {}, sel: null, seen: new Set() };
+    const die = { layout: null, svg: null, areas: {}, pins: [], wires: [], reticle: null, boxes: {}, vb: null, sel: null, seen: new Set() };
 
     function dieDefs(narrow) {
       const line = 'rgba(233, 220, 174, .34)';
@@ -214,7 +216,8 @@
       die.areas = {};
       die.pins = [];
       die.wires = [];
-      die.centers = {};
+      die.boxes = {};
+      die.vb = geo.vb;
       const svg = s('svg', {
         viewBox: geo.vb.join(' '), class: P + 'die-svg', role: 'group',
         'aria-label': 'Pianta stilizzata del 4004 nel suo contenitore: 8 aree funzionali e 16 piedini, ognuno selezionabile.',
@@ -268,7 +271,7 @@
           s('rect', { x: r.x, y: r.y, width: r.w, height: r.h, rx: 2, class: P + 'area-flash' }),
           s('rect', { x: r.x - 3, y: r.y - 3, width: r.w + 6, height: r.h + 6, rx: 4, class: P + 'focus' }));
         const lines = narrow ? A.short : A.lines;
-        const size = narrow ? 11.5 : 12.5;
+        const size = narrow ? 12.5 : 12.5;
         const gap = size * 1.18;
         const showSub = !narrow && A.sub && r.h > 60;
         const total = lines.length * gap + (showSub ? 13 : 0);
@@ -279,7 +282,7 @@
         g.append(s('text', { x: r.x + r.w - 5, y: r.y + 13, 'text-anchor': 'end', 'font-size': 12, class: P + 'area-ok', 'aria-hidden': 'true' }, '✓'));
         hot(g, A.title, () => selectArea(A.id));
         die.areas[A.id] = g;
-        die.centers[A.id] = [cx, r.y + r.h / 2];
+        die.boxes[A.id] = [r.x, r.y, r.w, r.h];
         g.dataset.idx = idx;
         svg.append(g);
       });
@@ -296,14 +299,14 @@
       pg.append(s('rect', { x: D.x - 4, y: D.y - 4, width: D.w + 8, height: D.h + 8, rx: 4, class: P + 'focus' }));
       const pl = geo.padLabel;
       pg.append(s('path', { d: pl.leader, class: P + 'leader' }));
-      pg.append(multiline(pl.x, pl.y, pl.lines, narrow ? 11 : 12, narrow ? 13 : 14.5, { class: P + 'pad-lbl' }));
+      pg.append(multiline(pl.x, pl.y, pl.lines, 12, 14.5, { class: P + 'pad-lbl' }));
       pg.append(s('text', { x: pl.ok[0], y: pl.ok[1], 'text-anchor': 'middle', 'font-size': 12, class: P + 'area-ok', 'aria-hidden': 'true' }, '✓'));
       hot(pg, pad.title, () => selectArea('pad'));
       die.areas.pad = pg;
-      die.centers.pad = narrow ? [D.x + 12, D.y + D.h * 0.5] : [D.x + D.w * 0.5, D.y + 10];
+      die.boxes.pad = [D.x, D.y, D.w, D.h];
       svg.append(pg);
 
-      // piazzole, fili d'oro, iniziali
+      // piazzole, fili di collegamento, iniziali
       const wires = s('g', { class: P + 'wires', 'aria-hidden': 'true' });
       for (let n = 1; n <= 16; n++) {
         const uv = padUV(n);
@@ -316,7 +319,7 @@
         wires.append(w);
       }
       svg.append(wires);
-      svg.append(s('text', { x: geo.ff[0], y: geo.ff[1], 'text-anchor': 'middle', 'font-size': 10.5, class: P + 'ff', 'aria-hidden': 'true' }, 'F.F.'));
+      svg.append(s('text', { x: geo.ff[0], y: geo.ff[1], 'text-anchor': 'middle', 'font-size': 11.5, class: P + 'ff mono', 'aria-hidden': 'true' }, 'F.F.'));
 
       // piedini
       for (let n = 1; n <= 16; n++) {
@@ -325,22 +328,22 @@
         const L = p.lead;
         const g = s('g', { class: P + 'pin ' + P + 'k-' + pin.kind, 'data-n': n });
         let hit;
-        if (narrow) hit = p.side === 'left' ? [0, p.y - 19, 92, 38] : [286, p.y - 19, 94, 38];
-        else hit = p.side === 'top' ? [p.x - 27, 14, 54, 70] : [p.x - 27, 362, 54, 68];
+        if (narrow) hit = p.side === 'left' ? [-2, p.y - 19, 78, 38] : [278, p.y - 19, 104, 38];
+        else hit = p.side === 'top' ? [p.x - 27, 14, 54, 68] : [p.x - 27, 362, 54, 68];
         g.append(s('rect', { x: hit[0], y: hit[1], width: hit[2], height: hit[3], rx: 6, class: P + 'pin-hit' }));
         g.append(s('rect', { x: L[0], y: L[1], width: L[2], height: L[3], rx: 1.6, fill: 'url(#cp-g-gold)', class: P + 'lead' }));
-        g.append(s('text', { x: p.num[0], y: p.num[1], 'text-anchor': narrow ? (p.side === 'left' ? 'end' : 'start') : 'middle', 'font-size': narrow ? 11 : 10.5, class: P + 'pin-num' }, String(n)));
-        g.append(s('text', { x: p.name[0], y: p.name[1], 'text-anchor': narrow ? (p.side === 'left' ? 'start' : 'end') : 'middle', 'font-size': narrow ? 11 : 10.5, class: P + 'pin-name' }, pin.name));
+        g.append(s('text', { x: p.num[0], y: p.num[1], 'text-anchor': narrow ? (p.side === 'left' ? 'end' : 'start') : 'middle', 'font-size': narrow ? 12 : 11, class: P + 'pin-num mono' }, String(n)));
+        g.append(s('text', { x: p.name[0], y: p.name[1], 'text-anchor': narrow ? (p.side === 'left' ? 'start' : 'end') : 'middle', 'font-size': narrow ? 12 : 11, class: P + 'pin-name mono' }, pin.name));
         g.append(s('rect', { x: hit[0] + 2, y: hit[1] + 2, width: hit[2] - 4, height: hit[3] - 4, rx: 6, class: P + 'focus' }));
         hot(g, 'Piedino ' + n + ', ' + pin.name.replace('Φ', 'fi ') + ' (' + KIND_LABEL[pin.kind] + ')', () => selectPin(n));
         die.pins[n] = g;
-        die.centers['pin' + n] = narrow ? [p.side === 'left' ? 26 : 354, p.y] : [p.x, p.side === 'top' ? 46 : 392];
         svg.append(g);
       }
 
-      // mirino del microscopio: scivola sull'elemento scelto
+      // mirino del microscopio: quattro angoli che scivolano attorno all'area scelta, senza coprirne il testo
+      // (per i piedini basta l'evidenziazione verde, e il mirino si spegne)
       const ret = s('g', { class: P + 'reticle', 'aria-hidden': 'true', opacity: 0 });
-      ret.append(s('circle', { r: 21 }), s('path', { d: 'M-30 0 H-15 M15 0 H30 M0 -30 V-15 M0 15 V30' }));
+      ret.append(s('path', { d: 'M0 0' }));
       svg.append(ret);
       die.reticle = ret;
       die.retPos = null;
@@ -349,21 +352,41 @@
     }
 
     let retTween = null;
+    /** Quattro angoli attorno al riquadro b = [x, y, w, h], tenuti dentro il viewBox. */
+    function retPath(b) {
+      const vb = die.vb;
+      const m = 4;
+      const x0 = Math.max(vb[0] + 1, b[0] - m);
+      const y0 = Math.max(vb[1] + 1, b[1] - m);
+      const x1 = Math.min(vb[0] + vb[2] - 1, b[0] + b[2] + m);
+      const y1 = Math.min(vb[1] + vb[3] - 1, b[1] + b[3] + m);
+      const L = Math.min(14, (x1 - x0) / 3, (y1 - y0) / 3);
+      const f = (n) => n.toFixed(1);
+      return 'M' + f(x0) + ' ' + f(y0 + L) + 'V' + f(y0) + 'H' + f(x0 + L) +
+        'M' + f(x1 - L) + ' ' + f(y0) + 'H' + f(x1) + 'V' + f(y0 + L) +
+        'M' + f(x1) + ' ' + f(y1 - L) + 'V' + f(y1) + 'H' + f(x1 - L) +
+        'M' + f(x0 + L) + ' ' + f(y1) + 'H' + f(x0) + 'V' + f(y1 - L);
+    }
     function moveReticle(key) {
-      const c = die.centers[key];
-      if (!c || !die.reticle) return;
+      const b = die.boxes[key];
+      if (!die.reticle) return;
       const ret = die.reticle;
-      const place = (p) => ret.setAttribute('transform', 'translate(' + p[0].toFixed(1) + ' ' + p[1].toFixed(1) + ')');
+      const path = ret.firstChild;
       if (retTween) retTween.cancel();
+      if (!b) {
+        ret.setAttribute('opacity', 0);
+        die.retPos = null;
+        return;
+      }
       if (!die.retPos || ctx.reduced) {
-        place(c);
+        path.setAttribute('d', retPath(b));
         ret.setAttribute('opacity', 1);
-        die.retPos = c.slice();
+        die.retPos = b.slice();
         return;
       }
       retTween = CP.tween({
-        from: die.retPos.slice(), to: c.slice(), duration: CP.dur.normal + 100, ease: 'smooth',
-        onUpdate: (v) => { die.retPos = v; place(v); },
+        from: die.retPos.slice(), to: b.slice(), duration: CP.dur.normal + 100, ease: 'smooth',
+        onUpdate: (v) => { die.retPos = v; path.setAttribute('d', retPath(v)); },
       });
     }
 
@@ -417,7 +440,7 @@
       dieInfo.step.textContent = 'Piedino ' + n + ' di 16 · ' + KIND_LABEL[pin.kind];
       dieInfo.title.textContent = pin.name;
       dieInfo.text.textContent = pin.text;
-      dieInfo.tie.textContent = 'Il filo d\'oro lo collega a una piazzola; la parte del chip che lo usa di più è ' + (pin.area === 'pad' ? 'la rete di alimentazione, che parte dalle piazzole' : 'evidenziata: ' + area.title.toLowerCase()) + '.';
+      dieInfo.tie.textContent = 'Un filo sottilissimo lo collega a una piazzola; la parte del chip che lo usa di più è ' + (pin.area === 'pad' ? 'la rete di alimentazione, che parte dalle piazzole' : 'evidenziata: ' + area.title.toLowerCase()) + '.';
       dieInfo.tie.hidden = false;
       if (!quiet) ctx.say('Piedino ' + n + ', ' + pin.name + '. ' + pin.text);
     }
@@ -443,21 +466,21 @@
     const CYC_GEO = {
       wide: {
         vb: [720, 330],
-        cpu: [10, 10, 290, 310], rom: [450, 10, 260, 310],
-        title: [24, 34], romTitle: [462, 34],
+        cpu: [10, 10, 290, 310], rom: [430, 10, 280, 310],
+        title: [24, 34], romTitle: [442, 34],
         lbl: { pc: [24, 69], ir: [166, 69], acc: [24, 111], cy: [90, 111], sec: [166, 111] },
         box: { pcH: [52, 50], pcM: [82, 50], pcL: [112, 50], opr: [190, 50], opa: [220, 50], acc: [52, 92], cy: [116, 92], s1: [212, 92], s2: [242, 92] },
         secLabel: '2° byte',
         alu: { d: 'M52 136 H128 L140 150 L152 136 H228 L204 196 H76 Z', lbl: [140, 172], f: [140, 189] },
         regs: { head: [24, 216], x: 24, dx: 34, w: 30, rows: [[230, 234], [276, 280]] },
-        latch: { lbl: [462, 66], H: [610, 48], M: [640, 48], L: [670, 48] },
-        list: { head: 98, y: 106, rh: 23, cols: [462, 502, 540, 616], fs: 12 },
-        lines: { x1: 300, x2: 450, ys: [128, 144, 160, 176] },
-        dataLbl: [375, 62],
-        token: { from: [340, 92], to: [410, 92] },
-        dir: [375, 204],
-        sync: { d: 'M300 240 H446', lbl: [375, 232] },
-        cm: { d: 'M300 278 H446', lbl: [375, 270] },
+        latch: { lbl: [442, 66], H: [612, 48], M: [642, 48], L: [672, 48] },
+        list: { head: 98, y: 106, rh: 23, cols: [442, 482, 518, 600], fs: 12.5, efs: 12 },
+        lines: { x1: 300, x2: 430, ys: [128, 144, 160, 176] },
+        dataLbl: [365, 62],
+        token: { from: [334, 92], to: [396, 92] },
+        dir: [365, 204],
+        sync: { d: 'M300 240 H419', head: 'M418 234 L428 240 L418 246 Z', lbl: [365, 231] },
+        cm: { d: 'M300 278 H419', head: 'M418 272 L428 278 L418 284 Z', lbl: [365, 269] },
       },
       narrow: {
         vb: [360, 590],
@@ -469,13 +492,13 @@
         alu: { d: 'M160 76 H238 L250 88 L262 76 H340 L318 120 H182 Z', lbl: [208, 108], f: [292, 108] },
         regs: { head: [18, 142], x: 18, dx: 41, w: 37, rows: [[158, 162], [204, 208]] },
         latch: { lbl: [180, 376], H: [252, 358], M: [282, 358], L: [312, 358] },
-        list: { head: 406, y: 412, rh: 19, cols: [18, 58, 98, 212], fs: 11.5 },
+        list: { head: 406, y: 412, rh: 19, cols: [18, 58, 98, 204], fs: 12, efs: 11.5 },
         lines: { y1: 256, y2: 352, xs: [64, 80, 96, 112] },
         dataLbl: [56, 300],
         token: { from: [88, 282], to: [88, 326] },
         dir: [134, 308],
-        sync: { d: 'M250 276 V348', lbl: [250, 270] },
-        cm: { d: 'M310 276 V348', lbl: [310, 270] },
+        sync: { d: 'M250 276 V339', head: 'M244 338 L250 348 L256 338 Z', lbl: [250, 270] },
+        cm: { d: 'M310 276 V339', head: 'M304 338 L310 348 L316 338 Z', lbl: [310, 270] },
       },
     };
 
@@ -513,8 +536,6 @@
         viewBox: '0 0 ' + G.vb[0] + ' ' + G.vb[1], class: P + 'cyc-svg' + (narrow ? ' is-narrow' : ''), role: 'img',
         'aria-label': 'Il processore 4004 e una ROM 4001 collegati dal bus dati a 4 fili e dalle linee SYNC e CM-ROM. Il pannello accanto descrive la fase in corso.',
       });
-      svg.append(s('defs', null,
-        s('marker', { id: P + 'm-ctl', viewBox: '0 0 8 8', refX: 6, refY: 4, markerWidth: 3.6, markerHeight: 3.6, orient: 'auto' }, s('path', { d: 'M0 0 L8 4 L0 8 z', class: P + 'm-ctl' }))));
 
       // blocchi
       const unit = (r, cls) => s('rect', { x: r[0], y: r[1], width: r[2], height: r[3], rx: 12, class: P + 'unit ' + (cls || '') });
@@ -545,7 +566,7 @@
       for (let i = 0; i < 16; i++) {
         const row = R.rows[i >> 3];
         const x = R.x + (i & 7) * R.dx;
-        svg.append(s('text', { x: x + R.w / 2, y: row[0], 'text-anchor': 'middle', class: P + 'reg-n' }, 'R' + i));
+        svg.append(s('text', { x: x + R.w / 2, y: row[0], 'text-anchor': 'middle', class: P + 'reg-n mono' }, 'R' + i));
         cyc.regs.push(nibBox(svg, x, row[1], R.w, 24, P + 'reg'));
       }
 
@@ -557,13 +578,15 @@
         const ln = s('path', { d: d, class: P + 'line', style: { '--d': (i * 70) + 'ms' } });
         cyc.lines.push(ln);
         svg.append(ln);
-        if (!narrow) svg.append(s('text', { x: LN.x1 + 6, y: LN.ys[i] - 4, class: P + 'line-n' }, 'D' + i));
+        if (!narrow) svg.append(s('text', { x: LN.x1 + 6, y: LN.ys[i] - 4, class: P + 'line-n mono' }, 'D' + i));
       }
-      cyc.sync = s('path', { d: G.sync.d, class: P + 'ctl', 'marker-end': 'url(#' + P + 'm-ctl)' });
-      cyc.cm = s('path', { d: G.cm.d, class: P + 'ctl', 'marker-end': 'url(#' + P + 'm-ctl)' });
+      // linee di controllo: filo e punta cambiano colore insieme (un marker non seguirebbe il colore della linea)
+      const ctlLine = (c) => s('g', { class: P + 'ctl' }, s('path', { d: c.d, class: P + 'ctl-line' }), s('path', { d: c.head, class: P + 'ctl-head' }));
+      cyc.sync = ctlLine(G.sync);
+      cyc.cm = ctlLine(G.cm);
       svg.append(cyc.sync, cyc.cm);
-      cyc.syncT = s('text', { x: G.sync.lbl[0], y: G.sync.lbl[1], 'text-anchor': 'middle', class: P + 'ctl-t' }, 'SYNC');
-      cyc.cmT = s('text', { x: G.cm.lbl[0], y: G.cm.lbl[1], 'text-anchor': 'middle', class: P + 'ctl-t' }, 'CM-ROM');
+      cyc.syncT = s('text', { x: G.sync.lbl[0], y: G.sync.lbl[1], 'text-anchor': 'middle', class: P + 'ctl-t mono' }, 'SYNC');
+      cyc.cmT = s('text', { x: G.cm.lbl[0], y: G.cm.lbl[1], 'text-anchor': 'middle', class: P + 'ctl-t mono' }, 'CM-ROM');
       svg.append(cyc.syncT, cyc.cmT);
       cyc.dir = s('text', { x: G.dir[0], y: G.dir[1], 'text-anchor': narrow ? 'start' : 'middle', class: P + 'dir' }, '');
       svg.append(cyc.dir);
@@ -592,8 +615,8 @@
       cyc.token = tok;
       cyc.tokGeo = G.token;
 
-      // il valore che vola da un blocco all'altro in X3
-      cyc.fly = [0, 1].map(() => {
+      // i valori che volano da un blocco all'altro in X3 (fino a tre insieme: i 3 nibble dell'indirizzo di JUN)
+      cyc.fly = [0, 1, 2].map(() => {
         const g = s('g', { class: P + 'fly', opacity: 0 });
         g.append(s('rect', { x: -15, y: -13, width: 30, height: 26, rx: 6 }));
         const t = s('text', { x: 0, y: 5, 'text-anchor': 'middle', class: 'mono' }, '0');
@@ -628,7 +651,7 @@
         g.append(s('text', { x: LS.cols[0], y: by, 'font-size': LS.fs, class: P + 'row-a mono' }, fmt.hex(r.addr, 3)));
         g.append(s('text', { x: LS.cols[1], y: by, 'font-size': LS.fs, class: P + 'row-b mono' }, fmt.hex(r.byte, 2)));
         g.append(s('text', { x: LS.cols[2], y: by, 'font-size': LS.fs, class: P + 'row-i mono' }, r.text));
-        g.append(s('text', { x: LS.cols[3], y: by, 'font-size': LS.fs - 1.5, class: P + 'row-e' }, r.note));
+        g.append(s('text', { x: LS.cols[3], y: by, 'font-size': LS.efs, class: P + 'row-e' }, r.note));
         g.fl = fl;
         g.c = [LS.cols[1] + 9, y + LS.rh / 2];
         cyc.rows.push(g);
@@ -638,9 +661,11 @@
 
     /* ----- diagramma temporale ----- */
 
+    // full: sotto palco e spiegazione, a tutta larghezza; wide: colonna unica di media larghezza; narrow: telefono.
     const TIM_GEO = {
-      wide: { vb: [720, 236], lx: 72, x0: 80, cw: 79, gy: 14, py: 37, y0: 46, rh: 20, fs: 11, groups: ['indirizzo · 12 bit', 'istruzione · 8 bit', 'esecuzione'] },
-      narrow: { vb: [360, 252], lx: 52, x0: 56, cw: 38, gy: 13, py: 33, y0: 42, rh: 22, fs: 10.5, groups: ['indirizzo', 'istruzione', 'esecuzione'] },
+      full: { vb: [960], lx: 76, x0: 86, cw: 108, gy: 14, py: 37, y0: 46, rh: 20, fs: 11.5, groups: ['indirizzo · 12 bit', 'istruzione · 8 bit', 'esecuzione'] },
+      wide: { vb: [720], lx: 72, x0: 80, cw: 79, gy: 14, py: 37, y0: 46, rh: 20, fs: 12, groups: ['indirizzo · 12 bit', 'istruzione · 8 bit', 'esecuzione'] },
+      narrow: { vb: [360], lx: 52, x0: 56, cw: 38, gy: 13, py: 33, y0: 42, rh: 22, fs: 11.5, groups: ['indirizzo', 'istruzione', 'esecuzione'] },
     };
     const ROWS = ['Φ1', 'Φ2', 'SYNC', 'CM-ROM', 'D0', 'D1', 'D2', 'D3', 'valore'];
 
@@ -648,7 +673,7 @@
       const T = TIM_GEO[layout];
       const H = T.y0 + ROWS.length * T.rh + 6;
       const svg = s('svg', {
-        viewBox: '0 0 ' + T.vb[0] + ' ' + H, class: P + 'tim-svg' + (layout === 'narrow' ? ' is-narrow' : ''), role: 'img',
+        viewBox: '0 0 ' + T.vb[0] + ' ' + H, class: P + 'tim-svg is-' + layout, role: 'img',
         'aria-label': 'Diagramma temporale del ciclo in corso: clock a due fasi, SYNC, CM-ROM e i quattro fili del bus dati, fase per fase.',
       });
       const W = T.x0 + 8 * T.cw;
@@ -669,7 +694,7 @@
       groups.forEach((gr, i) => {
         const a = T.x0 + gr[0] * T.cw + 5;
         const b = T.x0 + gr[1] * T.cw - 5;
-        svg.append(s('text', { x: (a + b) / 2, y: T.gy, 'text-anchor': 'middle', 'font-size': T.fs - 0.5, class: P + 't-grp ' + P + 'g' + i }, T.groups[i]));
+        svg.append(s('text', { x: (a + b) / 2, y: T.gy, 'text-anchor': 'middle', 'font-size': T.fs, class: P + 't-grp ' + P + 'g' + i }, T.groups[i]));
         svg.append(s('path', { d: 'M' + a + ' ' + (T.gy + 6) + ' v-3 H' + b + ' v3', class: P + 't-br ' + P + 'g' + i }));
       });
       cyc.phNames = I.PHASES.map((p, j) => {
@@ -678,7 +703,7 @@
         return t;
       });
       ROWS.forEach((r, i) => {
-        svg.append(s('text', { x: T.lx, y: T.y0 + i * T.rh + T.rh / 2 + 4, 'text-anchor': 'end', 'font-size': T.fs, class: P + 't-row' + (i < 2 ? ' clk' : i < 4 ? ' ctl' : '') }, r));
+        svg.append(s('text', { x: T.lx, y: T.y0 + i * T.rh + T.rh / 2 + 4, 'text-anchor': 'end', 'font-size': T.fs, class: P + 't-row mono' + (i < 2 ? ' clk' : i < 4 ? ' ctl' : '') }, r));
       });
       cyc.sigG = s('g', { 'clip-path': 'url(#' + P + 'clip)' });
       svg.append(cyc.sigG);
@@ -949,6 +974,7 @@
         moves(c).forEach((m, i) => {
           const chip = cyc.fly[i];
           const dest = boxOf(m[1]);
+          if (!chip || !dest) return;
           const from = m[0] === 'alu' ? cyc.aluC : boxOf(m[0]).c;
           const to = dest.c;
           chip.t.textContent = fmt.hex(valueOf(st, m[1]), 1);
@@ -1064,8 +1090,10 @@
           out.text = c.exec.text + ' Il 4004 attiva SYNC: con la fase successiva comincia un nuovo ciclo.';
           if (c.halt) {
             const f = v.ph.state;
-            out.text += ' Il programma è finito: JUN 007 salta su se stesso e il 4004 ripeterebbe questa istruzione per sempre.';
-            out.result = 'Risultato in R2 R1: ' + fmt.hex(f.r[2], 1) + fmt.hex(f.r[1], 1) + ' in esadecimale, cioè ' + ((f.r[2] << 4) | f.r[1]) + ' = ' + cyc.a + ' + ' + cyc.b + '.';
+            out.title = 'X3 · fine del programma';
+            out.text = 'Il contatore di programma torna a ' + H3(c.after.pc) + ': JUN salta su se stesso, e il 4004 ripeterà questa istruzione per sempre. È il modo classico di fermare un programma.';
+            // spazi non separabili: la somma resta su una riga sola
+            out.result = 'Risultato in R2 R1: ' + fmt.hex(f.r[2], 1) + fmt.hex(f.r[1], 1) + ' in esadecimale, cioè ' + ((f.r[2] << 4) | f.r[1]) + '\u00a0=\u00a0' + cyc.a + '\u00a0+\u00a0' + cyc.b + '.';
           }
       }
       return out;
@@ -1080,22 +1108,17 @@
       h('div', { class: P + 'progress' }, dieInfo.count, h('div', { class: P + 'pips', 'aria-hidden': 'true' }, dieInfo.pips)));
     const dieView = h('div', { class: P + 'view', 'data-view': 'die' },
       h('div', { class: 'cp-lab-grid' }, dieStage, dieExplain),
-      h('p', { class: 'cp-hint' }, 'Ricostruzione didattica, non una fotografia: le aree sono al loro posto in modo plausibile ma semplificato, e le piazzole sono disegnate solo su due lati.'));
+      h('p', { class: 'cp-hint' }, 'Ricostruzione didattica, non una fotografia: forma e posizione delle aree sono indicative e semplificate, e le piazzole sono disegnate solo su due lati.'));
 
     // --- vista 2: ciclo di istruzione ---
-    const ro = {
-      pc: ui.readout('PC', '000'), ir: ui.readout('IR', '––'), acc: ui.readout('A', '0'), cy: ui.readout('CY', '0'),
-      r0: ui.readout('R0', '0'), r1: ui.readout('R1', '0'), r2: ui.readout('R2', '0'),
-    };
     const cycInfo = {
       step: h('span', { class: 'step' }, ''),
       title: h('h4', null, ''),
       text: h('p', null, ''),
       result: h('p', { class: P + 'result', hidden: true }, ''),
     };
-    const cycExplain = h('div', { class: 'cp-explain ' + P + 'explain' },
-      cycInfo.step, cycInfo.title, cycInfo.text, cycInfo.result,
-      h('div', { class: P + 'readouts' }, Object.keys(ro).map((k) => ro[k])));
+    const cycExplain = h('div', { class: 'cp-explain ' + P + 'explain ' + P + 'cyc-explain' },
+      cycInfo.step, cycInfo.title, cycInfo.text, cycInfo.result);
     const cycStage = h('div', { class: 'cp-stage ' + P + 'cyc-stage' });
     const timCap = h('span', null, '');
     const timWrap = h('div', { class: P + 'tim-wrap' });
@@ -1147,14 +1170,6 @@
       cycInfo.result.hidden = !t.result;
       cycInfo.result.textContent = t.result || '';
       const v = stepAt(idx);
-      const st = v ? v.ph.state : null;
-      ro.pc.set(st ? H3(st.pc) : '000');
-      ro.ir.set(st && st.ir.hi != null ? fmt.hex(st.ir.hi, 1) + (st.ir.lo == null ? '–' : fmt.hex(st.ir.lo, 1)) : '––');
-      ro.acc.set(st ? fmt.hex(st.acc, 1) : '0');
-      ro.cy.set(st ? String(st.cy) : '0');
-      ro.r0.set(st ? fmt.hex(st.r[0], 1) : '0');
-      ro.r1.set(st ? fmt.hex(st.r[1], 1) : '0');
-      ro.r2.set(st ? fmt.hex(st.r[2], 1) : '0');
       const c = v ? v.c : cyc.trace.cycles[0];
       timCap.textContent = '· ciclo ' + (c.n + 1) + ' di ' + cyc.trace.cycles.length + ': ' + (c.word === 2 ? c.instr.mn + ', secondo byte' : I.format(c.byte, cyc.prog.rom[c.addr + 1]));
     }
@@ -1245,20 +1260,32 @@
 
     /* ----- disposizione: larga o stretta secondo lo spazio ----- */
 
+    // narrow sotto i 640 px (telefono); da 1080 px la spiegazione affianca il palco e il diagramma
+    // temporale si allarga sotto entrambi (classe intel-4004-two sulla vista del ciclo). Sotto quella
+    // soglia il palco affiancato sarebbe troppo stretto e i testi SVG scenderebbero sotto i 10 px.
     function relayout(width) {
-      const L = width < 600 ? 'narrow' : 'wide';
-      if (L === die.layout) return;
+      const L = width < 640 ? 'narrow' : 'wide';
+      const two = L === 'wide' && width >= 1080;
+      const TL = L === 'narrow' ? 'narrow' : two ? 'full' : 'wide';
+      cycView.classList.toggle(P + 'two', two);
+      cycView.classList.toggle(P + 'narrow', L === 'narrow');
+      if (L === die.layout && TL === cyc.timLayout) return;
       finishAnims();
-      dieStage.textContent = '';
-      dieStage.append(buildDie(L));
-      dieStage.classList.toggle('is-narrow', L === 'narrow');
-      if (die.sel && die.sel.kind === 'area') selectArea(die.sel.key, true);
-      else if (die.sel && die.sel.kind === 'pin') selectPin(die.sel.key, true);
-      else markDie(null, null);
-      cycStage.textContent = '';
-      cycStage.append(buildCycle(L));
-      timWrap.textContent = '';
-      timWrap.append(buildTiming(L));
+      if (L !== die.layout) {
+        dieStage.textContent = '';
+        dieStage.append(buildDie(L));
+        dieStage.classList.toggle('is-narrow', L === 'narrow');
+        if (die.sel && die.sel.kind === 'area') selectArea(die.sel.key, true);
+        else if (die.sel && die.sel.kind === 'pin') selectPin(die.sel.key, true);
+        else markDie(null, null);
+        cycStage.textContent = '';
+        cycStage.append(buildCycle(L));
+      }
+      if (TL !== cyc.timLayout) {
+        cyc.timLayout = TL;
+        timWrap.textContent = '';
+        timWrap.append(buildTiming(TL));
+      }
       applyState(cyc.idx);
     }
 

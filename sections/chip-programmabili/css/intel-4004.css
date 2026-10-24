@@ -3,6 +3,12 @@
  * Ogni selettore parte da #intel-4004; le classi proprie hanno il prefisso intel-4004-.
  */
 
+/* ---------- testata e scheda tecnica ---------- */
+
+#intel-4004 .cp-specimen-cap { text-wrap: balance; }
+/* 10 voci: 5 + 5 sugli schermi larghi, 2 per riga sul telefono */
+#intel-4004 .intel-4004-specs > div { flex: 1 1 200px; }
+
 /* ---------- figure del testo ---------- */
 
 #intel-4004 .intel-4004-fig-gate .cp-art { max-width: 880px; }
@@ -10,19 +16,20 @@
 #intel-4004 .cp-cols .intel-4004-fig-mcs { margin-top: 6px; }
 
 /* schema MCS-4 su sfondo da strumento */
+#intel-4004 .intel-4004-fig-mcs svg { max-width: 420px; margin: 0 auto; }
 #intel-4004 .intel-4004-fig-mcs .intel-4004-arr { fill: var(--lab-dim); }
-#intel-4004 .intel-4004-fig-mcs .intel-4004-f-lbl { fill: var(--lab-text); font-size: 12px; font-weight: 600; }
-#intel-4004 .intel-4004-fig-mcs .intel-4004-f-data { fill: var(--sig-data); font-size: 12px; font-weight: 750; }
+#intel-4004 .intel-4004-fig-mcs .intel-4004-arr-c { fill: var(--sig-ctrl); }
+#intel-4004 .intel-4004-fig-mcs .intel-4004-f-lbl { fill: var(--lab-text); font-size: 12.5px; font-weight: 600; }
+#intel-4004 .intel-4004-fig-mcs .intel-4004-f-data { fill: var(--sig-data); font-size: 12.5px; font-weight: 750; }
 #intel-4004 .intel-4004-fig-mcs .intel-4004-f-ctl { fill: none; stroke: var(--sig-ctrl); stroke-width: 2; }
-#intel-4004 .intel-4004-fig-mcs .intel-4004-f-ctl-t { fill: var(--sig-ctrl); font-size: 11.5px; font-weight: 750; font-family: var(--mono); }
+#intel-4004 .intel-4004-fig-mcs .intel-4004-f-ctl-t { fill: var(--sig-ctrl); font-size: 12px; font-weight: 750; font-family: var(--mono); }
 #intel-4004 .intel-4004-fig-mcs .intel-4004-f-port { fill: none; stroke: var(--lab-dim); stroke-width: 1.6; stroke-dasharray: 4 3; }
-#intel-4004 .intel-4004-fig-mcs .cp-blk text { font-size: 13.5px; }
-#intel-4004 .intel-4004-fig-mcs .cp-blk text.sub { font-size: 11px; }
+#intel-4004 .intel-4004-fig-mcs .cp-blk text { font-size: 14px; }
+#intel-4004 .intel-4004-fig-mcs .cp-blk text.sub { font-size: 12px; }
 
 /* ---------- laboratorio: struttura ---------- */
 
 #intel-4004 .intel-4004-view[hidden] { display: none; }
-#intel-4004 .intel-4004-bar-note { font-size: .82rem; color: var(--lab-dim); }
 #intel-4004 .intel-4004-explain { min-width: 0; }
 #intel-4004 .intel-4004-explain h4 { font-size: 1.05rem; }
 #intel-4004 .intel-4004-tie { color: var(--lab-dim); font-size: .9rem; }
@@ -41,6 +48,7 @@
 }
 #intel-4004 .intel-4004-die-stage.is-narrow > svg { max-width: 440px; margin: 0 auto; }
 #intel-4004 .intel-4004-die-svg text { font-family: var(--font); }
+#intel-4004 .intel-4004-die-svg .mono { font-family: var(--mono); }
 #intel-4004 .intel-4004-body { stroke: #bdb39c; stroke-width: 1.2; }
 #intel-4004 .intel-4004-notch { fill: rgba(80, 64, 40, .32); }
 #intel-4004 .intel-4004-traces path { fill: none; stroke: #9f988a; stroke-width: 2.4; stroke-linejoin: round; opacity: .5; }
@@ -79,32 +87,40 @@
 #intel-4004 .intel-4004-pad-sq { fill: #e9dcae; }
 #intel-4004 .intel-4004-wire { fill: none; stroke: #e7c66a; stroke-width: 1.1; opacity: .9; transition: stroke var(--t-fast), stroke-width var(--t-fast); }
 #intel-4004 .intel-4004-wire.is-on { stroke: #fff3c4; stroke-width: 2.2; filter: drop-shadow(0 0 3px rgba(240, 176, 74, .9)); }
-#intel-4004 .intel-4004-ff { fill: #f4ecd0; font-family: var(--mono); font-weight: 700; opacity: .9; pointer-events: none; }
+#intel-4004 .intel-4004-ff { fill: #f4ecd0; font-weight: 700; opacity: .9; pointer-events: none; }
 
 /* piedini */
 #intel-4004 .intel-4004-pin-hit { fill: rgba(0, 0, 0, 0); transition: fill var(--t-fast); }
 #intel-4004 .intel-4004-pin:hover .intel-4004-pin-hit { fill: rgba(240, 176, 74, .12); }
 #intel-4004 .intel-4004-pin.is-sel .intel-4004-pin-hit { fill: rgba(62, 224, 143, .16); stroke: var(--sig-on); stroke-width: 1.5; }
-#intel-4004 .intel-4004-pin-num { fill: var(--lab-text); font-family: var(--mono); font-weight: 700; }
+#intel-4004 .intel-4004-pin-num { fill: var(--lab-text); font-weight: 700; }
 #intel-4004 .intel-4004-pin.is-sel .intel-4004-pin-num { fill: var(--sig-on); }
-#intel-4004 .intel-4004-pin-name { fill: #35302a; font-family: var(--mono); font-weight: 800; paint-order: stroke; stroke: #efe9da; stroke-width: 3.2px; stroke-linejoin: round; }
+#intel-4004 .intel-4004-pin-name { fill: #35302a; font-weight: 800; paint-order: stroke; stroke: #efe9da; stroke-width: 3.2px; stroke-linejoin: round; }
 #intel-4004 .intel-4004-pin.is-sel .intel-4004-pin-name { fill: #0b5d36; }
 
 #intel-4004 .intel-4004-reticle { pointer-events: none; }
-#intel-4004 .intel-4004-reticle circle, #intel-4004 .intel-4004-reticle path { fill: none; stroke: var(--lab-gold); stroke-width: 1.6; }
-#intel-4004 .intel-4004-reticle circle { stroke-dasharray: 3 4; }
+#intel-4004 .intel-4004-reticle path { fill: none; stroke: var(--lab-gold); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
 
 /* ---------- ciclo di istruzione ---------- */
 
 #intel-4004 .intel-4004-prog-bar { background: rgba(255, 255, 255, .015); }
 #intel-4004 .intel-4004-prog-lbl { font: 700 .76rem var(--mono); text-transform: uppercase; letter-spacing: .08em; color: var(--lab-gold); }
-#intel-4004 .intel-4004-cyc-grid { display: grid; grid-template-columns: minmax(0, 1.65fr) minmax(0, 1fr); grid-template-areas: "stage explain" "timing explain"; }
+
+/* colonna unica: palco, spiegazione, diagramma; da 1080 px (classe intel-4004-two, decisa da js/intel-4004.js
+   in base alla larghezza del laboratorio) la spiegazione affianca il palco e il diagramma va sotto a tutta larghezza.
+   In colonna unica la spiegazione ha un'altezza minima, così il diagramma non salta a ogni passo. */
+#intel-4004 .intel-4004-cyc-grid { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-areas: "stage" "explain" "timing"; }
 #intel-4004 .intel-4004-cyc-grid > .intel-4004-cyc-stage { grid-area: stage; }
 #intel-4004 .intel-4004-cyc-grid > .intel-4004-timing { grid-area: timing; }
-#intel-4004 .intel-4004-cyc-grid > .cp-explain { grid-area: explain; border-left: 1px solid var(--lab-line); }
+#intel-4004 .intel-4004-cyc-grid > .cp-explain { grid-area: explain; border-top: 1px solid var(--lab-line); min-height: 10.4rem; }
+#intel-4004 .intel-4004-narrow .intel-4004-cyc-grid > .cp-explain { min-height: 13.1rem; }
+#intel-4004 .intel-4004-two .intel-4004-cyc-grid { grid-template-columns: minmax(0, 1.85fr) minmax(0, 1fr); grid-template-areas: "stage explain" "timing timing"; }
+#intel-4004 .intel-4004-two .intel-4004-cyc-grid > .cp-explain { border-top: 0; border-left: 1px solid var(--lab-line); min-height: 0; }
 #intel-4004 .intel-4004-cyc-stage { padding: 8px 10px 4px; }
 #intel-4004 .intel-4004-cyc-svg, #intel-4004 .intel-4004-tim-svg { display: block; width: 100%; height: auto; }
-#intel-4004 .intel-4004-cyc-svg.is-narrow, #intel-4004 .intel-4004-tim-svg.is-narrow { max-width: 460px; margin: 0 auto; }
+#intel-4004 .intel-4004-cyc-svg, #intel-4004 .intel-4004-tim-svg.is-wide { max-width: 780px; margin: 0 auto; }
+#intel-4004 .intel-4004-two .intel-4004-cyc-svg { max-width: none; }
+#intel-4004 .intel-4004-cyc-svg.is-narrow, #intel-4004 .intel-4004-tim-svg.is-narrow { max-width: 460px; }
 #intel-4004 .intel-4004-cyc-svg text, #intel-4004 .intel-4004-tim-svg text { font-family: var(--font); }
 #intel-4004 .intel-4004-cyc-svg .mono, #intel-4004 .intel-4004-tim-svg .mono { font-family: var(--mono); }
 
@@ -112,7 +128,7 @@
 #intel-4004 .intel-4004-unit.is-on { stroke: color-mix(in srgb, var(--sig-on) 50%, var(--lab-line)); }
 #intel-4004 .intel-4004-unit-t { fill: var(--lab-ink); font-weight: 800; font-size: 14px; }
 #intel-4004 .intel-4004-lbl { fill: var(--lab-text); font-weight: 750; font-size: 12px; }
-#intel-4004 .intel-4004-lbl-s { fill: var(--lab-dim); font-weight: 650; font-size: 11px; }
+#intel-4004 .intel-4004-lbl-s { fill: var(--lab-dim); font-weight: 650; font-size: 12px; }
 
 #intel-4004 .intel-4004-nib-bg { fill: var(--lab-sunk); stroke: var(--lab-line); stroke-width: 1.2; transition: stroke var(--t-fast), fill var(--t-fast); }
 #intel-4004 .intel-4004-nib-fl { fill: var(--lab-gold); opacity: 0; pointer-events: none; }
@@ -128,7 +144,8 @@
 #intel-4004 .intel-4004-nib.is-src .intel-4004-nib-bg { stroke: var(--lab-gold); stroke-width: 2; stroke-dasharray: 4 3; }
 #intel-4004 .intel-4004-nib.is-res .intel-4004-nib-bg { stroke: var(--sig-on); stroke-width: 2; fill: color-mix(in srgb, var(--sig-on) 16%, var(--lab-sunk)); }
 #intel-4004 .intel-4004-nib.is-res .intel-4004-nib-fl { fill: var(--sig-on); }
-#intel-4004 .intel-4004-reg-n { fill: var(--lab-dim); font-size: 10.5px; font-family: var(--mono); }
+#intel-4004 .intel-4004-reg-n { fill: var(--lab-dim); font-size: 12px; }
+#intel-4004 .intel-4004-cyc-svg.is-narrow .intel-4004-reg-n { font-size: 11.5px; }
 
 #intel-4004 .intel-4004-alu-bg { fill: #13201b; stroke: var(--lab-line); stroke-width: 1.5; stroke-linejoin: round; transition: stroke var(--t-fast), fill var(--t-fast); }
 #intel-4004 .intel-4004-alu-fl { fill: var(--sig-on); opacity: 0; pointer-events: none; }
@@ -141,11 +158,13 @@
 #intel-4004 .intel-4004-line.is-busy.k-data { stroke: color-mix(in srgb, var(--sig-data) 26%, var(--sig-idle)); }
 #intel-4004 .intel-4004-line.is-on.k-addr { stroke: var(--sig-addr); }
 #intel-4004 .intel-4004-line.is-on.k-data { stroke: var(--sig-data); }
-#intel-4004 .intel-4004-line-n { fill: var(--lab-dim); font-size: 10.5px; font-weight: 600; font-family: var(--mono); }
-#intel-4004 .intel-4004-ctl { fill: none; stroke: var(--sig-idle); stroke-width: 3; transition: stroke var(--t-fast); }
-#intel-4004 .intel-4004-ctl.is-on { stroke: var(--sig-ctrl); }
-#intel-4004 .intel-4004-m-ctl { fill: var(--lab-dim); }
-#intel-4004 .intel-4004-ctl-t { fill: var(--lab-dim); font-size: 11px; font-weight: 700; font-family: var(--mono); }
+#intel-4004 .intel-4004-line-n { fill: var(--lab-dim); font-size: 12px; font-weight: 600; }
+/* linee di controllo con la punta disegnata a parte: a riposo grigie, attive rosa */
+#intel-4004 .intel-4004-ctl-line { fill: none; stroke: color-mix(in srgb, var(--lab-dim) 38%, var(--sig-idle)); stroke-width: 3; transition: stroke var(--t-fast); }
+#intel-4004 .intel-4004-ctl-head { fill: color-mix(in srgb, var(--lab-dim) 38%, var(--sig-idle)); transition: fill var(--t-fast); }
+#intel-4004 .intel-4004-ctl.is-on .intel-4004-ctl-line { stroke: var(--sig-ctrl); }
+#intel-4004 .intel-4004-ctl.is-on .intel-4004-ctl-head { fill: var(--sig-ctrl); }
+#intel-4004 .intel-4004-ctl-t { fill: var(--lab-dim); font-size: 12px; font-weight: 700; }
 #intel-4004 .intel-4004-ctl-t.is-on { fill: var(--sig-ctrl); }
 #intel-4004 .intel-4004-dir { fill: var(--lab-dim); font-size: 12px; font-weight: 750; }
 #intel-4004 .intel-4004-dir.k-addr { fill: var(--sig-addr); }
@@ -170,7 +189,7 @@
 #intel-4004 .intel-4004-token-hex { fill: var(--lab-ink); font-size: 15px; font-weight: 800; }
 #intel-4004 .intel-4004-token.k-addr .intel-4004-token-hex { fill: var(--sig-addr); }
 #intel-4004 .intel-4004-token.k-data .intel-4004-token-hex { fill: var(--sig-data); }
-#intel-4004 .intel-4004-token-bin { fill: var(--lab-text); font-size: 11px; font-weight: 700; letter-spacing: .08em; }
+#intel-4004 .intel-4004-token-bin { fill: var(--lab-text); font-size: 11.5px; font-weight: 700; letter-spacing: .06em; }
 #intel-4004 .intel-4004-fly rect { fill: #0b1210; stroke: var(--sig-on); stroke-width: 2; }
 #intel-4004 .intel-4004-fly text { fill: var(--sig-on); font-size: 13px; font-weight: 800; }
 
@@ -190,7 +209,7 @@
 #intel-4004 .intel-4004-t-ph { fill: var(--lab-dim); font-weight: 700; }
 #intel-4004 .intel-4004-t-ph.is-past { fill: var(--lab-text); }
 #intel-4004 .intel-4004-t-ph.is-cur { fill: var(--lab-gold); font-weight: 800; }
-#intel-4004 .intel-4004-t-row { fill: var(--lab-text); font-family: var(--mono); font-weight: 650; }
+#intel-4004 .intel-4004-t-row { fill: var(--lab-text); font-weight: 650; }
 #intel-4004 .intel-4004-t-row.clk { fill: #8fb3a6; }
 #intel-4004 .intel-4004-t-row.ctl { fill: var(--sig-ctrl); }
 #intel-4004 .intel-4004-s-clk { fill: none; stroke: #8fb3a6; stroke-width: 1.6; stroke-linejoin: round; }
@@ -204,20 +223,18 @@
 #intel-4004 .intel-4004-t-pen { stroke: var(--lab-gold); stroke-width: 1.5; }
 
 /* spiegazione del ciclo */
-#intel-4004 .intel-4004-readouts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--lab-line); }
-#intel-4004 .intel-4004-readouts .cp-readout { min-width: 50px; }
 #intel-4004 .intel-4004-result { padding: 8px 10px; border-radius: 8px; color: var(--lab-ink); font-weight: 650; background: color-mix(in srgb, var(--sig-on) 12%, transparent); border: 1px solid color-mix(in srgb, var(--sig-on) 45%, transparent); }
 
 /* ---------- schermi stretti ---------- */
 
-@media (max-width: 900px) {
-  #intel-4004 .intel-4004-cyc-grid { grid-template-columns: minmax(0, 1fr); grid-template-areas: "stage" "explain" "timing"; }
-  #intel-4004 .intel-4004-cyc-grid > .cp-explain { border-left: 0; border-top: 1px solid var(--lab-line); }
+/* i due transistor affiancati scenderebbero sotto i 10 px di testo: sotto i 860 px vanno uno sopra l'altro */
+@media (max-width: 860px) {
+  #intel-4004 .intel-4004-duo { grid-template-columns: minmax(0, 1fr); justify-items: center; }
+  #intel-4004 .intel-4004-duo svg { width: 100%; max-width: 440px; }
 }
 
 @media (max-width: 640px) {
-  #intel-4004 .intel-4004-duo { grid-template-columns: minmax(0, 1fr); }
-  #intel-4004 .intel-4004-bar-note { display: none; }
+  #intel-4004 .intel-4004-specs > div { flex-basis: 140px; }
   #intel-4004 .intel-4004-prog-bar .cp-range { flex: 1 1 100%; }
   #intel-4004 .intel-4004-prog-bar .cp-range input { flex: 1 1 auto; }
 }

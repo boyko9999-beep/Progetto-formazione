@@ -16,6 +16,9 @@ test('cinque chip, in ordine di uscita, con i dati principali verificati', () =>
   assert.strictEqual(O.CHIP['z80'].price, null, 'prezzo dello Z80 non verificato: niente cifra');
   assert.strictEqual(O.railsText(O.CHIP['8080']), '+12 V, +5 V e −5 V');
   assert.strictEqual(O.railsText(O.CHIP['6502']), 'solo +5 V');
+  assert.strictEqual(O.CHIP['z80'].when, 'luglio 1976');
+  assert.ok(O.CHIP['8080'].transistorsMin === 4500 && O.CHIP['8080'].transistors === 6000, '8080: le fonti danno 4.500 o 6.000');
+  assert.strictEqual(O.CHIP['6800'].priceApprox, true);
   for (const c of O.CHIPS) {
     assert.ok(c.name && c.when && c.people && c.blurb && c.where, 'testi di ' + c.id);
     assert.ok(c.dip && c.dip.pins === c.pins, 'disegno DIP di ' + c.id);
@@ -103,7 +106,8 @@ test('differenze tra chip, in parole', () => {
   const p = O.describeDiff('8008', '8080').map((x) => x.text).join(' | ');
   assert.match(p, /pila interna/);
   assert.match(p, /PC passa da 14 a 16 bit/);
-  assert.match(p, /SP: puntatore da 16 bit/);
+  assert.match(p, /SP: puntatore della pila da 16 bit/);
+  assert.match(O.describeDiff('6800', '8008').map((x) => x.text).join(' | '), /SP \(puntatore della pila\)/);
   assert.match(O.describeDiff('8080', '6800').map((x) => x.text).join(' | '), /B diventa un secondo accumulatore/);
   assert.deepStrictEqual(O.describeDiff('6502', '6502'), []);
 });
@@ -118,6 +122,8 @@ test('prezzi: solo punti verificati, nell\'ordine giusto', () => {
   assert.strictEqual(O.priceAt('8080', 20).p, 200);
   assert.strictEqual(O.priceAt('8080', 35).p, 200);
   assert.strictEqual(O.priceAt('z80', 35), null, 'nessun prezzo dello Z80');
+  assert.strictEqual(O.eventAt(30).event.id, 'z80', 'lo Z80 arriva a luglio 1976');
+  assert.strictEqual(O.eventAt(29).event.id, 'm6502');
   assert.strictEqual(O.monthLabel(0), 'gennaio 1974');
   assert.strictEqual(O.monthLabel(20), 'settembre 1975');
   assert.strictEqual(O.monthLabel(35), 'dicembre 1976');
@@ -175,6 +181,8 @@ test('diagnosi degli errori più comuni', () => {
   assert.strictEqual(O.diagnose('6502', [1, 2, 0, 3]).code, 'carry');
   assert.match(O.diagnose('6502', [1, 2, 0, 3]).text, /43 invece di 42/);
   assert.strictEqual(O.diagnose('6502', [0, 1, 3, 2]).code, 'store-early');
+  assert.match(O.diagnose('8080', [0, 1, 2, 5, 3, 4]).text, /MOV M,A ha scritto 23 in 0081h prima della somma: ha cancellato il secondo numero/);
+  assert.match(O.diagnose('z80', [0, 1, 5, 2, 3, 4]).text, /LD \(HL\),A ha scritto 23 in 0080h prima della somma: ha cancellato il primo numero/);
   assert.strictEqual(O.diagnose('6502', [0, 2, 1, 3]).code, 'load-late');
   assert.strictEqual(O.diagnose('8080', [1, 0, 2, 3, 4, 5]).code, 'no-pointer');
   assert.strictEqual(O.diagnose('8080', [0, 2, 1, 3, 4, 5]).code, 'bad-load');

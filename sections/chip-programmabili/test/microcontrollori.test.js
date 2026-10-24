@@ -285,3 +285,17 @@ test('la routine della porta scrive solo la porta P1: il compressore aspetta il 
   assert.strictEqual(s.out.comp, 1);
   assert.strictEqual(s.out.vent, 0, 'porta aperta: ventola ferma');
 });
+
+test('lo sbrinamento ricorda quanta brina c\'era all\'inizio: a frigo caldo finisce subito, senza ghiaccio da sciogliere', () => {
+  const warm = M.create();
+  M.startDefrost(warm, 'manual');
+  assert.strictEqual(warm.defrostFrost, 0);
+  let ended = null;
+  runFast(warm, 5, (e, st) => { if (e === 'defrost-end') ended = st.t; });
+  assert.ok(ended != null && ended <= 2, 'evaporatore già sopra 8 °C: finisce al primo giro');
+  const cold = M.create();
+  runFast(cold, 2 * 3600);
+  M.startDefrost(cold, 'manual');
+  assert.ok(cold.defrostFrost > 0.2, 'dopo la messa a regime c\'è brina: ' + cold.defrostFrost.toFixed(2));
+  assert.strictEqual(M.clone(cold).defrostFrost, cold.defrostFrost);
+});

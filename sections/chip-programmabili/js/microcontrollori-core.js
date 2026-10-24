@@ -167,6 +167,7 @@
       door: false,
       defrost: false,   // il flag SBRINA nella RAM
       defrostStart: 0,
+      defrostFrost: 0,  // brina sulle alette quando lo sbrinamento è cominciato
       defrostSource: null,
       alarm: false,
       want: { luce: 0, vent: 0, res: 0, comp: 0 }, // uscite decise dal programma (registri)
@@ -413,6 +414,7 @@
     if (s.defrost) return false;
     s.defrost = true;
     s.defrostStart = s.t;
+    s.defrostFrost = s.frost;
     s.defrostSource = source || 'manual';
     return true;
   }
@@ -496,7 +498,7 @@
     return {
       p: Object.assign({}, s.p),
       t: s.t, acc: s.acc, tc: s.tc, te: s.te, frost: s.frost, door: s.door,
-      defrost: s.defrost, defrostStart: s.defrostStart, defrostSource: s.defrostSource, alarm: s.alarm,
+      defrost: s.defrost, defrostStart: s.defrostStart, defrostFrost: s.defrostFrost, defrostSource: s.defrostSource, alarm: s.alarm,
       want: Object.assign({}, s.want), out: Object.assign({}, s.out),
       offSince: s.offSince, onSince: s.onSince, secCounter: s.secCounter, doorOpenFor: s.doorOpenFor,
       reg: Object.assign({}, s.reg), display: Object.assign({}, s.display), stats: Object.assign({}, s.stats),

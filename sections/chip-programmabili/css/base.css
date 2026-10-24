@@ -53,6 +53,15 @@
 
 .cp-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
 .cp-sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+/* l'attributo hidden vince sempre, anche su .cp-btn e sugli altri componenti con display proprio */
+.cp [hidden] { display: none !important; }
+/* le tabelle di BusLab (style.css) sono larghe almeno 1050 px, con intestazione appiccicosa e bordo di categoria:
+   nei capitoli no. :where() lascia la specificità di style.css, così ogni capitolo può ridefinirle. */
+:where(.cp-chapter) table { min-width: 0; }
+:where(.cp-chapter) thead th { position: static; }
+:where(.cp-chapter) tbody th { border-left: 0; }
+:where(.cp-chapter) tbody tr:hover { background: none; }
+:where(.cp-lab) thead th { background: transparent; color: var(--lab-dim); }
 
 /* ---------- barra superiore (stesso marchio dell'hub dell'enciclopedia) ---------- */
 

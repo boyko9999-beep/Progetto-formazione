@@ -31,7 +31,7 @@
   const T_GAP = 80;       // respiro fra due cicli di bus
   const T_EXT = 640;      // un segnale lungo i fili del frigorifero
   const T_IRQ = 400;      // i passi dell'ingresso in interruzione
-  const T_DWELL = 260;    // sosta fra due righe
+  const T_DWELL = 650;    // sosta fra due righe: il tempo di leggere il titolo della spiegazione
   const T_REDUCED = 1150; // movimento ridotto: una riga ogni tanto, cambi di stato istantanei
 
   const SPEED_INFO = {
@@ -96,9 +96,12 @@
     res: { pin: 'res', ch: 332 },
     comp: { pin: 'comp', ch: null },
   };
+  // ordine dei fili, dall'alto in basso: uscita dal frigo e piedino del chip seguono lo stesso ordine, così non si incrociano
+  const HARNESS = ['display', 'sw', 'luce', 'vent', 'adc1', 'adc0', 'res', 'comp'];
   const LAYOUTS = {
     wide: { name: 'wide', vb: [810, 452], fridge: { x: 80, y: 22, k: 1 }, chip: { x: 440, y: 26 }, wires: true },
-    narrow: { name: 'narrow', vb: [380, 796], fridge: { x: 124.5, y: 8, k: 0.84 }, chip: { x: 10, y: 376 }, wires: false },
+    // sul telefono il frigo sta sopra il chip: i fili scendono a destra, passano sotto il frigo e risalgono ai piedini
+    narrow: { name: 'narrow', vb: [392, 826], fridge: { x: 132, y: 8, k: 0.84 }, chip: { x: 30, y: 412 }, wires: true, harness: { xr: 384, yg: 406, xl: 19.8 } },
   };
 
   const OUT_NAME = { luce: 'la luce', vent: 'la ventola', res: 'la resistenza', comp: 'il compressore' };
@@ -136,10 +139,14 @@
   }
   /** 4140 → "1:09" (ore:minuti dall'accensione) */
   function hmm(sec) { sec = Math.max(0, Math.floor(sec)); return Math.floor(sec / 3600) + ':' + two(Math.floor(sec / 60) % 60); }
+  /** tempo trascorso a minuti interi, per difetto come l'ora del registro: «1 h 08 min» insieme a «1:08» */
+  function since(sec) { return F.hm(Math.floor(Math.max(0, sec) / 60) * 60); }
   /** "SET 4,0" → "4,0"; "L1 V0" resta com'è */
   function valueOf(label) {
-    const m = /^[A-Za-zÀ-ÿ.]+ (\S+)$/.exec(String(label));
-    return m ? m[1] : String(label);
+    // nei registri ci sono numeri, non unità di misura: "25,1 °C" → "25,1"
+    const t = String(label).replace(/ °C$/, '');
+    const m = /^[A-Za-zÀ-ÿ.]+ (\S+)$/.exec(t);
+    return m ? m[1] : t;
   }
   function ptsD(pts) { return 'M' + pts.map((p) => r1(p[0]) + ' ' + r1(p[1])).join(' L'); }
   function cumLens(pts) {
@@ -195,7 +202,14 @@
       const y0 = L.fridge.y + FR_EXIT[k] * L.fridge.k;
       const x1 = L.chip.x - 8;
       const y1 = L.chip.y + PIN[w.pin];
-      wire[k] = w.ch == null ? [[x0, y0], [x1, y1]] : [[x0, y0], [w.ch, y0], [w.ch, y1], [x1, y1]];
+      if (L.harness) {
+        // fascio di fili: canale a destra del frigo, corsia sotto il frigo, piattina a sinistra del chip
+        const i = HARNESS.indexOf(k);
+        const xr = L.harness.xr - i * 7;
+        const yg = L.harness.yg - i * 4;
+        const xl = L.harness.xl - i * 2.4;
+        wire[k] = [[x0, y0], [xr, y0], [xr, yg], [xl, yg], [xl, y1], [x1, y1]];
+      } else wire[k] = w.ch == null ? [[x0, y0], [x1, y1]] : [[x0, y0], [w.ch, y0], [w.ch, y1], [x1, y1]];
     });
     const into = (pin) => [L.chip.x + 34, L.chip.y + PIN[pin]];
     const pinPt = (pin) => [L.chip.x - 8, L.chip.y + PIN[pin]];
@@ -338,7 +352,8 @@
         h('ol', null, sec.lines.map((l) => {
           const li = h('li', { class: P + 'ln', 'data-id': l.id },
             h('span', { class: P + 'ln-a' }, l.id),
-            h('span', { class: P + 'ln-c' }, l.code),
+            // «COMP ← 1» resta su una riga: sui telefoni si va a capo prima, non dentro l'assegnazione
+            h('span', { class: P + 'ln-c' }, l.code.replace(/(\S+) ← (\S+)/g, '$1 ← $2')),
             h('span', { class: P + 'ln-r' }, h('span', { class: P + 'ln-m', 'aria-hidden': 'true' }), h('span', { class: P + 'ln-v' })),
             h('span', { class: P + 'ln-ret' }, 'ritorno'));
           li.mark = li.querySelector('.' + P + 'ln-m');
@@ -362,7 +377,11 @@
     // grafico
     const chartWin = h('span', { class: P + 'chart-win' }, SPEED_INFO[1].winLabel);
     const chartBox = h('div', { class: P + 'chart' },
-      h('div', { class: P + 'chart-head' }, h('h4', null, 'Temperatura della cella'), chartWin));
+      h('div', { class: P + 'chart-head' }, h('h4', null, 'Temperatura della cella'), chartWin),
+      h('p', { class: P + 'chart-key' },
+        h('span', { class: P + 'key-set' }, h('i', { 'aria-hidden': 'true' }), 'SET: il compressore si ferma'),
+        h('span', { class: P + 'key-hi' }, h('i', { 'aria-hidden': 'true' }), 'SET + DIFF: riparte'),
+        h('span', { class: P + 'key-def' }, h('i', { 'aria-hidden': 'true' }), 'sbrinamento')));
 
     // obiettivo
     const goalEls = {
@@ -380,6 +399,7 @@
         ['Programma: istruzioni e indirizzi', 'var(--sig-addr)'],
         ['Dati', 'var(--sig-data)'],
         ['Interruzioni', 'var(--sig-ctrl)'],
+        ['Tensione della sonda', '#dfe9e4'],
         ['Uscita accesa', 'var(--sig-on)'],
       ]),
       h('p', { class: 'cp-hint' }, 'Valori di esempio: chip, programma e frigorifero sono semplificati, ma si comportano come un regolatore vero. Tocca un blocco del chip per sapere che cosa fa; tocca la porta del frigo per aprirla.'),
@@ -596,6 +616,7 @@
         refs.wires[k] = p;
         g.append(p);
       });
+      if (L.harness) return g; // sul telefono niente relè disegnati: bastano i bit delle porte
       ['luce', 'vent', 'res', 'comp'].forEach((k) => {
         const y = L.chip.y + PIN[k];
         const arm = s('path', { d: 'M5 9.5 L15 3.5', class: P + 'relay-arm' });
@@ -645,8 +666,10 @@
     function showA(v) { setTxt('a', v == null || v === '' ? '—' : String(v)); }
     function showIns(text) {
       const rows = wrap(text, 21);
+      let second = rows.slice(1).join(' ');
+      if (second.length > 21) second = second.slice(0, 20) + '…';
       refs.ins[0].textContent = rows[0] || '';
-      refs.ins[1].textContent = rows.slice(1).join(' ');
+      refs.ins[1].textContent = second;
     }
     function showROM(id) {
       let i = FLAT.findIndex((l) => l.id === id);
@@ -730,7 +753,13 @@
         refs.relays[k].g.classList.toggle('is-on', on);
         refs.relays[k].arm.setAttribute('d', on ? 'M5 9.5 L15 9.5' : 'M5 9.5 L15 3.5');
       }
-      if (on && !first) pulseWire(k);
+      if (on && !first) {
+        pulseWire(k);
+        // breve bagliore sul bit che passa a 1: il piedino ha appena cambiato stato
+        if (!ctx.reduced && c.r.animate) {
+          c.r.animate([{ filter: 'drop-shadow(0 0 5px rgba(62,224,143,.95))' }, { filter: 'drop-shadow(0 0 0 rgba(62,224,143,0))' }], { duration: CP.dur.slow, easing: 'ease-out' });
+        }
+      }
     }
 
     function renderDevices() {
@@ -746,7 +775,15 @@
       }
       if (running && speed > 1) lcd = { T: sim.display.T, alarm: sim.display.alarm };
       const lt = F.num1(lcd.T) + ' °C';
-      if (drawn.lcd !== lt) { drawn.lcd = lt; refs.parts.lcdText.textContent = lt; }
+      if (drawn.lcd !== lt) {
+        const fresh = drawn.lcd != null;
+        drawn.lcd = lt;
+        refs.parts.lcdText.textContent = lt;
+        // il display si aggiorna quando arriva un byte dalla UART: un lampo breve lo fa notare
+        if (fresh && !ctx.reduced && !(running && speed > 1) && refs.parts.lcdText.animate) {
+          refs.parts.lcdText.animate([{ opacity: 0.25 }, { opacity: 1 }], { duration: CP.dur.fast, easing: 'ease-out' });
+        }
+      }
       if (drawn.alarm !== lcd.alarm) {
         drawn.alarm = lcd.alarm;
         refs.parts.alarm.classList.toggle('is-on', !!lcd.alarm);
@@ -777,7 +814,7 @@
         setTxt('adc1', 'canale 0');
         setTxt('adc2', F.num2(M.adcVolts(sim.tc)) + ' V → ' + M.adcCode(sim.tc));
       }
-      setV(rd.on, F.hm(sim.t));
+      setV(rd.on, since(sim.t));
       setV(rd.cell, F.temp(M.measuredCell(sim)));
       setV(rd.evap, F.temp(M.measuredEvap(sim)));
       setV(rd.frost, Math.round(sim.frost * 100) + ' %');
@@ -887,16 +924,18 @@
           if (r.res === 'già acceso') return ['decidere', 'Fa troppo caldo?', 'Sopra ' + lim + ': il compressore è già acceso e continua a lavorare.'];
           return ['decidere', 'Fa troppo caldo?', T + ' è sopra ' + lim + ': la CPU decide COMP ← 1. Il compressore partirà quando il programma scriverà la porta P2, alla riga 010C.'];
         case '0108':
-          if (r.ok === false) return ['decidere', 'Fa abbastanza freddo?', st.want.comp ? T + ' è ancora sopra il SET, ' + set + ': il compressore continua a lavorare.' : 'Il compressore è fermo e ' + T + ' è sopra il SET: ripartirà solo sopra ' + lim + '. È l\'isteresi, che evita di accenderlo e spegnerlo di continuo.'];
+          if (r.ok === false) return ['decidere', 'Fa abbastanza freddo?', st.want.comp ? T + ' è ancora sopra il SET, ' + set + ': COMP resta a 1, c\'è ancora da raffreddare.' : 'Il compressore è fermo e ' + T + ' è sopra il SET: ripartirà solo sopra ' + lim + '. È l\'isteresi, che evita di accenderlo e spegnerlo di continuo.'];
           if (r.res === 'già spento') return ['decidere', 'Fa abbastanza freddo?', T + ' è al SET o sotto: il compressore è già fermo.'];
           return ['decidere', 'Fa abbastanza freddo?', T + ' ha raggiunto il SET, ' + set + ': la CPU decide COMP ← 0. Ripartirà solo sopra ' + lim + ': fra le due soglie c\'è l\'isteresi.'];
         case '010A': return ['decidere', 'La ventola segue il compressore', 'La ventola spinge l\'aria della cella sull\'evaporatore, ma solo con il compressore acceso e la porta chiusa. La CPU legge lo stato dell\'interruttore della porta e decide VENT ← ' + st.want.vent + '.'];
         case '010C': {
           const on = [];
           const off = [];
+          // le uscite nuove aspettano il pacchetto che arriva alla porta: qui si guardano quelle
+          const out = st === sim && tr.pendingOut ? tr.pendingOut : st.out;
           r.events.forEach((e) => {
             const k = e.slice(4);
-            if (e.indexOf('out-') === 0) (st.out[k] ? on : off).push(OUT_NAME[k]);
+            if (e.indexOf('out-') === 0) (out[k] ? on : off).push(OUT_NAME[k]);
           });
           let t = '';
           if (on.length) t += (on.length > 1 ? 'Si accendono ' : 'Si accende ') + listIt(on) + '. ';
@@ -911,7 +950,7 @@
         case '0124':
           if (r.res === 'RES ← 0') return ['sbrinare', 'Il ghiaccio è sciolto?', 'L\'evaporatore è arrivato a ' + F.temp(st.reg.Tev) + ': la CPU spegne la resistenza e rimette SBRINA a 0. Il timer ricomincia a contare 6 ore.'];
           if (r.res === 'già finito') return ['sbrinare', 'Il ghiaccio è sciolto?', 'Lo sbrinamento è già finito.'];
-          return ['sbrinare', 'Il ghiaccio è sciolto?', F.temp(st.reg.Tev) + ' è ancora sotto ' + F.temp(p.defrostEnd) + ': la resistenza resta accesa.'];
+          return ['sbrinare', 'Il ghiaccio è sciolto?', F.temp(st.reg.Tev) + ' è ancora sotto ' + F.temp(p.defrostEnd) + ': la resistenza resta accesa.' + (speed === 1 && running ? ' Per non aspettare minuti veri, porta il tempo a 60×.' : '')];
         case '0126': return ['sbrinare', 'Alle uscite', 'Salto alla riga 010C: le uscite dello sbrinamento vanno sulle porte come nel ciclo normale.'];
         case '0200': return ['interruzione', 'Routine della porta', st.door ? 'La porta è aperta: la CPU decide LUCE ← 1 e ferma la ventola, così l\'aria fredda non viene spinta fuori.' : 'La porta è già chiusa: questa riga non fa niente.'];
         case '0202': return ['interruzione', 'La porta è chiusa?', !st.door ? 'Sì: luce spenta e allarme azzerato.' : 'No, è aperta: questa riga non fa niente.'];
@@ -1232,18 +1271,24 @@
     function handleEvents(ev, src) {
       ev.forEach((e) => {
         if (e === 'set-reached') {
+          log('Cella a ' + F.temp(sim.p.set) + ' dopo ' + since(sim.t) + ': il compressore si ferma. Ripartirà sopra ' + F.temp(sim.p.set + sim.p.diff) + '.', 'ok');
+          ctx.say('La cella è arrivata al SET, ' + F.temp(sim.p.set) + ', dopo ' + since(sim.t) + '. Il compressore si ferma.');
           markGoal('set');
-          log('Cella a ' + F.temp(sim.p.set) + ' dopo ' + F.hm(sim.t) + ': il compressore si ferma. Ripartirà sopra ' + F.temp(sim.p.set + sim.p.diff) + '.', 'ok');
-          ctx.say('La cella è arrivata al SET, ' + F.temp(sim.p.set) + ', dopo ' + F.hm(sim.t) + '. Il compressore si ferma.');
         } else if (e === 'defrost-start') {
           log('Il timer ha contato 6 ore: SBRINA ← 1, comincia lo sbrinamento.');
           ctx.say('Sono passate 6 ore: comincia lo sbrinamento.');
           startedDefrost();
         } else if (e === 'defrost-end') {
-          markGoal('def');
           const min = Math.max(1, Math.round((sim.t - sim.defrostStart) / 60));
-          log('Sbrinamento finito in ' + min + ' min: ghiaccio sciolto, si riparte.', 'ok');
-          ctx.say('Sbrinamento finito in ' + min + ' minuti.');
+          if (sim.defrostFrost < 0.05) {
+            // evaporatore già sopra la soglia di fine sbrinamento: niente ghiaccio da sciogliere
+            log('Sbrinamento finito subito: sulle alette non c\'era ghiaccio. Riprova quando il frigo è freddo da un po\'.');
+            ctx.say('Sbrinamento finito subito: non c\'era ghiaccio da sciogliere.');
+          } else {
+            log('Sbrinamento finito in ' + min + ' min: ghiaccio sciolto, si riparte.', 'ok');
+            ctx.say('Sbrinamento finito in ' + min + ' minuti.');
+            markGoal('def');
+          }
         } else if (e === 'alarm') {
           log('Porta aperta da un minuto: scatta l\'allarme. Chiudila!', 'warn');
           ctx.say('Allarme: la porta è aperta da un minuto.');
@@ -1308,7 +1353,7 @@
     function showFast() {
       setCurrent(null);
       showPC(null);
-      showIns('ciclo principale, migliaia di volte al secondo');
+      showIns('ciclo principale a tutta velocità');
       showA('');
       say('Tempo veloce · 600×', 'Il chip corre da solo', 'A questa velocità il ciclo principale gira migliaia di volte per ogni secondo che vedi: impossibile seguirlo riga per riga. Torna a 1× o a 60× per il rallentatore.');
     }
@@ -1319,6 +1364,7 @@
       segSpeed.set(v);
       if (v === 600) {
         cancelTrace();
+        resetListing(); // i risultati del rallentatore sarebbero vecchi: a 600× lampeggiano solo le righe che cambiano qualcosa
         tr.pc = '0100';
         tr.isr = null;
         tr.irq = [];
@@ -1425,7 +1471,7 @@
 
     /* ---------- grafico della temperatura ---------- */
 
-    const chart = { svg: null, W: 1000, H: 214, ml: 104, mr: 16, pt: 12, ph: 116, lo: 0, hi: 26, win: SPEED_INFO[1].win, target: SPEED_INFO[1].win, samples: [], lastT: -1e9, last: null, dirty: true, lastDraw: 0, lastAria: 0 };
+    const chart = { svg: null, W: 1000, H: 214, ml: 104, mr: 54, pt: 12, ph: 116, lo: 0, hi: 26, win: SPEED_INFO[1].win, target: SPEED_INFO[1].win, samples: [], lastT: -1e9, last: null, dirty: true, lastDraw: 0, lastAria: 0 };
     const TRACKS = [['c', 'compressore', 140], ['d', 'porta aperta', 158], ['f', 'sbrinamento', 176]];
 
     function sample(force) {
@@ -1445,6 +1491,7 @@
       const W = size === 'sm' ? 360 : size === 'md' ? 760 : 1000;
       chart.W = W;
       chart.ml = size === 'sm' ? 90 : 104;
+      chart.mr = size === 'sm' ? 48 : 54;
       const svg = s('svg', { viewBox: '0 0 ' + W + ' ' + chart.H, class: P + 'chart-svg', role: 'img', 'aria-label': 'Grafico della temperatura della cella' });
       const pw = W - chart.ml - chart.mr;
       chart.gGrid = s('g', { class: P + 'ch-grid' });
@@ -1452,12 +1499,13 @@
       chart.band = s('rect', { x: chart.ml, width: pw, class: P + 'ch-band' });
       chart.setLine = s('line', { x1: chart.ml, x2: W - chart.mr, class: P + 'ch-set' });
       chart.hiLine = s('line', { x1: chart.ml, x2: W - chart.mr, class: P + 'ch-hi' });
-      chart.setLbl = s('text', { x: chart.ml + 6, class: P + 'ch-lbl set' });
-      chart.hiLbl = s('text', { x: chart.ml + 6, class: P + 'ch-lbl' });
+      // le soglie hanno un cartellino nel margine destro, fuori dal grafico: niente sovrapposizioni con la curva
+      chart.setLbl = s('text', { x: W - chart.mr + 6, class: 'mono ' + P + 'ch-lbl set' });
+      chart.hiLbl = s('text', { x: W - chart.mr + 6, class: 'mono ' + P + 'ch-lbl' });
       chart.defBand = s('path', { class: P + 'ch-defband' });
       chart.path = s('path', { class: P + 'ch-temp' });
       chart.dot = s('circle', { r: 4.5, class: P + 'ch-dot' });
-      chart.dotLbl = s('text', { class: 'mono ' + P + 'ch-dotlbl', 'text-anchor': 'end' });
+      chart.dotLbl = s('text', { class: 'mono ' + P + 'ch-dotlbl', 'text-anchor': 'start' });
       chart.tracks = TRACKS.map((t) => ({
         k: t[0], y: t[2],
         path: s('path', { class: P + 'ch-trk k-' + t[0] }),
@@ -1467,7 +1515,9 @@
       const clip = s('clipPath', { id: P + 'chclip' }, s('rect', { x: chart.ml, y: 0, width: pw, height: chart.H }));
       const plot = s('g', { 'clip-path': 'url(#' + P + 'chclip)' }, chart.defBand, chart.band, chart.hiLine, chart.setLine, chart.path,
         chart.tracks.map((t) => t.path));
-      svg.append(s('defs', null, clip), chart.gGrid, chart.gTime, plot, chart.tracks.map((t) => [t.base, t.lbl]), chart.setLbl, chart.hiLbl, chart.dot, chart.dotLbl);
+      const trk = [];
+      chart.tracks.forEach((t) => trk.push(t.base, t.lbl));
+      svg.append.apply(svg, [s('defs', null, clip), chart.gGrid, chart.gTime, plot].concat(trk, [chart.setLbl, chart.hiLbl, chart.dot, chart.dotLbl]));
       chart.svg = svg;
       chartBox.append(svg);
       chart.dirty = true;
@@ -1545,10 +1595,13 @@
       c.setLine.setAttribute('y2', r1(ySet));
       c.hiLine.setAttribute('y1', r1(yTop));
       c.hiLine.setAttribute('y2', r1(yTop));
-      c.setLbl.setAttribute('y', r1(ySet + 14));
-      c.setLbl.textContent = 'SET ' + F.num1(set) + ' °C · si ferma';
-      c.hiLbl.setAttribute('y', r1(yTop - 5));
-      c.hiLbl.textContent = 'SET + DIFF ' + F.num1(top) + ' °C · riparte';
+      let ya = yTop + 4;
+      let yb = ySet + 4;
+      if (yb - ya < 13) { const mid = (ya + yb) / 2; ya = mid - 6.5; yb = mid + 6.5; }
+      c.hiLbl.setAttribute('y', r1(ya));
+      c.hiLbl.textContent = F.num1(top) + ' °C';
+      c.setLbl.setAttribute('y', r1(yb));
+      c.setLbl.textContent = F.num1(set) + ' °C';
 
       // curva, con un minimo e un massimo per ogni pixel
       let d = '';
@@ -1576,9 +1629,13 @@
       const yn = Y(sim.tc);
       c.dot.setAttribute('cx', r1(xn));
       c.dot.setAttribute('cy', r1(yn));
-      c.dotLbl.setAttribute('x', r1(xn - 9));
+      // l'etichetta del punto sta a sinistra, ma non sopra le scale dei gradi
+      const toLeft = xn - c.ml > 96;
+      c.dotLbl.setAttribute('text-anchor', toLeft ? 'end' : 'start');
+      c.dotLbl.setAttribute('x', r1(toLeft ? xn - 9 : xn + 9));
       c.dotLbl.setAttribute('y', r1(yn < c.pt + 18 ? yn + 18 : yn - 9));
-      c.dotLbl.textContent = F.temp(sim.tc);
+      // lo stesso numero del display e dell'indicatore «Cella»: quello misurato dal chip
+      c.dotLbl.textContent = F.temp(M.measuredCell(sim));
 
       // tracce digitali e bande dello sbrinamento
       const runs = (key) => {
