@@ -209,7 +209,7 @@
 .qz-count b, .qz-points b { color: var(--ink); font-variant-numeric: tabular-nums; }
 .qz-streak { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px 3px 6px; border-radius: 999px; font-weight: 800; font-size: .82rem; color: #7a4a00; background: #ffe4a3; }
 .qz-streak[hidden] { display: none; }
-.qz-trace { line-height: 0; }
+.qz-tracebox { line-height: 0; }
 .qz-trace-svg { width: 100%; height: auto; max-height: 52px; display: block; }
 .qz-trace-svg.big { max-height: none; }
 .qz-trace-bg { fill: var(--scope-bg); }
@@ -302,7 +302,7 @@
 .qz-ink .qz-box-mem { fill: color-mix(in srgb, var(--trace-3) 12%, var(--surface)); }
 .qz-ink .qz-box-alu { fill: color-mix(in srgb, var(--trace-2) 18%, var(--surface)); }
 .qz-ink .qz-cell { fill: color-mix(in srgb, var(--trace-3) 22%, var(--surface)); stroke-width: 1; }
-.qz-ink .qz-level { fill: color-mix(in srgb, var(--accent) calc(34% - var(--l) * 6%), var(--surface)); }
+.qz-ink .qz-tier { fill: color-mix(in srgb, var(--accent) calc(34% - var(--l) * 6%), var(--surface)); }
 .qz-ink .qz-link { stroke-width: 1.8; }
 .qz-box-t { font: 600 11.5px var(--font); }
 .qz-box-h { font: 800 12.5px var(--font); letter-spacing: .04em; }

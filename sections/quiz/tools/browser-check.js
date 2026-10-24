@@ -7,9 +7,10 @@
  *   risposta giusta deve essere accettata (e una sbagliata respinta);
  * - medaglie, ripasso degli errori, esame finale, tastiera e link "rileggi il capitolo".
  * Non fa parte di `node --test` perché serve un browser:
- *   NODE_PATH=$(npm root -g) node sections/quiz/tools/browser-check.js [--root <cartella>] [--shots <cartella>] [--quick]
+ *   NODE_PATH=$(npm root -g) node sections/quiz/tools/browser-check.js [--root <cartella>] [--shots <cartella>] [--quick] [--bank <slug>]
  * --root è la cartella da servire (di solito la radice del repo), --shots salva le
- * schermate, --quick prova solo il primo giro di ogni capitolo.
+ * schermate, --quick prova solo il primo giro di ogni capitolo, --bank prova solo
+ * le domande di una banca.
  */
 'use strict';
 
@@ -33,6 +34,7 @@ const opt = (name, def) => {
 const ROOT = path.resolve(opt('--root', path.join(__dirname, '..', '..', '..')));
 const SHOTS = opt('--shots', null);
 const QUICK = argv.includes('--quick');
+const ONLY = opt('--bank', null);
 const PAGE = '/sections/quiz/index.html';
 
 const MIME = {
@@ -197,15 +199,31 @@ async function cardNumber(page) {
 
 // Gioca un giro intero all'indirizzo #hash. mode: right | wrong | keys (giusto, da tastiera dove si può).
 async function playRun(page, hash, mode, onType) {
+  // Con lo stesso indirizzo non scatta hashchange: prima si torna alla pagina iniziale.
+  if (await page.evaluate((h) => location.hash === '#' + h, hash)) {
+    await page.evaluate(() => { location.hash = ''; });
+    await page.waitForSelector('.qz-hero');
+  }
   await page.evaluate((h) => { location.hash = h; }, hash);
   const results = [];
   let prev = null;
   for (let step = 0; step < 40; step++) {
-    await page.waitForFunction((p) => {
-      if (document.querySelector('.qz-result')) return true;
-      const c = document.querySelectorAll('.qz-stage .qz-card');
-      return c.length === 1 && !c[0].querySelector('.qz-feedback') && c[0].querySelector('.qz-qn').textContent !== p;
-    }, prev, { timeout: 15000 });
+    try {
+      await page.waitForFunction((p) => {
+        if (document.querySelector('.qz-result')) return true;
+        const c = document.querySelectorAll('.qz-stage .qz-card');
+        return c.length === 1 && !c[0].querySelector('.qz-feedback') && c[0].querySelector('.qz-qn').textContent !== p;
+      }, prev, { timeout: 15000 });
+    } catch (e) {
+      const seen = await page.evaluate(() => ({
+        hash: location.hash,
+        cards: document.querySelectorAll('.qz-stage .qz-card').length,
+        text: (document.querySelector('main') || document.body).innerText.replace(/\s+/g, ' ').slice(0, 300),
+      }));
+      fail(hash + ': dopo la domanda ' + prev + ' non arriva la successiva (' + JSON.stringify(seen) + ')');
+      await shot(page, 'bloccato-' + hash.replace(/\W+/g, '-'), true);
+      return results;
+    }
     if (await page.$('.qz-result')) break;
     prev = await cardNumber(page);
     const plan = await page.evaluate(answerInPage, mode === 'wrong' ? 'wrong' : 'right');
@@ -275,6 +293,7 @@ async function everyQuestion(browser, base) {
   })));
   const typesShot = new Set();
   for (const b of banks) {
+    if (ONLY && b.slug !== ONLY) continue;
     const done = new Set();
     for (const ch of b.chapters) {
       for (let round = 0; round < (QUICK ? 1 : 6); round++) {
@@ -394,7 +413,8 @@ async function hub(browser, origin) {
     buttons: [...document.querySelectorAll('a[href^="quiz/index.html#"]')].map((a) => a.textContent),
   }));
   if (info.quiz) pass('la scheda della sezione 8 è pronta'); else fail('l\'hub non vede la sezione 8');
-  if (info.buttons.length && info.buttons.every((t) => /^Quiz · \d+ domande$/.test(t))) pass('pulsanti nell\'hub: ' + info.buttons.join(', '));
+  if (!info.buttons.length) console.log('  · nessun\'altra sezione registrata: pulsanti "Quiz · N domande" non verificabili');
+  else if (info.buttons.every((t) => /^Quiz · \d+ domande$/.test(t))) pass('pulsanti nell\'hub: ' + info.buttons.join(', '));
   else fail('pulsanti del quiz nell\'hub: ' + JSON.stringify(info.buttons));
   await shot(page, 'hub', true);
   await ctx.close();
@@ -405,10 +425,12 @@ async function hub(browser, origin) {
   const base = 'http://127.0.0.1:' + server.address().port + PAGE;
   const browser = await chromium.launch();
   try {
-    await landing(browser, base);
+    if (!ONLY) await landing(browser, base);
     await everyQuestion(browser, base);
-    await journeys(browser, base);
-    await hub(browser, base.replace(PAGE, ''));
+    if (!ONLY) {
+      await journeys(browser, base);
+      await hub(browser, base.replace(PAGE, ''));
+    }
   } catch (e) {
     fail('interrotto: ' + (e && e.stack || e));
   } finally {

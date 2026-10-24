@@ -1,0 +1,422 @@
+/*
+ * Banca domande del quiz: sezione 3, Elettronica avanzata.
+ * Spettro e armoniche, linee di trasmissione, segnali differenziali, radio,
+ * conversione analogico-digitale, clock e PLL, elettronica di potenza, MEMS,
+ * fotonica ed elettronica quantistica: quattro domande per capitolo.
+ * I capitoli sono le ancore delle pagine della sezione; il formato delle
+ * domande è descritto in sections/quiz/README.md.
+ */
+(function (root) {
+  'use strict';
+  root.QuizBank.register({
+    slug: 'elettronica-avanzata',
+    number: 3,
+    title: 'Elettronica avanzata',
+    subtitle: 'Segnali veloci, radio, conversione, potenza e frontiere',
+    chapters: [
+      { id: 'fourier', title: 'Fourier e lo spettro' },
+      { id: 'linee', title: 'Linee di trasmissione' },
+      { id: 'differenziale', title: 'Segnali differenziali' },
+      { id: 'radio', title: 'Radio e modulazione' },
+      { id: 'conversione', title: 'Conversione analogico-digitale' },
+      { id: 'clock', title: 'Clock, quarzi e PLL' },
+      { id: 'potenza', title: 'Elettronica di potenza' },
+      { id: 'mems', title: 'MEMS' },
+      { id: 'fotonica', title: 'Fotonica' },
+      { id: 'quantistica', title: 'Elettronica quantistica' },
+    ],
+    questions: [
+      // ------------------------------------------------------------ Fourier e lo spettro
+      {
+        id: 'ea-01', level: 1, topic: 'Serie di Fourier', chapter: 'fourier', type: 'choice',
+        q: 'Secondo Fourier, come si può costruire un\'onda quadra come quella in figura?',
+        figure: { kind: 'wave', shape: 'square', cycles: 3 },
+        options: [
+          'Sommando tante sinusoidi di frequenze diverse',
+          'Sommando tante sinusoidi della stessa frequenza',
+          'Moltiplicando tra loro due sinusoidi uguali',
+          'Sommando una sinusoide e una tensione continua',
+        ],
+        answer: 0,
+        why: 'Studiando come si propaga il calore, all\'inizio dell\'Ottocento, Joseph Fourier mostrò che un segnale periodico si può scrivere come somma di sinusoidi. L\'onda quadra è la fondamentale più le armoniche a 3, 5, 7 volte la sua frequenza, e così via.',
+      },
+      {
+        id: 'ea-02', level: 1, topic: 'Lo spettro', chapter: 'fourier', type: 'choice',
+        q: 'In figura c\'è una sinusoide pura. Che cosa mostra il suo spettro, cioè il grafico delle frequenze che la compongono?',
+        figure: { kind: 'wave', shape: 'sine', cycles: 3 },
+        options: [
+          'Una sola riga, alla frequenza della sinusoide',
+          'Una riga per ogni armonica dispari, sempre più bassa',
+          'Una fascia continua che copre tutte le frequenze',
+          'Due righe, alla frequenza della sinusoide e al doppio',
+        ],
+        answer: 0,
+        why: 'Una sinusoide pura contiene una sola frequenza: nello spettro c\'è una sola riga. Molti oscilloscopi digitali calcolano lo spettro con la FFT (Fast Fourier Transform), l\'algoritmo veloce pubblicato da Cooley e Tukey nel 1965.',
+      },
+      {
+        id: 'ea-03', level: 2, topic: 'Armoniche dispari', chapter: 'fourier', type: 'truefalse',
+        q: 'Un\'onda quadra simmetrica, alta e bassa per tempi uguali, contiene solo la fondamentale e le armoniche dispari: 3, 5, 7 volte la sua frequenza, e così via.',
+        answer: true,
+        why: 'Per la simmetria dell\'onda le armoniche pari si annullano. Le dispari diventano sempre più deboli: la terza ha un terzo dell\'ampiezza della fondamentale, la quinta un quinto, la settima un settimo.',
+      },
+      {
+        id: 'ea-04', level: 3, topic: 'Armoniche e filtri', chapter: 'fourier', type: 'choice',
+        q: 'Un\'onda quadra a 1 kHz, che va da −1 V a +1 V, entra in un filtro passa-basso ideale che elimina tutte le frequenze sopra i 4 kHz. Quali frequenze escono dal filtro?',
+        options: ['1 kHz e 3 kHz', '1, 2, 3 e 4 kHz', 'Solo 1 kHz', '2 kHz e 4 kHz'],
+        answer: 0,
+        why: 'L\'onda quadra contiene solo la fondamentale e le armoniche dispari: 1, 3, 5, 7 kHz e così via. Sotto i 4 kHz restano 1 kHz e 3 kHz: in uscita c\'è un\'onda con gli spigoli arrotondati, a metà tra sinusoide e onda quadra.',
+      },
+
+      // ------------------------------------------------------------ linee di trasmissione
+      {
+        id: 'ea-05', level: 1, topic: 'Impedenza caratteristica', chapter: 'linee', type: 'match',
+        q: 'Abbina ogni impedenza caratteristica al cavo che la usa di solito.',
+        pairs: [
+          ['50 Ω', 'Coassiale di radio e strumenti'],
+          ['75 Ω', 'Coassiale dell\'antenna TV'],
+          ['100 Ω', 'Coppia intrecciata del cavo Ethernet'],
+        ],
+        why: 'Il 50 Ω è lo standard di radiotrasmettitori e strumenti, il 75 Ω di TV e video; le coppie intrecciate del cavo Ethernet hanno 100 Ω differenziali. L\'impedenza caratteristica dipende dalla forma del cavo e dall\'isolante, non dalla lunghezza.',
+      },
+      {
+        id: 'ea-06', level: 2, topic: 'Terminazione', chapter: 'linee', type: 'choice',
+        q: 'Perché in fondo a una linea da 50 Ω si mette spesso un resistore da 50 Ω?',
+        options: [
+          'Per assorbire il segnale senza riflessioni',
+          'Per limitare la corrente che scorre nel cavo',
+          'Per scaricare a terra i disturbi esterni',
+          'Per alzare la tensione che arriva in fondo',
+        ],
+        answer: 0,
+        why: 'Una linea chiusa sulla sua impedenza caratteristica si comporta come se fosse infinitamente lunga: il segnale finisce nel resistore e non torna indietro. Senza questo adattamento, gli echi riflessi deformano i fronti dei segnali veloci.',
+      },
+      {
+        id: 'ea-07', level: 2, topic: 'Velocità nel cavo', chapter: 'linee', type: 'truefalse',
+        q: 'In un cavo coassiale il segnale viaggia alla stessa velocità della luce nel vuoto, cioè a circa 300 000 km/s.',
+        answer: false,
+        why: 'L\'isolante rallenta l\'onda: nei cavi comuni il segnale viaggia a circa 2/3 della velocità della luce, cioè a circa 200 000 km/s. Sono circa 20 cm per nanosecondo: 1 m di cavo ritarda il segnale di circa 5 ns.',
+      },
+      {
+        id: 'ea-08', level: 3, topic: 'Riflessioni', chapter: 'linee', type: 'choice',
+        q: 'Su un cavo da 50 Ω viaggia un gradino di 1 V. In fondo al cavo c\'è un carico da 150 Ω. Quanto vale il gradino riflesso che torna verso il generatore?',
+        options: ['+0,5 V', '−0,5 V', '+1 V', '0 V'],
+        answer: 0,
+        why: 'Il coefficiente di riflessione vale Γ = (R − Z₀) / (R + Z₀) = (150 − 50) / (150 + 50) = 0,5: torna indietro un gradino di 0,5 V, positivo perché il carico supera i 50 Ω. Con un carico da 50 Ω non tornerebbe niente.',
+      },
+
+      // ------------------------------------------------------------ segnali differenziali
+      {
+        id: 'ea-09', level: 1, topic: 'Segnale differenziale', chapter: 'differenziale', type: 'choice',
+        q: 'In figura i fili D+ e D− portano gli stessi bit con due segnali opposti. Che cosa guarda il ricevitore per decidere se un bit è 1 o 0?',
+        figure: { kind: 'wave', shape: 'differential' },
+        options: [
+          'La differenza tra D+ e D−',
+          'Solo D+, rispetto alla massa',
+          'La somma di D+ e D−',
+          'Quale dei due fili si muove prima',
+        ],
+        answer: 0,
+        why: 'Il ricevitore calcola la differenza D+ − D−, cioè guarda quale dei due fili è più alto: così distingue 1 e 0. Un disturbo che si somma allo stesso modo ai due fili non cambia la differenza, e quindi non cambia il bit letto.',
+      },
+      {
+        id: 'ea-10', level: 1, topic: 'Doppino intrecciato', chapter: 'differenziale', type: 'truefalse',
+        q: 'Nel doppino i due fili sono intrecciati perché un disturbo esterno li colpisca quasi allo stesso modo.',
+        answer: true,
+        why: 'Con l\'intreccio i due fili si scambiano continuamente di posto: in media stanno alla stessa distanza dalla sorgente del disturbo e raccolgono lo stesso rumore. Questo rumore di modo comune viene poi cancellato dal ricevitore differenziale.',
+      },
+      {
+        id: 'ea-11', level: 2, topic: 'Collegamenti differenziali', chapter: 'differenziale', type: 'match',
+        q: 'Abbina ogni collegamento differenziale al posto in cui lo trovi più spesso.',
+        pairs: [
+          ['LVDS', 'Pannello LCD di uno schermo'],
+          ['RS-485', 'Macchine di una fabbrica'],
+          ['CAN', 'Centraline di un\'automobile'],
+          ['USB', 'Mouse e chiavette del PC'],
+          ['PCI Express', 'Scheda video dentro il PC'],
+        ],
+        why: 'Tutti usano coppie di fili con segnali opposti: LVDS porta le immagini ai pannelli LCD, RS-485 collega le macchine industriali anche a 1200 m, CAN unisce le centraline delle auto, USB le periferiche e PCI Express le schede dentro il PC.',
+      },
+      {
+        id: 'ea-12', level: 2, topic: 'Rumore di modo comune', chapter: 'differenziale', type: 'choice',
+        q: 'Il ricevitore differenziale lavora come questo amplificatore: guarda solo la differenza tra gli ingressi + e −. Sul + ci sono 1,4 V e sul − 1,0 V. Se un disturbo aggiunge 0,3 V a entrambi, che differenza vede?',
+        figure: { kind: 'symbol', name: 'opamp' },
+        options: ['0,4 V', '0,7 V', '1,0 V', '0,1 V'],
+        answer: 0,
+        why: 'Con il disturbo il + sale a 1,7 V e il − a 1,3 V: la differenza resta 1,7 − 1,3 = 0,4 V. Un disturbo uguale sui due fili si chiama di modo comune, e il ricevitore differenziale lo ignora.',
+      },
+
+      // ------------------------------------------------------------ radio e modulazione
+      {
+        id: 'ea-13', level: 1, topic: 'Modulazione AM', chapter: 'radio', type: 'choice',
+        q: 'Quale modulazione mostra la figura?',
+        figure: { kind: 'wave', shape: 'am' },
+        options: [
+          'Modulazione di ampiezza (AM)',
+          'Modulazione di frequenza (FM)',
+          'Modulazione di fase (PM)',
+          'Modulazione a larghezza d\'impulso (PWM)',
+        ],
+        answer: 0,
+        why: 'La portante oscilla sempre alla stessa frequenza, ma la sua ampiezza segue il segnale da trasmettere: è la modulazione di ampiezza. La usano le radio in onde medie e lunghe; è semplice da ricevere, ma i disturbi elettrici si sommano proprio all\'ampiezza.',
+      },
+      {
+        id: 'ea-14', level: 1, topic: 'Lunghezza d\'onda', chapter: 'radio', type: 'number',
+        q: 'Una stazione FM trasmette a 100 MHz. Quanto è lunga la sua onda, in m? Usa λ = c / f, con c = 300 000 km/s.',
+        value: 3, unit: 'm', tolerance: 0.05,
+        why: 'λ = c / f = 300 000 000 m/s / 100 000 000 Hz = 3 m. Un\'antenna a mezz\'onda per questa frequenza, come un dipolo, è lunga circa 1,5 m.',
+      },
+      {
+        id: 'ea-15', level: 2, topic: 'Modulazione FM', chapter: 'radio', type: 'choice',
+        q: 'La figura mostra un segnale FM. Perché la radio FM è meno disturbata dai temporali e dai motori elettrici rispetto alla AM?',
+        figure: { kind: 'wave', shape: 'fm' },
+        options: [
+          'I disturbi cambiano l\'ampiezza, che in FM non conta',
+          'La FM usa onde più lunghe, che aggirano gli ostacoli',
+          'La FM trasmette con molta più potenza della AM',
+          'La FM usa antenne più grandi e più sensibili',
+        ],
+        answer: 0,
+        why: 'Fulmini, motori e scintille disturbano soprattutto l\'ampiezza del segnale. In FM l\'informazione sta nella frequenza, che si fa più fitta o più rada: il ricevitore taglia via le variazioni di ampiezza e, con loro, gran parte dei disturbi.',
+      },
+      {
+        id: 'ea-16', level: 2, topic: 'Storia della radio', chapter: 'radio', type: 'order',
+        q: 'Dalla teoria alla radio di tutti i giorni: metti questi fatti in ordine cronologico.',
+        items: [
+          'Maxwell prevede le onde elettromagnetiche',
+          'Hertz produce e rileva le onde in laboratorio',
+          'Marconi trasmette i primi segnali senza fili',
+          'Un segnale di Marconi attraversa l\'Atlantico',
+          'Nascono le prime stazioni radio per il pubblico',
+        ],
+        ends: ['Più antico', 'Più recente'],
+        why: 'Maxwell previde le onde con le sue equazioni, intorno al 1865; Hertz le produsse e le rilevò tra il 1886 e il 1888. Marconi trasmise a Pontecchio, vicino a Bologna, nel 1895 e attraverso l\'Atlantico nel 1901. Le prime stazioni per il pubblico nacquero intorno al 1920.',
+      },
+
+      // ------------------------------------------------------------ conversione analogico-digitale
+      {
+        id: 'ea-17', level: 1, topic: 'Campionamento', chapter: 'conversione', type: 'choice',
+        q: 'Un ADC misura il segnale a intervalli regolari, come i punti in figura. Un CD audio lo fa a 44,1 kHz: che cosa significa?',
+        figure: { kind: 'wave', shape: 'sampled', cycles: 2 },
+        options: [
+          'Misura il suono 44 100 volte al secondo',
+          'Registra suoni fino a 44 100 Hz',
+          'Divide la tensione in 44 100 livelli',
+          'Salva 44 100 byte per ogni secondo di musica',
+        ],
+        answer: 0,
+        why: 'Campionare a 44,1 kHz vuol dire prendere 44 100 campioni al secondo. Per il teorema di Nyquist-Shannon il CD riproduce suoni fino a circa 22 kHz, oltre il limite dell\'udito (circa 20 kHz). Ogni campione è un numero a 16 bit: 65 536 livelli possibili.',
+      },
+      {
+        id: 'ea-18', level: 1, topic: 'Teorema di Nyquist', chapter: 'conversione', type: 'number',
+        q: 'Vuoi registrare suoni con frequenze fino a 20 kHz. Secondo il teorema di Nyquist-Shannon, quale valore deve superare la frequenza di campionamento, in kHz?',
+        value: 40, unit: 'kHz', tolerance: 0.5,
+        why: 'Bisogna campionare a più del doppio della frequenza più alta: fc > 2 × 20 kHz = 40 kHz. Il CD usa 44,1 kHz: il margine in più lascia spazio al filtro che elimina le frequenze sopra i 20 kHz.',
+      },
+      {
+        id: 'ea-19', level: 2, topic: 'Risoluzione e LSB', chapter: 'conversione', type: 'number',
+        q: 'Un ADC a 10 bit misura tensioni da 0 a 5 V. Quanto vale un LSB, cioè il gradino di tensione più piccolo che sa distinguere, in mV?',
+        value: 4.88, unit: 'mV', tolerance: 0.05,
+        why: 'Con 10 bit ci sono 2¹⁰ = 1024 livelli: un LSB vale 5 V / 1024 ≈ 0,00488 V ≈ 4,88 mV. È l\'ADC di Arduino Uno, di tipo SAR: trova il valore in 10 passi, decidendo un bit alla volta, dal più significativo.',
+      },
+      {
+        id: 'ea-20', level: 3, topic: 'Aliasing', chapter: 'conversione', type: 'choice',
+        q: 'Una sinusoide a 900 Hz viene campionata a 1 kHz, senza filtro anti-aliasing. Che frequenza sembra avere il segnale ricostruito dai campioni?',
+        options: ['100 Hz', '900 Hz', '450 Hz', '1,9 kHz'],
+        answer: 0,
+        why: 'Servirebbe campionare a più di 2 × 900 Hz = 1,8 kHz. A 1 kHz c\'è aliasing: il segnale si ripiega e compare a 1000 − 900 = 100 Hz. È lo stesso effetto per cui, nei film, le ruote delle carrozze sembrano girare piano o all\'indietro.',
+      },
+
+      // ------------------------------------------------------------ clock, quarzi e PLL
+      {
+        id: 'ea-21', level: 1, topic: 'Il quarzo', chapter: 'clock', type: 'choice',
+        q: 'Quale componente rappresenta questo simbolo?',
+        figure: { kind: 'symbol', name: 'crystal' },
+        options: ['Un quarzo', 'Un condensatore', 'Un fusibile', 'Un resistore'],
+        answer: 0,
+        why: 'È il quarzo: una lamina di cristallo tra due elettrodi. Per effetto piezoelettrico vibra a una frequenza precisissima; quello degli orologi vibra a 32 768 Hz, cioè 2¹⁵ Hz: dimezzando la frequenza 15 volte si ottiene esattamente 1 Hz.',
+      },
+      {
+        id: 'ea-22', level: 1, topic: 'Periodo del clock', chapter: 'clock', type: 'number',
+        q: 'Il segnale in figura è il clock di un microcontrollore. Quanto dura un periodo, in ns? Ricorda che T = 1 / f.',
+        figure: { kind: 'wave', shape: 'square', cycles: 4, label: 'CLK · 50 MHz' },
+        value: 20, unit: 'ns', tolerance: 0.1,
+        why: 'T = 1 / f = 1 / 50 000 000 Hz = 0,02 µs = 20 ns. In ogni periodo il clock fa un fronte di salita e uno di discesa, e in un secondo i periodi sono 50 milioni.',
+      },
+      {
+        id: 'ea-23', level: 2, topic: 'Jitter e skew', chapter: 'clock', type: 'choice',
+        q: 'Che cos\'è il jitter di un segnale di clock?',
+        options: [
+          'Il tremolio dei fronti attorno all\'istante ideale',
+          'Il ritardo fisso tra due copie dello stesso clock',
+          'La parte del periodo in cui il clock resta alto',
+          'La lenta deriva della frequenza dovuta al calore',
+        ],
+        answer: 0,
+        why: 'Il jitter è la piccola incertezza, spesso di pochi picosecondi, sul momento in cui arriva ogni fronte. Il ritardo tra due copie dello stesso clock in punti diversi del circuito si chiama invece skew; la parte del periodo a livello alto è il duty cycle.',
+      },
+      {
+        id: 'ea-24', level: 3, topic: 'PLL', chapter: 'clock', type: 'choice',
+        q: 'Un PLL riceve 25 MHz da un quarzo; nell\'anello di retroazione divide la frequenza d\'uscita per 40. A quale frequenza si aggancia il suo oscillatore?',
+        options: ['1 GHz', '625 kHz', '65 MHz', '40 MHz'],
+        answer: 0,
+        why: 'Il PLL corregge l\'oscillatore finché l\'uscita divisa per 40 non vale quanto il riferimento: fout / 40 = 25 MHz, quindi fout = 40 × 25 MHz = 1000 MHz = 1 GHz. Così un quarzo lento e stabile genera il clock veloce di un processore.',
+      },
+
+      // ------------------------------------------------------------ elettronica di potenza
+      {
+        id: 'ea-25', level: 1, topic: 'Convertitore boost', chapter: 'potenza', type: 'truefalse',
+        q: 'Un convertitore switching di tipo boost può dare in uscita una tensione più alta di quella che riceve in ingresso.',
+        answer: true,
+        why: 'Il boost accumula energia in un induttore mentre l\'interruttore è chiuso; quando si apre, la tensione dell\'induttore si somma a quella d\'ingresso. Così un power bank alza i 3,7 V della batteria al litio a 5 V. Il buck, invece, abbassa la tensione.',
+      },
+      {
+        id: 'ea-26', level: 2, topic: 'Rendimento', chapter: 'potenza', type: 'number',
+        q: 'Un regolatore lineare porta 12 V a 5 V per un carico che assorbe 1 A. Quanto vale il suo rendimento, in %?',
+        value: 41.7, unit: '%', tolerance: 0.5,
+        why: 'Nel regolatore lineare entra la stessa corrente che esce: η = (5 V × 1 A) / (12 V × 1 A) = 5 W / 12 W ≈ 41,7%. Gli altri (12 − 5) V × 1 A = 7 W diventano calore; un convertitore switching supera spesso il 90%.',
+      },
+      {
+        id: 'ea-27', level: 2, topic: 'Convertitore buck', chapter: 'potenza', type: 'number',
+        q: 'Il segnale PWM in figura comanda l\'interruttore di un convertitore buck alimentato a 12 V. Quanto vale circa la tensione d\'uscita, in V?',
+        figure: { kind: 'wave', shape: 'pwm', duty: 0.25, cycles: 4, label: '500 kHz' },
+        value: 3, unit: 'V', tolerance: 0.1,
+        why: 'L\'interruttore, di solito un MOSFET di potenza, resta chiuso per un quarto del periodo: duty cycle D = 25%. Nel buck Vout ≈ D × Vin = 0,25 × 12 V = 3 V; induttore e condensatore filtrano gli impulsi e lasciano passare la media.',
+      },
+      {
+        id: 'ea-28', level: 3, topic: 'GaN e SiC', chapter: 'potenza', type: 'choice',
+        q: 'I caricabatterie con transistor al nitruro di gallio (GaN) sono molto più piccoli di quelli al silicio. Quale proprietà del GaN lo permette?',
+        options: [
+          'Commuta più in fretta e con meno perdite',
+          'Commuta più lentamente e fa meno disturbi',
+          'Lavora senza bisogno di un trasformatore',
+          'Conduce il calore meglio del rame',
+        ],
+        answer: 0,
+        why: 'GaN e carburo di silicio (SiC) sono semiconduttori a banda proibita larga: i loro transistor commutano molto in fretta e sprecano poco. A frequenza più alta bastano induttori, trasformatori e condensatori più piccoli, e c\'è meno calore da smaltire.',
+      },
+
+      // ------------------------------------------------------------ MEMS
+      {
+        id: 'ea-29', level: 1, topic: 'Che cos\'è un MEMS', chapter: 'mems', type: 'choice',
+        q: 'Che cosa ha di speciale un MEMS rispetto a un normale chip?',
+        options: [
+          'Ha minuscole parti meccaniche che si muovono',
+          'È fatto di germanio invece che di silicio',
+          'Lavora con la luce invece che con la corrente',
+          'Funziona senza bisogno di alimentazione',
+        ],
+        answer: 0,
+        why: 'MEMS sta per Micro-Electro-Mechanical Systems, sistemi micro-elettro-meccanici: nel silicio si scolpiscono masse, molle e membrane di pochi micrometri, che si muovono davvero. Il chip misura il loro movimento e lo trasforma in un segnale elettrico.',
+      },
+      {
+        id: 'ea-30', level: 1, topic: 'MEMS di ogni giorno', chapter: 'mems', type: 'match',
+        q: 'Abbina ogni MEMS al lavoro che fa più spesso.',
+        pairs: [
+          ['Accelerometro', 'Sente l\'urto e fa scattare l\'airbag'],
+          ['Giroscopio', 'Misura la velocità di rotazione'],
+          ['Microfono MEMS', 'Capta la voce durante le telefonate'],
+          ['Sensore di pressione', 'Stima la quota a cui ti trovi'],
+          ['Specchi DLP', 'Formano l\'immagine nei proiettori'],
+        ],
+        why: 'L\'accelerometro sente gli urti, e anche la gravità per girare lo schermo; il giroscopio sente le rotazioni. Il sensore di pressione stima la quota dal calo della pressione dell\'aria. Nei proiettori DLP ogni pixel è un microspecchio che si inclina per accendersi o spegnersi.',
+      },
+      {
+        id: 'ea-31', level: 2, topic: 'Accelerometro e gravità', chapter: 'mems', type: 'truefalse',
+        q: 'L\'accelerometro di uno smartphone fermo sul tavolo misura un\'accelerazione nulla, perché il telefono non si muove.',
+        answer: false,
+        why: 'L\'accelerometro sente anche la gravità: da fermo misura circa 1 g, cioè 9,8 m/s², in verticale. È così che il telefono capisce come lo tieni e gira lo schermo. In caduta libera, invece, leggerebbe quasi zero.',
+      },
+      {
+        id: 'ea-32', level: 3, topic: 'Giroscopio MEMS', chapter: 'mems', type: 'choice',
+        q: 'Come fa il giroscopio MEMS di uno smartphone a misurare le rotazioni?',
+        options: [
+          'Una massa che vibra viene deviata dalla forza di Coriolis',
+          'Una minuscola trottola gira a migliaia di giri al secondo',
+          'Una bussola interna segue il campo magnetico terrestre',
+          'Una pallina di metallo rotola tra due contatti elettrici',
+        ],
+        answer: 0,
+        why: 'Nel chip una minuscola massa vibra avanti e indietro. Se il telefono ruota, la forza di Coriolis la spinge di lato, tanto più quanto più la rotazione è veloce, e degli elettrodi misurano lo spostamento. La bussola dello smartphone è un altro sensore: il magnetometro.',
+      },
+
+      // ------------------------------------------------------------ fotonica
+      {
+        id: 'ea-33', level: 1, topic: 'Fibra ottica', chapter: 'fotonica', type: 'choice',
+        q: 'Perché la luce resta dentro una fibra ottica anche quando la fibra fa una curva?',
+        options: [
+          'Per la riflessione totale tra nucleo e mantello',
+          'Perché il vetro è ricoperto da uno strato d\'argento',
+          'Perché il raggio laser è stretto e non si allarga',
+          'Perché la guaina nera assorbe la luce che sfugge',
+        ],
+        answer: 0,
+        why: 'Il nucleo di vetro ha un indice di rifrazione un po\' più alto del mantello che lo avvolge. La luce che colpisce il confine con un angolo radente viene riflessa tutta: è la riflessione totale interna, e funziona anche quando la fibra si piega dolcemente.',
+      },
+      {
+        id: 'ea-34', level: 2, topic: 'Fotodiodo', chapter: 'fotonica', type: 'choice',
+        q: 'In un collegamento in fibra ottica trovi il componente di questo simbolo. Quale?',
+        figure: { kind: 'symbol', name: 'photodiode' },
+        options: ['Un fotodiodo', 'Un LED', 'Un diodo laser', 'Un diodo Zener'],
+        answer: 0,
+        why: 'Le frecce entrano nel simbolo: il componente riceve la luce. È il fotodiodo, che in fondo alla fibra trasforma gli impulsi di luce in corrente. Nel LED e nel diodo laser, che la luce la emettono, le frecce escono.',
+      },
+      {
+        id: 'ea-35', level: 2, topic: 'Storia della fotonica', chapter: 'fotonica', type: 'order',
+        q: 'Dal laser ai cavi sotto l\'oceano: metti queste tappe in ordine cronologico.',
+        items: [
+          'Maiman accende il primo laser',
+          'Charles Kao propone le fibre di vetro per le comunicazioni',
+          'Corning produce la prima fibra a bassa perdita',
+          'Il primo cavo in fibra ottica attraversa l\'Atlantico',
+        ],
+        ends: ['Più antico', 'Più recente'],
+        why: 'Theodore Maiman costruì il laser a rubino nel 1960. Nel 1966 Kao calcolò che un vetro purissimo poteva portare la luce per chilometri (Nobel 2009); Corning ci riuscì nel 1970. Il cavo transatlantico TAT-8 entrò in servizio nel 1988.',
+      },
+      {
+        id: 'ea-36', level: 3, topic: 'Attenuazione in dB', chapter: 'fotonica', type: 'number',
+        q: 'Una fibra ottica attenua la luce di 0,2 dB per ogni chilometro. Dopo 50 km, quanta parte della potenza iniziale arriva in fondo, in %?',
+        value: 10, unit: '%', tolerance: 0.5,
+        why: 'La perdita totale è 0,2 dB/km × 50 km = 10 dB. Ogni 10 dB la potenza si divide per 10 (con 3 dB circa si dimezza): arriva 1/10 della potenza iniziale, cioè il 10%.',
+      },
+
+      // ------------------------------------------------------------ elettronica quantistica
+      {
+        id: 'ea-37', level: 1, topic: 'Effetto tunnel', chapter: 'quantistica', type: 'choice',
+        q: 'Se l\'isolante di un transistor è spesso pochi atomi, alcuni elettroni lo attraversano anche senza avere l\'energia per farlo. Come si chiama questo fenomeno?',
+        options: ['Effetto tunnel', 'Effetto Joule', 'Effetto fotoelettrico', 'Effetto piezoelettrico'],
+        answer: 0,
+        why: 'Per la meccanica quantistica un elettrone può attraversare una barriera sottilissima anche senza l\'energia per scavalcarla: è l\'effetto tunnel. Nei transistor più piccoli causa correnti di perdita ed è uno dei limiti alla miniaturizzazione.',
+      },
+      {
+        id: 'ea-38', level: 2, topic: 'Misura di un qubit', chapter: 'quantistica', type: 'truefalse',
+        q: 'Se misuri un qubit che si trova in sovrapposizione, leggi 0 e 1 nello stesso momento.',
+        answer: false,
+        why: 'Prima della misura il qubit è in una sovrapposizione di 0 e 1; quando lo misuri ottieni un solo valore, 0 oppure 1, con una certa probabilità, e la sovrapposizione si perde. Per questo un algoritmo quantistico deve rendere molto probabile la risposta giusta.',
+      },
+      {
+        id: 'ea-39', level: 2, topic: 'Concetti quantistici', chapter: 'quantistica', type: 'match',
+        q: 'Abbina ogni concetto alla sua descrizione.',
+        pairs: [
+          ['Sovrapposizione', 'Un qubit è un po\' 0 e un po\' 1 insieme'],
+          ['Entanglement', 'Due qubit danno misure legate, anche se lontani'],
+          ['Effetto tunnel', 'Un elettrone supera una barriera sottile'],
+          ['Giunzione Josephson', 'Due superconduttori divisi da un isolante'],
+        ],
+        why: 'Sovrapposizione ed entanglement sono le risorse dei computer quantistici. Nella giunzione Josephson, il cuore di molti qubit, coppie di elettroni passano per effetto tunnel da un superconduttore all\'altro; questi chip lavorano a pochi centesimi di grado sopra lo zero assoluto.',
+      },
+      {
+        id: 'ea-40', level: 3, topic: 'Storia della quantistica', chapter: 'quantistica', type: 'order',
+        q: 'Dal diodo tunnel ai computer quantistici: metti queste tappe in ordine cronologico.',
+        items: [
+          'Esaki costruisce il diodo tunnel',
+          'Josephson prevede l\'effetto che porta il suo nome',
+          'Feynman propone di simulare la natura con computer quantistici',
+          'Shor scopre come scomporre i numeri in fattori con i qubit',
+          'Google annuncia la supremazia quantistica con il chip Sycamore',
+        ],
+        ends: ['Più antico', 'Più recente'],
+        why: 'Esaki inventò il diodo tunnel alla fine degli anni \'50 e Josephson previde il suo effetto nel 1962: furono premiati con il Nobel del 1973. Feynman lanciò l\'idea all\'inizio degli anni \'80, Shor pubblicò il suo algoritmo nel 1994 e Google il suo esperimento nel 2019.',
+      },
+    ],
+  });
+})(typeof window !== 'undefined' ? window : globalThis);

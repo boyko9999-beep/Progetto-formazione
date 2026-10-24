@@ -858,7 +858,7 @@
         h('div', { class: 'qz-run-top' },
           h('div', { class: 'qz-run-title' }, h('span', { class: 'qz-dot', 'aria-hidden': 'true' }), h('strong', null, o.title), o.subtitle ? h('span', { class: 'qz-run-sub' }, o.subtitle) : null),
           h('div', { class: 'qz-run-meta' }, counter, streakEl, pointsEl, soundBtn, exitBtn)),
-        h('div', { class: 'qz-trace' }, tr.el)),
+        h('div', { class: 'qz-tracebox' }, tr.el)),
       stage, live,
       o.compact ? null : h('p', { class: 'qz-keys' }, 'Da tastiera: 1-4 o V/F per rispondere, Invio per confermare e andare avanti.'));
     container.innerHTML = '';

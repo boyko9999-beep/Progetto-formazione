@@ -431,6 +431,12 @@
       const others = len.filter((l, i) => i !== q.answer);
       if (others.length && right > 1.6 * Math.max(...others) && right - Math.max(...others) > 12) w.push(where + ': la risposta giusta è molto più lunga delle altre (si indovina)');
       if (q.options.length < 3) w.push(where + ': meglio 3 o 4 opzioni');
+      // L'etichetta si legge prima di rispondere: non deve nominare la risposta giusta.
+      const stems = (s) => String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
+        .split(/[^a-z0-9]+/).filter((x) => x.length > 3).map((x) => x.slice(0, 7));
+      const inRight = new Set(stems(q.options[q.answer]));
+      const known = new Set(stems(q.q).concat(q.options.filter((o, i) => i !== q.answer).flatMap(stems)));
+      if (isText(q.topic) && stems(q.topic).some((s) => inRight.has(s) && !known.has(s))) w.push(where + ': l\'etichetta (topic) rivela la risposta giusta');
     }
     if (isText(q.why) && q.why.trim().length < 25) w.push(where + ': spiegazione troppo corta');
     return w;

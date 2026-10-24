@@ -17,6 +17,11 @@
     return n;
   }
 
+  // Id unici per ogni disegno: due figure uguali sulla pagina (per esempio mentre una domanda
+  // lascia il posto alla successiva) non devono contendersi gradienti, ritagli e motivi.
+  let idSeq = 0;
+  const uniq = (name) => name + '-' + (++idSeq);
+
   function text(parent, x, y, str, attrs) {
     const t = s('text', Object.assign({ x: x, y: y }, attrs || {}), parent);
     t.textContent = str;
@@ -300,7 +305,7 @@
 
   const BAND_RGB = {
     nero: '#151515', marrone: '#7a4526', rosso: '#d12f2a', arancione: '#f07e22', giallo: '#f3cd22', verde: '#23944a',
-    blu: '#2a62cf', viola: '#8a4bc4', grigio: '#8b8e92', bianco: '#fbfbf8', oro: 'url(#qz-gold)', argento: 'url(#qz-silver)',
+    blu: '#2a62cf', viola: '#8a4bc4', grigio: '#8b8e92', bianco: '#fbfbf8', oro: '#c9a23a', argento: '#b9bec4',
   };
 
   function resistorFigure(f) {
@@ -311,22 +316,23 @@
       const lg = s('linearGradient', { id: id, x1: 0, y1: 0, x2: 0, y2: 1 }, defs);
       stops.forEach(([o, c]) => s('stop', { offset: o, 'stop-color': c }, lg));
     };
-    grad('qz-gold', [[0, '#f6e08a'], [0.45, '#c9a23a'], [1, '#8c6a14']]);
-    grad('qz-silver', [[0, '#f4f6f8'], [0.45, '#b9bec4'], [1, '#80868d']]);
-    grad('qz-body', [[0, 'rgba(255,255,255,.55)'], [0.35, 'rgba(255,255,255,0)'], [1, 'rgba(0,0,0,.22)']]);
-    const clip = s('clipPath', { id: 'qz-rclip' }, defs);
+    const id = { oro: uniq('qz-gold'), argento: uniq('qz-silver'), body: uniq('qz-body'), clip: uniq('qz-rclip') };
+    grad(id.oro, [[0, '#f6e08a'], [0.45, '#c9a23a'], [1, '#8c6a14']]);
+    grad(id.argento, [[0, '#f4f6f8'], [0.45, '#b9bec4'], [1, '#80868d']]);
+    grad(id.body, [[0, 'rgba(255,255,255,.55)'], [0.35, 'rgba(255,255,255,0)'], [1, 'rgba(0,0,0,.22)']]);
+    const clip = s('clipPath', { id: id.clip }, defs);
     const bodyPath = 'M60 26 C60 14 82 14 86 22 H174 C178 14 200 14 200 26 V58 C200 70 178 70 174 62 H86 C82 70 60 70 60 58 Z';
     s('path', { d: bodyPath }, clip);
     s('rect', { x: 0, y: 0, width: 260, height: 84, rx: 12, class: 'qz-plate' }, svg);
     s('path', { d: 'M8 42 H62 M198 42 H252', class: 'qz-wire-metal' }, svg);
     const five = bands.length === 5;
     s('path', { d: bodyPath, fill: five ? '#7fa8d6' : '#d8c08f' }, svg);
-    const g = s('g', { 'clip-path': 'url(#qz-rclip)' }, svg);
+    const g = s('g', { 'clip-path': 'url(#' + id.clip + ')' }, svg);
     const xs = five ? [80, 99, 118, 137, 172] : [84, 106, 128, 172];
     bands.forEach((c, i) => {
-      s('rect', { x: xs[i], y: 10, width: 11, height: 64, fill: BAND_RGB[c], class: c === 'bianco' ? 'qz-band-white' : '' }, g);
+      s('rect', { x: xs[i], y: 10, width: 11, height: 64, fill: id[c] ? 'url(#' + id[c] + ')' : BAND_RGB[c], class: c === 'bianco' ? 'qz-band-white' : '' }, g);
     });
-    s('path', { d: bodyPath, fill: 'url(#qz-body)' }, svg);
+    s('path', { d: bodyPath, fill: 'url(#' + id.body + ')' }, svg);
     s('path', { d: bodyPath, class: 'qz-resistor-edge' }, svg);
     return wrap('resistor', svg, f.caption);
   }
@@ -755,7 +761,8 @@
     const bh = 68;
     const svg = svgRoot(W, H, 'Chip in contenitore DIP con ' + n + ' piedini, ' + side + ' per lato; sopra c\'è scritto ' + f.label + (f.note ? ' ' + f.note : ''), 'qz-chip');
     const defs = s('defs', null, svg);
-    const lg = s('linearGradient', { id: 'qz-chipbody', x1: 0, y1: 0, x2: 0, y2: 1 }, defs);
+    const bodyId = uniq('qz-chipbody');
+    const lg = s('linearGradient', { id: bodyId, x1: 0, y1: 0, x2: 0, y2: 1 }, defs);
     s('stop', { offset: 0, 'stop-color': '#3a3f45' }, lg);
     s('stop', { offset: 1, 'stop-color': '#16191c' }, lg);
     for (let i = 0; i < side; i++) {
@@ -763,7 +770,7 @@
       s('rect', { x: x, y: by - 16, width: 7, height: 17, rx: 1.5, class: 'qz-pin' }, svg);
       s('rect', { x: x, y: by + bh - 1, width: 7, height: 17, rx: 1.5, class: 'qz-pin' }, svg);
     }
-    s('rect', { x: bx, y: by, width: bodyW, height: bh, rx: 5, fill: 'url(#qz-chipbody)' }, svg);
+    s('rect', { x: bx, y: by, width: bodyW, height: bh, rx: 5, fill: 'url(#' + bodyId + ')' }, svg);
     s('path', { d: 'M' + bx + ' ' + (by + bh / 2 - 9) + ' a9 9 0 0 1 0 18', class: 'qz-notch' }, svg);
     s('circle', { cx: bx + 17, cy: by + bh - 13, r: 4, class: 'qz-notch' }, svg);
     text(svg, bx + bodyW / 2, by + bh / 2 + (f.note ? 1 : 6), f.label, { class: 'qz-chip-t', 'text-anchor': 'middle' });
@@ -910,12 +917,13 @@
     const punched = f.text.split('').map(hollerith);
     const desc = 'Scheda perforata a 80 colonne. Fori, colonna per colonna: ' +
       punched.map((p, i) => 'colonna ' + (i + 1) + (p.length ? ' righe ' + p.join(' e ') : ' nessun foro')).join('; ');
-    const svg = svgRoot(W, H, desc, 'qz-card');
+    const svg = svgRoot(W, H, desc, 'qz-punch');
     const defs = s('defs', null, svg);
-    const pat = s('pattern', { id: 'qz-cardcol', x: left, y: 0, width: pitch, height: H, patternUnits: 'userSpaceOnUse' }, defs);
+    const colId = uniq('qz-cardcol');
+    const pat = s('pattern', { id: colId, x: left, y: 0, width: pitch, height: H, patternUnits: 'userSpaceOnUse' }, defs);
     for (let r = 0; r < 10; r++) text(pat, pitch / 2, top + (r + 2) * rowH + 4, String(r), { class: 'qz-card-digit', 'text-anchor': 'middle' });
     s('path', { d: 'M14 0 H' + (W - 6) + ' Q' + W + ' 0 ' + W + ' 6 V' + (H - 6) + ' Q' + W + ' ' + H + ' ' + (W - 6) + ' ' + H + ' H6 Q0 ' + H + ' 0 ' + (H - 6) + ' V14 Z', class: 'qz-card-paper' }, svg);
-    s('rect', { x: left, y: 0, width: W - 2 * left, height: H, fill: 'url(#qz-cardcol)' }, svg);
+    s('rect', { x: left, y: 0, width: W - 2 * left, height: H, fill: 'url(#' + colId + ')' }, svg);
     s('path', { d: 'M' + left + ' ' + (top + 2 * rowH - 6) + ' H' + (W - left), class: 'qz-card-line' }, svg);
     for (let c = 0; c < cols; c += 10) {
       text(svg, left + c * pitch + pitch / 2, H - 6, String(c + 1), { class: 'qz-card-num', 'text-anchor': 'middle' });
@@ -1010,7 +1018,7 @@
           const y1 = y0 + hgt - 4;
           const half0 = 20 + i * 26;
           const half1 = 20 + (i + 1) * 26 - 4;
-          s('path', { d: 'M' + (180 - half0) + ' ' + y0 + ' H' + (180 + half0) + ' L' + (180 + half1) + ' ' + y1 + ' H' + (180 - half1) + ' Z', class: 'qz-box qz-level', style: '--l:' + i }, g);
+          s('path', { d: 'M' + (180 - half0) + ' ' + y0 + ' H' + (180 + half0) + ' L' + (180 + half1) + ' ' + y1 + ' H' + (180 - half1) + ' Z', class: 'qz-box qz-tier', style: '--l:' + i }, g);
           text(g, 180, y0 + hgt / 2 + 3, name, { class: 'qz-box-t', 'text-anchor': 'middle' });
         });
         link(g, 30, 184, 30, 20);

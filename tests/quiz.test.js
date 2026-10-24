@@ -14,7 +14,8 @@ const C = require(path.join(QUIZ, 'core.js'));
 const SECTIONS = ['elettronica-base', 'elettronica-intermedia', 'elettronica-avanzata', 'porte-logiche',
   'chip-programmabili', 'storia-pc', 'programmazione', 'bus'];
 
-// Carica i file come la pagina, nell'ordine dei tag <script>, in un contesto separato.
+// Carica i file come la pagina, nell'ordine dei tag <script>, in un contesto separato
+// (gli array creati lì dentro si confrontano dopo averli copiati con Array.from).
 // Solo BusLab, la logica, section.js e le banche: le domande scritte dalle sezioni
 // (sections/<slug>/quiz.js) crescono per conto loro e non entrano nei conteggi.
 function loadPage() {
@@ -46,7 +47,7 @@ test('index.html carica tutte le banche, con bus-extra prima di bus', () => {
 });
 
 test('ci sono le banche delle 7 sezioni e di BusLab', () => {
-  assert.deepStrictEqual(page.banks.map((b) => b.slug).sort(), SECTIONS.slice().sort());
+  assert.deepStrictEqual(Array.from(page.banks, (b) => b.slug).sort(), SECTIONS.slice().sort());
   page.banks.forEach((b) => assert.ok(b.questions.length >= 30, b.slug + ' ha solo ' + b.questions.length + ' domande'));
 });
 
@@ -93,7 +94,7 @@ test('section.js si presenta all\'hub con i numeri giusti', () => {
   page.banks.forEach((b) => assert.strictEqual(def.domande[b.slug], b.questions.length, 'domande di ' + b.slug + ' in section.js'));
   assert.deepStrictEqual(Object.keys(def.domande).sort(), SECTIONS.slice().sort());
   def.capitoli.forEach((c) => assert.strictEqual(c.href, 'quiz/index.html#' + c.id));
-  assert.deepStrictEqual(def.capitoli.map((c) => c.id), SECTIONS.concat(['esame', 'tempo']));
+  assert.deepStrictEqual(Array.from(def.capitoli, (c) => c.id), SECTIONS.concat(['esame', 'tempo']));
 });
 
 test('section.js chiama Enciclopedia.register quando il registro c\'è', () => {
@@ -162,6 +163,16 @@ test('verifica delle risposte, tipo per tipo', () => {
   ok(logic, { A: 1, B: 0 }); ko(logic, { A: 1, B: 1 });
   assert.strictEqual(C.answerText(logic), 'A = 1, B = 0');
   assert.strictEqual(C.answerText(bits), '1010 (10)');
+});
+
+test('l\'etichetta della domanda non deve svelare la risposta', () => {
+  const q = (topic, extra) => Object.assign({ type: 'choice', topic: topic, q: 'Quale componente rappresenta questo simbolo?', options: ['Un induttore', 'Un resistore', 'Un condensatore'], answer: 0, why: 'Il simbolo dell\'induttore è una serie di spire.' }, extra);
+  const giveaway = (w) => w.some((m) => /rivela la risposta/.test(m));
+  assert.ok(giveaway(C.lintQuestion(q('Induttore'), 'x')));
+  assert.ok(!giveaway(C.lintQuestion(q('Simboli'), 'x')));
+  // Se la parola è già nella domanda o in un'altra opzione, l'etichetta non aggiunge niente.
+  assert.ok(!giveaway(C.lintQuestion(q('Induttore', { q: 'Che cosa immagazzina un induttore?' }), 'x')));
+  assert.ok(!giveaway(C.lintQuestion(q('Induttore', { options: ['Un induttore', 'Un induttore variabile', 'Un resistore'] }), 'x')));
 });
 
 test('un elenco da riordinare non parte mai già in ordine', () => {

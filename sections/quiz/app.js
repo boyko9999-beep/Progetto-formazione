@@ -116,7 +116,23 @@
     return n;
   }
 
-  const colorOf = (slug) => 'var(--qz-c-' + slug + ', var(--accent))';
+  // Colori, titoli dei capitoli e indirizzi vengono dalle sezioni stesse quando si sono
+  // registrate (vedi loadSections); altrimenti dalla banca del quiz.
+  const registered = (slug) => (root.Enciclopedia && root.Enciclopedia.get ? root.Enciclopedia.get(slug) : null);
+  function colorOf(slug) {
+    const s = registered(slug);
+    return (s && s.colore) || 'var(--qz-c-' + slug + ', var(--accent))';
+  }
+  function chapterTitle(slug, ch) {
+    const s = registered(slug);
+    const c = s && (s.capitoli || []).find((x) => x.id === ch.id);
+    return (c && c.titolo) || ch.title;
+  }
+  function chapterHref(slug, id) {
+    const E = root.Enciclopedia;
+    const path = E && registered(slug) ? E.link(slug, id) : slug + '/index.html#' + encodeURIComponent(id);
+    return '../' + path;
+  }
   const plural = (n, one, many) => n + ' ' + (n === 1 ? one : many);
   const notice = (text) => h('p', { class: 'qz-notice', role: 'status' }, text);
 
@@ -131,7 +147,7 @@
     const bank = bySlug[q.section];
     const ch = bank && (bank.chapters || []).find((c) => c.id === q.chapter);
     if (!ch) return null;
-    return { href: '../' + q.section + '/index.html#' + encodeURIComponent(ch.id), text: 'Rileggi il capitolo «' + ch.title + '»' };
+    return { href: chapterHref(q.section, ch.id), text: 'Rileggi il capitolo «' + chapterTitle(q.section, ch) + '»' };
   }
 
   /* ---------- una sessione ---------- */
@@ -227,12 +243,12 @@
     }
     if (!chapter) pool = bank.questions;
     const parts = [{ text: bank.title, href: '#' + bank.slug }];
-    if (chapter) parts.push({ text: chapter.title });
+    if (chapter) parts.push({ text: chapterTitle(bank.slug, chapter) });
     run({
       kind: chapter ? 'chapter' : 'section',
       key: chapter ? bank.slug + '/' + chapter.id : bank.slug,
       bank: bank,
-      title: chapter ? chapter.title : bank.title,
+      title: chapter ? chapterTitle(bank.slug, chapter) : bank.title,
       subtitle: chapter ? bank.title : bank.slug === 'bus' ? 'BusLab' : 'Sezione ' + bank.number,
       color: colorOf(bank.slug),
       questions: Core.pick(pool, chapter ? COUNT.chapter : COUNT.section, Math.random, { seen: seenSet() }),
@@ -288,7 +304,7 @@
         const best = store.best[b.slug + '/' + c.id];
         const done = best >= 75;
         return h('li', null, h('a', { href: '#' + b.slug + '/' + c.id, class: done ? 'done' : null, title: best != null ? 'Record ' + best + '%' : null },
-          c.title, done ? h('span', { class: 'qz-sr' }, ', superato') : null));
+          chapterTitle(b.slug, c), done ? h('span', { class: 'qz-sr' }, ', superato') : null));
       })));
   }
 
@@ -421,10 +437,25 @@
   root.addEventListener('pageshow', (e) => {
     if (e.persisted && !session) { store = load(); route(true); }
   });
+  // Come l'hub, carica il section.js di ogni sezione: un file che manca non blocca niente.
+  function loadSections() {
+    const E = root.Enciclopedia;
+    if (!E || !E.get) return Promise.resolve();
+    const slugs = banks.map((b) => b.slug).filter((slug) => slug !== 'bus' && !E.get(slug));
+    const all = Promise.all(slugs.map((slug) => new Promise((resolve) => {
+      const tag = document.createElement('script');
+      tag.src = '../' + slug + '/section.js';
+      tag.onload = () => resolve(true);
+      tag.onerror = () => { tag.remove(); resolve(false); };
+      document.head.appendChild(tag);
+    })));
+    return Promise.race([all, new Promise((resolve) => setTimeout(resolve, 1500))]);
+  }
+
   updateTopbar();
   if (!banks.length) {
     main.append(notice('Le domande non si sono caricate: prova a ricaricare la pagina.'));
     return;
   }
-  route(true);
+  loadSections().then(() => route(true));
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -101,7 +101,7 @@ Campi comuni:
 | `id` | nelle banche | identificatore unico, es. `eb-07` |
 | `type` | no (predefinito `choice`) | uno degli 8 tipi qui sotto |
 | `level` | nelle banche | 1 base, 2 medio, 3 esperto |
-| `topic` | nelle banche | etichetta breve (max 32 caratteri), es. `Legge di Ohm` |
+| `topic` | nelle banche | etichetta breve (max 32 caratteri), es. `Legge di Ohm`; si vede prima di rispondere, quindi non deve svelare la risposta |
 | `chapter` | consigliato | id del capitolo della sezione, es. `ohm` |
 | `q` | sì | testo della domanda (max 320 caratteri) |
 | `why` | sì | spiegazione mostrata dopo la risposta (max 600 caratteri) |
@@ -161,10 +161,13 @@ Ogni figura è un oggetto `figure: { kind, ... }` con una `caption` facoltativa.
 - Italiano semplice e corretto; una sola risposta difendibile, senza trabocchetti.
 - Distrattori plausibili, della stessa forma e lunghezza della risposta giusta;
   niente "tutte le precedenti" o "nessuna delle precedenti".
+- L'etichetta (`topic`) e la figura si vedono prima di rispondere: non devono
+  nominare la risposta (per "Che componente è?" l'etichetta è `Simboli`, non `Induttore`).
 - Date, nomi e numeri solo se consolidati; i calcoli si verificano due volte.
 - La spiegazione insegna qualcosa: la formula, la data, il perché.
 - Le domande interattive e le figure servono a far *usare* l'argomento, non a decorare.
 
 Prima di aprire una PR: `node sections/quiz/tools/check-banks.js` e `node --test`.
 Per la prova in browser serve Playwright:
-`NODE_PATH=$(npm root -g) node sections/quiz/tools/browser-check.js --shots /tmp/quiz-shots`.
+`NODE_PATH=$(npm root -g) node sections/quiz/tools/browser-check.js --shots /tmp/quiz-shots`
+(con `--bank <slug>` prova solo le domande di una banca).
