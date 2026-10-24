@@ -1,0 +1,117 @@
+/* Capitolo 6 · figura della bottiglia di Leida. */
+
+/* Toni dei materiali (stagnola, ottone, legno, vetro, scintilla); nel tema scuro sono smorzati. */
+.fig-condensatore-svg {
+  --fc-latta-ombra: #77828b;
+  --fc-latta: #b4bdc3;
+  --fc-latta-luce: #eef2f4;
+  --fc-ottone-luce: #fcebb6;
+  --fc-ottone: #cf9f3c;
+  --fc-ottone-ombra: #86601d;
+  --fc-legno: #a26c38;
+  --fc-legno-sopra: #c99459;
+  --fc-legno-bordo: #6e4520;
+  --fc-vetro: #4fae98;
+  --fc-scarica: #7a5cff;
+  --fc-nucleo: #4b2fd6;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .fig-condensatore-svg {
+    --fc-latta-ombra: #4e5860;
+    --fc-latta: #8e989f;
+    --fc-latta-luce: #d3dade;
+    --fc-ottone-luce: #f4dc96;
+    --fc-ottone: #c39331;
+    --fc-ottone-ombra: #6a4c16;
+    --fc-legno: #87592d;
+    --fc-legno-sopra: #a87643;
+    --fc-legno-bordo: #4a2e14;
+    --fc-vetro: #8ee0cb;
+    --fc-scarica: #b9a2ff;
+    --fc-nucleo: #f6f2ff;
+  }
+}
+:root[data-theme="dark"] .fig-condensatore-svg {
+  --fc-latta-ombra: #4e5860;
+  --fc-latta: #8e989f;
+  --fc-latta-luce: #d3dade;
+  --fc-ottone-luce: #f4dc96;
+  --fc-ottone: #c39331;
+  --fc-ottone-ombra: #6a4c16;
+  --fc-legno: #87592d;
+  --fc-legno-sopra: #a87643;
+  --fc-legno-bordo: #4a2e14;
+  --fc-vetro: #8ee0cb;
+  --fc-scarica: #b9a2ff;
+  --fc-nucleo: #f6f2ff;
+}
+
+.fig-condensatore-ombra { fill: color-mix(in srgb, var(--ink) 9%, transparent); }
+.fig-condensatore-t { fill: var(--muted); font: 600 11px var(--font); }
+.fig-condensatore-guide path { fill: none; stroke: color-mix(in srgb, var(--muted) 55%, transparent); stroke-width: 1; }
+.fig-condensatore-punti circle { fill: var(--muted); }
+
+/* vaso di vetro e armature di stagnola */
+.fig-condensatore-vetro { fill: color-mix(in srgb, var(--fc-vetro) 14%, transparent); }
+.fig-condensatore-sagoma { fill: none; stroke: color-mix(in srgb, var(--muted) 78%, transparent); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.fig-condensatore-riflesso { fill: none; stroke: color-mix(in srgb, var(--fc-vetro) 50%, transparent); stroke-width: 2.6; stroke-linecap: round; }
+.fig-condensatore-interna { fill: url(#fig-condensatore-g-interna); stroke: var(--fc-latta-ombra); stroke-width: 1; }
+.fig-condensatore-esterna { fill: url(#fig-condensatore-g-stagnola); }
+.fig-condensatore-orlo { fill: none; stroke: var(--fc-latta-ombra); stroke-width: 1.3; }
+.fig-condensatore-st-scuro { stop-color: var(--fc-latta-ombra); }
+.fig-condensatore-st-medio { stop-color: var(--fc-latta); }
+.fig-condensatore-st-chiaro { stop-color: var(--fc-latta-luce); }
+
+/* tappo di legno, asta, catenella e pomelli di ottone */
+.fig-condensatore-legno { fill: var(--fc-legno); stroke: var(--fc-legno-bordo); stroke-width: 1; stroke-linejoin: round; }
+.fig-condensatore-legno-sopra { fill: var(--fc-legno-sopra); stroke: var(--fc-legno-bordo); stroke-width: 1; }
+.fig-condensatore-asta { fill: none; stroke: var(--fc-ottone); stroke-width: 3.4; stroke-linecap: round; }
+.fig-condensatore-catena { fill: none; stroke: var(--fc-ottone-ombra); stroke-width: 2.4; stroke-linecap: round; stroke-dasharray: .1 3.3; }
+.fig-condensatore-sfera { fill: url(#fig-condensatore-g-ottone); stroke: var(--fc-ottone-ombra); stroke-width: .8; }
+.fig-condensatore-ot-luce { stop-color: var(--fc-ottone-luce); }
+.fig-condensatore-ot-medio { stop-color: var(--fc-ottone); }
+.fig-condensatore-ot-ombra { stop-color: var(--fc-ottone-ombra); }
+
+/* cariche uguali e opposte: + sull'armatura interna, − su quella esterna */
+.fig-condensatore-piu circle { fill: color-mix(in srgb, var(--q-f) 14%, var(--surface)); stroke: var(--q-f); stroke-width: 1.2; }
+.fig-condensatore-meno circle { fill: color-mix(in srgb, var(--q-i) 14%, var(--surface)); stroke: var(--q-i); stroke-width: 1.2; }
+.fig-condensatore-piu path { stroke: var(--q-f); stroke-width: 1.5; stroke-linecap: round; }
+.fig-condensatore-meno path { stroke: var(--q-i); stroke-width: 1.5; stroke-linecap: round; }
+
+/* scaricatore: arco di ottone con manico di vetro */
+.fig-condensatore-arco { transform-box: view-box; transform-origin: 200.5px 176px; }
+.fig-condensatore-ottone { fill: none; stroke: color-mix(in srgb, var(--fc-ottone) 70%, var(--fc-ottone-ombra)); stroke-width: 3.6; stroke-linecap: round; }
+.fig-condensatore-ottone-luce { fill: none; stroke: var(--fc-ottone-luce); stroke-width: 1.1; stroke-linecap: round; opacity: .8; }
+.fig-condensatore-manico-bordo { fill: none; stroke: color-mix(in srgb, var(--muted) 75%, transparent); stroke-width: 8; stroke-linecap: round; }
+.fig-condensatore-manico { fill: none; stroke: color-mix(in srgb, var(--fc-vetro) 28%, var(--surface)); stroke-width: 5.4; stroke-linecap: round; }
+
+/* scintilla: alone tenue e filo luminoso */
+.fig-condensatore-bagliore { fill: url(#fig-condensatore-g-bagliore); }
+.fig-condensatore-bg-centro { stop-color: var(--fc-scarica); stop-opacity: .5; }
+.fig-condensatore-bg-bordo { stop-color: var(--fc-scarica); stop-opacity: 0; }
+.fig-condensatore-scintilla path { fill: none; stroke: var(--fc-scarica); stroke-width: 3.4; stroke-linecap: round; stroke-linejoin: round; opacity: .5; }
+.fig-condensatore-scintilla .fig-condensatore-nucleo { stroke: var(--fc-nucleo); stroke-width: 1.3; opacity: 1; }
+
+/*
+ * Lo scaricatore si avvicina al pomello: la scintilla scocca prima del contatto e le cariche
+ * delle due armature si annullano. Poi l'arco si allontana e la bottiglia si ricarica piano.
+ * Senza animazioni resta l'istante della scarica: arco vicino, scintilla e cariche visibili.
+ */
+.fig-condensatore-arco { animation: fig-condensatore-arco 7s ease-in-out infinite; }
+.fig-condensatore-scintilla, .fig-condensatore-bagliore { animation: fig-condensatore-scintilla 7s linear infinite; }
+.fig-condensatore-cariche { animation: fig-condensatore-cariche 7s ease-in-out infinite; }
+@keyframes fig-condensatore-arco {
+  0%, 28% { transform: rotate(7deg); }
+  52%, 60% { transform: rotate(0deg); }
+  84%, 100% { transform: rotate(7deg); }
+}
+@keyframes fig-condensatore-scintilla {
+  0%, 51.5% { opacity: 0; }
+  52.5% { opacity: 1; }
+  57%, 100% { opacity: 0; }
+}
+@keyframes fig-condensatore-cariche {
+  0%, 52% { opacity: 1; }
+  56%, 80% { opacity: 0; }
+  100% { opacity: 1; }
+}

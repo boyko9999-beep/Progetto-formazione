@@ -1,0 +1,72 @@
+/* Capitolo 1 · figura della bilancia di torsione di Coulomb. */
+
+/* vetro, legno e ottone */
+.fig-carica-v0 { stop-color: var(--muted); stop-opacity: .16; }
+.fig-carica-v1 { stop-color: var(--muted); stop-opacity: .03; }
+.fig-carica-v2 { stop-color: var(--muted); stop-opacity: .08; }
+.fig-carica-vetro-corpo { fill: url(#fig-carica-vetro); }
+.fig-carica-vetro-bordo { fill: none; stroke: color-mix(in srgb, var(--muted) 75%, transparent); stroke-width: 1.6; stroke-linecap: round; }
+.fig-carica-vetro-retro { fill: none; stroke: color-mix(in srgb, var(--muted) 45%, transparent); stroke-width: 1.1; stroke-dasharray: 3 3; }
+.fig-carica-coperchio { fill: color-mix(in srgb, var(--muted) 3%, transparent); stroke: color-mix(in srgb, var(--muted) 75%, transparent); stroke-width: 1.3; }
+.fig-carica-coperchio-lato { fill: color-mix(in srgb, var(--muted) 24%, transparent); stroke: color-mix(in srgb, var(--muted) 60%, transparent); stroke-width: 1; }
+.fig-carica-foro { fill: color-mix(in srgb, var(--ink) 45%, transparent); }
+.fig-carica-tubo { fill: color-mix(in srgb, var(--muted) 12%, transparent); stroke: color-mix(in srgb, var(--muted) 70%, transparent); stroke-width: 1.2; }
+.fig-carica-ombra { fill: color-mix(in srgb, var(--ink) 9%, transparent); }
+.fig-carica-legno { fill: color-mix(in srgb, var(--rame) 26%, var(--surface)); stroke: color-mix(in srgb, var(--rame) 70%, var(--ink)); stroke-width: 1; }
+.fig-carica-legno-lato { fill: color-mix(in srgb, var(--rame) 48%, var(--surface)); stroke: color-mix(in srgb, var(--rame) 70%, var(--ink)); stroke-width: 1; }
+.fig-carica-ottone { fill: color-mix(in srgb, #d4a93f 62%, var(--surface)); stroke: color-mix(in srgb, #8a6a1f 75%, var(--ink)); stroke-width: 1; }
+.fig-carica-ottone-lato { fill: color-mix(in srgb, #b8862b 78%, var(--surface)); stroke: color-mix(in srgb, #8a6a1f 75%, var(--ink)); stroke-width: 1; }
+.fig-carica-tacche { fill: none; stroke: color-mix(in srgb, var(--ink) 60%, transparent); stroke-width: .9; }
+
+/* scala in gradi intorno al cilindro */
+.fig-carica-scala path { fill: none; stroke: color-mix(in srgb, var(--ink) 55%, transparent); stroke-width: .9; }
+.fig-carica-scala-retro path { fill: none; stroke: color-mix(in srgb, var(--muted) 32%, transparent); stroke-width: .8; }
+
+/* filo, ago e palline */
+.fig-carica-filo { fill: none; stroke: color-mix(in srgb, var(--zinco) 55%, var(--ink)); stroke-width: .9; }
+.fig-carica-asta { fill: none; stroke: color-mix(in srgb, #8b4a12 75%, var(--ink)); stroke-width: 2.2; stroke-linecap: round; }
+.fig-carica-asta-fissa { fill: none; stroke: color-mix(in srgb, #8b4a12 70%, var(--ink)); stroke-width: 2.4; stroke-linecap: round; }
+.fig-carica-paletta { fill: color-mix(in srgb, #f3ead2 70%, var(--surface)); stroke: color-mix(in srgb, var(--muted) 80%, transparent); stroke-width: .9; }
+.fig-carica-pinza { fill: color-mix(in srgb, #b8913a 80%, var(--ink)); }
+.fig-carica-s0 { stop-color: color-mix(in srgb, #fbf5e6 92%, var(--ink)); }
+.fig-carica-s1 { stop-color: color-mix(in srgb, #c9b98f 80%, var(--ink)); }
+.fig-carica-palla { fill: url(#fig-carica-sfera); stroke: color-mix(in srgb, var(--ink) 35%, transparent); stroke-width: .8; }
+.fig-carica-traccia { fill: none; stroke: color-mix(in srgb, var(--muted) 55%, transparent); stroke-width: 1; stroke-dasharray: 1.2 3; stroke-linecap: round; }
+.fig-carica-alone { fill: color-mix(in srgb, var(--q-q) 16%, transparent); }
+.fig-carica-segno { fill: var(--q-q); font: 700 11px var(--font); }
+
+/* le palline si toccano, ricevono la carica e si respingono: l'ago si allontana,
+   oscilla smorzato dalla paletta di carta e si ferma dove la torsione del filo
+   equilibra la repulsione; poi le palline si scaricano e l'ago torna indietro.
+   Il piano dell'ago è schiacciato in prospettiva: palline e paletta restano dritte.
+   Il ciclo parte dall'equilibrio, che è anche l'immagine ferma senza animazioni. */
+.fig-carica-ago { transform: rotate(56deg); animation: fig-carica-ago 10s ease-in-out -5.4s infinite; }
+.fig-carica-dritto { transform: rotate(-56deg) scale(1, 3.5714); animation: fig-carica-dritto 10s ease-in-out -5.4s infinite; }
+.fig-carica-alone, .fig-carica-segno { animation: fig-carica-carica 10s ease-in-out -5.4s infinite; }
+@keyframes fig-carica-ago {
+  0%, 10% { transform: rotate(38deg); }
+  19% { transform: rotate(63.2deg); }
+  28% { transform: rotate(53.1deg); }
+  37% { transform: rotate(57.2deg); }
+  46% { transform: rotate(55.5deg); }
+  54%, 84% { transform: rotate(56deg); }
+  96%, 100% { transform: rotate(38deg); }
+}
+@keyframes fig-carica-dritto {
+  0%, 10% { transform: rotate(-38deg) scale(1, 3.5714); }
+  19% { transform: rotate(-63.2deg) scale(1, 3.5714); }
+  28% { transform: rotate(-53.1deg) scale(1, 3.5714); }
+  37% { transform: rotate(-57.2deg) scale(1, 3.5714); }
+  46% { transform: rotate(-55.5deg) scale(1, 3.5714); }
+  54%, 84% { transform: rotate(-56deg) scale(1, 3.5714); }
+  96%, 100% { transform: rotate(-38deg) scale(1, 3.5714); }
+}
+@keyframes fig-carica-carica {
+  0%, 7% { opacity: 0; }
+  10%, 82% { opacity: 1; }
+  86%, 100% { opacity: 0; }
+}
+
+/* etichette */
+.fig-carica-t { fill: var(--muted); font: 600 11px var(--font); }
+.fig-carica-guida { fill: none; stroke: color-mix(in srgb, var(--muted) 55%, transparent); stroke-width: .8; }
