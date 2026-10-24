@@ -31,38 +31,36 @@
         pairs: [
           ['George Boole', 'Le leggi del pensiero (1854)'],
           ['Augustus De Morgan', 'Le leggi sulla negazione di AND e OR'],
-          ['Claude Shannon', 'La logica nei circuiti a relè (1937)'],
-          ['Konrad Zuse', 'Il calcolatore a relè Z3 (1941)'],
+          ['Henry M. Sheffer', 'Basta un solo operatore logico (1913)'],
+          ['Claude Shannon', 'Interruttori in serie e in parallelo (1937)'],
         ],
-        why: 'Boole trasformò la logica in algebra e il suo contemporaneo De Morgan formulò le leggi che legano NOT, AND e OR. Shannon, nella tesi del 1937, applicò l\'algebra di Boole ai circuiti a relè; Zuse costruì a Berlino lo Z3, uno dei primi calcolatori programmabili.',
+        why: 'Boole trasformò la logica in algebra e il suo amico De Morgan formulò le leggi che legano NOT, AND e OR. Sheffer dimostrò nel 1913 che basta un solo operatore: il suo «tratto» oggi indica la NAND. Shannon, nella tesi del 1937, mostrò che interruttori in serie e in parallelo calcolano AND e OR.',
       },
       {
-        id: 'pl-02', level: 1, topic: 'Interruttori in parallelo', chapter: 'boole', type: 'logic',
-        q: 'Nel circuito in figura gli interruttori A e B sono collegati in parallelo (1 = chiuso). Imposta gli interruttori per accendere la lampada.',
+        id: 'pl-02', level: 1, topic: 'Interruttori in parallelo', chapter: 'boole', type: 'truth',
+        q: 'Completa la tabella di verità del circuito in figura, con gli interruttori A e B collegati in parallelo. Per A e B, 1 vuol dire interruttore chiuso; per l\'uscita Y, 1 vuol dire lampada accesa.',
         figure: { kind: 'circuit', topo: 'switches-parallel' },
-        expr: 'OR(A,B)', target: 1,
-        why: 'In parallelo la corrente ha due strade: basta un interruttore chiuso perché la lampada si accenda. È la funzione OR, che vale 0 solo quando A e B sono entrambi aperti.',
+        expr: 'OR(A,B)',
+        why: 'In parallelo la corrente ha due strade: basta un interruttore chiuso perché la lampada si accenda. È la funzione OR, che vale 0 solo quando A e B sono entrambi aperti. In serie, invece, servirebbero chiusi tutti e due: è la funzione AND.',
       },
       {
-        id: 'pl-03', level: 1, topic: 'Interruttori in serie', chapter: 'boole', type: 'truth',
-        q: 'Completa la tabella di verità del circuito in figura. Per A e B, 1 vuol dire interruttore chiuso; per l\'uscita Y, 1 vuol dire lampada accesa.',
-        figure: { kind: 'circuit', topo: 'switches-series' },
-        expr: 'AND(A,B)',
-        why: 'Gli interruttori sono in serie: la corrente deve attraversarli entrambi, quindi la lampada si accende solo con A e B chiusi. È la funzione AND; due interruttori in parallelo fanno invece un OR.',
+        id: 'pl-03', level: 3, topic: 'Perché il binario', chapter: 'boole', type: 'number',
+        q: 'Su un filo il segnale può avere dieci livelli di tensione equidistanti, da 0 a 5 V, e il ricevitore sceglie il livello più vicino alla tensione che misura. Quanto deve essere grande, almeno, un disturbo per fargli scambiare un livello con quello accanto? Rispondi in volt.',
+        value: 0.28, unit: 'V', tolerance: 0.02,
+        why: 'Dieci livelli da 0 a 5 V lasciano nove intervalli: 5 V / 9 ≈ 0,56 V tra un livello e l\'altro. Il ricevitore sbaglia quando il disturbo supera la metà dell\'intervallo, 0,56 V / 2 ≈ 0,28 V. Con due soli livelli, 0 e 5 V, servirebbero 2,5 V: per questo i circuiti digitali usano il binario.',
       },
       {
         id: 'pl-04', level: 2, topic: 'Algebra di Boole', chapter: 'boole', type: 'choice',
-        q: 'Nell\'algebra di Boole il punto (·) indica AND e il più (+) indica OR. Quale espressione descrive il circuito in figura?',
-        figure: { kind: 'logic', expr: 'AND(A,OR(B,C))' },
+        q: 'Nell\'algebra di Boole il punto (·) indica AND e il più (+) indica OR. Una pila accende una lampada attraverso l\'interruttore A, seguito da due interruttori B e C collegati in parallelo tra loro (1 = chiuso). Quale espressione dice quando la lampada è accesa?',
         options: ['A · (B + C)', 'A + (B · C)', '(A · B) + C', 'A · B · C'],
         answer: 0,
-        why: 'B e C entrano in una porta OR, che dà B + C; la sua uscita entra con A in una porta AND: A · (B + C). Con gli interruttori è un contatto A in serie a due contatti B e C messi in parallelo.',
+        why: 'B e C in parallelo danno B + C; A, in serie, aggiunge un AND: A · (B + C). La lampada si accende se A è chiuso e almeno uno tra B e C è chiuso. Serie vuol dire AND e parallelo vuol dire OR: è l\'idea della tesi di Shannon del 1937.',
       },
       {
-        id: 'pl-05', level: 1, topic: 'Semplificare con Boole', chapter: 'boole', type: 'truth',
-        q: 'Il circuito calcola A OR (A AND B). Completa la sua tabella di verità: scoprirai che si può semplificare.',
-        expr: 'OR(A,AND(A,B))',
-        why: 'L\'uscita è uguale ad A, qualunque valore abbia B: è la legge di assorbimento, A + A · B = A. Con semplificazioni come questa Shannon mostrò come togliere contatti inutili dai circuiti a relè.',
+        id: 'pl-05', level: 1, topic: 'Tabelle di verità', chapter: 'boole', type: 'number',
+        q: 'Un circuito logico ha 5 ingressi, e ognuno può valere 0 o 1. Quante righe ha la sua tabella di verità?',
+        value: 32, unit: 'righe', tolerance: 0,
+        why: 'Ogni ingresso in più raddoppia le combinazioni: 2 ingressi danno 4 righe, 3 ne danno 8 e 5 ne danno 2 × 2 × 2 × 2 × 2 = 32. Con 10 ingressi le righe sarebbero già 1024.',
       },
 
       // ------------------------------------------------------------ Le porte logiche
@@ -75,8 +73,8 @@
         why: 'Il corpo a forma di D è quello della porta AND; il cerchietto sull\'uscita indica la negazione: è una NAND, cioè NOT AND. La NOR ha il corpo a punta della OR, la NOT è un triangolo con un solo ingresso.',
       },
       {
-        id: 'pl-07', level: 2, topic: 'Porta XNOR', chapter: 'porte', type: 'truefalse',
-        q: 'La porta logica di questo simbolo dà 1 in uscita quando i suoi due ingressi sono uguali.',
+        id: 'pl-07', level: 2, topic: 'Simboli delle porte', chapter: 'porte', type: 'truefalse',
+        q: 'La porta logica rappresentata da questo simbolo dà 1 in uscita quando i suoi due ingressi sono uguali.',
         figure: { kind: 'gate', gate: 'XNOR' },
         answer: true,
         why: 'Il secondo arco sul retro indica una porta XOR e il cerchietto la negazione: è una XNOR. La XOR dà 1 quando gli ingressi sono diversi, la XNOR quando sono uguali (00 e 11): per questo serve a confrontare due bit.',
@@ -89,9 +87,9 @@
       },
       {
         id: 'pl-09', level: 2, topic: 'NOR e De Morgan', chapter: 'porte', type: 'logic',
-        q: 'Gli ingressi A e B passano ciascuno da una porta NOT, poi entrano in una porta NOR. Imposta gli ingressi per accendere il LED.',
-        expr: 'NOR(NOT(A),NOT(B))', target: 1,
-        why: 'La NOR dà 1 solo se i suoi due ingressi valgono 0, cioè se NOT A = 0 e NOT B = 0: serve A = B = 1. È l\'altra legge di De Morgan, NOT (A OR B) = (NOT A) AND (NOT B): una NOR con gli ingressi negati fa da AND.',
+        q: 'A e B passano ciascuno da una porta NOT; le due uscite entrano, insieme all\'ingresso C, in una porta NOR a tre ingressi. Imposta gli ingressi per accendere il LED.',
+        expr: 'NOR(NOT(A),NOT(B),C)', target: 1,
+        why: 'La NOR dà 1 solo se tutti i suoi ingressi valgono 0: serve NOT A = 0 e NOT B = 0, cioè A = B = 1, e poi C = 0. È la seconda legge di De Morgan: una NOR con gli ingressi negati fa da AND, perché NOT ((NOT A) OR (NOT B)) = A AND B.',
       },
       {
         id: 'pl-10', level: 3, topic: 'XOR e maschere', chapter: 'porte', type: 'bits',
@@ -100,13 +98,21 @@
         width: 8, value: 170,
         why: 'Una XOR con 0 lascia passare il bit, con 1 lo inverte. Il registro contiene 1010 0101 (A5): la metà alta resta 1010, quella bassa 0101 diventa 1010. Il risultato è 1010 1010, cioè AA in esadecimale (170).',
       },
+      {
+        id: 'pl-24', level: 2, topic: 'Porte NAND universali', chapter: 'porte', type: 'choice',
+        q: 'Il circuito in figura usa tre delle quattro porte NAND di un chip 7400. Quale funzione logica calcola?',
+        figure: { kind: 'logic', expr: 'NAND(NAND(A,B),NAND(C,D))' },
+        options: ['(A AND B) OR (C AND D)', '(A OR B) AND (C OR D)', 'NOT ((A AND B) OR (C AND D))', '(A AND B) AND (C AND D)'],
+        answer: 0,
+        why: 'Le prime due NAND danno NOT (A AND B) e NOT (C AND D); la terza dà 1 se almeno una delle due vale 0: (A AND B) OR (C AND D). Le sole NAND fanno quindi il lavoro di AND e OR e bastano per qualsiasi circuito; lo stesso vale per le NOR, le sole porte del computer di bordo dell\'Apollo.',
+      },
 
       // ------------------------------------------------------------ Calcolare con le porte
       {
         id: 'pl-11', level: 1, topic: 'Semisommatore', chapter: 'calcolo', type: 'truth',
-        q: 'Il semisommatore somma due bit, A e B. Completa la tabella della cifra della somma S, che esce da una porta XOR.',
+        q: 'Il semisommatore somma due bit, A e B: la cifra della somma, qui l\'uscita Y, è data da una porta XOR. Completa la sua tabella di verità.',
         expr: 'XOR(A,B)',
-        why: '0 + 0 = 0, 0 + 1 = 1 e 1 + 0 = 1, ma 1 + 1 = 10 in binario: la cifra della somma è 0 e c\'è un riporto. Per questo S esce da una porta XOR, mentre il riporto esce da una porta AND.',
+        why: '0 + 0 = 0, 0 + 1 = 1 e 1 + 0 = 1, ma 1 + 1 = 10 in binario: la cifra della somma è 0 e c\'è un riporto. Per questo la somma esce da una porta XOR, mentre il riporto esce da una porta AND.',
       },
       {
         id: 'pl-12', level: 1, topic: 'Contatore binario', chapter: 'calcolo', type: 'bits',
@@ -117,9 +123,9 @@
       },
       {
         id: 'pl-13', level: 3, topic: 'Sommatore completo', chapter: 'calcolo', type: 'truth',
-        q: 'Il sommatore completo somma tre bit: A, B e il riporto in arrivo C. Completa la tabella del riporto in uscita.',
-        expr: 'OR(AND(A,B),AND(A,C),AND(B,C))',
-        why: 'Il riporto vale 1 quando la somma dei tre bit è 2 o 3 (10 o 11 in binario), cioè quando almeno due bit sono a 1: il circuito controlla le tre coppie con tre AND e le unisce con una OR. Per esempio 1 + 1 + 1 = 11 dà somma 1 e riporto 1.',
+        q: 'Il sommatore completo somma tre bit: A, B e il riporto in arrivo C. La cifra della somma, qui l\'uscita Y, è data da due porte XOR in cascata: completa la sua tabella di verità.',
+        expr: 'XOR(XOR(A,B),C)',
+        why: 'La somma vale 1 quando i bit a 1 sono uno o tre: 1 + 1 + 1 = 11 dà somma 1 e riporto 1, mentre 1 + 1 + 0 = 10 dà somma 0 e riporto 1. Il riporto in uscita, invece, vale 1 quando almeno due dei tre bit sono a 1.',
       },
       {
         id: 'pl-14', level: 2, topic: 'Latch SR', chapter: 'calcolo', type: 'choice',
@@ -131,10 +137,10 @@
       },
       {
         id: 'pl-15', level: 3, topic: 'Registro a scorrimento', chapter: 'calcolo', type: 'bits',
-        q: 'Un registro a scorrimento legge il segnale DATA in figura a ogni fronte di discesa di CLK, e il primo bit letto finisce nella posizione più pesante. Accendi gli 8 bit del byte ricevuto.',
+        q: 'Un registro a scorrimento legge il segnale DATA in figura a ogni fronte di discesa di CLK, e il primo bit letto finisce nella posizione meno pesante (peso 1). Accendi gli 8 bit del byte ricevuto.',
         figure: { kind: 'wave', shape: 'clock-data' },
-        width: 8, value: 178,
-        why: 'A ogni fronte di discesa DATA è stabile e vale, in ordine, 1, 0, 1, 1, 0, 0, 1, 0: il byte è 1011 0010, cioè 178 (B2 in esadecimale). Il registro è una fila di flip-flop D: a ogni fronte ogni bit passa al flip-flop vicino ed entra quello nuovo.',
+        width: 8, value: 77,
+        why: 'Sui fronti di discesa DATA è stabile e vale, in ordine, 1, 0, 1, 1, 0, 0, 1, 0. Il primo bit va nel peso 1 e l\'ultimo nel peso 128: il byte è 0100 1101 = 64 + 8 + 4 + 1 = 77 (4D in esadecimale). A ogni fronte ogni bit passa al flip-flop D vicino ed entra quello nuovo.',
       },
 
       // ------------------------------------------------------------ Relè, valvole e transistor
@@ -146,24 +152,24 @@
         why: 'Z3 (1941, a relè), Colossus (1943-44, a valvole), ENIAC (1945-46, circa 18 000 valvole), TRADIC (1954, a transistor): in poco più di dieci anni l\'interruttore dei calcolatori passò dal relè alla valvola e poi al transistor.',
       },
       {
-        id: 'pl-17', level: 1, topic: 'Relè', chapter: 'interruttori', type: 'choice',
-        q: 'Il componente di questo simbolo fu l\'interruttore dei primi calcolatori, come lo Z3 di Zuse. Perché fu presto superato dalle valvole?',
+        id: 'pl-17', level: 1, topic: 'Interruttori dei calcolatori', chapter: 'interruttori', type: 'choice',
+        q: 'Il componente rappresentato da questo simbolo fu l\'interruttore dei primi calcolatori, come lo Z3 di Zuse. Perché fu presto superato dalle valvole?',
         figure: { kind: 'symbol', name: 'relay' },
-        options: ['Deve muovere un contatto, quindi commuta lentamente', 'Funziona solo con la corrente alternata della rete', 'Ha bisogno di un filamento caldo per funzionare', 'Non riesce a restare chiuso per più di un secondo'],
+        options: ['Deve muovere un contatto, quindi commuta lentamente', 'Funziona solo con la corrente alternata della rete', 'Ha bisogno di un filamento caldo per funzionare', 'Il contatto fa passare la corrente in un solo verso'],
         answer: 0,
-        why: 'È un relè: un elettromagnete sposta un contatto metallico e ogni scatto richiede qualche millesimo di secondo. Le valvole commutano in milionesimi di secondo; poi i transistor superarono anche le valvole, perché erano più piccoli, freddi e affidabili.',
+        why: 'È un relè: un elettromagnete sposta un contatto metallico, e ogni scatto richiede qualche millesimo di secondo. Una valvola non ha parti in movimento e commuta in milionesimi di secondo, circa mille volte più in fretta.',
       },
       {
-        id: 'pl-18', level: 2, topic: 'Logica a relè', chapter: 'interruttori', type: 'logic',
-        q: 'In un calcolatore a relè la lampada è alimentata attraverso il contatto normalmente aperto del relè A, in serie con il contatto normalmente chiuso del relè B. Imposta i relè (1 = bobina alimentata) per accendere la lampada.',
-        expr: 'AND(A,NOT(B))', target: 1,
-        why: 'Il contatto normalmente aperto di A si chiude quando la sua bobina è alimentata; quello normalmente chiuso di B si apre quando lo è la bobina di B, quindi fa da NOT. In serie formano un AND: serve A = 1 e B = 0.',
+        id: 'pl-18', level: 2, topic: 'Valvole e guasti', chapter: 'interruttori', type: 'number',
+        q: 'L\'ENIAC aveva circa 18 000 valvole. Se ogni valvola si guastasse in media una volta ogni 90 000 ore di funzionamento, ogni quante ore, in media, si guasterebbe una valvola qualsiasi della macchina?',
+        value: 5, unit: 'ore', tolerance: 0.2,
+        why: 'I guasti delle valvole si sommano: 90 000 ore / 18 000 = 5 ore, cioè in media un guasto ogni 5 ore di lavoro. Più componenti vogliono dire più guasti: anche per questo vinse il transistor, senza filamento e molto più durevole.',
       },
       {
         id: 'pl-19', level: 1, topic: 'Zuse Z3', chapter: 'interruttori', type: 'bits',
-        q: 'Lo Z3 di Konrad Zuse lavorava in binario: nella sua memoria ogni bit era un relè, eccitato per 1 e a riposo per 0. Accendi i bit per memorizzare il numero 13.',
+        q: 'Lo Z3 di Konrad Zuse lavorava in binario: ogni bit della sua memoria era un relè, con la bobina alimentata per 1 e a riposo per 0. Con quattro relè, come si scrive il numero 13? Accendi i bit.',
         width: 4, value: 13,
-        why: '13 = 8 + 4 + 1, quindi 1101. Un relè ha due soli stati, e anche per questo Zuse scelse il binario; l\'ENIAC, a valvole, contava invece in decimale, con un anello di dieci elementi per ogni cifra.',
+        why: '13 = 8 + 4 + 1, quindi 1101. Un relè ha due soli stati, e anche per questo Zuse scelse il binario: lo Z3 lavorava su parole di 22 bit, in virgola mobile. L\'ENIAC, a valvole, contava invece in decimale, con un anello di dieci elementi per ogni cifra.',
       },
 
       // ------------------------------------------------------------ Famiglie logiche
@@ -181,9 +187,9 @@
       },
       {
         id: 'pl-21', level: 2, topic: 'Livelli logici TTL', chapter: 'famiglie', type: 'bits',
-        q: 'Quattro uscite di un chip TTL, dal bit più pesante al più leggero, misurano 3,4 V, 0,2 V, 3,5 V e 3,3 V. Accendi i bit corrispondenti.',
+        q: 'Quattro ingressi di un chip TTL, dal bit più pesante al più leggero, ricevono 2,2 V, 0,4 V, 3,4 V e 2,6 V. Accendi i bit che il chip legge.',
         width: 4, value: 11,
-        why: 'Nella TTL, alimentata a 5 V, una tensione sotto 0,8 V vale 0 e una sopra 2 V vale 1; in mezzo il livello non è garantito. Quindi 3,4 V, 3,5 V e 3,3 V sono 1 e 0,2 V è 0: 1011, cioè 11.',
+        why: 'Un ingresso TTL legge 0 sotto 0,8 V e 1 sopra 2 V: la soglia non è a metà dei 5 V di alimentazione. Quindi 2,2 V, 3,4 V e 2,6 V valgono 1 e 0,4 V vale 0: 1011, cioè 11. Le uscite, per avere margine, danno meno di 0,4 V per lo 0 e più di 2,4 V per l\'1.',
       },
       {
         id: 'pl-22', level: 2, topic: 'Fan-out', chapter: 'famiglie', type: 'number',
@@ -192,16 +198,11 @@
         why: 'Fan-out = 16 mA / 1,6 mA = 10: un\'uscita TTL standard pilota fino a 10 ingressi. Collegandone di più, la tensione dello 0 salirebbe oltre il limite e il segnale non sarebbe più affidabile.',
       },
       {
-        id: 'pl-23', level: 3, topic: 'Porte NOR universali', chapter: 'famiglie', type: 'logic',
-        q: 'Il computer di bordo delle missioni Apollo aveva la logica fatta solo di porte NOR. Qui due NOR ricevono A, B e C, D, e le loro uscite entrano in una terza NOR. Imposta gli ingressi per accendere il LED.',
-        expr: 'NOR(NOR(A,B),NOR(C,D))', target: 1,
-        why: 'Una NOR dà 1 solo se tutti i suoi ingressi sono 0. L\'ultima dà 1 quindi quando le prime due danno 0, cioè con almeno un 1 tra A e B e almeno un 1 tra C e D: (A OR B) AND (C OR D). Come la NAND, la NOR basta da sola per costruire qualsiasi circuito.',
-      },
-      {
-        id: 'pl-24', level: 2, topic: 'Porte NAND universali', chapter: 'famiglie', type: 'logic',
-        q: 'Con tre delle quattro porte NAND di un chip 7400 si costruisce un circuito: due NAND ricevono A, B e C, D, e le loro uscite entrano nella terza. Imposta gli ingressi per accendere il LED.',
-        expr: 'NAND(NAND(A,B),NAND(C,D))', target: 1,
-        why: 'Una NAND dà 0 solo se entrambi gli ingressi sono 1, e l\'ultima dà 1 se almeno una delle prime due dà 0. Il LED si accende con A = B = 1 oppure con C = D = 1: NAND seguite da una NAND fanno il lavoro di AND seguite da una OR.',
+        id: 'pl-23', level: 3, topic: 'Porte CMOS', chapter: 'famiglie', type: 'choice',
+        q: 'In una porta CMOS con due ingressi, A e B, ogni ingresso comanda un pMOS e un nMOS. I due pMOS sono in serie tra l\'uscita e l\'alimentazione, i due nMOS in parallelo tra l\'uscita e la massa. Un nMOS conduce con il gate a 1, un pMOS con il gate a 0. Quale porta formano?',
+        options: ['NOR', 'NAND', 'OR', 'AND'],
+        answer: 0,
+        why: 'L\'uscita va a 1 solo se conducono tutti e due i pMOS in serie, cioè con A = B = 0; basta un ingresso a 1 perché il suo nMOS la colleghi a massa. È una NOR con 4 transistor; la NAND ha invece gli nMOS in serie e i pMOS in parallelo.',
       },
 
       // ------------------------------------------------------------ Il circuito integrato
@@ -248,11 +249,11 @@
         pairs: [
           ['Wafer', 'Disco sottile tagliato dal lingotto'],
           ['Maschera', 'Lastra con il disegno di uno strato'],
-          ['Drogaggio', 'Aggiunta di atomi come boro o fosforo'],
+          ['Fotolitografia', 'Stampa di un disegno con la luce'],
           ['Camera bianca', 'Ambiente con l\'aria quasi senza polvere'],
           ['Resa', 'Percentuale di chip che funzionano'],
         ],
-        why: 'La fotolitografia proietta sul wafer il disegno di una maschera per ogni strato; il drogaggio con boro o fosforo crea le zone P e N dei transistor. Tutto avviene in camera bianca, perché un granello di polvere può rovinare un chip e abbassare la resa.',
+        why: 'La fotolitografia proietta sul wafer, con la luce, il disegno di una maschera, uno strato alla volta; il drogaggio con boro o fosforo crea poi le zone P e N dei transistor. Tutto avviene in camera bianca, perché un granello di polvere può rovinare un chip e abbassare la resa.',
       },
       {
         id: 'pl-31', level: 2, topic: 'Resa e costo', chapter: 'fabbrica', type: 'number',
@@ -263,9 +264,9 @@
       {
         id: 'pl-32', level: 3, topic: 'Litografia EUV', chapter: 'fabbrica', type: 'choice',
         q: 'Per i chip più avanzati la fotolitografia usa luce ultravioletta estrema (EUV), con lunghezza d\'onda di 13,5 nm invece dei 193 nm usati prima. Perché?',
-        options: ['Una lunghezza d\'onda più corta disegna dettagli più piccoli', 'La luce più energetica accelera il drogaggio del silicio', 'Attraversa le maschere di vetro senza esserne assorbita', 'Permette di lavorare anche fuori dalla camera bianca'],
+        options: ['Più l\'onda è corta, più piccoli sono i dettagli che disegna', 'Più l\'onda è corta, meglio attraversa le maschere di vetro', 'Più l\'onda è corta, meno calore porta sul wafer', 'Più l\'onda è corta, più a fondo droga il silicio'],
         answer: 0,
-        why: 'Come un pennello più fine, una lunghezza d\'onda più corta traccia linee più sottili. La luce EUV però viene assorbita da quasi tutto, anche dall\'aria: le macchine, costruite dall\'olandese ASML, lavorano nel vuoto e usano specchi al posto delle lenti.',
+        why: 'Come un pennello più fine, una lunghezza d\'onda più corta traccia linee più sottili. La luce EUV però viene assorbita da quasi tutto, anche dall\'aria e dal vetro: le macchine dell\'olandese ASML lavorano nel vuoto e usano solo specchi; anche la maschera riflette la luce invece di lasciarla passare.',
       },
 
       // ------------------------------------------------------------ Dentro il chip
@@ -273,13 +274,13 @@
         id: 'pl-33', level: 1, topic: 'Package e piedini', chapter: 'struttura', type: 'choice',
         q: 'Il 7400 in figura contiene quattro porte NAND a due ingressi. Come sono usati i suoi piedini?',
         figure: { kind: 'chip', pins: 14, label: '7400', note: 'TTL' },
-        options: ['8 ingressi e 4 uscite, più alimentazione e massa', '8 ingressi e 4 uscite, più 2 piedini di riserva', '8 ingressi e 4 uscite, più 2 ingressi di clock', '7 ingressi e 7 uscite, divisi sui due lati'],
+        options: ['8 ingressi e 4 uscite, più alimentazione e massa', '8 ingressi e 4 uscite, più 2 piedini di riserva', '8 ingressi e 4 uscite, più 2 ingressi di clock', '8 ingressi e 4 uscite, più 2 uscite negate'],
         answer: 0,
-        why: 'Ogni NAND ha 2 ingressi e 1 uscita: 4 × 3 = 12 piedini, più +5 V sul piedino 14 e massa sul 7. Dentro il package c\'è il die di silicio: i suoi transistor sono collegati da strati di metallo e fili sottilissimi lo uniscono ai piedini.',
+        why: 'Ogni NAND ha 2 ingressi e 1 uscita: 4 × 3 = 12 piedini. Gli altri due portano l\'alimentazione, +5 V sul piedino 14, e la massa, sul piedino 7: senza di loro nessuna porta potrebbe funzionare.',
       },
       {
         id: 'pl-34', level: 2, topic: 'MOSFET nei chip CMOS', chapter: 'struttura', type: 'choice',
-        q: 'Nelle porte CMOS i transistor come quello di questo simbolo collegano l\'uscita a massa. Di che tipo è e quando conduce?',
+        q: 'Nelle porte CMOS lavorano due tipi di MOSFET. Di che tipo è quello rappresentato da questo simbolo, e quando conduce?',
         figure: { kind: 'symbol', name: 'nmos' },
         options: ['MOSFET a canale N: conduce con il gate a 1', 'MOSFET a canale P: conduce con il gate a 0', 'MOSFET a canale N: conduce con il gate a 0', 'MOSFET a canale P: conduce con il gate a 1'],
         answer: 0,
@@ -292,10 +293,11 @@
         why: 'Quando i transistor planari scesero a poche decine di nanometri, il gate non riusciva più a chiudere bene il canale e passava corrente anche a transistor spento. Il FinFET, usato per primo da Intel nei chip da 22 nm, avvolge la pinna su tre lati; il GAA (gate-all-around) circonda tutto il canale.',
       },
       {
-        id: 'pl-36', level: 2, topic: 'Porte CMOS', chapter: 'struttura', type: 'logic',
-        q: 'In una porta CMOS due pMOS in serie collegano l\'uscita all\'alimentazione e due nMOS in parallelo la collegano a massa. Un nMOS conduce con il gate a 1, un pMOS con il gate a 0. Imposta A e B per spegnere il LED (uscita 0).',
-        expr: 'NOR(A,B)', target: 0,
-        why: 'Basta un ingresso a 1: il suo nMOS collega l\'uscita a massa e il suo pMOS si spegne, interrompendo la serie verso l\'alimentazione. È una NOR fatta con 4 transistor; la NAND usa lo schema opposto, con gli nMOS in serie e i pMOS in parallelo.',
+        id: 'pl-36', level: 2, topic: 'Collegamenti nel chip', chapter: 'struttura', type: 'choice',
+        q: 'Un processore moderno ha miliardi di transistor, costruiti sulla superficie di un pezzetto di silicio. Come sono collegati tra loro?',
+        options: ['Da molti strati di piste di metallo, uno sopra l\'altro', 'Da un solo strato di piste di metallo, sopra il silicio', 'Da fili d\'oro sottilissimi, saldati uno per uno', 'Dalle piste di rame del circuito stampato sotto il chip'],
+        answer: 0,
+        why: 'Sopra i transistor si costruiscono più di dieci strati di piste di metallo, oggi soprattutto di rame, separati da isolante e uniti da collegamenti verticali. Con un solo strato le piste non potrebbero incrociarsi; i fili saldati uno per uno erano quelli del primo integrato di Kilby.',
       },
 
       // ------------------------------------------------------------ La legge di Moore
@@ -322,10 +324,10 @@
       },
       {
         id: 'pl-40', level: 3, topic: 'Scaling di Dennard', chapter: 'moore', type: 'choice',
-        q: 'Fino ai primi anni Duemila, rimpicciolendo i transistor si poteva alzare la frequenza senza aumentare il calore per millimetro quadrato (scaling di Dennard). Perché poi la frequenza dei processori si è fermata a pochi GHz?',
-        options: ['La tensione non scendeva più e le perdite crescevano', 'I transistor non si riuscivano più a rimpicciolire', 'I programmi non potevano sfruttare un clock più veloce', 'Il silicio smetteva di condurre bene sopra i 5 GHz'],
+        q: 'Nel 1974 Robert Dennard mostrò che, rimpicciolendo i transistor, si possono abbassare insieme la loro tensione e la loro corrente. Che cosa restava allora costante, generazione dopo generazione?',
+        options: ['Il calore prodotto per mm² di chip', 'La frequenza massima del clock', 'Il numero di transistor per chip', 'Il consumo di ogni singolo transistor'],
         answer: 0,
-        why: 'Lo scaling di Dennard (1974) funzionava perché tensione e corrente calavano con le dimensioni. Verso il 2005 la tensione non poteva più scendere e le correnti di perdita crescevano: il calore diventava eccessivo. Da allora si aggiungono core e, oggi, si uniscono più chiplet nello stesso package.',
+        why: 'Con transistor k volte più piccoli, tensione e corrente calano di k volte e la potenza di ognuno di k² volte; nello stesso spazio ne entrano k² volte di più, quindi il calore per mm² resta uguale mentre la frequenza sale. Verso il 2005 la tensione smise di scendere e lo scaling di Dennard finì.',
       },
     ],
   });

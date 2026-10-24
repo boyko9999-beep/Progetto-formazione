@@ -39,11 +39,10 @@
         why: 'La lacuna è il posto lasciato vuoto da un elettrone e si comporta come una carica positiva. Il fosforo (5 elettroni di valenza) dà silicio di tipo N, il boro (3) di tipo P. La banda proibita è l\'energia per staccare un elettrone dal legame.',
       },
       {
-        id: 'ei-02', level: 2, topic: 'Conduttori e isolanti', chapter: 'semiconduttori', type: 'order',
-        q: 'Metti questi materiali in ordine, dal più isolante al più conduttore.',
-        items: ['Vetro', 'Silicio puro', 'Silicio drogato', 'Rame'],
-        ends: ['Più isolante', 'Più conduttore'],
-        why: 'Il vetro è un isolante. Il silicio puro conduce poco, ma drogato conduce da migliaia a milioni di volte di più. Resta comunque molto lontano da un metallo come il rame.',
+        id: 'ei-02', level: 2, topic: 'Silicio di tipo N', chapter: 'semiconduttori', type: 'truefalse',
+        q: 'Un cristallo di silicio di tipo N ha molti elettroni liberi in più, quindi nel complesso ha una carica negativa.',
+        answer: false,
+        why: 'Ogni atomo donatore, come il fosforo, cede il suo quinto elettrone e resta nel reticolo come ione positivo fisso: le cariche si bilanciano e il cristallo resta neutro. La N dice solo che i portatori liberi sono soprattutto elettroni.',
       },
       {
         id: 'ei-03', level: 2, topic: 'Semiconduttori e calore', chapter: 'semiconduttori', type: 'truefalse',
@@ -61,7 +60,7 @@
           'Conduce bene anche puro, senza bisogno di drogaggio',
         ],
         answer: 0,
-        why: 'Il silicio ha una banda proibita più larga (circa 1,1 eV contro 0,7 eV del germanio), quindi funziona bene fino a circa 150 °C. Il suo ossido, SiO₂, è un ottimo isolante; in più il silicio abbonda nella sabbia.',
+        why: 'Il silicio ha una banda proibita più larga (1,12 eV contro 0,66 eV del germanio), quindi funziona bene fino a circa 150 °C. Il suo ossido, SiO₂, è un ottimo isolante; in più il silicio abbonda nella sabbia.',
       },
 
       // ------------------------------------------------------------ diodo
@@ -74,32 +73,37 @@
         why: 'La corrente entra dall\'anodo (lato P) ed esce dal catodo (lato N), nel verso del triangolo; la barretta segna il catodo. Sul corpo del diodo il catodo è indicato da una fascetta colorata.',
       },
       {
-        id: 'ei-06', level: 2, topic: 'Curva I-V', chapter: 'diodo', type: 'truefalse',
-        q: 'In un diodo al silicio polarizzato in diretta, la corrente cresce in proporzione alla tensione, come in un resistore.',
+        id: 'ei-06', level: 2, topic: 'Polarizzazione inversa', chapter: 'diodo', type: 'truefalse',
+        q: 'Un diodo al silicio polarizzato in inversa, con il + sul catodo, comincia a condurre appena la tensione supera 0,7 V.',
         answer: false,
-        why: 'Fino a circa 0,6 V passa pochissima corrente; poi la corrente sale di colpo, mentre la tensione resta intorno a 0,6-0,7 V. La curva I-V del diodo non è una retta come quella di un resistore.',
+        why: 'La soglia di 0,6-0,7 V vale solo in diretta. In inversa la zona di svuotamento si allarga e passa una corrente minuscola, di pochi nanoampere; la giunzione cede solo a tensioni molto più alte (è il breakdown, che lo Zener sfrutta apposta).',
       },
       {
-        id: 'ei-07', level: 1, topic: 'Raddrizzatore a una semionda', chapter: 'diodo', type: 'choice',
+        id: 'ei-07', level: 1, topic: 'Forme d\'onda', chapter: 'diodo', type: 'choice',
         q: 'Quale circuito trasforma una tensione sinusoidale nella forma d\'onda in figura?',
         figure: { kind: 'wave', shape: 'half-wave' },
-        options: ['Un diodo in serie al carico', 'Un ponte di quattro diodi', 'Un condensatore in serie al carico', 'Un resistore in serie al carico'],
+        options: ['Un diodo in serie al carico', 'Un ponte di quattro diodi', 'Un condensatore in serie al carico', 'Un trasformatore che abbassa la tensione'],
         answer: 0,
-        why: 'Il diodo conduce solo quando l\'anodo è positivo: delle due semionde ne passa una sola. È il raddrizzatore a una semionda; il ponte di quattro diodi le raddrizza invece tutte e due.',
+        why: 'Il diodo conduce solo quando è polarizzato in diretta: delle due semionde ne passa una sola. È il raddrizzatore a una semionda. Il ponte di quattro diodi le raddrizza tutte e due, mentre il trasformatore cambia solo l\'ampiezza della sinusoide.',
       },
       {
-        id: 'ei-08', level: 3, topic: 'Tensione di picco', chapter: 'diodo', type: 'choice',
-        q: 'Un trasformatore fornisce 12 V efficaci, raddrizzati da un solo diodo al silicio. Quanto vale circa il picco della tensione sul carico?',
-        options: ['Circa 16,3 V', 'Circa 11,3 V', 'Circa 17 V', 'Circa 6 V'],
+        id: 'ei-08', level: 2, topic: 'Giunzione P-N', chapter: 'diodo', type: 'choice',
+        q: 'In una giunzione P-N al silicio, che cosa dà origine alla barriera di potenziale di circa 0,7 V?',
+        options: [
+          'Gli ioni fissi rimasti nella zona di svuotamento',
+          'Gli elettroni liberi che si accumulano nel lato P',
+          'Un sottile strato di ossido tra il lato P e il lato N',
+          'La resistenza del silicio puro tra P e N',
+        ],
         answer: 0,
-        why: 'Il picco della sinusoide è 12 V × √2 ≈ 17 V; il diodo ne fa cadere circa 0,7 V, quindi sul carico arrivano circa 16,3 V. Il raddrizzatore non dimezza la tensione: elimina una semionda.',
+        why: 'Al confine elettroni e lacune si incontrano e si ricombinano. Restano gli ioni dei droganti, che non possono muoversi: negativi dal lato P, positivi dal lato N. Il loro campo elettrico respinge le altre cariche: è la barriera che la tensione diretta deve abbassare.',
       },
 
       // ------------------------------------------------------------ LED e Zener
       {
         id: 'ei-09', level: 1, topic: 'Resistenza per il LED', chapter: 'led-zener', type: 'number',
         q: 'Nel circuito il LED rosso lavora con 2 V e 20 mA. Che resistenza serve in serie, in Ω?',
-        figure: { kind: 'circuit', topo: 'led', v: '9 V', r: 'R = ?' },
+        figure: { kind: 'circuit', topo: 'led', v: '9 V', r: '?' },
         value: 350, unit: 'Ω', tolerance: 2,
         why: 'R = (Vs − Vled) / I = (9 V − 2 V) / 0,02 A = 350 Ω. In pratica si sceglie un valore standard vicino, come 330 Ω o 390 Ω.',
       },
@@ -110,17 +114,22 @@
           ['LED', 'Emette luce quando conduce'],
           ['Fotodiodo', 'Rileva la luce che lo colpisce'],
           ['Zener', 'Mantiene costante una tensione'],
-          ['Diodo raddrizzatore', 'Raddrizza la tensione alternata'],
+          ['Diodo raddrizzatore', 'Lascia passare una sola semionda dell\'alternata'],
         ],
-        why: 'Sono tutti giunzioni P-N: il LED trasforma la corrente in luce, il fotodiodo la luce in corrente, lo Zener lavora in inversa come riferimento di tensione, il raddrizzatore fa passare la corrente in un solo verso.',
+        why: 'Sono tutti giunzioni P-N: il LED trasforma la corrente in luce, il fotodiodo la luce in corrente, lo Zener lavora in inversa come riferimento di tensione, il raddrizzatore fa passare la corrente in un solo verso, cioè una sola semionda.',
       },
       {
-        id: 'ei-11', level: 2, topic: 'Simbolo dello Zener', chapter: 'led-zener', type: 'choice',
-        q: 'Che componente rappresenta questo simbolo?',
+        id: 'ei-11', level: 2, topic: 'Riferimento di tensione', chapter: 'led-zener', type: 'choice',
+        q: 'Questo simbolo rappresenta un diodo da 5,1 V: vuoi usarlo per avere 5,1 V stabili da una pila da 9 V. Come lo colleghi?',
         figure: { kind: 'symbol', name: 'zener' },
-        options: ['Un diodo Zener', 'Un diodo raddrizzatore', 'Un LED', 'Un fotodiodo'],
+        options: [
+          'In inversa, con una resistenza in serie',
+          'In diretta, con una resistenza in serie',
+          'In inversa, senza resistenza in serie',
+          'In diretta, senza resistenza in serie',
+        ],
         answer: 0,
-        why: 'È il diodo Zener: le estremità piegate della barretta ricordano una Z. Si usa in polarizzazione inversa, con una resistenza in serie, per avere una tensione di riferimento stabile, per esempio 5,1 V.',
+        why: 'È un diodo Zener: la barretta piegata ricorda una Z. Si usa in inversa: oltre la sua tensione di Zener conduce e tiene ai suoi capi circa 5,1 V. La resistenza in serie prende la tensione in più (9 V − 5,1 V = 3,9 V) e limita la corrente.',
       },
       {
         id: 'ei-12', level: 3, topic: 'Colore e soglia del LED', chapter: 'led-zener', type: 'choice',
@@ -138,12 +147,12 @@
 
       // ------------------------------------------------------------ transistor bipolare
       {
-        id: 'ei-13', level: 1, topic: 'Simbolo del transistor', chapter: 'bjt', type: 'choice',
+        id: 'ei-13', level: 1, topic: 'Simboli', chapter: 'bjt', type: 'choice',
         q: 'Quale componente rappresenta questo simbolo?',
         figure: { kind: 'symbol', name: 'npn' },
         options: ['Un transistor NPN', 'Un transistor PNP', 'Un MOSFET a canale N', 'Un MOSFET a canale P'],
         answer: 0,
-        why: 'Nel transistor bipolare la freccia sta sull\'emettitore: nell\'NPN punta verso l\'esterno, nel PNP verso l\'interno. Nel simbolo del MOSFET, invece, il gate è disegnato staccato dal resto.',
+        why: 'B, C ed E (base, collettore, emettitore) sono i terminali del transistor bipolare; il MOSFET ha gate, drain e source. La freccia sta sull\'emettitore: nell\'NPN punta verso l\'esterno, nel PNP verso l\'interno.',
       },
       {
         id: 'ei-14', level: 1, topic: 'Guadagno β', chapter: 'bjt', type: 'number',
@@ -158,8 +167,8 @@
         why: 'Le correnti di base e di collettore entrano nel transistor ed escono insieme dall\'emettitore: Ie = Ib + Ic. Poiché Ib è piccola, Ie è quasi uguale a Ic.',
       },
       {
-        id: 'ei-16', level: 3, topic: 'Saturazione', chapter: 'bjt', type: 'choice',
-        q: 'Un NPN con β = 200 riceve 0,1 mA di corrente di base. Il collettore è collegato a 5 V attraverso una resistenza da 1 kΩ. Quanta corrente scorre circa nel collettore?',
+        id: 'ei-16', level: 3, topic: 'Corrente di collettore', chapter: 'bjt', type: 'choice',
+        q: 'Un NPN con β = 200 riceve 0,1 mA di corrente di base. L\'emettitore è a massa e il collettore è collegato a 5 V attraverso una resistenza da 1 kΩ. Quanta corrente scorre circa nel collettore?',
         options: [
           'Circa 4,8 mA: il transistor è saturo',
           'Circa 20 mA: il transistor è in zona attiva',
@@ -167,22 +176,22 @@
           'Circa 0,1 mA: come la corrente di base',
         ],
         answer: 0,
-        why: 'β × Ib darebbe 20 mA, ma la resistenza ne lascia passare al massimo (5 V − 0,2 V) / 1 kΩ ≈ 4,8 mA. Il transistor è saturo: si comporta come un interruttore chiuso.',
+        why: 'β × Ib darebbe 20 mA, ma la resistenza ne lascia passare al massimo (5 V − 0,2 V) / 1 kΩ ≈ 4,8 mA, perché tra collettore ed emettitore restano circa 0,2 V. Il transistor è saturo: si comporta come un interruttore chiuso.',
       },
 
       // ------------------------------------------------------------ MOSFET
       {
-        id: 'ei-17', level: 1, topic: 'Gate isolato', chapter: 'mosfet', type: 'choice',
+        id: 'ei-17', level: 1, topic: 'Simbolo del MOSFET', chapter: 'mosfet', type: 'choice',
         q: 'Nel simbolo del MOSFET il gate è disegnato staccato dal resto. Perché?',
         figure: { kind: 'symbol', name: 'nmos' },
         options: [
           'È isolato dal canale da un sottile strato di ossido',
           'Si collega al canale solo quando il MOSFET conduce',
           'È il terminale da cui esce la corrente del carico',
-          'È un terminale di riserva, che spesso resta libero',
+          'Funziona solo con tensioni alternate, non con la continua',
         ],
         answer: 0,
-        why: 'Il gate è separato dal canale da un sottilissimo strato di ossido di silicio (la O di MOS). Per questo non assorbe corrente continua: il MOSFET si comanda con la tensione, non con la corrente.',
+        why: 'Il gate è separato dal canale da un sottilissimo strato di ossido di silicio (la O di MOS). Per questo non assorbe corrente continua: il MOSFET si comanda con una tensione, anche continua, e non con una corrente.',
       },
       {
         id: 'ei-18', level: 2, topic: 'Terminali BJT e MOSFET', chapter: 'mosfet', type: 'match',
@@ -196,9 +205,9 @@
       },
       {
         id: 'ei-19', level: 2, topic: 'Tensione di soglia', chapter: 'mosfet', type: 'truefalse',
-        q: 'Un MOSFET a canale N con tensione di soglia di 2 V conduce già bene se tra gate e source ci sono solo 1 V.',
+        q: 'Se un MOSFET a canale N ha una tensione di soglia di 2 V, basta portare il gate a 2 V rispetto al source per farlo condurre come un interruttore chiuso.',
         answer: false,
-        why: 'Sotto la tensione di soglia il canale non si forma e il MOSFET resta spento. Per farlo condurre bene serve una tensione ben più alta della soglia: molti MOSFET di potenza richiedono circa 10 V.',
+        why: 'Alla soglia il canale comincia appena a formarsi e passa pochissima corrente. Per farlo condurre bene serve una tensione ben più alta: molti MOSFET di potenza sono pensati per circa 10 V tra gate e source.',
       },
       {
         id: 'ei-20', level: 3, topic: 'MOSFET di potenza', chapter: 'mosfet', type: 'choice',
@@ -218,17 +227,17 @@
       },
       {
         id: 'ei-22', level: 1, topic: 'Carica del condensatore', chapter: 'rc-filtri', type: 'choice',
-        q: 'Il condensatore parte scarico e il circuito viene acceso. Quanto vale circa la tensione sul condensatore dopo 1 secondo?',
-        figure: { kind: 'circuit', topo: 'rc', v: '10 V', r: '10 kΩ', c: '100 µF' },
-        options: ['Circa 6,3 V', 'Circa 5 V', 'Circa 3,7 V', 'Circa 9,9 V'],
+        q: 'Il condensatore parte scarico. Si chiude l\'interruttore: quanto vale circa la tensione sul condensatore dopo 1 secondo?',
+        figure: { kind: 'circuit', topo: 'rc', v: '5 V', r: '10 kΩ', c: '100 µF' },
+        options: ['Circa 3,2 V', 'Circa 2,5 V', 'Circa 1,8 V', 'Circa 5 V'],
         answer: 0,
-        why: 'τ = R × C = 10 kΩ × 100 µF = 1 s. Dopo un tempo τ il condensatore arriva al 63% della tensione finale: 0,63 × 10 V ≈ 6,3 V. Per arrivare quasi a 10 V servono circa 5τ, cioè 5 s.',
+        why: 'τ = R × C = 10 kΩ × 100 µF = 1 s. Dopo un tempo τ il condensatore arriva al 63% della tensione finale: 0,63 × 5 V ≈ 3,2 V. Per arrivare quasi a 5 V servono circa 5τ, cioè 5 s.',
       },
       {
         id: 'ei-23', level: 2, topic: 'Frequenza di taglio', chapter: 'rc-filtri', type: 'number',
         q: 'Un filtro passa-basso RC ha R = 1 kΩ e C = 1 µF. Quanto vale la sua frequenza di taglio, in Hz?',
         value: 159.2, unit: 'Hz', tolerance: 1,
-        why: 'fc = 1 / (2π × R × C) = 1 / (6,28 × 1000 Ω × 0,000 001 F) = 1 / 0,006 28 s ≈ 159 Hz. Sopra questa frequenza il segnale viene attenuato sempre di più.',
+        why: 'fc = 1 / (2π × R × C) = 1 / (6,28 × 1000 Ω × 0,000 001 F) = 1 / 0,006 28 s ≈ 159 Hz. A questa frequenza l\'uscita scende al 70,7% dell\'ingresso (−3 dB); sopra, il segnale viene attenuato sempre di più.',
       },
       {
         id: 'ei-24', level: 3, topic: 'Passa-alto e passa-basso', chapter: 'rc-filtri', type: 'choice',
@@ -240,7 +249,7 @@
           'Un passa-basso con taglio a circa 50 Hz',
         ],
         answer: 0,
-        why: 'Il passa-alto lascia passare le frequenze sopra il taglio. Con fc ≈ 500 Hz i segnali da 5 kHz passano quasi interi, mentre i 50 Hz, dieci volte sotto il taglio, scendono a circa un decimo.',
+        why: 'Il passa-alto, con l\'uscita presa sulla resistenza, lascia passare le frequenze sopra il taglio. Con fc ≈ 500 Hz i segnali da 5 kHz passano quasi interi, mentre i 50 Hz, dieci volte sotto il taglio, scendono a circa un decimo.',
       },
 
       // ------------------------------------------------------------ amplificatore operazionale
@@ -253,28 +262,29 @@
         why: 'Il + è l\'ingresso non invertente: un segnale applicato lì esce amplificato con lo stesso segno. Il − è l\'ingresso invertente: il segnale esce rovesciato. L\'operazionale amplifica la differenza tra i due.',
       },
       {
-        id: 'ei-26', level: 2, topic: 'Amplificatore invertente', chapter: 'operazionale', type: 'number',
-        q: 'Un amplificatore invertente ha Rin = 10 kΩ e Rf = 100 kΩ, con 0,3 V in ingresso. Quanto vale la tensione d\'uscita, in V (con il segno)?',
-        value: -3, unit: 'V', tolerance: 0.05,
-        why: 'Guadagno = −Rf / Rin = −100 kΩ / 10 kΩ = −10, quindi Vout = −10 × 0,3 V = −3 V. Il segno meno indica che l\'uscita è rovesciata rispetto all\'ingresso.',
+        id: 'ei-26', level: 3, topic: 'Il µA741', chapter: 'operazionale', type: 'choice',
+        q: 'Chi progettò alla Fairchild l\'amplificatore operazionale µA741, uscito nel 1968?',
+        options: ['Dave Fullagar', 'Bob Widlar', 'Harold Black', 'Hans Camenzind'],
+        answer: 0,
+        why: 'Il µA741 è di Dave Fullagar: ha il condensatore di compensazione dentro il chip, quindi non servono componenti esterni per renderlo stabile. Bob Widlar aveva progettato i precedenti µA702 e µA709; Harold Black ideò l\'amplificatore a retroazione negativa (1927), Hans Camenzind il timer 555.',
       },
       {
         id: 'ei-27', level: 2, topic: 'Amplificatore non invertente', chapter: 'operazionale', type: 'number',
-        q: 'Un amplificatore non invertente ha Rin = 10 kΩ e Rf = 47 kΩ. Con 0,5 V in ingresso, quanto vale la tensione d\'uscita, in V?',
+        q: 'Un amplificatore non invertente ha Rf = 47 kΩ tra l\'uscita e l\'ingresso invertente (−) e Rg = 10 kΩ tra lo stesso ingresso e massa. Con 0,5 V in ingresso, quanto vale la tensione d\'uscita, in V?',
         value: 2.85, unit: 'V', tolerance: 0.05,
-        why: 'Guadagno = 1 + Rf / Rin = 1 + 47 kΩ / 10 kΩ = 5,7, quindi Vout = 5,7 × 0,5 V = 2,85 V. Con Rf = 0 il guadagno vale 1: è l\'inseguitore di tensione.',
+        why: 'Guadagno = 1 + Rf / Rg = 1 + 47 kΩ / 10 kΩ = 5,7, quindi Vout = 5,7 × 0,5 V = 2,85 V. Con Rf = 0 e senza Rg il guadagno vale 1: è l\'inseguitore di tensione.',
       },
       {
-        id: 'ei-28', level: 3, topic: 'Saturazione dell\'uscita', chapter: 'operazionale', type: 'choice',
-        q: 'Un operazionale alimentato a ±12 V è montato come invertente con guadagno −100. In ingresso ci sono 0,5 V. Che cosa trovi in uscita?',
+        id: 'ei-28', level: 3, topic: 'Amplificatore invertente', chapter: 'operazionale', type: 'choice',
+        q: 'Un operazionale alimentato a ±12 V è montato come amplificatore invertente, con Rin = 10 kΩ e Rf = 1 MΩ. In ingresso ci sono 0,5 V. Che cosa trovi in uscita?',
         options: [
           'Circa −11 V: l\'uscita è in saturazione',
-          'Circa −50 V: il guadagno è −100',
+          'Circa −50 V: l\'uscita segue il guadagno',
           'Circa +11 V: l\'uscita satura in positivo',
           'Circa 0 V: l\'operazionale si blocca',
         ],
         answer: 0,
-        why: 'In teoria servirebbero −100 × 0,5 V = −50 V, ma l\'uscita non può superare l\'alimentazione: si ferma poco prima di −12 V (circa −11 V, secondo il modello). L\'operazionale è in saturazione.',
+        why: 'Il guadagno è −Rf / Rin = −1 MΩ / 10 kΩ = −100: servirebbero −100 × 0,5 V = −50 V. Ma l\'uscita non supera l\'alimentazione e si ferma 1 o 2 V prima di −12 V, a circa −11 V: è la saturazione.',
       },
 
       // ------------------------------------------------------------ oscillatori e 555
@@ -310,13 +320,13 @@
       {
         id: 'ei-33', level: 1, topic: 'Blocchi dell\'alimentatore', chapter: 'alimentatore', type: 'order',
         q: 'Metti in ordine i blocchi di un alimentatore lineare, dalla presa di rete all\'uscita a 5 V.',
-        items: ['Trasformatore', 'Ponte di Graetz', 'Condensatore di livellamento', 'Regolatore 7805'],
+        items: ['Trasformatore', 'Ponte di diodi (Graetz)', 'Condensatore di livellamento', 'Regolatore 7805'],
         ends: ['Presa di rete', 'Uscita a 5 V'],
-        why: 'Il trasformatore abbassa i 230 V alternati, il ponte di Graetz raddrizza le due semionde, il condensatore riempie i vuoti tra un impulso e l\'altro e il 7805 fissa l\'uscita a 5 V.',
+        why: 'Il trasformatore abbassa i 230 V alternati, il ponte di diodi (ponte di Graetz) raddrizza le due semionde, il condensatore riempie i vuoti tra un impulso e l\'altro e il 7805 fissa l\'uscita a 5 V.',
       },
       {
-        id: 'ei-34', level: 1, topic: 'Trasformatore', chapter: 'alimentatore', type: 'choice',
-        q: 'A che cosa serve, in un alimentatore, il componente di questo simbolo?',
+        id: 'ei-34', level: 1, topic: 'Componenti dell\'alimentatore', chapter: 'alimentatore', type: 'choice',
+        q: 'A che cosa serve, in un alimentatore, il componente rappresentato da questo simbolo?',
         figure: { kind: 'symbol', name: 'transformer' },
         options: ['Ad abbassare la tensione della rete', 'A trasformare l\'alternata in continua', 'A livellare la tensione raddrizzata', 'A tenere l\'uscita fissa a 5 V'],
         answer: 0,
@@ -324,7 +334,7 @@
       },
       {
         id: 'ei-35', level: 2, topic: 'Ponte di Graetz', chapter: 'alimentatore', type: 'choice',
-        q: 'Questa è la tensione all\'uscita di un ponte di Graetz collegato alla rete a 50 Hz. Con quale frequenza si ripetono gli impulsi?',
+        q: 'Questa è la tensione all\'uscita di un ponte di diodi (ponte di Graetz) alimentato dalla rete a 50 Hz. Con quale frequenza si ripetono gli impulsi?',
         figure: { kind: 'wave', shape: 'full-wave' },
         options: ['100 Hz', '50 Hz', '25 Hz', '200 Hz'],
         answer: 0,
@@ -340,10 +350,10 @@
       // ------------------------------------------------------------ storia
       {
         id: 'ei-37', level: 1, topic: 'Linea del tempo', chapter: 'storia', type: 'order',
-        q: 'Dalla valvola al chip: metti queste invenzioni in ordine cronologico.',
-        items: ['Valvola diodo', 'Valvola triodo', 'Transistor a punta di contatto', 'Primi transistor al silicio', 'Timer integrato 555'],
-        ends: ['Più antico', 'Più recente'],
-        why: 'Valvola diodo di Fleming (1904), triodo di De Forest (1906), transistor a punta di contatto dei Bell Labs (1947, al germanio), primi transistor al silicio della Texas Instruments (1954), timer 555 progettato da Hans Camenzind (1971).',
+        q: 'Metti queste tappe dell\'elettronica in ordine cronologico.',
+        items: ['Effetto Edison', 'Valvola diodo', 'Transistor a punta di contatto', 'Primi transistor al silicio', 'Primo circuito integrato'],
+        ends: ['Più antica', 'Più recente'],
+        why: 'Effetto Edison (1883), valvola diodo di Fleming (1904), transistor a punta di contatto dei Bell Labs (1947, al germanio), primi transistor al silicio (1954) e primo circuito integrato, di Jack Kilby (1958): dalla valvola al chip.',
       },
       {
         id: 'ei-38', level: 1, topic: 'Valvola triodo', chapter: 'storia', type: 'choice',
@@ -355,7 +365,7 @@
           'Un magnete che devia gli elettroni',
         ],
         answer: 0,
-        why: 'Nel triodo (Lee De Forest, 1906) una griglia tra catodo e placca regola la corrente: una piccola tensione sulla griglia ne comanda una grande. È il primo componente elettronico capace di amplificare un segnale.',
+        why: 'Nel triodo (Lee De Forest, 1906) una griglia tra filamento e placca regola il flusso di elettroni: piccole variazioni della tensione di griglia producono grandi variazioni della corrente di placca. È il primo componente elettronico capace di amplificare un segnale.',
       },
       {
         id: 'ei-39', level: 2, topic: 'Inventori', chapter: 'storia', type: 'match',
@@ -367,19 +377,19 @@
           ['Atalla e Kahng', 'MOSFET'],
           ['Hans Camenzind', 'Timer 555'],
         ],
-        why: 'Fleming (1904) e De Forest (1906) inventarono le valvole; Bardeen, Brattain e Shockley, ai Bell Labs, il transistor (1947); Atalla e Kahng il MOSFET (1959); Camenzind il timer 555 (1971).',
+        why: 'Fleming inventò la valvola diodo (1904) e De Forest il triodo (1906). Ai Bell Labs Bardeen e Brattain costruirono il primo transistor (1947) e Shockley, che guidava il gruppo, ideò quello a giunzione (1948); Atalla e Kahng inventarono il MOSFET (1959), Camenzind il timer 555 (1971).',
       },
       {
         id: 'ei-40', level: 2, topic: 'Dalla valvola al transistor', chapter: 'storia', type: 'choice',
-        q: 'Perché, dagli anni \'50, il transistor ha preso il posto della valvola termoionica?',
+        q: 'Perché, dagli anni Cinquanta, il transistor ha preso il posto della valvola termoionica?',
         options: [
           'È piccolo, robusto e non ha un filamento da scaldare',
           'Lavora nel vuoto e quindi si consuma molto meno',
-          'Regge tensioni molto più alte di qualsiasi valvola',
+          'Regge tensioni e potenze più alte delle valvole',
           'Fin dall\'inizio costava meno ed era di silicio',
         ],
         answer: 0,
-        why: 'La valvola deve scaldare un filamento: consuma molta energia, è grande, fragile e prima o poi si esaurisce. Il transistor è minuscolo, consuma poco e dura a lungo: così sono nate le radio tascabili e poi i chip.',
+        why: 'La valvola scalda un filamento: consuma molto, è grande, fragile e prima o poi si esaurisce. Il transistor è minuscolo, consuma poco e dura a lungo. Già nel 1945 i Bell Labs cercavano un dispositivo a semiconduttore che sostituisse valvole e relè nelle centrali telefoniche.',
       },
     ],
   });
