@@ -381,6 +381,7 @@
    *   { min, max, passo }        scala lineare
    *   { min, max, scala: 'log' } scala logaritmica, per grandezze che vanno da 1 a 1000 e oltre
    *   { valori: [10, 12, 15] }   solo i valori dell'elenco (per esempio la serie E12), un passo per tasto
+   * etichetta(testo) cambia il nome mostrato sopra il cursore.
    */
   ui.cursore = function (o) {
     const id = o.id || EB.uid('cur');
@@ -407,8 +408,9 @@
       value: dalValore(o.valore),
     });
     const out = EB.h('output', { for: id });
+    const nome = EB.h('span', null, o.etichetta);
     const el = EB.h('div', { class: 'eb-cursore' + (o.grandezza ? ' q-' + o.grandezza : '') },
-      EB.h('label', { for: id }, EB.h('span', null, o.etichetta), out),
+      EB.h('label', { for: id }, nome, out),
       input);
     let valore = o.valore;
     function mostra() {
@@ -434,6 +436,7 @@
         mostra();
         if (!silenzioso && o.cambia) o.cambia(valore);
       },
+      etichetta(testo) { nome.textContent = testo; },
     };
   };
 
@@ -491,14 +494,14 @@
   };
 
   // Lettura digitale da strumento: etichetta piccola, valore grande a cifre fisse.
-  // nota(testo) cambia la riga piccola sotto il valore (la crea se manca, la toglie se il testo è vuoto).
-  // Il valore lampeggia piano quando cambia; { lampo: false } lo evita per le letture che cambiano di continuo
-  // (nell'opzione della lettura o in imposta(testo, { lampo: false })).
+  // nota(testo) cambia la riga piccola sotto il valore (la crea se manca, la toglie se il testo è vuoto);
+  // etichetta(testo) cambia il nome. Il valore lampeggia piano quando cambia: { lampo: false } lo evita
+  // per le letture che cambiano di continuo (nelle opzioni della lettura o in imposta(testo, { lampo: false })).
   ui.lettura = function (o) {
     const val = EB.h('span', { class: 'eb-lettura-v' }, o.valore || '–');
     let notaEl = o.nota ? EB.h('span', { class: 'eb-lettura-n' }, o.nota) : null;
-    const el = EB.h('div', { class: 'eb-lettura' + (o.grandezza ? ' q-' + o.grandezza : '') },
-      EB.h('span', { class: 'eb-lettura-l' }, o.etichetta), val, notaEl);
+    const nome = EB.h('span', { class: 'eb-lettura-l' }, o.etichetta);
+    const el = EB.h('div', { class: 'eb-lettura' + (o.grandezza ? ' q-' + o.grandezza : '') }, nome, val, notaEl);
     let ultimo = val.textContent;
     return {
       el: el,
@@ -518,6 +521,7 @@
         if (!notaEl) { notaEl = EB.h('span', { class: 'eb-lettura-n' }); el.append(notaEl); }
         notaEl.textContent = testo;
       },
+      etichetta(testo) { nome.textContent = testo; },
     };
   };
 

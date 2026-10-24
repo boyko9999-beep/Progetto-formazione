@@ -239,7 +239,7 @@
 .eb-lab-corpo { display: grid; grid-template-columns: minmax(0, 1fr) 240px; border-bottom: 1px solid var(--lab-line); }
 .eb-lab-scena { position: relative; min-width: 0; padding: 10px; }
 .eb-lab-scena > svg { display: block; width: 100%; height: auto; }
-.eb-tela { display: block; width: 100%; touch-action: none; }
+.eb-tela { display: block; width: 100%; }
 .eb-lab-pannello { display: grid; align-content: start; gap: 10px; padding: 14px; border-left: 1px solid var(--lab-line); background: var(--lab-panel); }
 .eb-lab-pannello:empty { display: none; }
 .eb-lab-corpo:has(.eb-lab-pannello:empty) { grid-template-columns: minmax(0, 1fr); }
@@ -297,10 +297,10 @@
 .eb-scelta legend { padding: 0; margin: 0 0 6px; font-size: .86rem; font-weight: 600; color: var(--lab-text); }
 .eb-scelta label { position: relative; cursor: pointer; }
 .eb-scelta input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
-.eb-scelta span { display: inline-block; padding: 7px 13px; border-radius: 9px; font-size: .86rem; font-weight: 650; background: #15221e; color: var(--lab-text); border: 1px solid var(--lab-line); transition: background .18s ease, color .18s ease, border-color .18s ease; }
+.eb-scelta label > span { display: inline-block; padding: 7px 13px; border-radius: 9px; font-size: .86rem; font-weight: 650; background: #15221e; color: var(--lab-text); border: 1px solid var(--lab-line); transition: background .18s ease, color .18s ease, border-color .18s ease; }
 .eb-scelta input:checked + span { background: var(--lab-accent); color: #160f00; border-color: transparent; }
 .eb-scelta input:focus-visible + span { outline: 3px solid #fff; outline-offset: 2px; }
-.eb-scelta label:hover span { border-color: var(--lab-dim); }
+.eb-scelta label:hover > span { border-color: var(--lab-dim); }
 
 .eb-switch { display: inline-flex; align-items: center; gap: 10px; padding: 6px 10px 6px 6px; border-radius: 999px; cursor: pointer; font: 650 .88rem var(--font); background: #15221e; color: var(--lab-strong); border: 1px solid var(--lab-line); }
 .eb-switch-track { position: relative; width: 40px; height: 22px; border-radius: 999px; background: #2a3a35; transition: background .2s ease; }
