@@ -10,8 +10,10 @@
   const main = document.getElementById('main');
   const QUIZ = '../quiz/index.html#elettronica-intermedia';
   const registered = Object.fromEntries(EI.chapters.map((c) => [c.id, c]));
+  // "P-N" non va a capo dopo il trattino: trattino non separabile solo nella pagina.
+  const nobreak = (t) => String(t).replace(/([A-Z])-([A-Z])/g, '$1\u2011$2');
   const chapters = SEZ.capitoli.map((m, i) => Object.assign(
-    { number: i + 1, title: m.titolo, tagline: m.descrizione, period: m.periodo },
+    { number: i + 1, title: nobreak(m.titolo), tagline: m.descrizione, period: m.periodo },
     registered[m.id] || { id: m.id, pending: true }));
   const byId = Object.fromEntries(chapters.map((c) => [c.id, c]));
 

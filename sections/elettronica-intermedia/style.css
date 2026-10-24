@@ -166,7 +166,8 @@
 .ei-slider-label { font: 600 .84rem var(--font); color: var(--lab-ink); }
 .ei-slider-out { font: 700 .92rem var(--mono); color: var(--trace-2); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .ei-slider-help { font-size: .76rem; color: var(--scope-text); }
-.ei-slider input[type="range"] { -webkit-appearance: none; appearance: none; width: 100%; height: 30px; margin: 0; background: transparent; cursor: pointer; --fill: 50%; }
+.ei-slider { --fill: 50%; } /* core.js aggiorna --fill sul contenitore; il cursore la eredita */
+.ei-slider input[type="range"] { -webkit-appearance: none; appearance: none; width: 100%; height: 30px; margin: 0; background: transparent; cursor: pointer; }
 .ei-slider input[type="range"]::-webkit-slider-runnable-track {
   height: 6px; border-radius: 3px;
   background: linear-gradient(90deg, var(--trace-2) 0 var(--fill), #1f2d29 var(--fill) 100%);
@@ -291,6 +292,7 @@
 /* icone dei capitoli (simboli chiari su fondo scuro) */
 .ei-icon { width: 100%; height: 100%; overflow: visible; color: var(--sym); }
 .ei-icon .ei-sym-label { display: none; }
+.ei-icon .fit * { vector-effect: non-scaling-stroke; }
 .ei-icon circle:not([class]) { fill: none; stroke: var(--sym); stroke-width: 2.4; }
 .ei-icon circle.hot { fill: var(--trace-2); stroke: none; }
 .ei-icon path.thin { fill: none; stroke: var(--sym); stroke-width: 1.4; opacity: .5; }
@@ -529,6 +531,19 @@
   .ei-formula-expr { font-size: 1.25rem; }
   .ei-era-head { grid-template-columns: 1fr; }
   .ei-era-head p { grid-column: 1; }
+
+  /* barra in alto compatta e sempre su una riga: sul telefono resta fissa senza mangiare lo schermo */
+  .ei-page .topbar { flex-wrap: nowrap; gap: 8px; padding-top: 8px; padding-bottom: 8px; }
+  .ei-page .brand span { display: none; }
+  .ei-page .topnav {
+    flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; min-width: 0;
+    -webkit-mask-image: linear-gradient(90deg, #000 88%, transparent); mask-image: linear-gradient(90deg, #000 88%, transparent);
+  }
+  .ei-page .topnav::-webkit-scrollbar { display: none; }
+  .ei-page .topnav a { white-space: nowrap; }
+  .ei-page .progress { position: absolute; left: 0; right: 0; bottom: -1px; }
+  .ei-page #progress { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .ei-page .progress-track { width: 100%; height: 3px; border-radius: 0; background: transparent; }
 }
 
 /* sul telefono lo schema si rimpicciolisce: testi e tratti più grossi in unità del disegno */

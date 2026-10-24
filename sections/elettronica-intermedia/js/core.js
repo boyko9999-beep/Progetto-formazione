@@ -125,11 +125,16 @@
   // Tempi e curve del movimento (gli stessi valori sono in style.css come --t-fast ecc.).
   EI.motion = { fast: 180, normal: 350, slow: 600, ease: 'cubic-bezier(.22, 1, .36, 1)' };
 
+  // Un termine dentro una frase: minuscola solo la prima lettera ("Giunzione P-N" → "giunzione P-N"); le sigle restano ("LED").
+  function inText(term) {
+    return /^[A-ZÀ-Ý]{2}/.test(term) ? term : term.charAt(0).toLowerCase() + term.slice(1);
+  }
+
   // Testo dei capitoli: [[id-glossario|testo]] o [[id-glossario]] diventa un termine con definizione.
   EI.rich = function (str) {
     return String(str).replace(/\[\[([a-z0-9-]+)(?:\|([^\]]+))?\]\]/g, (m, id, text) => {
       const g = EI.glossary && EI.glossary[id];
-      const label = text || (g ? g.term.toLowerCase() : id);
+      const label = text || (g ? inText(g.term) : id);
       return '<a class="ei-term" href="#glossario/' + id + '" data-term="' + id + '">' + label + '</a>';
     });
   };
@@ -328,11 +333,12 @@
     let lastX = -1e9;
     for (const t of xs) {
       if (!t.major) continue;
-      const x = this.X(t.v);
       const s = tickLabel(this.opts.x, t.v);
       const wTxt = c.measureText(s).width;
+      // posizione già spostata dentro il grafico: il controllo delle sovrapposizioni usa quella vera
+      const x = EI.clamp(this.X(t.v), px0 + wTxt / 2, px1 - wTxt / 2);
       if (x - wTxt / 2 < lastX + 6) continue;
-      c.fillText(s, EI.clamp(x, px0 + wTxt / 2, px1 - wTxt / 2), py1 + 6);
+      c.fillText(s, x, py1 + 6);
       lastX = x + wTxt / 2;
     }
     c.textAlign = 'right';
@@ -973,6 +979,8 @@
   // Icone dei capitoli: un simbolo in un riquadro 64×64.
   EI.icon = function (name) {
     const svg = EI.svg(64, 64, { class: 'ei-icon', 'aria-hidden': 'true' });
+    // I simboli grandi (transistor, operazionale) vengono rimpiccioliti per stare dentro i 64 × 64.
+    const fit = (scale, tx, ty, draw) => draw(EI.s('g', { class: 'fit', transform: 'translate(' + tx + ' ' + ty + ') scale(' + scale + ')' }, svg));
     const map = {
       lattice: () => {
         for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) EI.s('circle', { cx: 16 + i * 16, cy: 16 + j * 16, r: i === 1 && j === 1 ? 5 : 4, class: i === 1 && j === 1 ? 'hot' : '' }, svg);
@@ -980,10 +988,10 @@
       },
       diode: () => sym.diode(svg, { x: 4, y: 32, len: 56 }),
       led: () => sym.diode(svg, { x: 4, y: 36, len: 56, kind: 'led' }),
-      bjt: () => sym.bjt(svg, { x: 26, y: 32, circle: true }),
-      mosfet: () => sym.nmos(svg, { x: 28, y: 32 }),
+      bjt: () => fit(0.62, 33, 32, (g) => sym.bjt(g, { x: 0, y: 0, circle: true })),
+      mosfet: () => fit(0.62, 34, 32, (g) => sym.nmos(g, { x: 0, y: 0 })),
       capacitor: () => sym.capacitor(svg, { x: 4, y: 32, len: 56 }),
-      opamp: () => sym.opamp(svg, { x: 14, y: 32 }),
+      opamp: () => fit(0.5, 15, 32, (g) => sym.opamp(g, { x: 0, y: 0 })),
       wave: () => EI.s('path', { d: 'M6 40V20H18V40H30V20H42V40H54V20', class: 'thick' }, svg),
       supply: () => {
         EI.s('path', { d: 'M6 32q6 -18 12 0t12 0', class: 'thick' }, svg);
