@@ -284,6 +284,67 @@ test('Harvard non supera mai von Neumann anche su programmi casuali', () => {
   }
 });
 
+/* ---------- traffico sui bus, descrizioni brevi, ruoli delle celle ---------- */
+
+test('traffico: un elemento per ciclo; in von Neumann istruzioni e dati si alternano sullo stesso bus', () => {
+  ['somma', 'conto', 'molt'].forEach((id) => {
+    const p = M.programma(id);
+    const vn = M.traffico(p.memoria, 'vn');
+    const h = M.traffico(p.memoria, 'harvard');
+    const c = M.confronta(p.memoria);
+    assert.ok(vn.fermo && h.fermo, id);
+    // Un elemento per ciclo, e gli stessi cicli dell'esecuzione completa.
+    assert.strictEqual(vn.bus.U.length, c.vn.cicli, id);
+    assert.strictEqual(h.bus.I.length, c.harvard.cicli, id);
+    assert.strictEqual(h.bus.D.length, c.harvard.cicli, id);
+    // Von Neumann: un prelievo per istruzione e un ciclo di bus per ogni accesso ai dati.
+    assert.strictEqual(vn.bus.U.filter((v) => v === 'istruzione').length, c.vn.istruzioni, id);
+    assert.strictEqual(vn.bus.U.filter((v) => v === 'dato').length, c.vn.accessiDati, id);
+    // Harvard: stessi prelievi e stessi accessi, ma su due bus; nei cicli dei dati il bus istruzioni lavora in parallelo.
+    assert.strictEqual(h.bus.I.filter(Boolean).length, c.harvard.prelievi, id);
+    assert.strictEqual(h.bus.D.filter(Boolean).length, c.harvard.accessiDati, id);
+    const paralleli = h.bus.D.filter((v, i) => v && h.bus.I[i]).length;
+    assert.strictEqual(paralleli, c.harvard.sovrapposti, id);
+    assert.ok(paralleli > 0, id);
+  });
+  // Un programma senza HLT si ferma al limite di cicli.
+  const giro = M.traffico(M.programma('auto').memoria, 'harvard', { maxCicli: 50 });
+  assert.strictEqual(giro.fermo, false);
+  assert.strictEqual(giro.bus.I.length, giro.cicli);
+  assert.ok(giro.cicli >= 50 && giro.cicli <= 51);
+});
+
+test('rtl: l\'istruzione con l\'operando vero', () => {
+  assert.strictEqual(M.rtl(M.codifica('ADD', 15)), 'A ← A + M[15]');
+  assert.strictEqual(M.rtl(M.codifica('LDI', 5)), 'A ← 5');
+  assert.strictEqual(M.rtl(M.codifica('STA', 13)), 'M[13] ← A');
+  assert.strictEqual(M.rtl(M.codifica('JZ', 6)), 'se Z = 1: PC ← 6');
+  assert.strictEqual(M.rtl(M.codifica('OUT')), 'uscita ← A');
+  assert.match(M.rtl(0x9A), /sconosciuto/);
+});
+
+test('riassunto: una riga per ogni micro-passo, che nomina la fase', () => {
+  let s = M.nuovoStato(M.programma('molt').memoria, 'vn');
+  const fasi = { P1: /^Prelievo/, P2: /^Prelievo/, D: /^Decodifica · /, E1: /^Esecuzione/, E2: /^Esecuzione/, E: /^Esecuzione/ };
+  for (let i = 0; i < 400 && !s.fermo; i++) {
+    const r = M.microPasso(s, { testi: false });
+    const t = M.riassunto(r.passo);
+    assert.match(t, fasi[r.passo.id], r.passo.id);
+    assert.ok(t.length < 90, t);
+    s = r.stato;
+  }
+  assert.ok(s.fermo);
+  assert.strictEqual(M.riassunto(M.microPasso(s).passo), 'CPU ferma');
+});
+
+test('ruoli delle celle: istruzioni e dati come scritti nel sorgente', () => {
+  const p = M.programma('somma');
+  assert.deepStrictEqual(p.ruoli.slice(0, 5), ['istruzione', 'istruzione', 'istruzione', 'istruzione', 'istruzione']);
+  assert.deepStrictEqual(p.ruoli.slice(13), ['dato', 'dato', 'dato']);
+  assert.strictEqual(p.ruoli[7], null);
+  M.PROGRAMMI.forEach((q) => assert.strictEqual(q.ruoli.length, 16, q.id));
+});
+
 /* ---------- integrità dei contenuti del capitolo ---------- */
 
 test('capitolo: blocchi, schede in ordine, numeri, collegamenti e lunghezza del testo', () => {
@@ -333,7 +394,8 @@ test('capitolo: blocchi, schede in ordine, numeri, collegamenti e lunghezza del 
   const capitoli = ['giganti', 'von-neumann', 'primi-pc', 'ibm-pc', 'scheda-madre', 'memoria', 'avvio', 'grafica', 'prestazioni', 'oggi'];
   cap.collegamenti.forEach((l) => {
     const bus = l.href.match(/^\.\.\/\.\.\/index\.html#\/bus\/([a-z0-9]+)$/);
-    const sezione = /^\.\.\/(elettronica-base|elettronica-intermedia|elettronica-avanzata|porte-logiche|chip-programmabili|programmazione)\/(#[a-z-]+)?$/.test(l.href) ||
+    // Sempre con index.html esplicito: un «/» finale non funziona aprendo i file in locale.
+    const sezione = /^\.\.\/(elettronica-base|elettronica-intermedia|elettronica-avanzata|porte-logiche|chip-programmabili|programmazione)\/index\.html(#[a-z0-9-]+)?$/.test(l.href) ||
       l.href === '../quiz/index.html#storia-pc/von-neumann';
     const interno = l.href.startsWith('#') && capitoli.includes(l.href.slice(1));
     assert.ok((bus && busValidi.includes(bus[1])) || sezione || interno, 'collegamento valido: ' + l.href);

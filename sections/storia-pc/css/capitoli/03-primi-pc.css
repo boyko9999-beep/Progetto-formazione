@@ -1,1 +1,318 @@
 /* Storia del PC · capitolo 3 (primi-pc). */
+
+/* =====================================================================
+ * Illustrazioni: Olivetti Programma 101, Apple II con i lettori Disk II.
+ * Tutte le classi stanno sotto .pc3-fig, così i nomi brevi non escono dal capitolo.
+ * ===================================================================== */
+
+.pc3-fig {
+  --pc3-carta: #f4f1e8;   /* carta e schede restano chiare anche nel tema scuro */
+  --pc3-accento: var(--cap, var(--era-3));
+}
+
+.pc3-fig .l { stroke: var(--ill-linea); stroke-width: 2; stroke-linejoin: round; }
+.pc3-fig .l1 { stroke: var(--ill-linea); stroke-width: 1.5; stroke-linejoin: round; }
+.pc3-fig .be { fill: var(--ill-beige); }
+.pc3-fig .be2 { fill: var(--ill-beige-2); }
+.pc3-fig .be3 { fill: var(--ill-beige-3); }
+.pc3-fig .gr { fill: var(--ill-grigio); }
+.pc3-fig .gr2 { fill: var(--ill-grigio-2); }
+.pc3-fig .sc { fill: var(--ill-scuro); }
+.pc3-fig .sc2 { fill: var(--ill-scuro-2); }
+.pc3-fig .pc3-carta { fill: var(--pc3-carta); }
+.pc3-fig .pc3-ombra { fill: #000; opacity: .14; }
+.pc3-fig .pc3-riflesso { fill: none; stroke: #fff; stroke-width: 2; stroke-linecap: round; opacity: .45; }
+.pc3-fig .pc3-solco { fill: none; stroke: var(--ill-beige-3); stroke-width: 1.5; stroke-linecap: round; }
+.pc3-fig .pc3-solco-carta { fill: none; stroke: #c9c2b0; stroke-width: 1.2; }
+.pc3-fig .pc3-stampa { fill: var(--ill-scuro-2); }
+.pc3-fig .pc3-fessura { fill: var(--ill-chip); }
+.pc3-fig .pc3-magnetica { fill: var(--ill-legno); }
+.pc3-fig .pc3-righe { fill: none; stroke: #9a927f; stroke-width: 2; stroke-linecap: round; }
+.pc3-fig .pc3-intestazione { fill: var(--pc3-accento); }
+.pc3-fig .pc3-lampada-verde { fill: var(--ill-fosforo); }
+.pc3-fig .pc3-lampada-rossa { fill: #7a2a26; }
+.pc3-fig .pc3-bagliore-verde { fill: var(--ill-fosforo); opacity: .28; }
+.pc3-fig .pc3-bagliore-rosso { fill: var(--ill-led); opacity: .3; }
+.pc3-fig .pc3-led { fill: var(--ill-led); }
+.pc3-fig .pc3-led-spento { fill: #6e2420; }
+.pc3-fig .pc3-tacche { fill: none; stroke: var(--ill-grigio-2); stroke-width: 1.5; stroke-linecap: round; }
+.pc3-fig .pc3-indice { fill: none; stroke: var(--ill-scuro); stroke-width: 2.5; stroke-linecap: round; }
+.pc3-fig .pc3-schermo { fill: var(--ill-schermo); }
+.pc3-fig .pc3-vetro { fill: #fff; opacity: .07; }
+.pc3-fig .pc3-busta { fill: var(--ill-chip); }
+.pc3-fig .pc3-foro { fill: var(--ill-tela); }
+
+/* tasti: piano chiaro e bordo frontale più scuro */
+.pc3-fig .tc { fill: var(--ill-beige); }
+.pc3-fig .tc-o { fill: var(--ill-beige-3); }
+.pc3-fig .ts { fill: var(--ill-grigio-2); }
+.pc3-fig .ts-o { fill: #1c2024; }
+.pc3-fig .tm { fill: var(--ill-grigio); }
+.pc3-fig .tm-o { fill: var(--ill-grigio-2); }
+.pc3-fig .tk { fill: var(--ill-scuro-2); }
+.pc3-fig .tk-o { fill: #15181b; }
+
+/* schermo dell'Apple II: grafica a blocchi e righe di testo */
+.pc3-fig .px-cielo { fill: var(--ill-blu); }
+.pc3-fig .px-sole { fill: var(--ill-ambra); }
+.pc3-fig .px-monte { fill: #b05ad8; }
+.pc3-fig .px-neve { fill: #eef0f2; }
+.pc3-fig .px-prato { fill: #2fae5a; }
+.pc3-fig .px-prato2 { fill: #64d27f; }
+.pc3-fig .px-testo { fill: #eef0f2; }
+.pc3-fig .ab1 { fill: #61bb46; }
+.pc3-fig .ab2 { fill: #fdb827; }
+.pc3-fig .ab3 { fill: #f5821f; }
+.pc3-fig .ab4 { fill: #e03a3e; }
+.pc3-fig .ab5 { fill: #963d97; }
+.pc3-fig .ab6 { fill: #009ddc; }
+
+/* richiami numerati */
+.pc3-fig .pc3-guida { fill: none; stroke: var(--pc3-accento); stroke-width: 2; stroke-linecap: round; }
+.pc3-fig .pc3-guida-punto { fill: var(--pc3-accento); }
+.pc3-fig .pc3-richiamo circle { fill: var(--pc3-accento); }
+.pc3-fig .pc3-richiamo text { fill: var(--bg); font: 800 23px var(--font); text-anchor: middle; }
+
+/* =====================================================================
+ * Laboratorio: il pannello dell'Altair 8800 (sempre scuro).
+ * Classi HTML con prefisso .altair, classi SVG con prefisso .alt-.
+ * Nel disegno le dimensioni dei testi arrivano dagli attributi font-size:
+ * qui si usano solo font-family e font-weight, mai la scorciatoia font.
+ * ===================================================================== */
+
+.altair {
+  --altair-fondo: #16191d;
+  --altair-scheda: #0b1311;
+  --altair-tenue: #7f9a90;
+  display: grid; gap: 14px; min-width: 0;
+}
+.altair [hidden] { display: none !important; }
+.altair-banco, .altair-lati, .altair-info, .altair-missione { min-width: 0; }
+.altair-lati { display: grid; gap: 14px; align-items: start; }
+/* Colonne esplicite a ogni livello: una griglia annidata con una colonna 1fr, misurata
+   «a contenuto», si allargherebbe fino alla riga di testo più lunga. */
+.altair, .altair-lati, .altair-info, .altair-missione, .altair-cicli, .altair-passi, .altair-pastiglie { grid-template-columns: minmax(0, 1fr); }
+
+/* disposizioni scelte dal codice in base alla larghezza disponibile */
+.altair--largo .altair-lati { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); }
+.altair--affianca { grid-template-columns: minmax(326px, 400px) minmax(0, 1fr); align-items: start; }
+.altair--solo .altair-pannello { max-width: 440px; margin-inline: auto; }
+@media (max-width: 480px) {
+  /* sul telefono il pannello arriva ai bordi della cornice: ogni levetta resta larga almeno 40 px */
+  .altair--solo .altair-pannello { max-width: none; margin-inline: -12px; border-radius: 0; box-shadow: 0 1px 0 #2b3138, 0 -1px 0 #2b3138; }
+}
+
+/* ---------- il pannello ---------- */
+
+.altair-pannello {
+  position: relative; border-radius: 12px; overflow: hidden; background: var(--altair-fondo);
+  box-shadow: 0 0 0 1px #2b3138, 0 26px 44px -30px rgba(0, 0, 0, .95);
+  -webkit-user-select: none; user-select: none;
+}
+.altair-svg { display: block; width: 100%; height: auto; }
+.altair-tasti { position: absolute; inset: 0; }
+.altair-tasto {
+  position: absolute; margin: 0; padding: 0; border: 0; border-radius: 8px;
+  background: transparent; cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  transition: background-color var(--dur-fast) var(--ease-smooth);
+}
+@media (hover: hover) {
+  .altair-tasto:hover { background: rgba(255, 255, 255, .045); }
+}
+.altair-tasto:active { background: rgba(92, 200, 255, .1); }
+.altair-tasto:focus-visible { outline: 2px solid var(--trace-3); outline-offset: -2px; background: rgba(92, 200, 255, .06); }
+.altair--auto .altair-tasto { cursor: progress; }
+
+.altair-svg .alt-fondo { fill: var(--altair-fondo); }
+.altair-svg .alt-fascia { fill: #2c5a8c; }
+.altair-svg .alt-filo { fill: none; stroke: #a9c0d6; stroke-width: 1; opacity: .5; }
+.altair-svg .alt-vite { fill: #8f98a0; stroke: #565e65; stroke-width: 1; }
+.altair-svg .alt-vite-taglio { fill: none; stroke: #343a40; stroke-width: 1.4; stroke-linecap: round; }
+.altair-svg .alt-linea { fill: none; stroke: #4a535b; stroke-width: 1.2; }
+
+/* serigrafia */
+.altair-svg .alt-t { fill: #e6eaee; font-family: var(--font); font-weight: 700; letter-spacing: .03em; }
+.altair-svg .alt-logo { fill: #f6f8fa; font-weight: 800; letter-spacing: .16em; }
+.altair-svg .alt-t.sez { fill: #d3d9de; font-weight: 800; letter-spacing: .16em; }
+.altair-svg .alt-t.piccolo { fill: #a7b0b8; letter-spacing: .12em; }
+.altair-svg .alt-t.nota { fill: var(--trace-3); font-family: var(--mono); font-style: italic; letter-spacing: 0; }
+.altair-svg .alt-fn { fill: #e6eaee; letter-spacing: .05em; }
+.altair-svg .alt-led-nome { fill: #c1c9d0; letter-spacing: .02em; }
+
+/* LED: ghiera, corpo spento, luce (l'opacità la regola il codice), riflesso e bagliore */
+.altair-svg .alt-led-ghiera { fill: #0b0c0e; stroke: #3b4249; stroke-width: 1.2; }
+.altair-svg .alt-led-spento { fill: #4a1612; }
+.altair-svg .alt-led-acceso { fill: #ff4a36; }
+.altair-svg .alt-led-riflesso { fill: #fff; opacity: .3; }
+.altair-svg .alt-aloni { pointer-events: none; mix-blend-mode: screen; }
+
+/* terne di levette e cifra ottale corrispondente (aggiunte didattiche, non serigrafate sull'originale) */
+.altair-svg .alt-terna { fill: none; stroke: #c9d0d6; stroke-width: 1.3; opacity: .55; }
+.altair-svg .alt-cifra { fill: var(--trace-2); font-family: var(--mono); font-weight: 800; }
+
+/* levette cromate: rondella, dado esagonale, asta (scalata in verticale) e punta */
+.altair-svg .alt-leva-rondella { fill: #23282d; stroke: #4c545b; stroke-width: 1; transition: stroke var(--dur-fast) var(--ease-smooth); }
+.altair-svg .alt-leva-dado { fill: #b8c0c7; stroke: #6c757d; stroke-width: 1; }
+.altair-svg .alt-leva-foro { fill: #15181b; }
+.altair-svg .alt-leva-asta { fill: #dde3e8; stroke: #7a838b; stroke-width: 1; vector-effect: non-scaling-stroke; }
+.altair-svg .alt-leva-punta { fill: #f3f5f7; stroke: #7a838b; stroke-width: 1; }
+.altair-svg .alt-sopra .alt-leva-rondella { stroke: var(--trace-3); stroke-width: 2.2; }
+
+/* ---------- letture, cicli macchina, racconto ---------- */
+
+.altair-info { display: grid; gap: 12px; align-content: start; }
+.altair-etichetta { font: 700 .66rem var(--mono); text-transform: uppercase; letter-spacing: .1em; color: var(--altair-tenue); }
+.altair .altair-nota {
+  min-height: 5.2em; padding: 10px 12px; border-radius: 10px;
+  background: var(--altair-scheda); border: 1px solid var(--scope-grid);
+}
+.altair .altair-fatto, .altair .altair-fatto strong { color: var(--trace-1); font-weight: 700; }
+
+.altair .altair-letture { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.altair .altair-letture .altair-kv-cpu { order: 1; grid-column: 1 / -1; }
+.altair--largo .altair-letture { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.altair--largo .altair-letture .altair-kv-cpu { grid-column: span 2; }
+.altair .altair-letture dd { font-size: 1.02rem; overflow-wrap: anywhere; }
+.altair .altair-letture dd small { display: block; margin-top: 2px; font: 600 .7rem var(--mono); color: var(--altair-tenue); }
+.altair .altair-kv-cpu dd { font: 700 .88rem var(--font); color: #fff; }
+
+.altair-cicli { display: grid; gap: 8px; }
+.altair-cicli-tit { margin: 0; font-size: .86rem; line-height: 1.45; color: var(--scope-text); }
+.altair-cicli-tit strong { color: #fff; }
+.altair-pastiglie { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.altair-pastiglie:empty { display: none; }
+.altair-pastiglie li {
+  display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; gap: 8px; align-items: center;
+  padding: 5px 8px; border-radius: 8px; border: 1px solid transparent; background: var(--altair-scheda);
+  font-size: .8rem; line-height: 1.3; color: var(--altair-tenue);
+  transition-property: background-color, border-color, color; transition-duration: var(--dur-fast); transition-timing-function: var(--ease-smooth);
+}
+.altair-pastiglie b { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: #1a2723; color: var(--scope-text); font: 800 .7rem/1 var(--mono); }
+.altair-pastiglie .lab-mono { font-size: .76rem; color: #8fa9a0; white-space: nowrap; }
+.altair-pastiglie li.fatto { color: var(--scope-text); }
+.altair-pastiglie li.fatto b { background: color-mix(in srgb, var(--trace-1) 32%, var(--altair-scheda)); color: #fff; }
+.altair-pastiglie li.attivo { color: #fff; border-color: color-mix(in srgb, var(--trace-3) 55%, transparent); background: color-mix(in srgb, var(--trace-3) 10%, var(--altair-scheda)); }
+.altair-pastiglie li.attivo b { background: var(--trace-3); color: #04150d; }
+.altair-pastiglie li.attivo .lab-mono { color: var(--trace-2); }
+
+/* ---------- missione guidata ---------- */
+
+.altair-missione { position: relative; display: grid; gap: 10px; align-content: start; }
+.altair-missione > .lab-seg { justify-self: start; }
+.altair-mis-tit { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 2px 0 0; font-size: 1.02rem; color: #fff; }
+.altair-missione--compiuta .altair-mis-tit::after {
+  content: 'compiuta'; padding: 3px 8px 2px; border-radius: 99px;
+  font: 800 .64rem/1.2 var(--mono); letter-spacing: .1em; text-transform: uppercase;
+  color: #04150d; background: var(--trace-1);
+}
+.altair-mis-fonte { margin: -6px 0 0; font-size: .78rem; line-height: 1.4; color: var(--altair-tenue); }
+
+.altair-passi { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; counter-reset: altair-passo; }
+.altair-passo {
+  position: relative; display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 10px; align-items: start;
+  padding: 8px 10px; border-radius: 10px; border: 1px solid transparent; background: var(--altair-scheda);
+  counter-increment: altair-passo;
+  transition-property: background-color, border-color; transition-duration: var(--dur-normal); transition-timing-function: var(--ease-smooth);
+}
+.altair-spunta {
+  position: relative; display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%;
+  border: 2px solid #2c3d38;
+  transition-property: background-color, border-color; transition-duration: var(--dur-normal); transition-timing-function: var(--ease-smooth);
+}
+.altair-spunta::before { content: counter(altair-passo); font: 800 .72rem/1 var(--mono); color: var(--altair-tenue); }
+.altair-passo.fatto .altair-spunta { background: var(--trace-1); border-color: var(--trace-1); }
+.altair-passo.fatto .altair-spunta::before {
+  content: ''; width: 10px; height: 5px; border: solid #04150d; border-width: 0 0 2.5px 2.5px;
+  transform: translateY(-1px) rotate(-45deg);
+}
+.altair-passo.corrente { border-color: color-mix(in srgb, var(--trace-3) 45%, transparent); background: color-mix(in srgb, var(--trace-3) 7%, var(--altair-scheda)); }
+.altair-passo.corrente .altair-spunta { border-color: var(--trace-3); }
+.altair-passo.corrente .altair-spunta::before { color: var(--trace-3); }
+.altair-passo.corrente .altair-spunta::after {
+  content: ''; position: absolute; inset: -6px; border-radius: 50%; border: 2px solid var(--trace-3); opacity: 0;
+  animation: altair-onda 1.8s var(--ease-smooth) infinite paused;
+}
+.altair--attivo .altair-passo.corrente .altair-spunta::after { animation-play-state: running; }
+.altair-passo-testo { display: grid; gap: 2px; min-width: 0; font-size: .86rem; line-height: 1.45; color: var(--scope-text); }
+.altair-passo-testo strong { font-size: .9rem; color: #fff; }
+.altair-passo.fatto .altair-passo-testo strong { color: var(--trace-1); }
+.altair-passo.fatto .altair-passo-desc { color: var(--altair-tenue); }
+.altair-passo.appena { animation: altair-lampo var(--dur-crawl) var(--ease-smooth); }
+.altair-passo.appena .altair-spunta { animation: altair-pop var(--dur-slow) var(--ease-bounce); }
+.altair-sr { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+.altair-consiglio {
+  margin: 0; padding: 10px 12px; border-radius: 10px;
+  background: color-mix(in srgb, var(--trace-2) 7%, var(--altair-scheda)); border: 1px solid color-mix(in srgb, var(--trace-2) 24%, transparent);
+  font-size: .9rem; line-height: 1.5; color: var(--scope-text);
+}
+.altair-consiglio strong { color: #fff; }
+.altair-consiglio:empty { display: none; }
+
+.altair-progresso { display: flex; align-items: center; gap: 10px; }
+.altair-barra { position: relative; flex: 1; height: 8px; border-radius: 99px; background: #1a2723; overflow: hidden; }
+.altair-barra i {
+  position: absolute; inset: 0; border-radius: inherit;
+  background: linear-gradient(90deg, #1b9e62, var(--trace-1) 70%, #a6f5c9);
+  transform: scaleX(0); transform-origin: left center;
+  transition: transform var(--dur-normal) var(--ease-smooth);
+}
+.altair-barra-testo { flex: none; min-width: 7.5em; text-align: right; font-size: .78rem; color: var(--trace-2); }
+
+.altair--auto .altair-auto { background: #16211e; color: #fff; border-color: var(--trace-2); }
+.altair--auto .altair-auto:hover:not(:disabled) { color: #fff; filter: none; }
+
+.altair-missione.festa::after {
+  content: ''; position: absolute; inset: -1px; border-radius: inherit; pointer-events: none; opacity: 0;
+  box-shadow: 0 0 0 2px var(--trace-1), 0 0 36px -4px var(--trace-1);
+  animation: altair-festa 1.8s var(--ease-smooth);
+}
+
+/* listato del programma */
+.altair-listato > summary {
+  display: flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 4px; border-radius: 8px;
+  cursor: pointer; list-style: none; font: 700 .8rem var(--mono); color: var(--scope-text);
+}
+.altair-listato > summary::-webkit-details-marker { display: none; }
+.altair-listato > summary::before {
+  content: ''; flex: none; width: 0; height: 0; border-left: 6px solid currentColor; border-block: 4.5px solid transparent;
+  transition: transform var(--dur-fast) var(--ease-smooth);
+}
+.altair-listato[open] > summary::before { transform: rotate(90deg); }
+.altair-listato > summary:hover { color: #fff; }
+.altair-listato > summary:focus-visible { outline: 2px solid var(--trace-3); outline-offset: 2px; }
+.altair-listato-box {
+  max-height: 260px; overflow: auto; overscroll-behavior: contain; margin-top: 4px;
+  border: 1px solid var(--scope-grid); border-radius: 10px; background: var(--altair-scheda);
+  scrollbar-width: thin; scrollbar-color: #2c3d38 transparent;
+}
+/* la tabella generale di BusLab ha min-width: 1050px e bordi chiari: qui si annullano */
+.altair-listato-tab { width: 100%; min-width: 0; border-collapse: collapse; font-size: .8rem; line-height: 1.4; }
+.altair-listato-tab th, .altair-listato-tab td { border-bottom: 0; }
+.altair-listato-tab th {
+  position: sticky; top: 0; z-index: 1; padding: 7px 8px; text-align: left; background: #121c19;
+  font: 700 .64rem var(--mono); text-transform: uppercase; letter-spacing: .1em; color: var(--altair-tenue);
+}
+.altair-listato-tab td {
+  padding: 5px 8px; border-top: 1px solid #14201c; vertical-align: top; color: #8fa9a0;
+  transition: background-color var(--dur-normal) var(--ease-smooth);
+}
+.altair-listato-tab td.m { font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--scope-text); }
+.altair-listato-tab td.byte { font-weight: 700; color: var(--trace-2); }
+.altair-listato-tab td.ist strong { font-family: var(--mono); color: #fff; }
+.altair-listato-tab tr.inizio td { border-top-color: #22332e; }
+.altair-listato-tab tr.r-ok td.byte { color: var(--trace-1); }
+.altair-listato-tab tr.r-ok td:first-child { box-shadow: inset 3px 0 0 color-mix(in srgb, var(--trace-1) 70%, transparent); }
+.altair-listato-tab tr.r-prossimo td { background: color-mix(in srgb, var(--trace-3) 13%, transparent); color: #fff; }
+.altair-listato-tab tr.r-prossimo td:first-child { box-shadow: inset 3px 0 0 var(--trace-3); }
+.altair-listato-tab tr.r-prossimo td.byte { color: #fff; }
+.altair--solo .altair-col-bin { display: none; }
+
+@keyframes altair-onda { 0% { transform: scale(.75); opacity: .75; } 100% { transform: scale(1.3); opacity: 0; } }
+@keyframes altair-pop { 0% { transform: scale(.55); } 100% { transform: scale(1); } }
+@keyframes altair-lampo { from { background-color: color-mix(in srgb, var(--trace-1) 24%, var(--altair-scheda)); } }
+@keyframes altair-festa { 0% { opacity: 0; } 12% { opacity: 1; } 100% { opacity: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .altair *, .altair *::before, .altair *::after { animation: none !important; transition: none !important; }
+}

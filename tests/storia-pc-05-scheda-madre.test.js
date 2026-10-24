@@ -286,7 +286,9 @@ test('il capitolo si registra senza toccare il DOM e rispetta il contratto', () 
     assert.ok(s.nome && s.testo);
     if (i) assert.ok(s.anno >= schede[i - 1].anno, 'schede non in ordine: ' + s.anno);
   });
-  assert.ok(schede.some((s) => s.italia), 'almeno una scheda italiana');
+  // Il filo italiano (l'Olivetti M24) sta nel riquadro «italia»: la sua scheda di compatibile è nel capitolo 4.
+  const italia = cap.blocchi.find((b) => b.tipo === 'italia');
+  assert.ok(italia.paragrafi.length >= 1 && /Olivetti/.test(italia.paragrafi.join(' ')));
 
   const numeri = cap.blocchi.find((b) => b.tipo === 'numeri').items;
   assert.ok(numeri.length >= 3 && numeri.length <= 4);

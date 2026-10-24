@@ -379,6 +379,38 @@ test('Kill the Bit: la luce si sposta ogni ~0,11 secondi e si spegne con l\'inte
   assert.strictEqual(alt.r.d, 0o040);
 });
 
+test('Kill the Bit: il byte 006 (velocità) è libero; con 004 la luce corre 3,5 volte più piano', () => {
+  assert.ok(M.libero(KILLBIT, 0o006));
+  assert.ok(!M.libero(KILLBIT, 0o005));
+  assert.ok(!M.libero(SOMMA, 0o006), 'la somma non ha byte liberi');
+  const b = M.byteProgramma(KILLBIT, { 6: 0o004, 7: 0o123 });
+  assert.strictEqual(b[6], 0o004);
+  assert.strictEqual(b[7], 0, 'un byte non libero non si sostituisce');
+  const alt = M.creaAltair();
+  carica(alt, { istruzioni: KILLBIT.istruzioni, liberi: KILLBIT.liberi }); // con il valore originale
+  assert.ok(M.programmaPresente(alt, KILLBIT));
+  const lenta = M.creaAltair();
+  M.sequenzaInserimento(KILLBIT, { 6: 0o004 }).forEach((p) => assert.ok(M.applica(lenta, p).ok));
+  assert.strictEqual(lenta.leggi(6), 0o004);
+  assert.ok(M.programmaPresente(lenta, KILLBIT), 'il programma resta riconosciuto');
+  const mis = M.creaMissione('killbit');
+  M.sequenzaInserimento(KILLBIT, { 6: 0o004 }).forEach((p) => mis.aggiorna(M.applica(lenta, p), lenta));
+  assert.strictEqual(mis.corrente(), 'avvia');
+  assert.ok(mis.righe(lenta).every((r) => r.stato === 'ok'));
+  assert.strictEqual(mis.righe(lenta)[6].libero, true);
+  // la scelta della velocità nella missione decide il byte mostrato nel listato e il prossimo da inserire
+  const vuota = M.creaAltair();
+  const mis2 = M.creaMissione('killbit');
+  assert.strictEqual(mis2.righe(vuota)[6].byte, 0o016, 'senza scelta vale il byte originale');
+  mis2.sost[6] = 0o004;
+  assert.strictEqual(mis2.righe(vuota)[6].byte, 0o004);
+  assert.strictEqual(mis2.righe(lenta)[6].stato, 'ok');
+  lenta.run();
+  const t1 = eseguiFinche(lenta, () => lenta.ingressi >= 1, 2e6);
+  assert.ok(t1 > 780000 && t1 < 795000, 'primo spostamento dopo ' + t1 + ' stati');
+  assert.ok(Math.abs(t1 / M.FREQUENZA - 0.393) < 0.005);
+});
+
 test('Kill the Bit: il disegno di D compare sui LED A15-A8', () => {
   const alt = M.creaAltair();
   carica(alt, KILLBIT);
@@ -608,6 +640,12 @@ test('il capitolo è registrato con dati completi e coerenti', () => {
 
   assert.ok(cap.punti.length >= 4 && cap.punti.length <= 6);
   assert.ok(cap.collegamenti.some((l) => l.href === '../../index.html#/bus/s100'));
-  cap.collegamenti.forEach((l) => assert.ok(/^(\.\.\/\.\.\/index\.html#\/bus\/[a-z0-9]+|\.\.\/[a-z-]+\/(index\.html)?(#[a-z0-9/-]+)?|#[a-z-]+)$/.test(l.href), l.href));
+  // Le altre sezioni sempre con index.html esplicito: un "/" finale non funziona aprendo i file in locale.
+  cap.collegamenti.forEach((l) => assert.ok(/^(\.\.\/\.\.\/index\.html#\/bus\/[a-z0-9]+|\.\.\/[a-z-]+\/index\.html(#[a-z0-9/-]+)?|#[a-z-]+)$/.test(l.href), l.href));
+  cap.collegamenti.forEach((l) => assert.ok(l.tipo === 'buslab' || l.tipo === 'sezione', l.href + ': tipo ' + l.tipo));
+  // Nessun anno con il punto delle migliaia, apostrofi dritti nei testi.
+  const tutto = JSON.stringify(cap.blocchi.filter((b) => b.tipo !== 'figura')) + cap.intro + cap.punti.join(' ');
+  assert.ok(!/\b1\.9[0-9]{2}\b/.test(tutto), 'anni scritti senza punto');
+  assert.ok(!/[\u2018\u2019]/.test(tutto), 'apostrofi dritti');
   assert.ok(cap.lab && typeof cap.lab.crea === 'function' && cap.lab.titolo);
 });

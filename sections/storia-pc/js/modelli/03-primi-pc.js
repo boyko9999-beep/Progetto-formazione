@@ -889,18 +889,30 @@
       { indirizzo: 0o024, byte: [0o127], testo: 'MOV D,A', spiegazione: 'salva il nuovo disegno in D' },
       { indirizzo: 0o025, byte: [0o303, 0o010, 0o000], testo: 'JMP 010', spiegazione: 'torna al giro che accende le luci' },
     ],
+    // Byte che si possono cambiare senza rompere il programma: il passo del contatore
+    // (016 nell'originale; con 004 la luce corre 3,5 volte più piano, comodo col mouse).
+    liberi: { 0o006: 'passo del contatore: decide la velocità della luce' },
   };
 
   const PROGRAMMI = { somma: PROGRAMMA_SOMMA, killbit: PROGRAMMA_KILLBIT };
 
-  function byteProgramma(prog) {
+  // I byte del programma in ordine; "sost" ({ indirizzo: byte }) cambia i byte liberi.
+  function byteProgramma(prog, sost) {
     const out = [];
-    prog.istruzioni.forEach((i) => i.byte.forEach((b) => out.push(b)));
+    prog.istruzioni.forEach((i) => i.byte.forEach((b, k) => {
+      const ind = i.indirizzo + k;
+      out.push(sost && sost[ind] != null && libero(prog, ind) ? sost[ind] & 255 : b);
+    }));
     return out;
   }
 
+  // Vero se il byte a quell'indirizzo può avere qualunque valore (per esempio la velocità).
+  function libero(prog, ind) {
+    return !!(prog && prog.liberi && Object.prototype.hasOwnProperty.call(prog.liberi, ind));
+  }
+
   // Una riga per byte, come il listato del manuale: indirizzo, byte, istruzione.
-  function elenco(prog) {
+  function elenco(prog, sost) {
     const righe = [];
     const operando = (ist, k) => {
       if (ist.byte.length === 3) return k === 1 ? 'byte basso' : 'byte alto';
@@ -908,35 +920,36 @@
     };
     prog.istruzioni.forEach((ist) => ist.byte.forEach((b, k) => righe.push({
       indirizzo: ist.indirizzo + k,
-      byte: b,
+      byte: sost && sost[ist.indirizzo + k] != null && libero(prog, ist.indirizzo + k) ? sost[ist.indirizzo + k] & 255 : b,
       inizio: k === 0,
       testo: k === 0 ? ist.testo : '',
-      spiegazione: k === 0 ? ist.spiegazione : operando(ist, k),
+      spiegazione: k === 0 ? ist.spiegazione : (libero(prog, ist.indirizzo + k) ? prog.liberi[ist.indirizzo + k] : operando(ist, k)),
+      libero: libero(prog, ist.indirizzo + k),
     })));
     return righe;
   }
 
   function programmaPresente(alt, prog) {
     const b = byteProgramma(prog);
-    for (let i = 0; i < b.length; i++) if (alt.leggi(i) !== b[i]) return false;
+    for (let i = 0; i < b.length; i++) if (!libero(prog, i) && alt.leggi(i) !== b[i]) return false;
     return true;
   }
 
   // Il prossimo byte da inserire: il primo sbagliato o non ancora depositato
   // (se "depositati" manca, conta solo il contenuto della memoria).
-  function primoByteDiverso(alt, prog, depositati) {
-    const righe = elenco(prog);
+  function primoByteDiverso(alt, prog, depositati, sost) {
+    const righe = elenco(prog, sost);
     for (let i = 0; i < righe.length; i++) {
       const r = righe[i];
-      if (alt.leggi(r.indirizzo) !== r.byte || (depositati && !depositati.has(r.indirizzo))) return r;
+      if ((!r.libero && alt.leggi(r.indirizzo) !== r.byte) || (depositati && !depositati.has(r.indirizzo))) return r;
     }
     return null;
   }
 
   // Le operazioni che "Inserisci il programma per me" esegue sul pannello.
-  function sequenzaInserimento(prog) {
+  function sequenzaInserimento(prog, sost) {
     const seq = [{ op: 'interruttori', valore: 0 }, { op: 'reset' }];
-    byteProgramma(prog).forEach((b, i) => {
+    byteProgramma(prog, sost).forEach((b, i) => {
       seq.push({ op: 'interruttori', valore: b });
       seq.push({ op: i === 0 ? 'deposit' : 'depositNext' });
     });
@@ -975,8 +988,10 @@
   };
 
   // Racconta in italiano semplice che cosa ha appena fatto un comando del pannello.
+  // opz.indirizzo (facoltativo) scrive gli indirizzi come il pannello in uso (per esempio byte per byte).
   function racconta(ev, alt, opz) {
     const o = opz || {};
+    const oi = typeof o.indirizzo === 'function' ? o.indirizzo : ottaleIndirizzo;
     if (!ev) return '';
     if (!ev.ok) return MOTIVI[ev.motivo] || 'Comando non disponibile in questo momento.';
     switch (ev.azione) {
@@ -1059,6 +1074,7 @@
     const passi = prog === PROGRAMMA_KILLBIT ? PASSI_KILLBIT : PASSI_SOMMA;
     const fatti = new Set();
     const depositi = new Set();
+    const sost = {}; // valori scelti per i byte liberi (per esempio la velocità di Kill the Bit)
     const st = { ingressiBase: 0, avvisoVecchio: false };
 
     function sommaGiusta(alt) {
@@ -1073,6 +1089,7 @@
       programma: prog,
       passi: passi,
       fatti: fatti,
+      sost: sost,
       corrente() {
         const p = passi.find((x) => !fatti.has(x.id));
         return p ? p.id : null;
@@ -1108,20 +1125,24 @@
 
       // Byte inseriti davvero (depositati e giusti); a programma completo, tutti.
       progresso(alt) {
-        const righe = elenco(prog);
+        const righe = elenco(prog, sost);
         const giusti = programmaPresente(alt, prog) ? righe.length
-          : righe.filter((r) => depositi.has(r.indirizzo) && alt.leggi(r.indirizzo) === r.byte).length;
+          : righe.filter((r) => depositi.has(r.indirizzo) && (r.libero || alt.leggi(r.indirizzo) === r.byte)).length;
         return { giusti: giusti, totale: righe.length };
       },
       // Stato di ogni riga del listato: 'ok', 'prossimo' o 'da-fare'.
       righe(alt) {
-        const prossimo = programmaPresente(alt, prog) ? null : primoByteDiverso(alt, prog, depositi);
-        return elenco(prog).map((r) => Object.assign({
-          stato: prossimo && r.indirizzo === prossimo.indirizzo ? 'prossimo'
-            : (alt.leggi(r.indirizzo) === r.byte && (depositi.has(r.indirizzo) || !prossimo || r.indirizzo < prossimo.indirizzo)) ? 'ok' : 'da-fare',
-        }, r));
+        const prossimo = programmaPresente(alt, prog) ? null : primoByteDiverso(alt, prog, depositi, sost);
+        return elenco(prog, sost).map((r) => {
+          const giusto = r.libero || alt.leggi(r.indirizzo) === r.byte;
+          return Object.assign({
+            stato: prossimo && r.indirizzo === prossimo.indirizzo ? 'prossimo'
+              : (giusto && (depositi.has(r.indirizzo) || !prossimo || r.indirizzo < prossimo.indirizzo)) ? 'ok' : 'da-fare',
+            valore: alt.leggi(r.indirizzo),
+          }, r);
+        });
       },
-      prossimoByte(alt) { return programmaPresente(alt, prog) ? null : primoByteDiverso(alt, prog, depositi); },
+      prossimoByte(alt) { return programmaPresente(alt, prog) ? null : primoByteDiverso(alt, prog, depositi, sost); },
 
       // Il risultato della somma, con le tre letture.
       risultato(alt) {
@@ -1232,6 +1253,7 @@
     PROGRAMMA_SOMMA: PROGRAMMA_SOMMA,
     PROGRAMMA_KILLBIT: PROGRAMMA_KILLBIT,
     byteProgramma: byteProgramma,
+    libero: libero,
     elenco: elenco,
     programmaPresente: programmaPresente,
     primoByteDiverso: primoByteDiverso,

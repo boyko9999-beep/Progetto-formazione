@@ -1,1 +1,258 @@
-/* Storia del PC · capitolo 5 (scheda-madre). */
+/* Storia del PC · capitolo 5 (scheda-madre): figure e laboratorio «Quattro epoche di schede madri».
+ * Tutte le classi hanno il prefisso sm- per non toccare gli altri capitoli. */
+
+/* ======================================================================
+ * Figure: tavola con legenda numerata
+ * ====================================================================== */
+
+/* Sui monitor larghi il disegno (verticale) sta a sinistra e la legenda a destra. */
+#scheda-madre .spc-figura:has(.sm-fig) {
+  display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr); gap: 4px 28px; align-items: start;
+}
+#scheda-madre .spc-figura:has(.sm-fig) figcaption { margin-top: 2px; }
+#scheda-madre .spc-figura:has(.sm-fig) .spc-ill { max-height: 560px; }
+
+.sm-legenda {
+  counter-reset: sm; list-style: none; margin: 14px 0 0; padding: 0;
+  display: grid; gap: 7px; color: var(--ink); font-size: .9rem; line-height: 1.35;
+}
+.sm-legenda li { counter-increment: sm; display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 10px; align-items: baseline; }
+.sm-legenda li::before {
+  content: counter(sm); display: inline-grid; place-items: center; width: 24px; height: 24px; border-radius: 50%;
+  font: 800 .74rem/1 var(--font); font-variant-numeric: tabular-nums; color: var(--ill-tela); background: var(--cap);
+  transform: translateY(5px);
+}
+
+@media (max-width: 900px) {
+  #scheda-madre .spc-figura:has(.sm-fig) { grid-template-columns: minmax(0, 1fr); }
+  .sm-legenda { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); column-gap: 18px; }
+}
+
+/* ---------- elementi dei disegni (unità: millimetri della scheda) ---------- */
+
+.sm-fig .sm-pcb-moderna { fill: var(--ill-scuro); stroke: var(--ill-linea); stroke-width: 1.2; }
+.sm-fig .sm-pcb-verde { fill: var(--ill-pcb); stroke: var(--ill-linea); stroke-width: 1.2; }
+.sm-fig .sm-bordo { fill: none; stroke: var(--ill-grigio-2); stroke-width: .6; opacity: .55; }
+.sm-fig .sm-pista { fill: none; stroke: var(--ill-scuro-2); stroke-width: .7; stroke-linecap: round; stroke-linejoin: round; }
+.sm-fig .sm-pista-verde { fill: none; stroke: var(--ill-pcb-2); stroke-width: .8; stroke-linecap: round; stroke-linejoin: round; }
+.sm-fig .sm-audio-linea { fill: none; stroke: var(--ill-grigio-2); stroke-width: .6; stroke-dasharray: 2 1.6; opacity: .8; }
+.sm-fig .sm-foro-anello { fill: var(--ill-oro); stroke: var(--ill-linea); stroke-width: .5; }
+.sm-fig .sm-foro-fondo { fill: var(--ill-tela); }
+
+.sm-fig .sm-metallo { fill: var(--ill-grigio); stroke: var(--ill-linea); stroke-width: .9; }
+.sm-fig .sm-metallo-chiaro { fill: color-mix(in srgb, var(--ill-grigio) 72%, #fff); stroke: var(--ill-linea); stroke-width: .9; }
+.sm-fig .sm-scanalatura { fill: none; stroke: var(--ill-grigio-2); stroke-width: .7; }
+.sm-fig .sm-plastica { fill: var(--ill-chip); stroke: var(--ill-linea); stroke-width: .8; }
+.sm-fig .sm-usb3, .sm-fig .sm-usb2, .sm-fig .sm-hdmi, .sm-fig .sm-lan, .sm-fig .sm-usbc { stroke: var(--ill-linea); stroke-width: .5; }
+.sm-fig .sm-usb3 { fill: var(--ill-blu); }
+.sm-fig .sm-usb2 { fill: var(--ill-chip); }
+.sm-fig .sm-hdmi, .sm-fig .sm-usbc { fill: var(--ill-grigio); }
+.sm-fig .sm-lan { fill: var(--ill-grigio-2); }
+.sm-fig .sm-jack-v, .sm-fig .sm-jack-r, .sm-fig .sm-jack-b { stroke: var(--ill-linea); stroke-width: .6; }
+.sm-fig .sm-jack-v { fill: #43a047; }
+.sm-fig .sm-jack-r { fill: #e8628f; }
+.sm-fig .sm-jack-b { fill: #5aa9e6; }
+
+.sm-fig .sm-chip { fill: var(--ill-chip); stroke: var(--ill-grigio-2); stroke-width: .5; }
+.sm-fig .sm-piedino { fill: none; stroke: var(--ill-grigio); stroke-width: .5; }
+.sm-fig .sm-smd { fill: var(--ill-grigio-2); }
+.sm-fig .sm-serigrafia { fill: none; stroke: var(--ill-grigio); stroke-width: .4; opacity: .85; }
+
+.sm-fig .sm-dissipatore { fill: var(--ill-grigio-2); stroke: var(--ill-linea); stroke-width: .9; }
+.sm-fig .sm-dissipatore-luce { fill: var(--ill-grigio); opacity: .5; }
+.sm-fig .sm-aletta { fill: none; stroke: var(--ill-grigio); stroke-width: 1; stroke-linecap: round; opacity: .85; }
+.sm-fig .sm-induttore { fill: var(--ill-chip); stroke: var(--ill-grigio-2); stroke-width: .6; }
+.sm-fig .sm-marchio { fill: var(--ill-grigio-2); }
+.sm-fig .sm-condensatore { fill: var(--ill-grigio); stroke: var(--ill-linea); stroke-width: .4; }
+.sm-fig .sm-condensatore-in { fill: var(--ill-grigio-2); }
+.sm-fig .sm-cond-audio { fill: var(--ill-oro); stroke: var(--ill-linea); stroke-width: .4; }
+
+.sm-fig .sm-connettore { fill: var(--ill-beige); stroke: var(--ill-linea); stroke-width: .7; }
+.sm-fig .sm-foro-quadro { fill: var(--ill-beige-3); }
+.sm-fig .sm-divisore { fill: none; stroke: var(--ill-linea); stroke-width: .6; }
+.sm-fig .sm-header, .sm-fig .sm-header-scatola { fill: var(--ill-chip); stroke: var(--ill-linea); stroke-width: .45; }
+.sm-fig .sm-header-blu { fill: var(--ill-blu); stroke: var(--ill-linea); stroke-width: .5; }
+.sm-fig .sm-pin rect { fill: var(--ill-oro); }
+.sm-fig .sm-sata { fill: var(--ill-chip); stroke: var(--ill-linea); stroke-width: .5; }
+.sm-fig .sm-sata-l { fill: var(--ill-grigio-2); }
+
+.sm-fig .sm-zoccolo { fill: var(--ill-chip); }
+.sm-fig .sm-lga-pad { fill: var(--ill-oro); }
+.sm-fig .sm-vite { fill: var(--ill-grigio); stroke: var(--ill-linea); stroke-width: .4; }
+.sm-fig .sm-vite-croce { fill: none; stroke: var(--ill-linea); stroke-width: .5; }
+.sm-fig .sm-leva { fill: none; stroke: var(--ill-grigio); stroke-width: 2.2; stroke-linecap: round; }
+
+.sm-fig .sm-slot { fill: var(--ill-chip); stroke: var(--ill-linea); stroke-width: .6; }
+.sm-fig .sm-slot-b { fill: var(--ill-scuro-2); }
+.sm-fig .sm-slot-solco { fill: #000; opacity: .5; }
+.sm-fig .sm-slot-chiave { fill: var(--ill-scuro); }
+.sm-fig .sm-gancio { fill: var(--ill-grigio-2); stroke: var(--ill-linea); stroke-width: .5; }
+.sm-fig .sm-ssd { fill: var(--ill-blu); stroke: var(--ill-linea); stroke-width: .6; }
+.sm-fig .sm-etichetta { fill: var(--ill-beige); }
+.sm-fig .sm-etichetta-righe { fill: none; stroke: var(--ill-beige-3); stroke-width: 1; stroke-linecap: round; }
+.sm-fig .sm-portapila { fill: var(--ill-chip); stroke: var(--ill-linea); stroke-width: .6; }
+.sm-fig .sm-pila { fill: var(--ill-grigio); stroke: var(--ill-linea); stroke-width: .6; }
+.sm-fig .sm-pila-in { fill: color-mix(in srgb, var(--ill-grigio) 60%, #fff); }
+
+/* Baby AT */
+.sm-fig .sm-slot-bianco { fill: var(--ill-beige); stroke: var(--ill-linea); stroke-width: .6; }
+.sm-fig .sm-slot-solco-chiaro { fill: var(--ill-beige-3); }
+.sm-fig .sm-slot-chiave-chiara { fill: var(--ill-pcb); }
+.sm-fig .sm-gancio-metallo { fill: var(--ill-grigio); stroke: var(--ill-linea); stroke-width: .4; }
+.sm-fig .sm-din-pin { fill: var(--ill-oro); }
+.sm-fig .sm-dissipatore-alu { fill: var(--ill-grigio); stroke: var(--ill-linea); stroke-width: .8; }
+.sm-fig .sm-aletta-alu { fill: none; stroke: var(--ill-grigio-2); stroke-width: 1; }
+.sm-fig .sm-elettrolitico { fill: var(--ill-blu); stroke: var(--ill-linea); stroke-width: .5; }
+.sm-fig .sm-elettrolitico-croce { fill: none; stroke: var(--ill-grigio); stroke-width: .6; }
+.sm-fig .sm-zif { fill: var(--ill-beige); stroke: var(--ill-linea); stroke-width: .8; }
+.sm-fig .sm-zif-foro { fill: var(--ill-beige-3); }
+.sm-fig .sm-ponticello-a, .sm-fig .sm-ponticello-b { stroke: var(--ill-linea); stroke-width: .5; }
+.sm-fig .sm-ponticello-a { fill: var(--ill-ambra); }
+.sm-fig .sm-ponticello-b { fill: var(--ill-blu); }
+.sm-fig .sm-quarzo { fill: var(--ill-grigio); stroke: var(--ill-linea); stroke-width: .5; }
+
+/* richiami numerati */
+.sm-fig .sm-num-disco { fill: var(--cap); stroke: var(--ill-tela); stroke-width: 1.6; }
+.sm-fig .sm-num-linea { fill: none; stroke: var(--cap); stroke-width: 1.4; stroke-linecap: round; }
+.sm-fig .sm-num text { fill: var(--ill-tela); font: 800 10.5px var(--font); font-variant-numeric: tabular-nums; }
+.sm-fig .sm-num text.due { font-size: 9.8px; letter-spacing: -.3px; }
+
+/* ======================================================================
+ * Laboratorio «Quattro epoche di schede madri» (sempre scuro, come gli strumenti di BusLab)
+ * ====================================================================== */
+
+.sm-lab { display: grid; gap: 12px; }
+.sm-lab [hidden] { display: none !important; }
+.sm-spazio { flex: 1 1 auto; }
+
+.sm-seg-epoca button { display: inline-grid; align-content: center; min-height: 46px; min-width: 66px; padding: 4px 12px; line-height: 1.1; text-align: center; }
+.sm-seg-anno { font: 800 1rem var(--mono); font-variant-numeric: tabular-nums; }
+.sm-seg-sotto { font-size: .72rem; font-weight: 600; color: #7f9a90; }
+.sm-seg-epoca button[aria-pressed="true"] .sm-seg-sotto { color: var(--trace-1); }
+.sm-lab .lab-btn:focus-visible, .sm-lab .lab-seg button:focus-visible, .sm-conf-riga:focus-visible { outline: 2px solid var(--trace-3); outline-offset: 2px; }
+
+.sm-scena { position: relative; border-radius: 12px; overflow: hidden; background: #08100d; border: 1px solid var(--scope-grid); }
+.sm-svg { --sm-fs: 12px; --sm-ft: 14px; user-select: none; -webkit-user-select: none; }
+.sm-punto { fill: rgba(169, 195, 185, .1); }
+.sm-anno-fondo { font: 800 64px var(--mono); fill: rgba(255, 255, 255, .05); letter-spacing: -.04em; }
+
+/* nodi */
+.sm-nodo-box { fill: #0f1916; stroke: #2e4c42; stroke-width: 1.6; }
+.sm-nodo.sm-n-cpu .sm-nodo-box { fill: #10221c; stroke: #d7efe4; stroke-width: 2; }
+.sm-nodo.sm-n-pkg .sm-nodo-box { fill: rgba(255, 255, 255, .025); stroke: #6f8f84; stroke-width: 1.4; stroke-dasharray: 6 5; }
+.sm-nodo.sm-n-nb .sm-nodo-box, .sm-nodo.sm-n-sb .sm-nodo-box { stroke: var(--trace-stuff); }
+.sm-nodo.sm-n-ram .sm-nodo-box { stroke: var(--trace-1); }
+.sm-nodo.sm-n-gpu .sm-nodo-box { stroke: var(--trace-3); }
+.sm-nodo.sm-n-disco .sm-nodo-box { stroke: var(--trace-2); }
+.sm-nodo.sm-n-usb .sm-nodo-box { stroke: var(--trace-4); }
+.sm-nodo.sm-n-npu .sm-nodo-box { stroke: #b197fc; }
+.sm-nodo-et .sm-tit { font: 700 var(--sm-ft) var(--font); fill: #fff; }
+.sm-nodo-et .sm-sot { font: 600 var(--sm-fs) var(--font); fill: var(--scope-text); }
+.sm-nodo-et.sm-n-pkg .sm-tit { font: 600 var(--sm-fs) var(--font); fill: #8fb0a5; }
+
+/* collegamenti: spessore proporzionale (in scala logaritmica) alla banda */
+.sm-c-memoria { --sm-c: var(--trace-1); }
+.sm-c-grafica { --sm-c: var(--trace-3); }
+.sm-c-disco { --sm-c: var(--trace-2); }
+.sm-c-periferiche { --sm-c: var(--trace-4); }
+.sm-c-misto { --sm-c: #e0a35a; }
+.sm-c-interno { --sm-c: #7f9a90; }
+.sm-link { cursor: pointer; }
+.sm-link:focus { outline: none; }
+.sm-link-hit { fill: none; stroke: transparent; stroke-width: var(--sm-hit, 26px); stroke-linecap: round; pointer-events: stroke; }
+.sm-link-alone, .sm-link-casing, .sm-link-filo, .sm-link-luce { fill: none; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; }
+.sm-link-alone { stroke: var(--sm-c); opacity: 0; transition: opacity var(--dur-normal) var(--ease-smooth); }
+.sm-link:hover .sm-link-alone { opacity: .18; }
+.sm-link.scelto .sm-link-alone { opacity: .3; }
+.sm-link.sm-attivo .sm-link-alone { opacity: .5; }
+.sm-link:focus-visible .sm-link-alone { opacity: .6; stroke: #fff; }
+.sm-link-casing { stroke: #040806; }
+.sm-link-filo { stroke: var(--sm-c); transition: opacity var(--dur-normal) var(--ease-smooth); }
+.sm-link-luce { stroke: #fff; opacity: .22; transition: opacity var(--dur-normal) var(--ease-smooth); }
+.sm-link.sm-fuori .sm-link-filo { opacity: .45; }
+.sm-link.sm-fuori .sm-link-luce { opacity: .06; }
+.sm-link.sm-muto { cursor: default; }
+.sm-link.sm-muto .sm-link-filo { stroke-dasharray: 2 6; }
+.sm-link.sm-muto .sm-link-casing, .sm-link.sm-muto .sm-link-luce, .sm-link.sm-muto .sm-link-hit { display: none; }
+.sm-link-et { font: 700 var(--sm-fs) var(--mono); fill: var(--sm-c); paint-order: stroke; stroke: #08100d; stroke-width: 4px; stroke-linejoin: round; transition: fill-opacity var(--dur-normal) var(--ease-smooth); }
+.sm-link-et .sm-et-2 { fill: #e9f3ee; font-weight: 600; }
+.sm-link-et.sm-fuori { fill-opacity: .55; }
+
+/* decorazioni */
+.sm-core { fill: #15291f; stroke: #3d6b5a; stroke-width: 1.2; }
+.sm-core-e { fill: #112019; }
+.sm-core-et { font: 600 var(--sm-fs) var(--font); fill: #8fb0a5; }
+.sm-slot-pci { fill: #e8e2d0; opacity: .8; }
+.sm-slot-filo { stroke: #e0a35a; stroke-width: 2; }
+.sm-slot-et { font: 600 var(--sm-fs) var(--font); fill: #8fb0a5; }
+
+/* pacchetti di dati */
+.sm-pacchetti { transition: opacity var(--dur-normal) var(--ease-smooth); }
+.sm-pacchetti.sm-spento { opacity: .15; }
+.sm-pac-testa { fill: var(--sm-c); stroke: #040806; stroke-width: 1.4; }
+.sm-pac-coda { stroke: var(--sm-c); stroke-width: 3.4; stroke-linecap: round; opacity: .35; }
+.sm-pac.scelto .sm-pac-testa { stroke: #fff; stroke-width: 1.6; }
+.sm-pac.sm-attesa .sm-pac-coda { display: none; }
+.sm-palla { fill: var(--sm-c); stroke: #fff; stroke-width: 2.4; }
+.sm-palla-alone { fill: var(--sm-c); opacity: .28; }
+
+/* pannelli sotto lo schema */
+.sm-nota { min-height: 4.7em; }
+.sm-pannelli { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.12fr); gap: 12px; align-items: start; }
+.sm-pannello-tit, .sm-conf-tit { margin: 0; font: 800 .7rem var(--mono); letter-spacing: .12em; text-transform: uppercase; color: #7f9a90; }
+.sm-card, .sm-viaggio { display: grid; gap: 9px; align-content: start; }
+.sm-card-testa { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.sm-card-nav { display: flex; gap: 6px; }
+.sm-card-tit { margin: 0; color: #fff; font-size: 1.05rem; line-height: 1.25; }
+.sm-card-tag { margin: 0; font: 600 .78rem var(--mono); color: #7f9a90; }
+.sm-card-banda { margin: 0; font-size: 1.25rem; font-weight: 800; color: var(--trace-2); }
+.sm-card-formula { margin: 0; font-size: .78rem; color: var(--scope-text); background: #0a1310; border: 1px solid var(--scope-grid); border-radius: 8px; padding: 7px 9px; overflow-wrap: anywhere; }
+.sm-card-testo, .sm-card-tempo { margin: 0; font-size: .9rem; line-height: 1.5; color: var(--scope-text); }
+.sm-card-tempo strong { color: #fff; }
+.sm-card-buslab { justify-self: start; text-decoration: none; }
+
+.sm-viaggio-scelte { display: flex; flex-wrap: wrap; gap: 8px; }
+.sm-seg-flusso button, .sm-seg-dim button { min-height: 40px; display: inline-flex; align-items: center; gap: 7px; }
+.sm-pallino { width: 10px; height: 10px; border-radius: 50%; background: var(--sm-c); box-shadow: 0 0 0 2px rgba(0, 0, 0, .45); }
+.sm-kv { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.sm-kv .sm-kv-largo { grid-column: 1 / -1; }
+.sm-kv dd { overflow-wrap: anywhere; }
+.sm-kv dd.sm-tempo-grande { font-size: 1.05rem; color: #fff; }
+.sm-conf { display: grid; gap: 4px; }
+.sm-conf-riga {
+  display: grid; grid-template-columns: 46px minmax(0, 1fr) auto; align-items: center; gap: 10px;
+  min-height: 40px; padding: 4px 10px; border-radius: 9px; border: 1px solid transparent; background: transparent;
+  color: var(--scope-text); cursor: pointer; font: inherit; text-align: left;
+  transition-property: background-color, border-color, color; transition-duration: var(--dur-fast); transition-timing-function: var(--ease-smooth);
+}
+.sm-conf-riga:hover { background: #12201b; }
+.sm-conf-riga[aria-pressed="true"] { background: #16261f; border-color: color-mix(in srgb, var(--trace-1) 45%, transparent); color: #fff; }
+.sm-conf-anno { font-weight: 800; }
+.sm-conf-barra { height: 10px; border-radius: 5px; background: #0a1310; overflow: hidden; border: 1px solid var(--scope-grid); }
+.sm-conf-barra i { display: block; height: 100%; width: 100%; background: var(--sm-c, var(--trace-1)); transform-origin: left center; transform: scaleX(0); transition: transform var(--dur-slow) var(--ease-smooth); }
+.sm-conf-tempo { font-size: .82rem; color: #fff; min-width: 7.6em; text-align: right; }
+.sm-conf-nota { margin: 0; font-size: .78rem; color: #7f9a90; line-height: 1.45; }
+.sm-passo-ctrl { margin-top: 2px; }
+
+@media (max-width: 900px) {
+  .sm-pannelli { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (max-width: 640px) {
+  .sm-seg-epoca { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); width: 100%; }
+  .sm-seg-epoca button { min-width: 0; padding: 4px 2px; }
+  .sm-avanti, .sm-pausa { flex: 1 1 40%; }
+  .sm-spazio { display: none; }
+  .sm-seg-flusso { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; }
+  .sm-seg-dim { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); width: 100%; }
+  .sm-seg-flusso button, .sm-seg-dim button { justify-content: center; padding: 0 6px; }
+  .sm-kv { grid-template-columns: minmax(0, 1fr); }
+  .sm-conf-riga { grid-template-columns: 40px minmax(0, 1fr) auto; gap: 8px; padding: 4px 6px; }
+  .sm-conf-tempo { min-width: 6.6em; }
+  .sm-passo-ctrl .lab-btn { flex: 1 1 auto; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sm-conf-barra i, .sm-link-alone, .sm-link-filo, .sm-link-luce, .sm-pacchetti, .sm-link-et { transition: none; }
+}
+.sm-link-et.sm-et-dentro { fill: #04150d; stroke: none; }

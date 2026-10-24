@@ -140,15 +140,15 @@
       feature.push('<rect x="' + (470 + i * 9) + '" y="56" width="5" height="5"/><rect x="' + (470 + i * 9) + '" y="64" width="5" height="5"/>');
     }
     // fori del connettore (vista frontale, lato scheda): fila alta 5-4-3-2-1, centrale 10…6, bassa 15…11
-    const passo = 12.5, cx = 78, cy = 152;
-    const foro = (x, y, cls) => '<circle class="' + cls + '" cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="4"/>';
+    const passo = 14.5, cx = 78, cy = 152;
+    const foro = (x, y, cls) => '<circle class="' + cls + '" cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="5"/>';
     const fori = [];
     const classeFila1 = ['foro', 'foro', 'pin-b', 'pin-g', 'pin-r'];   // pin 5, 4, 3, 2, 1
     const classeFila3 = ['pin-ddc', 'pin-sync', 'pin-sync', 'pin-ddc', 'foro']; // pin 15, 14, 13, 12, 11
     for (let i = 0; i < 5; i++) {
-      fori.push(foro(cx - 2 * passo + i * passo + 3, cy - 13, classeFila1[i]));
-      fori.push(foro(cx - 2 * passo + i * passo - 3.25, cy, 'foro'));
-      fori.push(foro(cx - 2 * passo + i * passo + 3, cy + 13, classeFila3[i]));
+      fori.push(foro(cx - 2 * passo + i * passo + 3, cy - 14, classeFila1[i]));
+      fori.push(foro(cx - 2 * passo + i * passo - 4, cy, 'foro'));
+      fori.push(foro(cx - 2 * passo + i * passo + 3, cy + 14, classeFila3[i]));
     }
     parti.push(
       '<svg class="gfx-fig" viewBox="0 0 640 360" xmlns="http://www.w3.org/2000/svg">',
@@ -228,7 +228,7 @@
 
   const NOTE = {
     fhd: '<strong>Full HD, oggi.</strong> 1920' + X + '1080 pixel e 24 bit per pixel: 8 per il rosso, 8 per il verde e 8 per il blu, cioè 16.777.216 colori possibili. Non servono né tavolozza né retinatura: ogni pixel porta con sé il suo colore. Questo è il disegno originale; scegli un\'epoca per vedere come l\'avrebbe mostrato un computer di quegli anni.',
-    cga: '<strong>CGA, 1981.</strong> 320' + X + '200 pixel e 4 colori, sempre gli stessi: nero, ciano, magenta e bianco. Con 2 bit per pixel l\'immagine occupa 16.000 byte, quasi tutti i 16 KB della scheda. Rossi e arancioni non esistono: il tramonto diventa un mosaico di puntini.',
+    cga: '<strong>CGA, 1981.</strong> 320' + X + '200 pixel e 4 colori presi da tavolozze fisse: qui la più famosa, nero, ciano, magenta e bianco. Con 2 bit per pixel l\'immagine occupa 16.000 byte, quasi tutti i 16 KB della scheda. Rossi e arancioni non esistono: il tramonto diventa un mosaico di puntini.',
     mac: '<strong>Macintosh, 1984.</strong> 512' + X + '342 pixel quadrati, ma un solo bit per pixel: bianco o nero. Le sfumature si imitano alternando punti bianchi e neri. Lo schermo occupa 21.888 byte, presi dai 128 KB di memoria del computer.',
     ega: '<strong>EGA, 1984.</strong> 640' + X + '350 pixel e 16 colori, qui i 16 predefiniti scelti fra 64 possibili. Con 4 bit per pixel servono 112.000 byte, più dei 64 KB montati di serie: per avere i 16 colori a questa risoluzione serviva l\'espansione di memoria.',
     vga: '<strong>VGA, modalità 13h, 1987.</strong> Di nuovo 320' + X + '200 pixel, ma con 256 colori scelti dal programma fra 262.144. Qui li sceglie l\'algoritmo <em>median cut</em>: divide i colori del disegno in 256 gruppi e usa la media di ciascuno. Un byte per pixel: 64.000 byte.',
@@ -241,7 +241,7 @@
   };
 
   const TAVOLOZZA_INFO = {
-    cga: { conta: '4 fissi su 16', dida: 'La «tavolozza 1»: i 12 colori spenti non si possono usare insieme a questi quattro.' },
+    cga: { conta: '4 fissi su 16', dida: 'La «tavolozza 1» ad alta intensità: ciano, magenta e bianco sono fissi, solo lo sfondo (qui nero) si può cambiare. Gli altri colori restano spenti.' },
     mac: { conta: '2 colori', dida: 'Ogni pixel è un bit: 0 bianco, 1 nero.' },
     ega: { conta: '16 su 64', dida: 'Accesi i 16 colori predefiniti; un programma poteva sceglierne altri fra i 64.' },
     vga: { conta: '256 su 262.144', dida: 'I 256 colori scelti dal median cut per questo disegno, dal più scuro al più chiaro.' },
@@ -1401,7 +1401,7 @@
         titolo: 'Dalla telescrivente allo schermo a pixel',
         paragrafi: [
           'Negli anni Sessanta con un computer si dialogava soprattutto attraverso la <strong>telescrivente</strong> (in inglese <em>teletype</em>): una macchina da scrivere elettrica collegata al computer, che stampava su un rotolo di carta le domande dell\'operatore e le risposte della macchina. La Teletype Model 33, del 1963, costava relativamente poco e divenne il terminale di migliaia di minicomputer. Negli anni Settanta la carta lasciò il posto al vetro: i <strong>terminali video</strong>, come il VT100 della Digital Equipment Corporation (1978), mostravano 24 righe di 80 caratteri su un tubo catodico. Sapevano scrivere lettere, numeri e simboli, ma non disegnare.',
-          'Un terminale a caratteri tiene in memoria soltanto il codice di ogni lettera. Mentre il fascio di elettroni percorre lo schermo, un <strong>generatore di caratteri</strong>, cioè una piccola memoria a sola lettura (ROM) che contiene il disegno di ogni simbolo, trasforma i codici in puntini luminosi. È un trucco che fa risparmiare moltissima memoria: una pagina di 80' + X + '25 caratteri occupa 4.000 byte (due per carattere: il codice e un byte di attributi, come il colore o la sottolineatura), mentre la stessa pagina disegnata punto per punto, a 720' + X + '350, ne richiede 31.500.',
+          'Un terminale a caratteri tiene in memoria soltanto il codice di ogni lettera. Mentre il fascio di elettroni percorre lo schermo, un <strong>generatore di caratteri</strong>, cioè una piccola memoria a sola lettura (ROM) che contiene il disegno di ogni simbolo, trasforma i codici in puntini luminosi. È un trucco che fa risparmiare moltissima memoria. Nel modo testo del PC IBM, per esempio, una pagina di 80' + X + '25 caratteri occupa 4.000 byte (due per carattere: il codice e un byte di attributi, come il colore o la sottolineatura), mentre la stessa pagina disegnata punto per punto, a 720' + X + '350 pixel, ne richiederebbe 31.500.',
           'Lo schermo <strong>a mappa di bit</strong> (<em>bitmap</em>) fa il contrario: a ogni punto dell\'immagine, il <strong>pixel</strong> (da <em>picture element</em>, elemento d\'immagine), corrispondono uno o più bit in una zona di memoria chiamata <strong>memoria video</strong> (<em>framebuffer</em>). Il circuito video la rilegge da capo decine di volte al secondo e la trasforma nel segnale per lo schermo. Così si può disegnare qualsiasi cosa: linee, icone, lettere di ogni forma e grandezza, fotografie. Il prezzo è la memoria, che negli anni Settanta costava carissima: per questo i primi schermi a pixel nacquero nei laboratori di ricerca.',
         ],
       },
@@ -1410,9 +1410,9 @@
         titolo: 'Il mouse, le finestre e la scrivania',
         paragrafi: [
           'Il 9 dicembre 1968, a San Francisco, Douglas Engelbart dello Stanford Research Institute (SRI) salì sul palco di un congresso di informatica e per circa 90 minuti mostrò a un migliaio di persone il suo NLS (<em>oN-Line System</em>), collegato al computer del suo laboratorio a una cinquantina di chilometri di distanza. Con una mano usava la tastiera, con l\'altra una scatoletta di legno con due rotelle e un filo come coda: il <strong>mouse</strong>, costruito nel 1964 dall\'ingegnere Bill English sulla base dei suoi schizzi. In quella che fu poi chiamata «la madre di tutte le demo» comparvero anche testi con collegamenti ipertestuali, lo schermo diviso in finestre, una videochiamata e un documento modificato in due a distanza.',
-          'Molte di quelle idee maturarono allo <strong>Xerox PARC</strong> (Palo Alto Research Center), in California. Lì nel 1973 nacque lo <strong>Xerox Alto</strong>, con uno schermo verticale di 606' + X + '808 pixel in bianco e nero, il mouse e la rete Ethernet; con il linguaggio Smalltalk, sviluppato dal gruppo di Alan Kay, arrivarono le finestre sovrapposte e i menu. L\'Alto non fu mai messo in vendita: ne furono costruiti circa 2.000, usati nei laboratori Xerox e in alcune università. Il suo erede commerciale, lo <strong>Xerox Star</strong> del 1981, introdusse la «scrivania» con le icone di documenti e cartelle, ma costava 16.595 dollari a postazione e vendette poco.',
+          'Molte di quelle idee maturarono allo <strong>Xerox PARC</strong> (Palo Alto Research Center), in California. Lì nel 1973 nacque lo <strong>Xerox Alto</strong>, con uno schermo verticale di 606' + X + '808 pixel in bianco e nero, il mouse e la rete Ethernet; con il linguaggio Smalltalk, sviluppato dal gruppo di Alan Kay, arrivarono le finestre sovrapposte e i menu. L\'Alto non fu mai messo in vendita: ne furono costruiti fra 1.500 e 2.000 circa, usati nei laboratori Xerox e in alcune università. Il suo erede commerciale, lo <strong>Xerox Star</strong> del 1981, introdusse la «scrivania» con le icone di documenti e cartelle, ma costava 16.595 dollari a postazione e vendette poco.',
           'Nel dicembre 1979 un gruppo di Apple guidato da Steve Jobs visitò il PARC, grazie a un accordo che permetteva alla Xerox di comprare azioni Apple prima della quotazione in Borsa. Non fu un semplice furto di idee: Apple aveva già avviato il progetto Lisa, e i suoi tecnici inventarono molto di nuovo, come la barra dei menu a tendina, il trascinamento delle icone e il cestino. Il primo frutto fu l\'<strong>Apple Lisa</strong> (1983), potente ma carissima: 9.995 dollari. Il secondo fu il <strong>Macintosh</strong>, presentato il 24 gennaio 1984: schermo da 9 pollici di 512' + X + '342 pixel in bianco e nero, 128 KB di memoria, 2.495 dollari. A disegnare tutto, a grande velocità, era QuickDraw, scritto da Bill Atkinson.',
-          'Nel 1985 arrivarono macchine a colori più economiche. L\'<strong>Amiga 1000</strong> di Commodore, presentato a luglio, aveva chip dedicati alla grafica e al suono: mostrava 32 colori scelti fra 4.096 e, con un trucco chiamato HAM (<em>Hold-And-Modify</em>), perfino tutti i 4.096 insieme. L\'<strong>Atari 520ST</strong> offriva 16 colori fra 512 e due prese MIDI incorporate, che lo resero amatissimo dai musicisti. Nel mondo dei PC IBM l\'interfaccia grafica arrivò con <strong>Windows</strong>: la versione 1.0 (1985) ebbe poco successo, la 3.0 (1990) si diffuse ovunque, Windows 95 (1995) introdusse il menu Start e la barra delle applicazioni. La storia di questi programmi è raccontata nella sezione 7.',
+          'Nel 1985 arrivarono macchine a colori più economiche. L\'<strong>Amiga 1000</strong> di Commodore, presentato a luglio, aveva chip dedicati alla grafica e al suono: mostrava 32 colori scelti fra 4.096 e, con un trucco chiamato HAM (<em>Hold-And-Modify</em>), perfino tutti i 4.096 insieme. L\'<strong>Atari 520ST</strong> offriva 16 colori fra 512 e due prese MIDI (<em>Musical Instrument Digital Interface</em>, lo standard che collega gli strumenti musicali elettronici), che lo resero amatissimo dai musicisti. Nel mondo dei PC IBM l\'interfaccia grafica arrivò con <strong>Windows</strong>: la versione 1.0 (1985) ebbe poco successo, la 3.0 (1990) si diffuse ovunque, Windows 95 (1995) introdusse il menu Start e la barra delle applicazioni. La storia di questi programmi è raccontata nella <a href="../programmazione/index.html#personal">sezione 7</a>.',
         ],
       },
       {
@@ -1431,10 +1431,10 @@
         tipo: 'testo',
         titolo: 'Le schede video del PC: da MDA a VGA',
         paragrafi: [
-          'L\'IBM PC del 1981 non aveva un circuito video sulla scheda madre: il monitor si collegava a una scheda inserita in uno degli slot di espansione (il bus che più tardi sarà chiamato ISA). Chi lo comprava sceglieva fra due schede. La <strong>MDA</strong> (<em>Monochrome Display Adapter</em>) mostrava solo testo, 80' + X + '25 caratteri molto nitidi su un monitor monocromatico, e aveva appena 4 KB di memoria. La <strong>CGA</strong> (<em>Color Graphics Adapter</em>) aveva 16 KB e sapeva disegnare: 320' + X + '200 pixel a 4 colori oppure 640' + X + '200 a 2 colori. I quattro colori venivano da tavolozze fisse: la più famosa era nero, ciano, magenta e bianco.',
+          'L\'IBM PC del 1981 non aveva un circuito video sulla scheda madre: il monitor si collegava a una scheda inserita in uno degli slot di espansione (il bus che più tardi sarà chiamato ISA, <em>Industry Standard Architecture</em>). Chi lo comprava sceglieva fra due schede. La <strong>MDA</strong> (<em>Monochrome Display Adapter</em>) mostrava solo testo, 80' + X + '25 caratteri molto nitidi su un monitor monocromatico, e aveva appena 4 KB di memoria. La <strong>CGA</strong> (<em>Color Graphics Adapter</em>) aveva 16 KB e sapeva disegnare: 320' + X + '200 pixel a 4 colori oppure 640' + X + '200 a 2 colori. I quattro colori venivano da tavolozze fisse: la più famosa era nero, ciano, magenta e bianco.',
           'I vuoti lasciati da IBM furono riempiti da altri. Nel 1982 la scheda <strong>Hercules</strong>, progettata da Van Suwannukul per scrivere al computer la sua tesi di dottorato in thailandese, aggiunse alla compatibilità con la MDA una grafica monocromatica di 720' + X + '348 pixel e divenne uno standard di fatto. Nel 1984 IBM rispose con la <strong>EGA</strong> (<em>Enhanced Graphics Adapter</em>): 640' + X + '350 pixel con 16 colori scelti fra 64. Per avere davvero i 16 colori a quella risoluzione servivano però 112.000 byte, più dei 64 KB montati di serie: bisognava comprare l\'espansione di memoria.',
-          'La svolta arrivò nell\'aprile 1987 con la <strong>VGA</strong> (<em>Video Graphics Array</em>), presentata insieme ai nuovi PS/2 di IBM: 640' + X + '480 pixel a 16 colori e, nella <strong>modalità 13h</strong> amata dai programmatori di videogiochi, 320' + X + '200 pixel con 256 colori scelti fra 262.144. In quella modalità ogni pixel occupa esattamente un byte e una schermata (64.000 byte) sta tutta in un segmento di memoria da 64 KB: disegnare diventava semplicissimo. La VGA portò anche un connettore a 15 poli su tre file, che trasporta i segnali del rosso, del verde e del blu come tensioni variabili, cioè in forma <strong>analogica</strong>: è rimasto su PC e proiettori per quasi trent\'anni.',
-          'Dopo la VGA ogni costruttore aggiunse modalità proprie, a 800' + X + '600 pixel e oltre, chiamate genericamente <strong>SVGA</strong> (<em>Super VGA</em>) ma diverse da una marca all\'altra: ogni programma doveva conoscere ogni scheda. Per mettere ordine nacque la <strong>VESA</strong> (<em>Video Electronics Standards Association</em>), annunciata alla fine del 1988, che nel 1989 pubblicò le VESA BIOS Extensions, un modo comune per chiedere alla scheda le modalità avanzate. A metà degli anni Novanta il connettore VGA guadagnò anche due fili per il DDC (<em>Display Data Channel</em>): un piccolo bus I²C attraverso il quale il computer legge dal monitor quali risoluzioni sa mostrare.',
+          'La svolta arrivò nell\'aprile 1987 con la <strong>VGA</strong> (<em>Video Graphics Array</em>), presentata insieme ai nuovi PS/2 di IBM: 640' + X + '480 pixel a 16 colori e, nella <strong>modalità 13h</strong> amata dai programmatori di videogiochi, 320' + X + '200 pixel con 256 colori scelti fra 262.144. In quella modalità ogni pixel occupa esattamente un byte e una schermata (64.000 byte) sta tutta in un segmento di memoria da 64 KB: disegnare diventava semplicissimo. La VGA portò anche un connettore a 15 poli su tre file, che trasporta i segnali del rosso, del verde e del blu come tensioni variabili, cioè in forma <strong>analogica</strong>: è rimasto su PC, monitor e proiettori per decenni.',
+          'Dopo la VGA ogni costruttore aggiunse modalità proprie, a 800' + X + '600 pixel e oltre, chiamate genericamente <strong>SVGA</strong> (<em>Super VGA</em>) ma diverse da una marca all\'altra: ogni programma doveva conoscere ogni scheda. Per mettere ordine nacque la <strong>VESA</strong> (<em>Video Electronics Standards Association</em>), annunciata alla fine del 1988, che nel 1989 pubblicò le VESA BIOS Extensions, un modo comune per chiedere alla scheda le modalità avanzate. A metà degli anni Novanta il connettore VGA guadagnò anche due fili per il DDC (<em>Display Data Channel</em>): un piccolo bus seriale a due fili, l\'I²C (<em>Inter-Integrated Circuit</em>), attraverso il quale il computer legge dal monitor quali risoluzioni sa mostrare.',
         ],
       },
       {
@@ -1475,7 +1475,7 @@
         titolo: 'Dal tubo catodico ai cristalli liquidi',
         paragrafi: [
           'Intanto cambiavano anche gli schermi. Il <strong>tubo catodico</strong> (CRT, <em>Cathode Ray Tube</em>) disegna l\'immagine con un fascio di elettroni che percorre lo schermo riga per riga, dall\'alto in basso, decine di volte al secondo, e accende puntini di fosforo rossi, verdi e blu. Per questo la memoria video viene letta nello stesso ordine, una riga dopo l\'altra: la tendina che nel laboratorio cambia l\'immagine imita proprio quel fascio.',
-          'Lo schermo a <strong>cristalli liquidi</strong> (LCD, <em>Liquid Crystal Display</em>) ha invece una griglia fissa di pixel, ciascuno formato da tre <strong>subpixel</strong>, rosso, verde e blu, che lasciano passare più o meno la luce di una lampada posta dietro lo schermo. È sottile, leggero e consuma meno: intorno al 2004 i monitor LCD hanno superato i CRT nelle vendite. Anche il segnale è diventato digitale: prima il DVI (1999), poi HDMI e DisplayPort, che oggi viaggiano anche attraverso la porta USB-C.',
+          'Lo schermo a <strong>cristalli liquidi</strong> (LCD, <em>Liquid Crystal Display</em>) ha invece una griglia fissa di pixel, ciascuno formato da tre <strong>subpixel</strong>, rosso, verde e blu, che lasciano passare più o meno la luce di una lampada posta dietro lo schermo. È sottile, leggero e consuma meno: fra il 2003 e il 2004 i monitor LCD hanno cominciato a vendersi più dei CRT. Anche il segnale è diventato digitale: prima il DVI (1999), poi HDMI e DisplayPort, che oggi viaggiano anche attraverso la porta USB-C.',
         ],
       },
       {
@@ -1484,14 +1484,14 @@
         paragrafi: [
           'Il PC IBM aveva un solo altoparlante, pensato per i segnali acustici. Lo comandava un contatore programmabile (il chip Intel 8253) che produceva un\'<strong>onda quadra</strong>: il segnale aveva solo due livelli, acceso o spento, proprio come un pixel in bianco e nero. Bastava per i bip e per melodie a una voce sola; con trucchi di programmazione molto ingegnosi, alcuni giochi riuscirono perfino a fargli pronunciare qualche parola.',
           'Nel 1987 la canadese Ad Lib mise in vendita la <strong>AdLib Music Synthesizer Card</strong>, con il chip Yamaha YM3812 (detto OPL2) a <strong>sintesi FM</strong>: invece di riprodurre suoni registrati, li costruisce facendo variare la frequenza di un\'onda con un\'altra onda (FM sta per <em>Frequency Modulation</em>, modulazione di frequenza), con nove voci contemporanee. Nel 1989 la Creative di Singapore lanciò la <strong>Sound Blaster</strong>: stesso chip, quindi compatibile con i giochi per AdLib, più un convertitore per registrare e riprodurre suoni digitali a 8 bit e una porta per il joystick. Divenne lo standard di fatto: per anni le schede audio di ogni marca si dichiararono «compatibili Sound Blaster». Nel 1992 la Sound Blaster 16 portò l\'audio a 16 bit, con la qualità di un CD.',
-          'L\'ultimo tassello fu il <strong>CD-ROM</strong>. Nel 1983 Sony e Philips avevano stabilito come registrare dati su un compact disc: circa 650 MB, quanto più di 450 dischetti da 1,44 MB. Alla fine del 1990 Microsoft e altre aziende annunciarono lo standard <strong>MPC</strong> (<em>Multimedia PC</em>), e dal 1991 comparvero i computer con il suo marchio: lettore di CD-ROM, scheda audio, grafica VGA e Windows con le estensioni multimediali. Enciclopedie con filmati e suoni, giochi con musiche registrate e voci di attori: il PC era diventato <strong>multimediale</strong>.',
+          'L\'ultimo tassello fu il <strong>CD-ROM</strong>. Nel 1983 Sony e Philips avevano stabilito come registrare dati su un compact disc: un CD-ROM arrivò a contenere circa 650 MB, quanto più di 450 dischetti da 1,44 MB. Alla fine del 1990 Microsoft e altre aziende annunciarono lo standard <strong>MPC</strong> (<em>Multimedia PC</em>), e dal 1991 comparvero i computer con il suo marchio: lettore di CD-ROM, scheda audio, grafica VGA e Windows con le estensioni multimediali. Enciclopedie con filmati e suoni, giochi con musiche registrate e voci di attori: il PC era diventato <strong>multimediale</strong>.',
         ],
       },
       {
         tipo: 'italia',
         titolo: 'Dal mouse all\'MP3',
         paragrafi: [
-          'Tra i fondatori della Logitech, nata il 2 ottobre 1981 ad Apples, in Svizzera, ci sono due italiani: Pierluigi Zappacosta, nato a Chieti, e Giacomo Marini, abruzzese anche lui ed ex ingegnere della Olivetti. Il loro primo prodotto, il mouse P4 del 1982, veniva da un progetto del Politecnico federale di Losanna; oggi Logitech è uno dei maggiori produttori di mouse al mondo. E nel 1983 l\'Olivetti M24, un compatibile IBM progettato in Italia, offriva una grafica di 640' + X + '400 pixel, il doppio delle righe della CGA.',
+          'Tra i fondatori della Logitech, nata il 2 ottobre 1981 ad Apples, in Svizzera, ci sono due italiani: Pierluigi Zappacosta, nato a Chieti, e Giacomo Marini, che aveva lavorato alla Olivetti e all\'IBM. I loro primi mouse, nei primi anni Ottanta, nascevano da un progetto del Politecnico federale di Losanna; oggi Logitech è uno dei maggiori produttori di mouse al mondo. E nel 1983 l\'Olivetti M24, un compatibile IBM progettato in Italia, offriva una grafica di 640' + X + '400 pixel, il doppio delle righe della CGA.',
           'Il legame più forte con il multimediale passa però da Torino. Leonardo Chiariglione, ingegnere del CSELT (Centro Studi e Laboratori Telecomunicazioni, il centro di ricerca del gruppo pubblico dei telefoni), nel 1988 fondò con il giapponese Hiroshi Yasuda il gruppo <strong>MPEG</strong> (<em>Moving Picture Experts Group</em>) e lo guidò fino al 2020. Dagli standard MPEG vengono il Video CD, l\'MP3 (<em>MPEG-1 Audio Layer III</em>), i DVD, la televisione digitale e buona parte dei video che guardiamo in rete.',
         ],
       },
@@ -1500,7 +1500,7 @@
         titolo: 'Macchine, schede e date da ricordare',
         items: [
           { anno: 1968, nome: 'La «madre di tutte le demo»', luogo: 'San Francisco (Stati Uniti)', testo: 'Douglas Engelbart mostra in pubblico il mouse, l\'ipertesto, le finestre e la videochiamata, in 90 minuti dal vivo.' },
-          { anno: 1973, nome: 'Xerox Alto', luogo: 'Xerox PARC, Palo Alto (Stati Uniti)', testo: 'Schermo a pixel di 606' + X + '808 punti, mouse, rete Ethernet e finestre sovrapposte. Non fu mai venduto: circa 2.000 esemplari per la ricerca.' },
+          { anno: 1973, nome: 'Xerox Alto', luogo: 'Xerox PARC, Palo Alto (Stati Uniti)', testo: 'Schermo a pixel di 606' + X + '808 punti, mouse, rete Ethernet e finestre sovrapposte. Non fu mai venduto: fra 1.500 e 2.000 esemplari, usati per la ricerca.' },
           { anno: 1981, nome: 'Schede MDA e CGA', luogo: 'IBM, Boca Raton (Stati Uniti)', testo: 'Le due schede video del primo PC IBM: testo nitido in monocromia (MDA) oppure grafica a colori con 16 KB di memoria (CGA).' },
           { anno: 1984, nome: 'Apple Macintosh', luogo: 'Apple, Cupertino (Stati Uniti)', testo: 'Presentato il 24 gennaio: 512' + X + '342 pixel quadrati in bianco e nero, mouse e interfaccia grafica per 2.495 dollari.' },
           { anno: 1985, nome: 'Amiga 1000', luogo: 'Commodore-Amiga, Los Gatos (Stati Uniti)', testo: 'Chip dedicati a grafica e suono: 4.096 colori possibili, animazioni fluide e quattro canali di suono campionato.' },
@@ -1532,12 +1532,13 @@
       { testo: 'PCI Express: lo slot delle GPU di oggi', href: '../../index.html#/bus/pcie', tipo: 'buslab' },
       { testo: 'I²C: il DDC del connettore VGA', href: '../../index.html#/bus/i2c', tipo: 'buslab' },
       { testo: 'MIDI: musica fra strumenti e computer', href: '../../index.html#/bus/midi', tipo: 'buslab' },
-      { testo: 'I²S: l\'audio digitale fra i chip', href: '../../index.html#/bus/i2s', tipo: 'buslab' },
+      { testo: 'Sezione 3 · Dal digitale all\'analogico: il DAC della VGA', href: '../elettronica-avanzata/index.html#conversione', tipo: 'sezione' },
       { testo: 'Sezione 5 · I 16 bit: il 68000 di Macintosh, Amiga e Atari ST', href: '../chip-programmabili/index.html#sedici-bit', tipo: 'sezione' },
-      { testo: 'Sezione 7 · La storia del software, da Windows ai videogiochi', href: '../programmazione/index.html', tipo: 'sezione' },
-      { testo: 'Capitolo 6 · La memoria', href: '#memoria' },
-      { testo: 'Capitolo 9 · Prestazioni', href: '#prestazioni' },
-      { testo: 'Capitolo 10 · Il PC di oggi', href: '#oggi' },
+      { testo: 'Sezione 7 · Il software dei personal computer', href: '../programmazione/index.html#personal', tipo: 'sezione' },
+      { testo: 'Sezione 7 · L\'intelligenza artificiale', href: '../programmazione/index.html#ia', tipo: 'sezione' },
+      { testo: 'Capitolo 6 · La memoria', href: '#memoria', tipo: 'sezione' },
+      { testo: 'Capitolo 9 · Prestazioni', href: '#prestazioni', tipo: 'sezione' },
+      { testo: 'Capitolo 10 · Il PC di oggi', href: '#oggi', tipo: 'sezione' },
       { testo: 'Quiz sul capitolo', href: '../quiz/index.html#storia-pc/grafica', tipo: 'sezione' },
     ],
   });

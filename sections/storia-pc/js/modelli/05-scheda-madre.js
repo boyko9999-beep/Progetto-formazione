@@ -243,10 +243,10 @@
           testo: 'Un cavo piatto a 40 fili porta 16 bit alla volta verso il disco rigido. La modalità Ultra DMA/33, arrivata nel 1997, raddoppia la velocità precedente.',
         },
         {
-          id: 'usb', da: 'sb', a: 'usb', ruolo: 'usb', nome: 'USB 1.1', sigla: 'USB 1.1', anno: 1998,
+          id: 'usb', da: 'sb', a: 'usb', ruolo: 'usb', nome: 'USB 1.x (Universal Serial Bus)', sigla: 'USB 1.x', anno: 1996,
           banda: banda.seriale(12e6, 8), buslab: 'usb',
           formula: '12 Mbit/s ÷ 8 = 1,5 MB/s',
-          testo: 'La porta universale nata nel 1996: nella versione 1.1 fa 12 Mbit/s, abbastanza per tastiera, mouse, stampanti e scanner. Il southbridge ne gestisce due.',
+          testo: 'La porta universale nata nel 1996 (la revisione 1.1 è dell\'autunno 1998): 12 Mbit/s, abbastanza per tastiera, mouse, stampanti e scanner. Il southbridge PIIX4 ne gestisce due.',
         },
       ],
       percorsi: { memoria: ['cpu', 'mem'], grafica: ['cpu', 'gfx'], disco: ['cpu', 'hub', 'disco'], periferiche: ['cpu', 'hub', 'usb'] },
@@ -346,9 +346,9 @@
         },
         {
           id: 'disco', da: 'sb', a: 'disco', ruolo: 'disco', nome: 'SSD con il controller nel SoC', sigla: 'SSD', anno: 2020,
-          banda: 2.8 * GB, stima: true, buslab: 'pcie',
+          banda: 2.8 * GB, stima: true, buslab: null,
           formula: 'Apple non dichiara la velocità: le misure in lettura danno circa 2,7–3,5 GB/s',
-          testo: 'Il controller dell\'SSD è dentro il SoC, i chip di memoria flash sono sulla scheda. Qui usiamo 2,8 GB/s, un valore tipico delle prove in lettura.',
+          testo: 'Il controller dell\'SSD è dentro il SoC e parla il protocollo NVMe; i chip di memoria flash sono sulla scheda, accanto. Qui usiamo 2,8 GB/s, un valore tipico delle prove in lettura.',
         },
         {
           id: 'usb', da: 'sb', a: 'usb', ruolo: 'usb', nome: 'Thunderbolt 3 e USB4', sigla: 'USB4', anno: 2019,
@@ -370,8 +370,8 @@
 
   // Anche le posizioni nascoste contano: da lì i nodi compaiono o lì spariscono.
   const NASCOSTI = {
-    larga: { bus: B(20, 226, 600, 0, 0), npu: B(240, 136, 88, 110, 0), pkg: B(104, 8, 528, 276, 0) },
-    stretta: { bus: B(170, 52, 0, 486, 0), npu: B(224, 126, 88, 50, 0), pkg: B(4, 6, 332, 330, 0) },
+    larga: { bus: B(20, 226, 600, 0, 0), npu: B(240, 148, 88, 98, 0), pkg: B(104, 8, 528, 276, 0) },
+    stretta: { bus: B(170, 52, 0, 486, 0), npu: B(224, 126, 88, 50, 0), pkg: B(4, 6, 332, 344, 0) },
   };
 
   // Ancore: 'l' 'r' 't' 'b' (lato, a metà), ['b', 0.3] (lato e frazione),
@@ -420,13 +420,13 @@
         },
         2020: {
           nodi: {
-            pkg: B(104, 8, 528, 276), cpu: B(114, 20, 338, 240), nb: B(282, 58, 156, 60),
-            gpu: B(130, 136, 100, 110), npu: B(240, 136, 88, 110), sb: B(338, 136, 100, 110),
-            ram: B(508, 32, 116, 228), disco: B(196, 330, 150, 66), usb: B(400, 330, 150, 66),
+            pkg: B(104, 8, 528, 276), cpu: B(114, 20, 328, 240), nb: B(282, 58, 146, 60),
+            gpu: B(130, 148, 100, 98), npu: B(240, 148, 88, 98), sb: B(334, 148, 100, 98),
+            ram: B(516, 32, 108, 228), disco: B(196, 330, 150, 66), usb: B(400, 330, 150, 66),
           },
           link: {
-            cpu: { da: ['p', (270 - 114) / 338, (88 - 20) / 240, 'r'], a: 'l' },
-            mem: { da: 'r', a: 'l' },
+            cpu: { da: ['p', (270 - 114) / 328, (88 - 20) / 240, 'r'], a: 'l' },
+            mem: { da: 'r', a: ['l', (88 - 32) / 228] },
             gfx: { da: ['b', 0.2], a: 't' },
             hub: { da: ['b', 0.8], a: 't' },
             disco: { da: ['b', 0.3], a: 't', mid: 0.45, et: { x: 262, y: 305, a: 'end' } },
@@ -489,19 +489,21 @@
         },
         2020: {
           nodi: {
-            pkg: B(4, 6, 332, 330), ram: B(14, 16, 312, 52), cpu: B(14, 92, 312, 230),
-            nb: B(124, 126, 92, 50), npu: B(224, 126, 88, 50), gpu: B(28, 206, 130, 44), sb: B(28, 270, 284, 44),
+            pkg: B(4, 6, 332, 344), ram: B(14, 16, 312, 52), cpu: B(14, 92, 312, 230),
+            nb: B(124, 126, 92, 50), npu: B(224, 126, 88, 50), gpu: B(28, 212, 130, 42), sb: B(28, 270, 284, 44),
             disco: B(8, 420, 150, 62), usb: B(182, 420, 150, 62),
           },
           link: {
             cpu: { da: ['p', (116 - 14) / 312, (151 - 92) / 230, 'r'], a: 'l' },
             mem: { da: 't', a: 'b', et: { x: 180, y: 86, a: 'start', riga: true } },
-            gfx: { da: ['b', 0.2], a: ['t', (142.4 - 28) / 130] },
+            gfx: { da: ['b', 0.2], a: ['t', (142.4 - 28) / 130], et: { x: 128, y: 190, a: 'end' } },
             hub: { da: ['b', 0.8], a: ['t', (197.6 - 28) / 284] },
             disco: { da: ['b', 0.25], a: 't', et: { x: 108, y: 390, a: 'start' } },
             usb: { da: ['b', 0.75], a: 't', et: { x: 266, y: 390, a: 'start' } },
           },
           deco: { core: { x: 28, y: 126, w: 88, h: 50, tipo: '4+4' } },
+          // il nome del SoC va a sinistra: al centro passa il collegamento con la memoria
+          titoli: { cpu: 'sx' },
         },
       },
     },
@@ -552,7 +554,8 @@
     if (!misurabili.length) {
       return { secondi: 0, zeroCopia: !!zero, collo: zero || null };
     }
-    const collo = misurabili.reduce((m, l) => (l.banda < m.banda ? l : m));
+    // A parità di banda vince il tratto più vicino al dispositivo (l'ultimo del percorso).
+    const collo = misurabili.reduce((m, l) => (l.banda <= m.banda ? l : m));
     return { secondi: tempo(byte, collo.banda), zeroCopia: false, collo: collo };
   }
 
@@ -592,7 +595,7 @@
       const altra = ['2020', '2010', '1998', '1981'].map((k) => d.epoche[k].nodi[id]).find(Boolean);
       if (altra) nodi[id] = Object.assign({}, altra, { o: 0 });
     });
-    return { w: d.w, h: d.h, nodi: nodi, link: ep.link, deco: ep.deco || {} };
+    return { w: d.w, h: d.h, nodi: nodi, link: ep.link, deco: ep.deco || {}, titoli: ep.titoli || {} };
   }
 
   /* ---------- geometria: ancore e percorsi ad angolo retto ---------- */

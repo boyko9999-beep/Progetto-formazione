@@ -140,6 +140,7 @@
     const righe = Array.isArray(sorgente) ? sorgente : String(sorgente).split(/\r?\n/);
     const memoria = new Array(CELLE).fill(0);
     const commenti = new Array(CELLE).fill('');
+    const ruoli = new Array(CELLE).fill(null);   // 'istruzione' o 'dato', come scritto nel sorgente
     const errori = [];
     let ind = 0;
     righe.forEach((riga, i) => {
@@ -177,9 +178,10 @@
       }
       memoria[ind] = valore;
       commenti[ind] = commento;
+      ruoli[ind] = istr ? 'istruzione' : 'dato';
       ind += 1;
     });
-    return { memoria: memoria, commenti: commenti, errori: errori };
+    return { memoria: memoria, commenti: commenti, ruoli: ruoli, errori: errori };
   }
 
   /* ---------- stato della macchina ---------- */
@@ -525,6 +527,67 @@
     return { uso: uso, eseguite: r.eseguite, datiToccati: r.datiToccati, fermo: r.fermo };
   }
 
+  /* ---------- descrizioni brevi e traffico sui bus (per il laboratorio) ---------- */
+
+  // L'istruzione in notazione «da registro a registro», con l'operando vero: 'A ← A + M[15]'.
+  function rtl(v) {
+    const d = decodifica(v);
+    if (!d.istr) return 'codice sconosciuto: come NOP';
+    return d.istr.rtl.replace(/\bx\b/g, String(d.operando)).replace(/\bn\b/g, String(d.operando));
+  }
+
+  // Una riga che riassume il micro-passo (per la barra di stato del laboratorio).
+  function riassunto(passo) {
+    const ev = (t) => passo.eventi.find((e) => e.tipo === t);
+    const anticipo = passo.eventi.some((e) => e.anticipo && e.tipo === 'leggi');
+    switch (passo.id) {
+      case 'P1': return 'Prelievo · il PC va sul bus indirizzi';
+      case 'P2': return 'Prelievo · l\'istruzione entra nell\'IR';
+      case 'D': {
+        const d = ev('decodifica');
+        return 'Decodifica · ' + (d && d.nome ? d.nome : 'codice sconosciuto');
+      }
+      case 'E1': return 'Esecuzione · l\'operando va sul bus indirizzi' + (passo.eventi.some((e) => e.anticipo) ? ' (e il PC sull\'altro bus)' : '');
+      case 'E2': {
+        const base = ev('scrivi') ? 'Esecuzione · A viene scritto in memoria' : (ev('alu') ? 'Esecuzione · l\'ALU calcola' : 'Esecuzione · il dato entra in A');
+        return base + (anticipo ? ', e intanto arriva la prossima istruzione' : '');
+      }
+      case 'E': {
+        if (ev('ferma')) return 'Esecuzione · HLT, il clock si ferma';
+        if (ev('uscita')) return 'Esecuzione · A va sul display';
+        const salto = ev('salto');
+        if (salto) return 'Esecuzione · ' + (salto.preso ? 'salto alla cella ' + salto.verso : 'niente salto');
+        if (ev('a')) return 'Esecuzione · il numero entra in A';
+        return 'Esecuzione · nessuna operazione';
+      }
+      default: return 'CPU ferma';
+    }
+  }
+
+  // Che cosa passa sui bus in ogni ciclo di clock, dall'inizio alla fine del programma.
+  // Von Neumann: bus.U; Harvard: bus.I (istruzioni) e bus.D (dati).
+  // Ogni voce è 'istruzione', 'dato' oppure null (bus libero in quel ciclo).
+  function traffico(memoria, modo, opz) {
+    const o = Object.assign({ maxCicli: 160 }, opz || {});
+    let s = nuovoStato(memoria, modo);
+    const H = s.modo === 'harvard';
+    const bus = H ? { I: [], D: [] } : { U: [] };
+    let guardia = 0;
+    while (!s.fermo && s.cicli < o.maxCicli && guardia < o.maxCicli * 8) {
+      const r = microPasso(s, { testi: false });
+      const p = r.passo;
+      if (p.cicli) {
+        const istr = p.eventi.some((e) => e.tipo === 'leggi' && e.genere === 'istruzione');
+        const dato = p.eventi.some((e) => (e.tipo === 'leggi' && e.genere === 'dato') || e.tipo === 'scrivi');
+        if (H) { bus.I.push(istr ? 'istruzione' : null); bus.D.push(dato ? 'dato' : null); }
+        else bus.U.push(istr ? 'istruzione' : (dato ? 'dato' : null));
+      }
+      s = r.stato;
+      guardia += 1;
+    }
+    return { modo: s.modo, cicli: s.cicli, istruzioni: s.istruzioni, fermo: s.fermo, bus: bus };
+  }
+
   /* ---------- programmi pronti ---------- */
 
   const PROGRAMMI = [
@@ -616,6 +679,7 @@
     const r = assembla(p.sorgente);
     p.memoria = r.memoria;
     p.commenti = r.commenti;
+    p.ruoli = r.ruoli;
     p.errori = r.errori;
   });
 
@@ -647,6 +711,9 @@
     esegui: esegui,
     confronta: confronta,
     usoCelle: usoCelle,
+    rtl: rtl,
+    riassunto: riassunto,
+    traffico: traffico,
   };
 
   (root.StoriaPCModelli = root.StoriaPCModelli || {})['von-neumann'] = api;

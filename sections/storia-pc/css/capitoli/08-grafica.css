@@ -93,7 +93,7 @@
   background: #17241f;
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--acc, var(--trace-1)) 70%, transparent), 0 0 22px -8px var(--acc, var(--trace-1));
   transform: translateX(calc(var(--i, 4) * (100% + 4px)));
-  transition: transform var(--dur-normal) var(--ease-smooth), box-shadow var(--dur-normal) var(--ease-smooth);
+  transition: transform var(--dur-normal) var(--ease-smooth);
 }
 .gfx-epoca {
   position: relative; z-index: 1; display: grid; justify-items: center; align-content: center; gap: 3px;
@@ -231,6 +231,8 @@
 }
 
 @container (max-width: 520px) {
+  /* sul telefono lo schermo è 4:3, come quattro epoche su cinque: l'immagine è più grande */
+  .gfx-schermo { aspect-ratio: 4 / 3; }
   .gfx-lungo { display: none; }
   .gfx-corto { display: inline; }
   .gfx-epoca { min-height: 54px; padding: 6px 2px 8px; font-size: .84rem; }
