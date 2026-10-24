@@ -44,6 +44,27 @@
 .vn-fig .tf { fill: var(--ill-fosforo); font: 700 14px var(--mono); }
 .vn-fig .tf-grande { font-size: 30px; }
 
+/* Confronto: i gettoni salgono dalla memoria alla CPU (solo transform e opacità).
+ * --y0 è la posizione da fermi, uguale al primo fotogramma dell'animazione. */
+.vn-fig .vn-tok { transform: translateY(var(--y0, 0px)); }
+.vn-fig.vn-anima .vn-tok { animation: vn-sale 4.8s linear infinite; }
+@keyframes vn-sale {
+  0% { transform: translateY(0); opacity: 0; }
+  8%, 92% { opacity: 1; }
+  100% { transform: translateY(-94px); opacity: 0; }
+}
+
+/* Sui telefoni la figura si rimpicciolisce a circa metà: etichette più grandi,
+ * perché restino intorno agli 11 px anche a 360 px di larghezza. */
+@media (max-width: 560px) {
+  .vn-fig .t { font-size: 24px; }
+  .vn-fig .t2 { font-size: 23px; }
+  .vn-fig .tl { font-size: 23px; }
+  .vn-fig .td { font-size: 23px; }
+  .vn-fig .tf { font-size: 22.5px; }
+  .vn-fig .tf-grande { font-size: 38px; }
+}
+
 /* =====================================================================
  * Laboratorio «Un computer in miniatura»
  * ===================================================================== */
@@ -102,13 +123,14 @@
 .vn-svg { font-family: var(--mono); -webkit-user-select: none; user-select: none; }
 .vn-svg text { fill: var(--scope-text); }
 
-/* dimensioni dei testi: 960 unità di base nel formato largo, 320 nello stretto */
+/* dimensioni dei testi: 960 unità di base nel formato largo, 320 nello stretto
+ * (a 360 px di schermo lo schema stretto è largo circa 310 px: 11 unità ≈ 10,7 px) */
 .vn-largo .vn-etich { font-size: 14px; }
 .vn-stretto .vn-etich { font-size: 11.5px; }
 .vn-largo .vn-mem-sotto, .vn-largo .vn-bus-tit { font-size: 13px; }
-.vn-stretto .vn-mem-sotto { font-size: 10.5px; }
+.vn-stretto .vn-mem-sotto { font-size: 11px; }
 .vn-largo .vn-pillola-testo { font-size: 12.5px; }
-.vn-stretto .vn-pillola-testo { font-size: 10px; }
+.vn-stretto .vn-pillola-testo { font-size: 11px; }
 .vn-largo .vn-mnem { font-size: 20px; }
 .vn-stretto .vn-mnem { font-size: 15px; }
 .vn-largo .vn-rtl { font-size: 15px; }
@@ -117,24 +139,25 @@
 .vn-largo .vn-reg-val { font-size: 22px; }
 .vn-stretto .vn-reg-val { font-size: 15px; }
 .vn-largo .vn-reg-dec, .vn-largo .vn-flag-lettera { font-size: 13px; }
-.vn-stretto .vn-reg-dec, .vn-stretto .vn-flag-lettera { font-size: 11px; }
+.vn-stretto .vn-reg-dec, .vn-stretto .vn-flag-lettera { font-size: 11.5px; }
 .vn-largo .vn-cap { font-size: 11.5px; }
-.vn-stretto .vn-cap { font-size: 9.5px; }
+.vn-stretto .vn-cap { font-size: 11px; }
 .vn-largo .vn-piu { font-size: 14px; }
-.vn-stretto .vn-piu { font-size: 11px; }
+.vn-stretto .vn-piu { font-size: 11.5px; }
 .vn-largo .vn-alu-op { font-size: 14px; }
 .vn-stretto .vn-alu-op { font-size: 11.5px; }
 .vn-largo .vn-storia { font-size: 13px; }
-.vn-stretto .vn-storia, .vn-stretto .vn-info { font-size: 10.5px; }
+.vn-stretto .vn-storia, .vn-stretto .vn-info { font-size: 11px; }
 .vn-largo .vn-ind { font-size: 12px; }
-.vn-stretto .vn-ind { font-size: 10px; }
+.vn-stretto .vn-ind { font-size: 10.5px; }
 .vn-largo .vn-int { font-size: 12.5px; }
-.vn-stretto .vn-int { font-size: 10.5px; }
+.vn-stretto .vn-int { font-size: 11px; }
 .vn-largo .vn-val { font-size: 17px; }
 .vn-largo[data-modo="harvard"] .vn-val { font-size: 16px; }
 .vn-stretto .vn-val { font-size: 12px; }
 .vn-largo .vn-dec text { font-size: 12px; }
-.vn-stretto .vn-dec text { font-size: 9.5px; }
+.vn-stretto .vn-dec text { font-size: 11px; }
+.vn-stretto .vn-svg .vn-pillola-testo { letter-spacing: .03em; }
 .vn-largo .vn-gettone text { font-size: 15px; }
 .vn-stretto .vn-gettone text { font-size: 12px; }
 
@@ -378,7 +401,7 @@
   position: sticky; bottom: 0; z-index: 3;
   display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px;
   margin: 0 -8px; padding: 8px 8px calc(8px + env(safe-area-inset-bottom, 0px));
-  background: color-mix(in srgb, var(--scope-bg) 95%, transparent);
+  background: var(--scope-bg);
   border-top: 1px solid var(--scope-grid);
   box-shadow: 0 -14px 24px -18px rgba(0, 0, 0, .8);
 }
@@ -401,4 +424,5 @@
 
 @media (prefers-reduced-motion: reduce) {
   .vn-lab *, .vn-lab *::before, .vn-lab *::after { animation: none !important; transition: none !important; }
+  .vn-fig.vn-anima .vn-tok { animation: none; }
 }

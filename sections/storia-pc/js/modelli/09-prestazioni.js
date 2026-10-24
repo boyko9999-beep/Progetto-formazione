@@ -5,105 +5,107 @@
  * (transistor, frequenza, core), le serie dei core per anno, la legge di Amdahl,
  * le scale logaritmiche dei grafici, la retta di Moore e la stima del tempo di raddoppio.
  *
- * Fonti principali dei dati: schede e comunicati di Intel, AMD e Apple; per i chip
- * storici i valori più citati (Intel per i transistor e le frequenze di lancio).
+ * Fonti dei dati: schede tecniche e comunicati di Intel, AMD e Apple; per i chip
+ * storici i valori più citati (quelli di Intel per transistor e frequenze di lancio).
  * Intel non pubblica più il numero di transistor dei suoi processori dal 2015 circa:
  * per quei chip il campo transistor è null e il punto compare solo negli altri grafici.
+ * Apple non dichiara le frequenze dei suoi chip: per i chip della serie M mhz è null.
  */
 (function (root) {
   'use strict';
 
   /* ---------- tabella dei processori ----------
-   * anno: anno di presentazione (o, per le tappe di frequenza, anno della tappa)
+   * anno, mese: presentazione (o, per le tappe di frequenza, il momento della tappa)
    * transistor: numero di transistor dichiarato (null se non pubblicato o incerto)
+   * fonte: da dove viene il numero di transistor
    * mhz: frequenza più alta disponibile al lancio; per i chip con turbo è la frequenza turbo massima
    * mhzBase: frequenza base, per i chip che hanno un turbo
    * mhzMax: frequenza più alta raggiunta poi dallo stesso modello (solo per il testo)
    * core, thread, p, e: core totali, thread, core ad alte prestazioni (P) ed efficienti (E)
    */
   const PROCESSORI = [
-    { id: 'i4004', nome: 'Intel 4004', marca: 'Intel', anno: 1971, transistor: 2300, mhz: 0.74, core: 1,
+    { id: 'i4004', nome: 'Intel 4004', marca: 'Intel', anno: 1971, mese: 11, transistor: 2300, fonte: 'Intel', mhz: 0.74, core: 1,
       testo: 'Il primo microprocessore in commercio, a 4 bit, progettato da un gruppo guidato dal vicentino Federico Faggin. Nasce per una calcolatrice giapponese.' },
-    { id: 'i8008', nome: 'Intel 8008', marca: 'Intel', anno: 1972, transistor: 3500, mhz: 0.5, core: 1,
-      testo: 'Il primo microprocessore a 8 bit di Intel, l\'antenato lontano della famiglia x86.' },
-    { id: 'i8086', nome: 'Intel 8086', marca: 'Intel', anno: 1978, transistor: 29000, mhz: 5, mhzMax: 10, core: 1,
+    { id: 'i8008', nome: 'Intel 8008', marca: 'Intel', anno: 1972, mese: 4, transistor: 3500, fonte: 'Intel', mhz: 0.5, mhzMax: 0.8, core: 1,
+      testo: 'Il primo microprocessore a 8 bit di Intel, antenato lontano della famiglia x86.' },
+    { id: 'i8086', nome: 'Intel 8086', marca: 'Intel', anno: 1978, mese: 6, transistor: 29000, fonte: 'Intel', mhz: 5, mhzMax: 10, core: 1,
       testo: '16 bit e 1 MB di memoria indirizzabile: con la versione 8088 diventa il cuore dell\'IBM PC (1981) e il capostipite della famiglia x86.' },
-    { id: 'i286', nome: 'Intel 80286', marca: 'Intel', anno: 1982, transistor: 134000, mhz: 8, mhzMax: 12.5, core: 1,
-      testo: 'Introduce la modalità protetta e indirizza fino a 16 MB di memoria. È il processore dell\'IBM PC AT (1984).' },
-    { id: 'i386', nome: 'Intel 80386', marca: 'Intel', anno: 1985, transistor: 275000, mhz: 16, mhzMax: 33, core: 1,
+    { id: 'i286', nome: 'Intel 80286', marca: 'Intel', anno: 1982, mese: 2, transistor: 134000, fonte: 'Intel', mhz: 6, mhzMax: 12.5, core: 1,
+      testo: 'Introduce la modalità protetta e indirizza fino a 16 MB di memoria. È il processore dell\'IBM PC AT (1984), a 6 MHz.' },
+    { id: 'i386', nome: 'Intel 80386', marca: 'Intel', anno: 1985, mese: 10, transistor: 275000, fonte: 'Intel', mhz: 16, mhzMax: 33, core: 1,
       testo: 'Il primo x86 a 32 bit, con la paginazione per la memoria virtuale. Il primo PC che lo monta è il Compaq Deskpro 386 (1986).' },
-    { id: 'i486', nome: 'Intel 486', marca: 'Intel', anno: 1989, transistor: 1200000, mhz: 25, mhzMax: 100, core: 1,
+    { id: 'i486', nome: 'Intel 486', marca: 'Intel', anno: 1989, mese: 4, transistor: 1200000, fonte: 'Intel', mhz: 25, mhzMax: 100, core: 1,
       testo: 'Oltre un milione di transistor: integra il coprocessore matematico (FPU), 8 KB di cache e una pipeline a cinque stadi.' },
-    { id: 'pentium', nome: 'Pentium', marca: 'Intel', anno: 1993, transistor: 3100000, mhz: 66, mhzMax: 200, core: 1,
+    { id: 'pentium', nome: 'Pentium', marca: 'Intel', anno: 1993, mese: 3, transistor: 3100000, fonte: 'Intel', mhz: 66, mhzMax: 200, core: 1,
       testo: 'Superscalare: due pipeline affiancate completano fino a due istruzioni per ciclo. Nel 1994 il bug FDIV della divisione.' },
-    { id: 'pentiumpro', nome: 'Pentium Pro', marca: 'Intel', anno: 1995, transistor: 5500000, mhz: 200, core: 1,
+    { id: 'pentiumpro', nome: 'Pentium Pro', marca: 'Intel', anno: 1995, mese: 11, transistor: 5500000, fonte: 'Intel', mhz: 200, core: 1,
       testo: 'Esecuzione fuori ordine: le istruzioni x86 diventano micro-operazioni, eseguite appena i loro dati sono pronti.' },
-    { id: 'pentium2', nome: 'Pentium II', marca: 'Intel', anno: 1997, transistor: 7500000, mhz: 300, mhzMax: 450, core: 1,
+    { id: 'pentium2', nome: 'Pentium II', marca: 'Intel', anno: 1997, mese: 5, transistor: 7500000, fonte: 'Intel', mhz: 300, mhzMax: 450, core: 1,
       testo: 'Il nucleo del Pentium Pro con le istruzioni MMX, su una cartuccia che ospita anche la cache di secondo livello.' },
-    { id: 'pentium3', nome: 'Pentium III', marca: 'Intel', anno: 1999, transistor: 9500000, mhz: 500, mhzMax: 1400, core: 1,
+    { id: 'pentium3', nome: 'Pentium III', marca: 'Intel', anno: 1999, mese: 2, transistor: 9500000, fonte: 'Intel', mhz: 500, mhzMax: 1400, core: 1,
       testo: 'Aggiunge le istruzioni SSE, che lavorano su quattro numeri con la virgola alla volta.' },
-    { id: 'athlon', nome: 'AMD Athlon', marca: 'AMD', anno: 1999, transistor: 22000000, mhz: 600, mhzMax: 1400, core: 1,
+    { id: 'athlon', nome: 'AMD Athlon', marca: 'AMD', anno: 1999, mese: 6, transistor: 22000000, fonte: 'AMD', mhz: 600, mhzMax: 1400, core: 1,
       testo: 'Il processore che porta AMD alla pari con Intel, e spesso davanti, nella corsa ai megahertz.' },
-    { id: 'athlon1g', nome: 'Athlon a 1 GHz', marca: 'AMD', anno: 2000, transistor: null, mhz: 1000, core: 1,
+    { id: 'athlon1g', nome: 'Athlon a 1 GHz', marca: 'AMD', anno: 2000, mese: 3, transistor: null, mhz: 1000, core: 1,
       testo: 'Il 6 marzo 2000 AMD annuncia l\'Athlon a 1.000 MHz, il primo processore per PC a un gigahertz: due giorni dopo arriva il Pentium III a 1 GHz.' },
-    { id: 'pentium4', nome: 'Pentium 4', marca: 'Intel', anno: 2000, transistor: 42000000, mhz: 1500, mhzMax: 2000, core: 1,
+    { id: 'pentium4', nome: 'Pentium 4', marca: 'Intel', anno: 2000, mese: 11, transistor: 42000000, fonte: 'Intel', mhz: 1500, mhzMax: 2000, core: 1,
       testo: 'Architettura NetBurst: una pipeline di 20 stadi pensata per salire di frequenza.' },
-    { id: 'p4ht', nome: 'Pentium 4 a 3,06 GHz', marca: 'Intel', anno: 2002, transistor: null, mhz: 3060, core: 1, thread: 2,
+    { id: 'p4ht', nome: 'Pentium 4 a 3,06 GHz', marca: 'Intel', anno: 2002, mese: 11, transistor: null, mhz: 3060, core: 1, thread: 2,
       testo: 'Il primo processore per PC oltre i 3 GHz, con l\'Hyper-Threading: un core che il sistema operativo vede come due.' },
-    { id: 'athlon64', nome: 'AMD Athlon 64', marca: 'AMD', anno: 2003, transistor: 105900000, mhz: 2200, core: 1,
+    { id: 'athlon64', nome: 'AMD Athlon 64', marca: 'AMD', anno: 2003, mese: 9, transistor: 105900000, fonte: 'AMD', mhz: 2200, core: 1,
       testo: 'Porta nei PC l\'estensione x86 a 64 bit (AMD64) e il controller della memoria dentro il processore.' },
-    { id: 'prescott', nome: 'Pentium 4 «Prescott»', marca: 'Intel', anno: 2004, transistor: 125000000, mhz: 3800, core: 1, thread: 2,
+    { id: 'prescott', nome: 'Pentium 4 «Prescott»', marca: 'Intel', anno: 2004, mese: 11, transistor: 125000000, fonte: 'Intel', mhz: 3800, core: 1, thread: 2,
       testo: 'Pipeline di 31 stadi e fino a 115 watt: a fine 2004 tocca 3,8 GHz, il massimo della serie. Il modello da 4 GHz viene cancellato.' },
-    { id: 'pentiumd', nome: 'Pentium D', marca: 'Intel', anno: 2005, transistor: 230000000, mhz: 3200, core: 2,
+    { id: 'pentiumd', nome: 'Pentium D', marca: 'Intel', anno: 2005, mese: 5, transistor: 230000000, fonte: 'Intel', mhz: 3200, core: 2,
       testo: 'Due core Pentium 4 sullo stesso chip: la prima risposta di Intel al muro della potenza.' },
-    { id: 'athlon64x2', nome: 'AMD Athlon 64 X2', marca: 'AMD', anno: 2005, transistor: null, mhz: 2400, core: 2,
+    { id: 'athlon64x2', nome: 'AMD Athlon 64 X2', marca: 'AMD', anno: 2005, mese: 5, transistor: null, mhz: 2400, core: 2,
       testo: 'Due core sullo stesso chip, collegati al loro interno, a una frequenza più bassa dei single core più veloci.' },
-    { id: 'core2duo', nome: 'Core 2 Duo', marca: 'Intel', anno: 2006, transistor: 291000000, mhz: 2930, core: 2,
+    { id: 'core2duo', nome: 'Core 2 Duo', marca: 'Intel', anno: 2006, mese: 7, transistor: 291000000, fonte: 'Intel', mhz: 2660, core: 2,
       testo: 'Meno megahertz del Pentium 4 ma molto più lavoro per ciclo, con circa la metà dei consumi: l\'IPC conta più della frequenza.' },
-    { id: 'qx6700', nome: 'Core 2 Extreme QX6700', marca: 'Intel', anno: 2006, transistor: 582000000, mhz: 2660, core: 4,
+    { id: 'qx6700', nome: 'Core 2 Extreme QX6700', marca: 'Intel', anno: 2006, mese: 11, transistor: 582000000, fonte: 'Intel', mhz: 2660, core: 4,
       testo: 'Il primo processore desktop a quattro core: due chip Core 2 Duo nello stesso involucro.' },
-    { id: 'corei7', nome: 'Core i7 (Nehalem)', marca: 'Intel', anno: 2008, transistor: 731000000, mhz: 3460, mhzBase: 3200, core: 4, thread: 8,
+    { id: 'corei7', nome: 'Core i7 (Nehalem)', marca: 'Intel', anno: 2008, mese: 11, transistor: 731000000, fonte: 'Intel', mhz: 3460, mhzBase: 3200, core: 4, thread: 8,
       testo: 'Controller della memoria nel chip, Hyper-Threading (8 thread su 4 core) e Turbo Boost, che accelera un core quando gli altri riposano.' },
-    { id: 'i7980x', nome: 'Core i7-980X', marca: 'Intel', anno: 2010, transistor: null, mhz: 3600, mhzBase: 3330, core: 6, thread: 12,
+    { id: 'i7980x', nome: 'Core i7-980X', marca: 'Intel', anno: 2010, mese: 3, transistor: null, mhz: 3600, mhzBase: 3330, core: 6, thread: 12,
       testo: 'Il primo processore Intel per PC desktop a sei core, per la fascia più alta (HEDT).' },
-    { id: 'i72600k', nome: 'Core i7-2600K', marca: 'Intel', anno: 2011, transistor: 1160000000, mhz: 3800, mhzBase: 3400, core: 4, thread: 8,
+    { id: 'i72600k', nome: 'Core i7-2600K', marca: 'Intel', anno: 2011, mese: 1, transistor: 1160000000, fonte: 'Intel', mhz: 3800, mhzBase: 3400, core: 4, thread: 8,
       testo: 'Sandy Bridge: processore e grafica sullo stesso chip e le istruzioni AVX a 256 bit.' },
-    { id: 'fx8150', nome: 'AMD FX-8150', marca: 'AMD', anno: 2011, transistor: null, mhz: 4200, mhzBase: 3600, core: 8,
+    { id: 'fx8150', nome: 'AMD FX-8150', marca: 'AMD', anno: 2011, mese: 10, transistor: null, mhz: 4200, mhzBase: 3600, core: 8,
       testo: 'Otto core raggruppati in quattro moduli da due, che condividono parti come l\'unità per i numeri con la virgola.' },
-    { id: 'i74770k', nome: 'Core i7-4770K', marca: 'Intel', anno: 2013, transistor: 1400000000, mhz: 3900, mhzBase: 3500, core: 4, thread: 8,
+    { id: 'i74770k', nome: 'Core i7-4770K', marca: 'Intel', anno: 2013, mese: 6, transistor: 1400000000, fonte: 'Intel', mhz: 3900, mhzBase: 3500, core: 4, thread: 8,
       testo: 'Haswell: quattro core, grafica integrata e, per la prima volta, il regolatore di tensione dentro il processore.' },
-    { id: 'fx9590', nome: 'AMD FX-9590', marca: 'AMD', anno: 2013, transistor: null, mhz: 5000, mhzBase: 4700, core: 8,
+    { id: 'fx9590', nome: 'AMD FX-9590', marca: 'AMD', anno: 2013, mese: 6, transistor: null, mhz: 5000, mhzBase: 4700, core: 8,
       testo: 'Il primo processore per PC venduto con 5 GHz (in turbo), al prezzo di 220 watt di consumo dichiarato.' },
-    { id: 'i75960x', nome: 'Core i7-5960X', marca: 'Intel', anno: 2014, transistor: 2600000000, mhz: 3500, mhzBase: 3000, core: 8, thread: 16,
+    { id: 'i75960x', nome: 'Core i7-5960X', marca: 'Intel', anno: 2014, mese: 8, transistor: 2600000000, fonte: 'Intel', mhz: 3500, mhzBase: 3000, core: 8, thread: 16,
       testo: 'Il primo Intel per PC desktop a otto core, per la fascia più alta (HEDT).' },
-    { id: 'ryzen1800x', nome: 'Ryzen 7 1800X', marca: 'AMD', anno: 2017, transistor: 4800000000, mhz: 4000, mhzBase: 3600, core: 8, thread: 16,
+    { id: 'ryzen1800x', nome: 'Ryzen 7 1800X', marca: 'AMD', anno: 2017, mese: 3, transistor: 4800000000, fonte: 'AMD', mhz: 4000, mhzBase: 3600, core: 8, thread: 16,
       testo: 'Architettura Zen: otto core a meno della metà del prezzo dei rivali Intel di allora.' },
-    { id: 'i99900k', nome: 'Core i9-9900K', marca: 'Intel', anno: 2018, transistor: null, mhz: 5000, mhzBase: 3600, core: 8, thread: 16,
+    { id: 'i99900k', nome: 'Core i9-9900K', marca: 'Intel', anno: 2018, mese: 10, transistor: null, mhz: 5000, mhzBase: 3600, core: 8, thread: 16,
       testo: 'Otto core e fino a 5 GHz in turbo su uno o due core; la frequenza base resta a 3,6 GHz.' },
-    { id: 'ryzen3950x', nome: 'Ryzen 9 3950X', marca: 'AMD', anno: 2019, transistor: 9890000000, mhz: 4700, mhzBase: 3500, core: 16, thread: 32,
+    { id: 'ryzen3950x', nome: 'Ryzen 9 3950X', marca: 'AMD', anno: 2019, mese: 11, transistor: 9890000000, fonte: 'AMD (somma dei tre chiplet)', mhz: 4700, mhzBase: 3500, core: 16, thread: 32,
       testo: 'Chiplet: due chip da otto core e un chip per memoria e ingressi-uscite nello stesso involucro.' },
-    { id: 'tr3990x', nome: 'Threadripper 3990X', marca: 'AMD', anno: 2020, transistor: null, mhz: 4300, mhzBase: 2900, core: 64, thread: 128,
+    { id: 'tr3990x', nome: 'Threadripper 3990X', marca: 'AMD', anno: 2020, mese: 2, transistor: null, mhz: 4300, mhzBase: 2900, core: 64, thread: 128,
       testo: '64 core e 128 thread in un PC desktop di fascia altissima, fatto di nove chiplet.' },
-    { id: 'm1', nome: 'Apple M1', marca: 'Apple', anno: 2020, transistor: 16000000000, mhz: 3200, core: 8, p: 4, e: 4,
-      testo: 'Sistema su chip ARM con CPU, grafica e memoria unificata: 4 core ad alte prestazioni e 4 ad alta efficienza.' },
-    { id: 'm1max', nome: 'Apple M1 Max', marca: 'Apple', anno: 2021, transistor: 57000000000, mhz: null, core: 10, p: 8, e: 2,
-      testo: '57 miliardi di transistor, in gran parte per la grafica: 32 core grafici accanto ai 10 della CPU.' },
-    { id: 'i912900k', nome: 'Core i9-12900K', marca: 'Intel', anno: 2021, transistor: null, mhz: 5200, mhzBase: 3200, core: 16, thread: 24, p: 8, e: 8,
+    { id: 'm1', nome: 'Apple M1', marca: 'Apple', anno: 2020, mese: 11, transistor: 16000000000, fonte: 'Apple', mhz: null, core: 8, p: 4, e: 4,
+      testo: 'Sistema su chip ARM con processore, grafica e memoria unificata: 4 core ad alte prestazioni e 4 ad alta efficienza.' },
+    { id: 'm1max', nome: 'Apple M1 Max', marca: 'Apple', anno: 2021, mese: 10, transistor: 57000000000, fonte: 'Apple', mhz: null, core: 10, p: 8, e: 2,
+      testo: '57 miliardi di transistor, in gran parte per la grafica: 32 core grafici accanto ai 10 core di calcolo.' },
+    { id: 'i912900k', nome: 'Core i9-12900K', marca: 'Intel', anno: 2021, mese: 11, transistor: null, mhz: 5200, mhzBase: 3200, core: 16, thread: 24, p: 8, e: 8,
       testo: 'Alder Lake: core ibridi, 8 P-core veloci con Hyper-Threading e 8 E-core piccoli ed efficienti.' },
-    { id: 'm1ultra', nome: 'Apple M1 Ultra', marca: 'Apple', anno: 2022, transistor: 114000000000, mhz: null, core: 20, p: 16, e: 4,
+    { id: 'm1ultra', nome: 'Apple M1 Ultra', marca: 'Apple', anno: 2022, mese: 3, transistor: 114000000000, fonte: 'Apple', mhz: null, core: 20, p: 16, e: 4,
       testo: 'Due M1 Max uniti da un ponte di collegamento sul bordo: 114 miliardi di transistor.' },
-    { id: 'i913900k', nome: 'Core i9-13900K', marca: 'Intel', anno: 2022, transistor: null, mhz: 5800, mhzBase: 3000, core: 24, thread: 32, p: 8, e: 16,
+    { id: 'i913900k', nome: 'Core i9-13900K', marca: 'Intel', anno: 2022, mese: 10, transistor: null, mhz: 5800, mhzBase: 3000, core: 24, thread: 32, p: 8, e: 16,
       testo: '24 core ibridi (8 P + 16 E) e 32 thread.' },
-    { id: 'i913900ks', nome: 'Core i9-13900KS', marca: 'Intel', anno: 2023, transistor: null, mhz: 6000, mhzBase: 3200, core: 24, thread: 32, p: 8, e: 16,
+    { id: 'i913900ks', nome: 'Core i9-13900KS', marca: 'Intel', anno: 2023, mese: 1, transistor: null, mhz: 6000, mhzBase: 3200, core: 24, thread: 32, p: 8, e: 16,
       testo: 'Il primo processore per PC venduto con 6 GHz, raggiunti in turbo da uno o due core.' },
-    { id: 'm2ultra', nome: 'Apple M2 Ultra', marca: 'Apple', anno: 2023, transistor: 134000000000, mhz: null, core: 24, p: 16, e: 8,
+    { id: 'm2ultra', nome: 'Apple M2 Ultra', marca: 'Apple', anno: 2023, mese: 6, transistor: 134000000000, fonte: 'Apple', mhz: null, core: 24, p: 16, e: 8,
       testo: 'Due chip M2 Max uniti: 134 miliardi di transistor e 24 core (16 P + 8 E).' },
-    { id: 'i914900ks', nome: 'Core i9-14900KS', marca: 'Intel', anno: 2024, transistor: null, mhz: 6200, mhzBase: 3200, core: 24, thread: 32, p: 8, e: 16,
+    { id: 'i914900ks', nome: 'Core i9-14900KS', marca: 'Intel', anno: 2024, mese: 3, transistor: null, mhz: 6200, mhzBase: 3200, core: 24, thread: 32, p: 8, e: 16,
       testo: 'Fino a 6,2 GHz in turbo su uno o due core; la frequenza base dei P-core resta a 3,2 GHz.' },
-    { id: 'ultra285k', nome: 'Core Ultra 9 285K', marca: 'Intel', anno: 2024, transistor: null, mhz: 5700, mhzBase: 3700, core: 24, thread: 24, p: 8, e: 16,
+    { id: 'ultra285k', nome: 'Core Ultra 9 285K', marca: 'Intel', anno: 2024, mese: 10, transistor: null, mhz: 5700, mhzBase: 3700, core: 24, thread: 24, p: 8, e: 16,
       testo: 'Arrow Lake: un processore fatto di più chiplet («tile»), con 24 core e senza Hyper-Threading.' },
-    { id: 'm3ultra', nome: 'Apple M3 Ultra', marca: 'Apple', anno: 2025, transistor: 184000000000, mhz: null, core: 32, p: 24, e: 8,
-      testo: 'Due M3 Max uniti: 184 miliardi di transistor secondo Apple, 32 core nella CPU (24 P + 8 E).' },
+    { id: 'm3ultra', nome: 'Apple M3 Ultra', marca: 'Apple', anno: 2025, mese: 3, transistor: 184000000000, fonte: 'Apple', mhz: null, core: 32, p: 24, e: 8,
+      testo: 'Due M3 Max uniti: 184 miliardi di transistor secondo Apple e 32 core di calcolo (24 P + 8 E).' },
   ];
 
   /* ---------- core per anno nei PC desktop ----------
@@ -280,6 +282,26 @@
     return amdahl(p, n) / n;
   }
 
+  // Punti della curva accelerazione-core da nMin a nMax, fitti in scala logaritmica (passi per raddoppio).
+  function curvaAmdahl(p, nMin, nMax, passi) {
+    const a = nMin || 1, b = nMax || 1024, k = passi || 8;
+    const out = [];
+    const ottave = Math.log(b / a) / Math.LN2;
+    const tot = Math.max(1, Math.ceil(ottave * k));
+    for (let i = 0; i <= tot; i++) {
+      const n = a * Math.pow(2, ottave * i / tot);
+      out.push({ n: n, s: amdahl(p, n) });
+    }
+    return out;
+  }
+
+  // Quanti core servono per arrivare a una data frazione (es. 0,9) del limite di Amdahl.
+  function coreVersoIlLimite(p, quota) {
+    if (!(p > 0 && p < 1) || !(quota > 0 && quota < 1)) return NaN;
+    // 1/((1-p)+p/n) = quota/(1-p)  →  n = p·quota / ((1-p)(1-quota))
+    return p * quota / ((1 - p) * (1 - quota));
+  }
+
   /* ---------- altre formule del capitolo ---------- */
 
   // Tempo di esecuzione (secondi) = istruzioni / (IPC × frequenza).
@@ -293,8 +315,13 @@
 
   /* ---------- viste dei dati ---------- */
 
+  // Anno con la frazione del mese (metà mese): separa i chip usciti nello stesso anno.
+  function annoDecimale(c) {
+    return c.anno + ((c.mese || 6.5) - 0.5) / 12;
+  }
+
   function ordinati(lista) {
-    return lista.slice().sort((a, b) => a.anno - b.anno);
+    return lista.slice().sort((a, b) => annoDecimale(a) - annoDecimale(b));
   }
   function datiTransistor() { return ordinati(PROCESSORI.filter((c) => c.transistor != null)); }
   function datiFrequenza() { return ordinati(PROCESSORI.filter((c) => c.mhz != null)); }
@@ -318,13 +345,18 @@
     const a = trova('i4004');
     const b = trova(id);
     if (!a || !b || b.transistor == null || b.anno === a.anno) return NaN;
-    return tempoRaddoppio({ anno: a.anno, n: a.transistor }, { anno: b.anno, n: b.transistor });
+    return tempoRaddoppio({ anno: annoDecimale(a), n: a.transistor }, { anno: annoDecimale(b), n: b.transistor });
+  }
+
+  // Retta che passa meglio per tutti i punti dei transistor.
+  function tendenzaTransistor() {
+    return regressioneRaddoppio(datiTransistor().map((c) => ({ anno: annoDecimale(c), n: c.transistor })));
   }
 
   // Tendenza delle frequenze prima del muro della potenza (1971-2004).
   function tendenzaFrequenza(finoA) {
     const limite = finoA || 2004;
-    return regressioneRaddoppio(datiFrequenza().filter((c) => c.anno <= limite).map((c) => ({ anno: c.anno, n: c.mhz })));
+    return regressioneRaddoppio(datiFrequenza().filter((c) => c.anno <= limite).map((c) => ({ anno: annoDecimale(c), n: c.mhz })));
   }
 
   const api = {
@@ -346,14 +378,18 @@
     limiteAmdahl: limiteAmdahl,
     tempoAmdahl: tempoAmdahl,
     efficienza: efficienza,
+    curvaAmdahl: curvaAmdahl,
+    coreVersoIlLimite: coreVersoIlLimite,
     tempoEsecuzione: tempoEsecuzione,
     turniSequenziali: turniSequenziali,
     turniPipeline: turniPipeline,
+    annoDecimale: annoDecimale,
     datiTransistor: datiTransistor,
     datiFrequenza: datiFrequenza,
     trova: trova,
     serieAnnuale: serieAnnuale,
     raddoppioDal4004: raddoppioDal4004,
+    tendenzaTransistor: tendenzaTransistor,
     tendenzaFrequenza: tendenzaFrequenza,
   };
 

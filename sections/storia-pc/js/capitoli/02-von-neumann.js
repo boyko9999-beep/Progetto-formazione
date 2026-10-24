@@ -113,28 +113,46 @@
       });
       return c;
     }
-    function gettone(x, y, r) { return '<rect class="cella-' + r + '" x="' + x + '" y="' + y + '" width="16" height="13" rx="4"/>'; }
-    return '<svg class="vn-fig" viewBox="0 0 640 360" xmlns="http://www.w3.org/2000/svg">' +
+    // Gettoni che salgono dalla memoria alla CPU, a distanze regolari. Partono da sotto la
+    // memoria (y = 218) e salgono di CORSA unità; --y0 è la posizione da fermi, che coincide
+    // con il primo fotogramma dell'animazione (così con il movimento ridotto il disegno è identico).
+    const CORSA = 94;
+    const PERIODO = 4.8;
+    function gettoni(x, tipi) {
+      return tipi.map((r, k) => {
+        const fase = (k + 0.5) / tipi.length;
+        return '<rect class="cella-' + r + ' vn-tok" x="' + x + '" y="218" width="16" height="13" rx="4" style="--y0:' +
+          (-CORSA * fase).toFixed(1) + 'px;animation-delay:' + (-PERIODO * fase).toFixed(2) + 's"/>';
+      }).join('');
+    }
+    const markup = '<svg class="vn-fig vn-fig-confronto" viewBox="0 0 640 360" xmlns="http://www.w3.org/2000/svg">' +
       '<path class="divisore" d="M320 18V342"/>' +
       '<text class="t" x="160" y="40" text-anchor="middle">von Neumann</text>' +
       '<text class="t" x="480" y="40" text-anchor="middle">Harvard</text>' +
       // von Neumann: un bus, istruzioni e dati in fila indiana
       '<rect class="rame l" x="144" y="118" width="32" height="116"/>' +
-      gettone(152, 128, 'i') + gettone(152, 149, 'd') + gettone(152, 170, 'i') + gettone(152, 191, 'i') + gettone(152, 212, 'd') +
+      gettoni(152, ['d', 'i', 'i', 'd', 'i']) +
       cpu(100, 120) +
       memoria(40, 240, ['i', 'i', 'd', 'i', 'i', 'd', 'i', 'i', 'i', 'd', 'v', 'd', 'i', 'v'], 7) +
       '<text class="t2" x="160" y="336" text-anchor="middle">istruzioni e dati</text>' +
       // Harvard: due bus, si viaggia in parallelo
       '<rect class="rame l" x="418" y="118" width="28" height="116"/>' +
       '<rect class="rame l" x="514" y="118" width="28" height="116"/>' +
-      gettone(424, 132, 'i') + gettone(424, 162, 'i') + gettone(424, 192, 'i') +
-      gettone(520, 132, 'd') + gettone(520, 162, 'd') + gettone(520, 192, 'd') +
+      gettoni(424, ['i', 'i', 'i', 'i']) +
+      gettoni(520, ['d', 'd', 'd', 'd']) +
       cpu(400, 160) +
       memoria(340, 130, ['i', 'i', 'i', 'i', 'i', 'i', 'i', 'v'], 4) +
       memoria(490, 130, ['d', 'd', 'd', 'v', 'd', 'd', 'v', 'v'], 4) +
       '<text class="t2" x="405" y="336" text-anchor="middle">istruzioni</text>' +
       '<text class="t2" x="555" y="336" text-anchor="middle">dati</text>' +
       '</svg>';
+    // Il traffico si muove solo quando la figura è sullo schermo (e mai con il movimento ridotto, vedi il CSS).
+    const svg = P.svgDaTesto(markup);
+    if (svg && typeof IntersectionObserver === 'function') {
+      const io = new IntersectionObserver((voci) => voci.forEach((v) => svg.classList.toggle('vn-anima', v.isIntersecting)), { threshold: 0.1 });
+      io.observe(svg);
+    }
+    return svg;
   }
 
   /* =====================================================================
@@ -590,7 +608,7 @@
       const g = add(R.strati.unita, 'g', { class: 'vn-reg' });
       rett(g, b, 'vn-box', 8);
       add(g, 'rect', { x: b.x, y: b.y, width: b.w, height: b.h, rx: 8, class: 'vn-alone' });
-      txt(g, b.x + (G.largo ? 10 : 7), b.y + G.fs.etich + (G.largo ? 6 : 2), nome, 'vn-etich');
+      if (nome) txt(g, b.x + (G.largo ? 10 : 7), b.y + G.fs.etich + (G.largo ? 6 : 2), nome, 'vn-etich');
       return g;
     }
 
@@ -630,7 +648,7 @@
       R.pcVal = txt(R.pc, G.pc.x + G.pc.w / 2, G.pc.y + G.pc.h - (G.largo ? 12 : 7), '', 'vn-reg-val', { 'text-anchor': 'middle' });
       R.piu = txt(R.pc, G.piu[0], G.piu[1], '+1', 'vn-piu', { 'text-anchor': 'end' });
 
-      R.ir = registro(G.ir, 'IR');
+      R.ir = registro(G.ir, null);   // l'etichetta «IR» va sopra i due campi, più avanti
       const metà = G.ir.w / 2;
       const campo = (k) => ({ x: G.ir.x + k * metà + 3, y: G.ir.y + 3, w: metà - 6, h: G.ir.h - 6 });
       R.irCod = add(R.ir, 'g', { class: 'vn-ir-cod' });
@@ -940,7 +958,17 @@
       const t = s('text', { x: 0, y: r1(fs * 0.36), 'text-anchor': 'middle' });
       t.textContent = etichetta;
       g.append(t);
+      g.__mw = w / 2 + 2;    // mezza larghezza e mezza altezza, con un po' di margine
+      g.__mh = hg / 2 + 2;
       return g;
+    }
+
+    // Posizione del gettone: segue la pista, ma non esce mai dallo schema (nel formato
+    // stretto alcune piste corrono a pochi pixel dal bordo).
+    function posa(tok, p) {
+      const x = Math.min(Math.max(p[0], tok.__mw), G.W - tok.__mw);
+      const y = Math.min(Math.max(p[1], tok.__mh), G.Ht - tok.__mh);
+      tok.setAttribute('transform', 'translate(' + r1(x) + ' ' + r1(y) + ')');
     }
 
     // Un gettone che viaggia lungo un percorso, lasciando dietro di sé la scia accesa.
@@ -959,13 +987,12 @@
       }
       [alone, scia].forEach((p) => { p.style.strokeDasharray = L + ' ' + L; p.style.strokeDashoffset = String(L); });
       const tok = gettone(tipo, etichetta);
-      tok.setAttribute('transform', 'translate(' + r1(punti[0][0]) + ' ' + r1(punti[0][1]) + ')');
+      posa(tok, punti[0]);
       R.strati.gettoni.append(tok);
       const tw = ctx.tween({
         from: 0, to: 1, dur: dur, ease: 'inOut',
         update: (v) => {
-          const p = puntoLungo(punti, lun, v);
-          tok.setAttribute('transform', 'translate(' + r1(p[0]) + ' ' + r1(p[1]) + ')');
+          posa(tok, puntoLungo(punti, lun, v));
           const off = String(r1(L * (1 - v)));
           alone.style.strokeDashoffset = off;
           scia.style.strokeDashoffset = off;
@@ -1466,7 +1493,7 @@
         tipo: 'testo',
         titolo: 'Il problema: un computer da ricablare',
         paragrafi: [
-          'L\'ENIAC (Electronic Numerical Integrator and Computer), completato a Filadelfia alla fine del 1945, era velocissimo per l\'epoca: circa 5.000 somme al secondo. Ma per fargli cambiare lavoro bisognava ricollegare a mano decine di cavi e girare centinaia di commutatori, seguendo schemi preparati su carta. Il programma non era scritto da nessuna parte dentro la macchina: era la forma stessa dei collegamenti. Preparare e controllare un nuovo problema poteva richiedere giorni, mentre il calcolo durava minuti.',
+          'L\'ENIAC (Electronic Numerical Integrator and Computer), il gigante a valvole che abbiamo incontrato nel <a href="#giganti">capitolo 1</a>, fu completato a Filadelfia alla fine del 1945. Era velocissimo per l\'epoca: circa 5.000 somme al secondo. Ma per fargli cambiare lavoro bisognava ricollegare a mano decine di cavi e girare centinaia di commutatori, seguendo schemi preparati su carta. Il programma non era scritto da nessuna parte dentro la macchina: era la forma stessa dei collegamenti. Preparare e controllare un nuovo problema poteva richiedere giorni, mentre il calcolo durava minuti.',
           'Il limite era chiaro anche ai suoi progettisti, J. Presper Eckert e John Mauchly, e al gruppo della Moore School dell\'Università della Pennsylvania. L\'ENIAC aveva pochissima memoria: venti accumulatori, ciascuno capace di tenere un numero di dieci cifre. Non c\'era posto per le istruzioni, e leggerle da un nastro di carta avrebbe costretto le valvole, rapidissime, ad aspettare un meccanismo lento. Già nel 1944, con l\'ENIAC ancora in costruzione, il gruppo progettava il successore: l\'EDVAC (Electronic Discrete Variable Automatic Computer).',
           'Sul piano teorico la risposta esisteva dal 1936. In un articolo sui limiti della matematica, il giovane inglese Alan Turing aveva descritto una macchina immaginaria che legge e scrive simboli su un nastro, seguendo una tabella di regole. Poi aveva dimostrato che esiste una macchina <strong>universale</strong>: se sul suo nastro scrivi la descrizione di un\'altra macchina, lei ne imita il lavoro. Le istruzioni, dunque, possono stare sullo stesso nastro dei dati ed essere lette come dati. Dieci anni dopo quell\'idea sarebbe diventata il computer a programma memorizzato.',
         ],
@@ -1475,7 +1502,7 @@
         tipo: 'testo',
         titolo: 'Il «First Draft»: le istruzioni diventano numeri',
         paragrafi: [
-          'Nell\'estate del 1944 il matematico ungherese-americano John von Neumann, consulente del progetto della bomba atomica a Los Alamos, si unì alle discussioni della Moore School. Il 30 giugno 1945 Herman Goldstine, l\'ufficiale che seguiva il progetto per l\'esercito, fece circolare un suo dattiloscritto di 101 pagine, rimasto incompiuto: il <em>First Draft of a Report on the EDVAC</em>, la prima bozza di una relazione sull\'EDVAC. Descriveva la macchina in modo astratto, senza parlare di valvole o di fili, come un insieme di organi con compiti precisi.',
+          'Nell\'estate del 1944 il matematico ungherese-americano John von Neumann, consulente del progetto della bomba atomica a Los Alamos, si unì alle discussioni della Moore School. Ne nacque un dattiloscritto di von Neumann datato 30 giugno 1945, che Herman Goldstine, l\'ufficiale che seguiva il progetto per l\'esercito, fece circolare fra i ricercatori: 101 pagine rimaste incompiute, intitolate <em>First Draft of a Report on the EDVAC</em>, cioè «prima bozza di una relazione sull\'EDVAC». Descriveva la macchina in modo astratto, senza parlare di valvole o di fili, come un insieme di organi con compiti precisi.',
           'Gli organi erano cinque: un\'<strong>unità aritmetica</strong> che esegue i calcoli, un\'<strong>unità di controllo</strong> che fa eseguire le istruzioni nell\'ordine giusto, una <strong>memoria</strong>, un organo di <strong>ingresso</strong> e uno di <strong>uscita</strong> per comunicare con il mondo esterno. Il punto decisivo stava nella memoria: avrebbe contenuto sia i numeri su cui lavorare sia le istruzioni, codificate anch\'esse come numeri binari. Per la macchina un\'istruzione è un numero come gli altri; diventa un ordine solo quando l\'unità di controllo la preleva per eseguirla.',
           'Le conseguenze sono enormi. Cambiare programma significa scrivere altri numeri in memoria, senza toccare un cavo. Un programma può produrre un altro programma, come fanno oggi i compilatori, o caricarlo da un disco, come fa il sistema operativo quando apri un\'applicazione. Può persino modificare le proprie istruzioni mentre lavora: i primi programmatori lo facevano spesso, per esempio per scorrere una tabella cambiando l\'indirizzo scritto dentro un\'istruzione.',
           'Il documento portava solo il nome di von Neumann, ed è per questo che si parla di <strong>architettura di von Neumann</strong>. Eckert e Mauchly, che da tempo pensavano di conservare il programma in memoria, se ne sentirono derubati; per di più la bozza, diffusa liberamente, fu considerata una pubblicazione e l\'idea non si poté più brevettare. Oggi gli storici la vedono come il frutto di un lavoro di gruppo, con Goldstine, Arthur Burks e altri, e ricordano che in Inghilterra anche Turing progettò fra il 1945 e il 1946 una macchina a programma memorizzato, l\'ACE (Automatic Computing Engine). Molti preferiscono quindi dire semplicemente «architettura a programma memorizzato».',
@@ -1492,8 +1519,8 @@
         tipo: 'testo',
         titolo: '1948–1951: dalla carta alle macchine',
         paragrafi: [
-          'Il primo computer a eseguire un programma conservato nella propria memoria elettronica nacque all\'Università di Manchester, costruito da Frederic Williams e Tom Kilburn con Geoff Tootill. La Small-Scale Experimental Machine (SSEM), soprannominata <strong>Baby</strong>, doveva soprattutto collaudare una memoria nuova: il tubo di Williams, un tubo a raggi catodici che conservava i bit come puntini di carica elettrica sullo schermo. Il 21 giugno 1948 eseguì il suo primo programma, scritto da Kilburn: 17 istruzioni che cercavano il più grande divisore proprio di 2<sup>18</sup> (262.144), provando tutti i numeri a scendere. Dopo 52 minuti e circa 3,5 milioni di operazioni trovò la risposta giusta: 131.072.',
-          'Il Baby era un banco di prova, con 32 parole di memoria e appena sette istruzioni. La prima macchina pensata per lavorare davvero fu l\'<strong>EDSAC</strong> (Electronic Delay Storage Automatic Calculator) dell\'Università di Cambridge, guidata da Maurice Wilkes, che nell\'estate del 1946 aveva seguito a Filadelfia le lezioni della Moore School. Il 6 maggio 1949 l\'EDSAC calcolò una tabella dei quadrati; presto offrì un servizio di calcolo regolare agli scienziati dell\'università, primo computer a programma memorizzato a farlo. La sua memoria erano linee di ritardo a mercurio: tubi in cui i bit viaggiavano in circolo come impulsi sonori.',
+          'Il primo computer a eseguire un programma conservato nella propria memoria elettronica nacque all\'Università di Manchester, costruito da Frederic «Freddie» Williams e Tom Kilburn con Geoff Tootill. La Small-Scale Experimental Machine (SSEM), soprannominata <strong>Baby</strong>, doveva soprattutto collaudare una memoria nuova: il tubo di Williams, un tubo a raggi catodici che conservava i bit come puntini di carica elettrica sullo schermo. Il 21 giugno 1948 eseguì il suo primo programma, scritto da Kilburn: 17 istruzioni che cercavano il più grande divisore proprio di 2<sup>18</sup> (262.144), provando tutti i numeri a scendere. Dopo 52 minuti e circa 3,5 milioni di operazioni trovò la risposta giusta: 131.072.',
+          'Il Baby era un banco di prova, con 32 parole di memoria e appena sette istruzioni. La prima macchina pensata per lavorare davvero fu l\'<strong>EDSAC</strong> (Electronic Delay Storage Automatic Calculator) dell\'Università di Cambridge, guidata da Maurice Wilkes, che nell\'agosto del 1946, dopo un viaggio pieno di ritardi, era riuscito a seguire a Filadelfia le ultime due settimane delle lezioni della Moore School. Il 6 maggio 1949 l\'EDSAC calcolò una tabella dei quadrati; presto offrì un servizio di calcolo regolare agli scienziati dell\'università, primo computer a programma memorizzato a farlo. La sua memoria erano linee di ritardo a mercurio: tubi in cui i bit viaggiavano in circolo come impulsi sonori.',
           'A Cambridge nacque anche il mestiere del programmatore. David Wheeler inventò un modo per usare lo stesso pezzo di programma da più punti e poi tornare indietro: la <strong>subroutine</strong> (sottoprogramma). Le subroutine più utili, per le radici quadrate o per stampare i numeri, finirono in una biblioteca su nastro perforato, e nel 1951 Wilkes, Wheeler e Stanley Gill le descrissero in quello che è considerato il primo manuale di programmazione. Una subroutine ha senso solo con il programma memorizzato: funziona perché il programma può saltare da un punto all\'altro della memoria e ricordarsi dove tornare.',
           'E l\'EDVAC? Nel 1946 Eckert e Mauchly avevano lasciato la Moore School per fondare la loro azienda, e la macchina fu consegnata al poligono dell\'esercito di Aberdeen, nel Maryland, solo nel 1949. Lavorò regolarmente dal 1951, quando ormai altre l\'avevano superata. Intanto von Neumann guidava a Princeton la costruzione della macchina dell\'IAS (Institute for Advanced Study), i cui progetti, distribuiti a università e laboratori, diedero vita a una famiglia di «cugine» in mezzo mondo.',
         ],
@@ -1516,9 +1543,9 @@
         titolo: 'Prendi, decodifica, esegui',
         paragrafi: [
           'Dentro una macchina di von Neumann il lavoro si ripete sempre uguale, al ritmo di un orologio elettronico, il <strong>clock</strong>. Un registro speciale, il <strong>contatore di programma</strong> (PC, <em>program counter</em>), contiene l\'indirizzo della prossima istruzione. Nella fase di <strong>prelievo</strong> (<em>fetch</em>) quel numero viaggia sul bus indirizzi, un fascio di fili che collega la CPU alla memoria; la memoria risponde mettendo il contenuto della cella sul bus dati, e l\'istruzione entra nel <strong>registro istruzione</strong> (IR, <em>instruction register</em>). Il PC aumenta di uno e punta già all\'istruzione successiva.',
-          'Poi viene la <strong>decodifica</strong> (<em>decode</em>): l\'unità di controllo guarda i bit dell\'istruzione e riconosce che cosa chiedono, per esempio «somma all\'accumulatore il numero della cella 15». L\'<strong>accumulatore</strong> è il registro in cui l\'unità aritmetica e logica (ALU, <em>arithmetic logic unit</em>) tiene il risultato dei calcoli. Infine c\'è l\'<strong>esecuzione</strong> (<em>execute</em>): i dati si spostano, l\'ALU calcola, un risultato finisce in un registro o in memoria. E il ciclo ricomincia, miliardi di volte al secondo in un processore di oggi.',
+          'Poi viene la <strong>decodifica</strong> (<em>decode</em>): l\'unità di controllo guarda i bit dell\'istruzione e riconosce che cosa chiedono, per esempio «somma all\'accumulatore il numero della cella 15». L\'<strong>accumulatore</strong> è il registro in cui l\'unità aritmetica e logica (ALU, <em>arithmetic logic unit</em>) tiene il risultato dei calcoli. Infine c\'è l\'<strong>esecuzione</strong> (<em>execute</em>): i dati si spostano, l\'ALU calcola, un risultato finisce in un registro o in memoria. E il ciclo ricomincia, miliardi di volte al secondo in un processore di oggi. Come lo realizzano i circuiti di un microprocessore vero lo racconta la <a href="../chip-programmabili/index.html#ciclo">sezione 5</a>.',
           'Alcune istruzioni scrivono un nuovo indirizzo nel contatore di programma: sono i <strong>salti</strong>. Con un salto il programma può tornare indietro e ripetere un gruppo di istruzioni, cioè fare un ciclo, oppure scegliere fra due strade, per esempio saltando solo se l\'ultimo risultato era zero. Con questi pochi ingredienti, dato abbastanza tempo e abbastanza memoria, si può calcolare tutto ciò che è calcolabile.',
-          'Viste da vicino, le istruzioni sono soltanto numeri: il <strong>linguaggio macchina</strong>. Nel computer in miniatura del laboratorio qui sotto ogni istruzione occupa 8 bit, 4 per il codice dell\'operazione e 4 per l\'operando, e il numero 0010 1111 significa «ADD 15». Scrivere programmi in binario era faticoso e pieno di errori, così presto arrivarono sigle facili da ricordare, come LDA o ADD, e programmi che le traducono in numeri: il linguaggio <strong>assembly</strong>, primo gradino della storia del software raccontata nella sezione 7.',
+          'Viste da vicino, le istruzioni sono soltanto numeri: il <strong>linguaggio macchina</strong>. Nel computer in miniatura del laboratorio qui sotto ogni istruzione occupa 8 bit, 4 per il codice dell\'operazione e 4 per l\'operando, e il numero 0010 1111 significa «ADD 15». Scrivere programmi in binario era faticoso e pieno di errori, così presto arrivarono sigle facili da ricordare, come LDA o ADD, e programmi che le traducono in numeri: il linguaggio <strong>assembly</strong>, primo gradino della storia del software raccontata nella <a href="../programmazione/index.html#assembly">sezione 7</a>.',
         ],
       },
       { tipo: 'lab' },
@@ -1526,8 +1553,8 @@
         tipo: 'testo',
         titolo: 'Una memoria o due? Von Neumann e Harvard',
         paragrafi: [
-          'C\'era anche un\'altra strada. L\'Harvard Mark I, il grande calcolatore elettromeccanico costruito da IBM su progetto di Howard Aiken e messo in funzione all\'Università di Harvard nel 1944, leggeva le istruzioni da un nastro di carta perforata, mentre i numeri stavano in registri meccanici separati. Istruzioni e dati viaggiavano su strade diverse e non potevano mescolarsi. Da qui il nome di <strong>architettura Harvard</strong> per ogni macchina con una memoria per il programma e una per i dati, ciascuna con il proprio bus.',
-          'Il vantaggio è la velocità: con due bus la CPU può prelevare l\'istruzione successiva mentre legge o scrive un dato. Lo svantaggio è la rigidità: lo spazio per il programma e quello per i dati sono fissati in partenza, e in una macchina Harvard «pura» un programma non può scrivere nella memoria delle istruzioni. Per questo l\'architettura Harvard vive soprattutto dove il programma cambia di rado, come nei microcontrollori: l\'ATmega328P della scheda Arduino Uno tiene il programma in 32 kilobyte di memoria flash, che non si cancella togliendo la corrente, e i dati in 2 kilobyte di RAM (memoria ad accesso casuale), su bus separati.',
+          'C\'era anche un\'altra strada. L\'Harvard Mark I, il grande calcolatore elettromeccanico costruito da IBM su progetto di Howard Aiken e messo in funzione all\'Università di Harvard nel 1944, leggeva le istruzioni da un nastro di carta perforata, mentre i numeri stavano altrove, in contatori elettromeccanici a ruote. Istruzioni e dati viaggiavano su strade diverse e non potevano mescolarsi. Da qui il nome di <strong>architettura Harvard</strong> per ogni macchina con una memoria per il programma e una per i dati, ciascuna con il proprio bus.',
+          'Il vantaggio è la velocità: con due bus la CPU può prelevare l\'istruzione successiva mentre legge o scrive un dato. Lo svantaggio è la rigidità: lo spazio per il programma e quello per i dati sono fissati in partenza, e in una macchina Harvard «pura» un programma non può scrivere nella memoria delle istruzioni. Per questo l\'architettura Harvard vive soprattutto dove il programma cambia di rado, come nei <a href="../chip-programmabili/index.html#microcontrollori">microcontrollori</a>: l\'ATmega328P della scheda Arduino Uno tiene il programma in 32 kilobyte di memoria flash, che non si cancella togliendo la corrente, e i dati in 2 kilobyte di RAM (memoria ad accesso casuale), su bus separati.',
           'I PC hanno trovato un compromesso. Verso l\'esterno sono macchine di von Neumann: una sola memoria principale, dove il sistema operativo carica programmi e dati come vuole. Dentro il processore, invece, la memoria più vicina e più veloce, la <strong>cache</strong> di primo livello, è divisa in due parti, una per le istruzioni e una per i dati. Nei processori Intel per PC la divisione arrivò con il Pentium del 1993: 8 kilobyte per le istruzioni e 8 per i dati. È la cosiddetta architettura <strong>Harvard modificata</strong>, che prende il meglio dei due mondi.',
         ],
       },
@@ -1543,7 +1570,7 @@
         paragrafi: [
           'In una macchina di von Neumann tutto passa per lo stesso canale: ogni istruzione e ogni dato devono attraversare il collegamento fra processore e memoria, e mentre il canale porta un\'istruzione i dati aspettano, e viceversa. Nel 1977 John Backus, che negli anni Cinquanta aveva guidato la creazione del linguaggio FORTRAN, ricevette il premio Turing e nella sua lezione chiamò quel canale <strong>collo di bottiglia di von Neumann</strong>. Per lui il limite era tecnico ma anche mentale: costringeva i programmatori a pensare una parola alla volta.',
           'Con gli anni il problema è peggiorato. I processori sono diventati migliaia di volte più veloci, mentre il tempo per leggere una cella della memoria principale si è ridotto molto meno: oggi una lettura dalla RAM può costare al processore centinaia di cicli di clock di attesa. Gli ingegneri lo chiamano «muro della memoria» (<em>memory wall</em>).',
-          'Quasi ogni trucco dei computer moderni serve ad allargare il collo di bottiglia o ad aggirarlo: le cache, che tengono vicino al processore i dati usati da poco; i bus più larghi, che portano molti byte per volta; il prelievo anticipato delle istruzioni; la pipeline, che lavora su più istruzioni insieme. Li incontrerai nei capitoli sulla memoria e sulle prestazioni. Eppure nessuno ha abbandonato l\'idea del 1945: avere programmi che sono dati, da caricare, copiare e creare al volo, vale molto più dei cicli che costa.',
+          'Quasi ogni trucco dei computer moderni serve ad allargare il collo di bottiglia o ad aggirarlo: le cache, che tengono vicino al processore i dati usati da poco; i bus più larghi, che portano molti byte per volta; il prelievo anticipato delle istruzioni; la pipeline, che lavora su più istruzioni insieme. Li incontrerai nei capitoli sulla <a href="#memoria">memoria</a> e sulle <a href="#prestazioni">prestazioni</a>. Eppure nessuno ha abbandonato l\'idea del 1945: avere programmi che sono dati, da caricare, copiare e creare al volo, vale molto più dei cicli che costa.',
         ],
       },
       {
@@ -1557,7 +1584,7 @@
         titolo: 'Da Milano a Pisa, e fino a Ivrea',
         paragrafi: [
           'Il programma memorizzato arrivò in Italia nel 1954, quando il Politecnico di Milano installò un calcolatore americano CRC 102A, comprato con i fondi del piano Marshall. Il giovane ingegnere Luigi Dadda era andato in California a seguirne la costruzione e il collaudo: programma e dati stavano sullo stesso tamburo magnetico, 1.024 parole da 42 bit. Fu il primo calcolatore elettronico in funzione nel nostro Paese.',
-          'Pochi anni dopo l\'Italia costruì i suoi: a Pisa, su consiglio di Enrico Fermi, nacque la Calcolatrice Elettronica Pisana (CEP), mentre a Ivrea l\'Olivetti presentò nel 1959 l\'Elea 9003, progettata dal gruppo di Mario Tchou. E proprio da Ivrea, nel 2005, è partita la scheda Arduino: il suo microcontrollore segue l\'architettura Harvard, con programma e dati in memorie separate.',
+          'Pochi anni dopo l\'Italia costruì i suoi: a Pisa, su consiglio di Enrico Fermi, nacque la Calcolatrice Elettronica Pisana (CEP), mentre l\'Olivetti presentò nel 1959 l\'Elea 9003, progettata dal gruppo di Mario Tchou. E proprio a Ivrea, la città dell\'Olivetti, nel 2005 è nata la scheda Arduino: il suo microcontrollore segue l\'architettura Harvard, con programma e dati in memorie separate.',
         ],
       },
       {
@@ -1567,7 +1594,7 @@
           { anno: 1936, nome: 'La macchina universale di Turing', luogo: 'Cambridge, Regno Unito', testo: 'Alan Turing descrive una macchina teorica che, leggendo dal nastro la descrizione di un\'altra macchina, ne imita il lavoro: istruzioni e dati sullo stesso nastro.' },
           { anno: 1944, nome: 'Harvard Mark I', luogo: 'Università di Harvard, Stati Uniti', testo: 'Il calcolatore elettromeccanico di Howard Aiken e IBM legge le istruzioni da un nastro perforato e tiene i numeri altrove: darà il nome all\'architettura Harvard.' },
           { anno: 1945, nome: 'First Draft of a Report on the EDVAC', luogo: 'Moore School, Filadelfia', testo: 'Il 30 giugno circola la bozza di John von Neumann: cinque organi e una sola memoria per istruzioni e dati.' },
-          { anno: 1946, nome: 'Le lezioni della Moore School', luogo: 'Filadelfia, Stati Uniti', testo: 'In estate un corso di otto settimane spiega a studiosi americani e inglesi come si costruisce un calcolatore elettronico. Fra gli ascoltatori c\'è Maurice Wilkes.' },
+          { anno: 1946, nome: 'Le lezioni della Moore School', luogo: 'Filadelfia, Stati Uniti', testo: 'Dall\'8 luglio al 31 agosto un corso di otto settimane spiega a studiosi americani e inglesi come si costruisce un calcolatore elettronico. Alle ultime due settimane assiste anche Maurice Wilkes.' },
           { anno: 1948, nome: 'Manchester Baby', luogo: 'Università di Manchester, Regno Unito', testo: 'Il 21 giugno la SSEM di Williams e Kilburn esegue il primo programma conservato in una memoria elettronica: 52 minuti per trovare il più grande divisore proprio di 2<sup>18</sup>.' },
           { anno: 1949, nome: 'EDSAC', luogo: 'Università di Cambridge, Regno Unito', testo: 'Il 6 maggio la macchina di Maurice Wilkes calcola una tabella dei quadrati. È il primo computer a programma memorizzato a offrire un servizio regolare; qui nascono le subroutine.' },
           { anno: 1951, nome: 'L\'EDVAC al lavoro', luogo: 'Aberdeen, Maryland, Stati Uniti', testo: 'Consegnata all\'esercito nel 1949, la macchina che aveva dato il nome alla bozza di von Neumann comincia a lavorare regolarmente.' },

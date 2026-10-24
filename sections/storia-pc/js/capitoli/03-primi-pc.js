@@ -225,7 +225,7 @@
     const gruppo = (b) => (b === 15 ? 0 : b >= 12 ? 1 : b >= 9 ? 2 : b >= 6 ? 3 : b >= 3 ? 4 : 5);
     const xb = (b) => 230 + (15 - b) * 46 + gruppo(b) * 8;
     const g = {
-      nome: 'largo', W: 1000, H: 458, rLed: 6.5, leva: { L: 26, dado: 10, punta: 6 },
+      nome: 'largo', W: 1000, H: 470, rLed: 6.5, leva: { L: 26, dado: 10, punta: 6 },
       fLed: 13, fFn: 13, fSez: 12.5, fCifra: 15, fascia: { h: 54, x: 30, y: 37, size: 24 },
       testi: [], led: [], sw: [], fn: [], cifre: [], linee: [], viti: true,
     };
@@ -243,6 +243,8 @@
     [[6, 5], [3, 2]].forEach(([a, z]) => g.linee.push({ x: (xb(a) + xb(z)) / 2, y1: 84, y2: 120 }));
     [[15, 14], [12, 11], [9, 8], [6, 5], [3, 2]].forEach(([a, z]) => g.linee.push({ x: (xb(a) + xb(z)) / 2, y1: 152, y2: 188 }));
     g.testi.push({ x: xb(15) - 30, y: 314, t: 'in ottale', c: 'nota', ancora: 'end' });
+    // promemoria didattico nello spazio vuoto a sinistra delle levette (non serigrafato sull'originale)
+    g.testi.push({ x: xb(15) - 30, y: 236, t: 'levetta su = 1', c: 'nota', ancora: 'end' }, { x: xb(15) - 30, y: 256, t: 'levetta giù = 0', c: 'nota', ancora: 'end' });
     // sotto le levette: «SENSE SW.» per 15–8 e «DATA» per 7–0, con una riga che abbraccia il gruppo
     [[15, 8, 'SENSE SW.', 50], [7, 0, 'DATA', 28]].forEach(([a, z, t, mezzo]) => {
       const cx = (xb(a) + xb(z)) / 2;
@@ -252,7 +254,7 @@
     const xs = [62, 172, 283, 394, 505, 616, 727, 838, 949];
     FUNZIONI.forEach((f, i) => g.fn.push({
       f: f, x: xs[i], y: 398, ySu: 358, yGiu: 446,
-      su: { x: xs[i] - 50, y: 348, w: 100, h: 50 }, giu: { x: xs[i] - 50, y: 398, w: 100, h: 56 },
+      su: { x: xs[i] - 50, y: 348, w: 100, h: 50 }, giu: { x: xs[i] - 50, y: 398, w: 100, h: 66 },
     }));
     return g;
   }
@@ -438,13 +440,14 @@
       gr.append(s('text', { class: 'alt-t ' + (classe || ''), x: n(x), y: n(y), 'font-size': size, 'text-anchor': ancora || null }, t));
     }
 
-    // Etichetta di una levetta di funzione; nel pannello stretto le parole lunghe vanno a capo.
+    // Etichetta di una levetta di funzione. Le etichette di due parole vanno a capo nel pannello
+    // stretto e, in quello largo, sotto le levette, dove EXAMINE NEXT e DEPOSIT NEXT sono vicine.
     function etichettaFn(gr, g, x, y, t, sopra) {
       const parole = t.split(' ');
-      if (g.nome === 'stretto' && parole.length > 1) {
+      if ((g.nome === 'stretto' || !sopra) && parole.length > 1) {
         const dy = g.fFn + 1.5;
-        testo(gr, x, sopra ? y - dy / 2 : y - dy / 2, parole[0], 'alt-fn', g.fFn, 'middle');
-        testo(gr, x, sopra ? y + dy / 2 : y + dy / 2, parole.slice(1).join(' '), 'alt-fn', g.fFn, 'middle');
+        testo(gr, x, y - dy / 2, parole[0], 'alt-fn', g.fFn, 'middle');
+        testo(gr, x, y + dy / 2, parole.slice(1).join(' '), 'alt-fn', g.fFn, 'middle');
       } else testo(gr, x, y, t, 'alt-fn', g.fFn, 'middle');
     }
 
@@ -1089,7 +1092,7 @@
         paragrafi: [
           'Fino alla metà degli anni Sessanta il calcolatore era una risorsa collettiva. Un grande sistema centrale (in inglese <em>mainframe</em>) costava milioni di dollari, occupava una sala climatizzata ed era affidato a operatori specializzati: chi voleva usarlo consegnava il proprio programma e tornava ore o giorni dopo a ritirare i risultati. Anche i minicomputer, più piccoli ed economici, erano condivisi da un laboratorio o da un reparto.',
           'L\'idea di <strong>personal computer</strong> capovolge questo rapporto: una persona, una macchina, sulla scrivania. Per arrivarci servono tre ingredienti. Il primo è un prezzo alla portata di un privato o di un piccolo ufficio; il secondo è una macchina abbastanza piccola e robusta da non chiedere una sala apposita; il terzo è un modo di usarla senza essere specialisti.',
-          'La tecnologia arriva per gradi. I circuiti integrati riducono un armadio di componenti a poche schede; nel 1971 il <a href="../chip-programmabili/index.html#intel-4004">microprocessore</a> porta l\'intera unità centrale di elaborazione (CPU, <em>Central Processing Unit</em>) in un solo chip. Le memorie a semiconduttore prendono il posto dei nuclei di ferrite e costano ogni anno meno. Il resto lo fanno le persone: ingegneri visionari, piccole aziende e migliaia di appassionati.',
+          'La tecnologia arriva per gradi. I <a href="../porte-logiche/index.html#integrato">circuiti integrati</a> riducono un armadio di componenti a poche schede; nel 1971 il <a href="../chip-programmabili/index.html#intel-4004">microprocessore</a> porta l\'intera unità centrale di elaborazione (CPU, <em>Central Processing Unit</em>) in un solo chip. Le memorie a semiconduttore prendono il posto dei nuclei di ferrite e costano ogni anno meno. Il resto lo fanno le persone: ingegneri visionari, piccole aziende e migliaia di appassionati.',
           'L\'espressione «personal computer» circola già negli anni Sessanta, ma diventa d\'uso comune solo alla fine degli anni Settanta. Per questo non esiste un «primo PC» indiscusso: a seconda di che cosa si considera essenziale (il microprocessore, il prezzo, la tastiera e lo schermo) il titolo va a macchine diverse. Qui le mettiamo in fila, partendo da Ivrea.',
         ],
       },
@@ -1098,8 +1101,8 @@
         titolo: 'Olivetti Programma 101, la «Perottina» (1965)',
         paragrafi: [
           'Nell\'ottobre 1965 la Olivetti presenta a New York, alla fiera del BEMA (<em>Business Equipment Manufacturers Association</em>), la <strong>Programma 101</strong>. L\'ha progettata a Ivrea un piccolo gruppo guidato da Pier Giorgio Perotto, con Giovanni De Sandre e Gastone Garziera; la carrozzeria, morbida e compatta, è di Mario Bellini. È una macchina da tavolo che si programma: una sequenza di fino a 120 istruzioni si registra su una scheda magnetica, si conserva in un cassetto e si ricarica in pochi secondi.',
-          'Tecnicamente è una calcolatrice programmabile. La memoria, 240 byte in tutto, è una linea di ritardo magnetostrittiva: i bit viaggiano come impulsi meccanici lungo un filo metallico e vengono riletti all\'arrivo. I numeri, fino a 22 cifre, stanno in dieci registri e i risultati escono su un rotolo di carta. Ma c\'è già l\'idea essenziale del personal: una persona sola la usa, la programma e la tiene sulla scrivania. Costa circa 3.200 dollari e se ne vendono circa 44.000, soprattutto negli Stati Uniti.',
-          'La NASA ne acquista una decina; secondo le testimonianze dei suoi ingegneri, furono usate anche nei calcoli di pianificazione della missione Apollo 11. Hewlett-Packard finì invece per riconoscere a Olivetti circa 900.000 dollari di royalty: la sua calcolatrice HP 9100A, del 1968, riprendeva soluzioni coperte dai brevetti della Programma 101, a cominciare dalla scheda magnetica.',
+          'Tecnicamente è una calcolatrice programmabile, non un computer nel senso di oggi. La memoria, circa 240 byte in tutto, è una linea di ritardo magnetostrittiva: i bit viaggiano come impulsi meccanici lungo un filo metallico e vengono riletti all\'arrivo. È divisa in dieci registri, ognuno dei quali contiene un numero fino a 22 cifre oppure un pezzo di programma; i risultati escono stampati su un rotolo di carta. Ma c\'è già l\'idea essenziale del personal: una persona sola la usa, la programma e la tiene sulla scrivania.',
+          'Costa circa 3.200 dollari e se ne vendono circa 44.000, soprattutto negli Stati Uniti. La NASA ne acquista una decina e, secondo il racconto dei suoi ingegneri, le usa anche nei calcoli per preparare la missione Apollo 11 del 1969, il primo sbarco sulla Luna. Hewlett-Packard, invece, finisce per riconoscere a Olivetti circa 900.000 dollari di royalty: la sua calcolatrice HP 9100A, del 1968, riprende soluzioni coperte dai brevetti della Programma 101, a cominciare dalla scheda magnetica.',
         ],
       },
       {
@@ -1112,26 +1115,27 @@
         tipo: 'testo',
         titolo: 'Prima e dopo il microprocessore',
         paragrafi: [
-          'Nel 1971 John Blankenbaker mette in vendita il <strong>Kenbak-1</strong>, costruito con circuiti integrati semplici della famiglia TTL (logica transistor-transistor), senza microprocessore. Ha 256 byte di memoria e nessuno schermo né tastiera: si programma con una fila di pulsanti e le risposte si leggono su una fila di lampadine. Costa 750 dollari, ma ne vengono costruiti meno di cinquanta prima che l\'azienda chiuda, nel 1973. Nel 1986 una giuria del Computer Museum di Boston lo ha premiato come primo personal computer della storia.',
-          'La strada che porta ai PC di oggi passa però dal microprocessore. Nel 1973 la piccola azienda francese R2E (<em>Réalisation d\'Études Électroniques</em>) di André Truong Trong Thi consegna il <strong>Micral N</strong>, progettato da François Gernelle intorno all\'Intel 8008. Nasce per l\'istituto nazionale di ricerca agronomica (INRA), che cercava una macchina economica per automatizzare misure sull\'umidità delle coltivazioni. È considerato il primo microcomputer commerciale venduto già montato, non in scatola di montaggio.',
+          'Nel 1971 John Blankenbaker mette in vendita il <strong>Kenbak-1</strong>, costruito con circuiti integrati semplici della <a href="../porte-logiche/index.html#famiglie">famiglia TTL</a> (logica transistor-transistor), senza microprocessore. Ha 256 byte di memoria e nessuno schermo né tastiera: si programma con una fila di pulsanti e le risposte si leggono su una fila di lampadine. Costa 750 dollari, ma ne vengono costruiti meno di cinquanta prima che l\'azienda chiuda, nel 1973. Nel 1986 una giuria del Computer Museum di Boston lo ha premiato come primo personal computer della storia.',
+          'La strada che porta ai PC di oggi passa però dal microprocessore. Nel 1973 la piccola azienda francese R2E (<em>Réalisation d\'Études Électroniques</em>) di André Truong Trong Thi consegna il <strong>Micral N</strong>, progettato da François Gernelle intorno all\'Intel 8008. Lo aveva chiesto l\'istituto nazionale francese di ricerca agronomica (INRA): doveva automatizzare le misure di evapotraspirazione delle colture, cioè di quanta acqua cedono all\'aria il terreno e le piante, e anche il più piccolo minicomputer dell\'epoca costava troppo. È considerato il primo microcomputer commerciale venduto già montato, non in scatola di montaggio.',
           'Nello stesso 1973, nel centro di ricerca di Xerox a Palo Alto (PARC, <em>Palo Alto Research Center</em>), entra in funzione lo <strong>Xerox Alto</strong>. È un\'altra idea di personal, molto più ambiziosa: uno schermo verticale a mappa di bit (606&nbsp;×&nbsp;808 punti, ognuno acceso o spento dal programma), un mouse, finestre e icone, il collegamento in rete Ethernet con le stampanti laser. L\'Alto non fu mai messo in vendita: ne furono costruiti fra 1.500 e 2.000 esemplari, usati per la ricerca dentro Xerox e in alcune università. Le sue idee torneranno nel Macintosh e in Windows, come racconta il capitolo <a href="#grafica">Pixel, finestre e multimedia</a>.',
-          'Tutte queste macchine si reggono su chip sempre più capaci: l\'Intel 4004 del 1971, l\'8008 del 1972, l\'8080 del 1974. Che cosa succede dentro quei chip lo racconta la <a href="../chip-programmabili/index.html#otto-bit">sezione 5</a>; qui ci interessa che cosa si costruì intorno a loro.',
+          'Il Kenbak-1 e lo Xerox Alto ricavavano il processore da molti chip semplici; da qui in avanti, invece, i personal si reggono su microprocessori sempre più capaci: l\'Intel 4004 del 1971, l\'8008 del 1972 (quello del Micral N), l\'8080 del 1974. Che cosa succede dentro quei chip lo racconta la <a href="../chip-programmabili/index.html#otto-bit">sezione 5</a>; qui ci interessa che cosa si costruì intorno a loro.',
         ],
       },
       {
         tipo: 'testo',
         titolo: 'Gennaio 1975: l\'Altair 8800',
         paragrafi: [
-          'La svolta arriva da Albuquerque, nel Nuovo Messico. La MITS (<em>Micro Instrumentation and Telemetry Systems</em>) di Ed Roberts, una piccola ditta di kit elettronici in difficoltà, costruisce un computer intorno al nuovo Intel 8080 e lo propone alla rivista <em>Popular Electronics</em>, che lo mette in copertina nel numero di gennaio 1975. L\'<strong>Altair 8800</strong> costa 439 dollari in scatola di montaggio e 621 già montato: poco più del prezzo di listino del solo Intel 8080, che era di 360 dollari. Alla MITS arrivano migliaia di ordini nei primi mesi.',
-          'Chi lo comprava riceveva una scatola metallica senza tastiera e senza schermo. Sul pannello frontale c\'erano 25 levette e 36 LED (diodi luminosi): con le levette si sceglievano un indirizzo di memoria e il byte da scriverci, un bit per levetta, mentre i LED mostravano indirizzo, dato e stato del processore. La versione base aveva 256 byte di RAM (la memoria di lavoro, che si cancella allo spegnimento) e un processore a 2&nbsp;MHz, cioè due milioni di impulsi di clock al secondo. Per non sbagliare, i bit si leggevano a gruppi di tre, in notazione ottale: è quello che si prova nel laboratorio qui sotto.',
-          'Dentro, la scheda madre era quasi vuota: una fila di connettori a 100 contatti in cui si infilavano la scheda del processore, quella della memoria e poi, a poco a poco, schede per la telescrivente, il registratore a cassette e altra memoria. Presto altre aziende produssero schede compatibili e quel connettore divenne uno standard di fatto, il <a href="../../index.html#/bus/s100">bus S-100</a>, ufficializzato nel 1983 come norma IEEE 696. Il personal nasceva come piattaforma aperta, da espandere.',
-          'Da solo l\'Altair sapeva fare ben poco, e questo creò un mercato. Bill Gates, studente a Harvard, e Paul Allen scrissero per lui un interprete del BASIC (<em>Beginner\'s All-purpose Symbolic Instruction Code</em>), il linguaggio semplice nato nel 1964 al Dartmouth College: non lo inventarono loro, ma riuscirono a farlo stare in 4&nbsp;KB di memoria. Non avevano un Altair, così lo provarono su un simulatore dell\'8080 che girava su un computer PDP-10 di Harvard. Poche settimane dopo Allen lo caricò ad Albuquerque da un nastro di carta perforata e funzionò al primo tentativo. Il 4 aprile 1975 i due fondarono la Micro-Soft, che sarebbe diventata Microsoft.',
-          'Intorno all\'Altair nacquero anche i club. Il 5 marzo 1975, nel garage di Gordon French a Menlo Park, in California, si riunì per la prima volta l\'<strong>Homebrew Computer Club</strong>, il «club del computer fatto in casa»: una trentina di persone, molte idee e un Altair da guardare da vicino. Fra i frequentatori c\'era Steve Wozniak. Il 16 aprile Steve Dompier fece suonare al suo Altair <em>The Fool on the Hill</em> dei Beatles su una radio AM appoggiata accanto, sfruttando i disturbi elettromagnetici dei circuiti.',
+          'La svolta arriva da Albuquerque, nel Nuovo Messico. La MITS (<em>Micro Instrumentation and Telemetry Systems</em>) di Ed Roberts, una piccola ditta di kit elettronici in difficoltà, costruisce un computer intorno al nuovo Intel 8080 e lo propone alla rivista <em>Popular Electronics</em>, che lo mette in copertina nel numero di gennaio 1975. L\'<strong>Altair 8800</strong> costa 439 dollari in scatola di montaggio e 621 già montato: poco più del prezzo di listino del solo Intel 8080, che era di 360 dollari, ma la MITS, ordinandone in grande quantità, ne pagava circa 75. Alla MITS arrivano migliaia di ordini nei primi mesi.',
+          'Chi lo comprava riceveva una scatola metallica senza tastiera e senza schermo. Sul pannello frontale c\'erano 25 levette e 36 LED (<em>Light Emitting Diode</em>, diodi luminosi): con le levette si sceglievano un indirizzo di memoria e il byte da scriverci, un bit per levetta, mentre i LED mostravano indirizzo, dato e stato del processore. La versione base aveva 256 byte di RAM (<em>Random Access Memory</em>: la memoria di lavoro, che si cancella allo spegnimento) e un processore a 2&nbsp;MHz, cioè due milioni di impulsi di clock al secondo. Per non sbagliare, i bit si leggevano a gruppi di tre, in notazione ottale: è quello che si prova nel laboratorio qui sotto.',
+          'Dentro, la scheda madre era quasi vuota: una fila di connettori a 100 contatti in cui si infilavano la scheda del processore, quella della memoria e poi, a poco a poco, schede per la telescrivente, il registratore a cassette e altra memoria. Presto altre aziende produssero schede compatibili e quel connettore divenne uno standard di fatto, il <a href="../../index.html#/bus/s100">bus S-100</a>, diventato nel 1983 la norma 696 dell\'associazione internazionale degli ingegneri elettrici ed elettronici (IEEE). Il personal nasceva come piattaforma aperta, da espandere.',
+          'Da solo l\'Altair sapeva fare ben poco, e questo creò un mercato. Bill Gates, studente a Harvard, e Paul Allen scrissero per lui un interprete del BASIC (<em>Beginner\'s All-purpose Symbolic Instruction Code</em>), cioè un programma che legge ed esegue uno per uno i comandi di quel linguaggio semplice, nato nel 1964 al Dartmouth College. Non lo inventarono loro, ma riuscirono a farlo stare in 4&nbsp;KB di memoria (4.096 byte), con l\'aiuto di Monte Davidoff, che scrisse le routine per i numeri con la virgola.',
+          'Non avevano un Altair, così provarono il programma su un simulatore dell\'8080 che girava su un computer PDP-10 di Harvard. Poche settimane dopo Allen lo caricò ad Albuquerque da un nastro di carta perforata e funzionò al primo tentativo. Il 4 aprile 1975 i due fondarono la Micro-Soft, che sarebbe diventata Microsoft.',
+          'Intorno all\'Altair nacquero anche i club. Il 5 marzo 1975, nel garage di Gordon French a Menlo Park, in California, si riunì per la prima volta l\'<strong>Homebrew Computer Club</strong>, il «club del computer fatto in casa»: 32 persone, invitate con un volantino a vedere da vicino uno dei primi Altair arrivati in California. Fra loro c\'era anche Steve Wozniak. Il 16 aprile Steve Dompier fece suonare al suo Altair <em>The Fool on the Hill</em> dei Beatles su una radio AM appoggiata accanto, sfruttando i disturbi elettromagnetici dei circuiti.',
         ],
       },
       {
         tipo: 'nota',
-        testo: 'L\'Altair della copertina di <em>Popular Electronics</em> era una scatola vuota. L\'unico prototipo, spedito da Albuquerque alla redazione di New York, era stato smarrito dalla compagnia di trasporti; per la fotografia la MITS preparò in fretta un mobile con il solo pannello frontale, levette e LED compresi. La rivista pubblicò l\'articolo sulla fiducia, senza aver mai visto la macchina funzionare.',
+        testo: 'L\'Altair della copertina di <em>Popular Electronics</em> era una scatola vuota. L\'unico prototipo, spedito da Albuquerque alla redazione di New York, era stato smarrito durante il trasporto; per la fotografia si usò un mobile con il solo pannello frontale, levette e LED compresi, non collegati a nulla. Migliaia di lettori ordinarono il kit guardando la foto di una macchina che non poteva calcolare niente.',
       },
       { tipo: 'lab' },
       {
@@ -1147,9 +1151,9 @@
         tipo: 'testo',
         titolo: '1976–1977: computer pronti all\'uso',
         paragrafi: [
-          'All\'Homebrew Computer Club Steve Wozniak mostrò, nel 1976, la scheda che aveva progettato intorno al MOS 6502, un processore che costava una frazione dell\'8080. Con Steve Jobs fondò la Apple Computer, che la mise in vendita come <strong>Apple I</strong> al prezzo di 666,66 dollari; il primo ordine, cinquanta pezzi, arrivò dal negozio Byte Shop di Paul Terrell. Rispetto all\'Altair era un bel passo avanti, perché si collegava a una tastiera e a un televisore. Ma si comprava come scheda nuda, senza mobile né alimentatore, e ne furono costruiti circa duecento.',
+          'Alle riunioni dell\'Homebrew Computer Club Steve Wozniak mostrava la scheda che aveva progettato intorno al MOS 6502, un processore che costava una frazione dell\'8080. Nel 1976 fondò con Steve Jobs la Apple Computer, che la mise in vendita come <strong>Apple I</strong> al prezzo di 666,66 dollari; il primo ordine, cinquanta pezzi, arrivò dal negozio Byte Shop di Paul Terrell. Rispetto all\'Altair era un bel passo avanti, perché si collegava a una tastiera e a un televisore. Ma si comprava come scheda nuda, senza mobile né alimentatore, e ne furono costruiti circa duecento.',
           'Il salto vero arrivò nel 1977, l\'anno che le riviste avrebbero poi chiamato della «trinità». In aprile la Apple presentò alla prima West Coast Computer Faire di San Francisco l\'<strong>Apple II</strong>: un mobile di plastica beige con la tastiera incorporata, il BASIC pronto in memoria all\'accensione, la grafica a colori su un normale televisore e otto connettori di espansione (<em>slot</em>) per aggiungere schede. Costava 1.298 dollari con 4&nbsp;KB di memoria, cioè 4.096 byte: una cifra importante, ma alla portata di una famiglia o di un piccolo ufficio.',
-          'Gli altri due membri della trinità puntavano sulla semplicità. Il <strong>Commodore PET 2001</strong> (<em>Personal Electronic Transactor</em>), progettato da Chuck Peddle e mostrato al pubblico in gennaio, era tutto in un pezzo: tastiera, monitor e registratore a cassette per i programmi stavano nello stesso mobile di metallo. Il <strong>TRS-80 Model I</strong> della Tandy, presentato in agosto, si comprava nei negozi RadioShack di tutti gli Stati Uniti e con monitor e registratore costava circa 600 dollari: il computer arrivava sugli scaffali di migliaia di negozi, accanto alle radio e ai giradischi.',
+          'Gli altri due membri della trinità puntavano sulla semplicità. Il <strong>Commodore PET 2001</strong> (<em>Personal Electronic Transactor</em>), progettato da Chuck Peddle e mostrato al pubblico in gennaio, era tutto in un pezzo: tastiera, monitor e registratore a cassette per i programmi stavano nello stesso mobile di metallo. Il <strong>TRS-80 Model I</strong> della Tandy (la sigla unisce le iniziali di Tandy RadioShack e il nome del processore Z80), presentato in agosto, si comprava nei negozi RadioShack di tutti gli Stati Uniti e con monitor e registratore costava circa 600 dollari: il computer arrivava sugli scaffali di migliaia di negozi, accanto alle radio e ai giradischi.',
           'Le tre macchine usavano processori a 8 bit: il MOS 6502 a circa 1&nbsp;MHz per Apple II e PET, lo Zilog Z80 a 1,77&nbsp;MHz per il TRS-80. Ma la vera novità era un\'altra: si toglievano dalla scatola, si accendevano e rispondevano con un cursore lampeggiante, pronte a ricevere comandi in BASIC. Niente saldatore, niente levette, niente ottale: il computer era diventato un elettrodomestico.',
         ],
       },
@@ -1164,7 +1168,7 @@
         titolo: '1978–1980: dischetti, sistemi operativi e il primo programma «killer»',
         paragrafi: [
           'Il registratore a cassette era lento e capriccioso: caricare un programma poteva richiedere minuti, e un errore di lettura costringeva a ricominciare. Nel 1978 la Apple mise in vendita il <strong>Disk II</strong>, un lettore di dischetti flessibili (<em>floppy disk</em>) da 5¼ pollici con una scheda di controllo progettata da Wozniak usando pochissimi chip. Un dischetto conteneva circa 113&nbsp;KB, poi 140&nbsp;KB, e un programma si caricava in pochi secondi: il personal diventava uno strumento con il suo archivio.',
-          'Sulle macchine con processore 8080 o Z80, molte delle quali usavano il bus S-100, si diffuse invece il <strong>CP/M</strong> (<em>Control Program for Microcomputers</em>), il sistema operativo che Gary Kildall aveva scritto nel 1974. Il CP/M teneva separata la piccola parte che dipende dall\'hardware da quella che offre i comandi e gestisce i file: bastava riscrivere la prima per portare lo stesso sistema, e gli stessi programmi, su computer di marche diverse. È l\'idea di piattaforma comune che pochi anni dopo il <a href="#ibm-pc">PC IBM</a> porterà al trionfo.',
+          'Sulle macchine con processore 8080 o Z80, molte delle quali usavano il bus S-100, si diffuse invece il <strong>CP/M</strong> (<em>Control Program for Microcomputers</em>), il sistema operativo che Gary Kildall aveva scritto nel 1974. Il CP/M teneva separata la piccola parte che dipende dall\'hardware, chiamata BIOS (<em>Basic Input/Output System</em>), da quella che offre i comandi e gestisce i file: bastava riscrivere la prima per portare lo stesso sistema, e gli stessi programmi, su computer di marche diverse. Il nome BIOS tornerà nel capitolo sull\'<a href="#avvio">accensione del PC</a>. È l\'idea di piattaforma comune che pochi anni dopo il <a href="#ibm-pc">PC IBM</a> porterà al trionfo.',
           'Il programma che cambiò tutto uscì nell\'ottobre 1979. Dan Bricklin e Bob Frankston scrissero per l\'Apple II <strong>VisiCalc</strong>, il primo foglio elettronico: una griglia di righe e colonne in cui ogni casella può contenere un numero o una formula, e basta cambiare un dato perché tutti i conti si aggiornino da soli. Contabili e piccoli imprenditori compravano un Apple II solo per usare VisiCalc. È l\'esempio classico di quella che in inglese si chiama <em>killer application</em>: un programma così utile da giustificare da solo l\'acquisto della macchina.',
           'Intanto il personal entrava in casa. Nel 1979 Atari presentò i modelli 400 e 800, con chip dedicati alla grafica e al suono che li rendevano perfetti per i videogiochi; nel 1980, in Gran Bretagna, Sinclair lanciò lo ZX80, venduto a meno di 100 sterline e da collegare al televisore. Il passo successivo lo fece un gigante: nel 1981 IBM entrò nel mercato con il suo <a href="#ibm-pc">Personal Computer</a>, e da lì comincia il prossimo capitolo.',
         ],
@@ -1207,7 +1211,8 @@
       { testo: 'Sezione 5 · La corsa agli 8 bit (8080, 6502, Z80)', href: '../chip-programmabili/index.html#otto-bit', tipo: 'sezione' },
       { testo: 'Sezione 5 · Intel 4004, il primo microprocessore', href: '../chip-programmabili/index.html#intel-4004', tipo: 'sezione' },
       { testo: 'Sezione 7 · Il BASIC e il software dei personal', href: '../programmazione/index.html#personal', tipo: 'sezione' },
-      { testo: 'Capitolo 4 · Il PC IBM', href: '#ibm-pc', tipo: 'sezione' },
+      { testo: 'Capitolo 4 · IBM PC e l\'architettura aperta', href: '#ibm-pc', tipo: 'sezione' },
+      { testo: 'Capitolo 7 · Accendere un PC: dal BIOS all\'UEFI', href: '#avvio', tipo: 'sezione' },
       { testo: 'Capitolo 8 · Xerox Alto, finestre e mouse', href: '#grafica', tipo: 'sezione' },
       { testo: 'Quiz sul capitolo', href: '../quiz/index.html#storia-pc/primi-pc', tipo: 'sezione' },
     ],

@@ -372,7 +372,7 @@
             ev.push({ tipo: 'a', prima: a0, valore: r, da: 'alu' });
             if (testi) {
               testo = 'Il contenuto della cella ' + x + ', ' + val(v) + ', arriva all\'unità aritmetica e logica (ALU), che calcola ' +
-                a0 + (somma ? ' + ' : ' − ') + v + ' = ' + grezzo;
+                a0 + (somma ? ' + ' : ' − ') + v + ' = ' + String(grezzo).replace('-', '−');
               if (somma && grezzo > 255) testo += ': oltre 255 non si va, il risultato riparte da zero e diventa ' + r + ', e il flag C segnala il riporto.';
               else if (!somma && grezzo < 0) testo += ': sotto zero il risultato fa il giro e diventa ' + r + ' (cioè 256 ' + grezzo.toString().replace('-', '− ') + '), e il flag C segnala il prestito.';
               else testo += '.';

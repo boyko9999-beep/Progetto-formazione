@@ -1,1 +1,92 @@
 /* Storia del PC · capitolo 10 (oggi). */
+
+/* =====================================================================
+ * Illustrazioni: tre computer in scala, la scheda Arduino Uno.
+ * Tutte le classi stanno sotto .oggi-fig, così i nomi brevi non escono dal capitolo.
+ * ===================================================================== */
+
+.oggi-fig {
+  --oggi-al: #d3d8dc;        /* alluminio, piano superiore */
+  --oggi-al-2: #aab1b7;      /* alluminio, fianco */
+  --oggi-al-3: #8e969d;      /* alluminio, bordo frontale */
+  --oggi-arduino: #12858b;   /* il verde acqua delle schede Arduino */
+  --oggi-arduino-2: #0d6b70;
+  --oggi-accento: var(--cap, var(--era-10));
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .oggi-fig {
+    --oggi-al: #b4bbc1;
+    --oggi-al-2: #8f979e;
+    --oggi-al-3: #737b82;
+    --oggi-arduino: #0f7277;
+    --oggi-arduino-2: #0a5559;
+  }
+}
+:root[data-theme="dark"] .oggi-fig {
+  --oggi-al: #b4bbc1;
+  --oggi-al-2: #8f979e;
+  --oggi-al-3: #737b82;
+  --oggi-arduino: #0f7277;
+  --oggi-arduino-2: #0a5559;
+}
+
+.oggi-fig .l { stroke: var(--ill-linea); stroke-width: 2; stroke-linejoin: round; }
+.oggi-fig .l1 { stroke: var(--ill-linea); stroke-width: 1.5; stroke-linejoin: round; }
+.oggi-fig .be { fill: var(--ill-beige); }
+.oggi-fig .be2 { fill: var(--ill-beige-2); }
+.oggi-fig .be3 { fill: var(--ill-beige-3); }
+.oggi-fig .gr2 { fill: var(--ill-grigio-2); }
+.oggi-fig .sc { fill: var(--ill-scuro); }
+.oggi-fig .sc2 { fill: var(--ill-scuro-2); }
+.oggi-fig .al { fill: var(--oggi-al); }
+.oggi-fig .al2 { fill: var(--oggi-al-2); }
+.oggi-fig .al3 { fill: var(--oggi-al-3); }
+
+.oggi-fig .oggi-ombra { fill: #000; opacity: .13; }
+.oggi-fig .oggi-pavimento { fill: none; stroke: var(--ill-linea); stroke-width: 2; opacity: .55; }
+.oggi-fig .oggi-righello { fill: none; stroke: var(--muted); stroke-width: 1.5; stroke-linecap: round; }
+.oggi-fig .oggi-fig-misura { fill: var(--muted); font: 700 22px var(--font); text-anchor: middle; }
+.oggi-fig .oggi-fig-anno { fill: var(--oggi-accento); font: 800 24px var(--mono); text-anchor: middle; letter-spacing: -0.02em; }
+.oggi-fig .oggi-fessura { fill: none; stroke: var(--ill-beige-2); stroke-width: 2; stroke-linecap: round; }
+.oggi-fig .oggi-solco { fill: none; stroke: var(--ill-beige-3); stroke-width: 1.5; stroke-linecap: round; }
+.oggi-fig .oggi-maniglia { fill: none; stroke: var(--ill-scuro); stroke-width: 7; stroke-linecap: round; stroke-linejoin: round; }
+.oggi-fig .oggi-maniglia-luce { fill: none; stroke: var(--ill-grigio-2); stroke-width: 2; stroke-linecap: round; }
+.oggi-fig .oggi-giunto { fill: none; stroke: var(--ill-linea); stroke-width: 1; opacity: .55; }
+.oggi-fig .oggi-riflesso { fill: none; stroke: #fff; stroke-width: 2; stroke-linecap: round; opacity: .5; }
+.oggi-fig .oggi-schermo { fill: var(--ill-schermo); }
+.oggi-fig .oggi-schermo-luce { fill: var(--ill-blu); opacity: .35; }
+.oggi-fig .oggi-app { opacity: .9; }
+.oggi-fig .oggi-app.t1 { fill: var(--ill-fosforo); }
+.oggi-fig .oggi-app.t2 { fill: var(--ill-ambra); }
+.oggi-fig .oggi-app.t3 { fill: #8fb7ff; }
+.oggi-fig .oggi-app.t4 { fill: #ff8fb1; }
+
+/* richiami numerati */
+.oggi-fig .oggi-guida { fill: none; stroke: var(--oggi-accento); stroke-width: 2; }
+.oggi-fig .oggi-guida-punto { fill: var(--oggi-accento); }
+.oggi-fig .oggi-richiamo circle { fill: var(--oggi-accento); stroke: var(--ill-tela); stroke-width: 2.5; }
+.oggi-fig .oggi-richiamo text { fill: var(--bg); font: 800 23px var(--font); text-anchor: middle; }
+
+/* Arduino Uno */
+.oggi-fig .ard-pcb { fill: var(--oggi-arduino); }
+.oggi-fig .ard-pista { fill: none; stroke: var(--oggi-arduino-2); stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
+.oggi-fig .ard-foro { fill: var(--ill-tela); stroke: var(--ill-oro); stroke-width: 3; }
+.oggi-fig .ard-serigrafia-fondo { fill: none; stroke: #f4f7f6; stroke-width: 1.5; opacity: .7; }
+.oggi-fig .ard-header { fill: var(--ill-chip); }
+.oggi-fig .ard-pin { fill: var(--ill-oro); }
+.oggi-fig .ard-metallo { fill: var(--ill-grigio); }
+.oggi-fig .ard-costola { fill: none; stroke: var(--ill-grigio-2); stroke-width: 1.5; }
+.oggi-fig .ard-polo { fill: var(--ill-scuro-2); opacity: .75; }
+.oggi-fig .ard-croce { fill: none; stroke: var(--ill-scuro); stroke-width: 1.5; stroke-linecap: round; }
+.oggi-fig .ard-chip { fill: var(--ill-chip); }
+.oggi-fig .ard-piedino-qfn { fill: none; stroke: var(--ill-grigio); stroke-width: 2; }
+.oggi-fig .ard-pulsante { fill: var(--ill-beige-2); }
+.oggi-fig .ard-led-ambra { fill: var(--ill-ambra); }
+.oggi-fig .ard-led-verde { fill: var(--ill-fosforo); }
+.oggi-fig .ard-bagliore-ambra { fill: var(--ill-ambra); opacity: .3; }
+.oggi-fig .ard-bagliore-verde { fill: var(--ill-fosforo); opacity: .3; }
+.oggi-fig .ard-zoccolo { fill: var(--ill-scuro-2); }
+.oggi-fig .ard-gamba { fill: var(--ill-grigio); }
+.oggi-fig .ard-tacca { fill: var(--ill-scuro-2); }
+.oggi-fig .ard-punto { fill: var(--ill-scuro-2); }

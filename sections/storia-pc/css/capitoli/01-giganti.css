@@ -1,1 +1,282 @@
-/* Storia del PC · capitolo 1 (giganti). */
+/* Storia del PC · capitolo 1 (giganti). Prefisso delle classi: gig- (figure e laboratorio), gw- (oggetti del mondo nel laboratorio). */
+
+/* =====================================================================
+ * Illustrazioni: la sala dell'ENIAC, una sala con l'Elea 9003.
+ * ===================================================================== */
+
+.gig-fig {
+  --gig-pannello-chiaro: #dfe3e2;   /* frontali degli armadi Olivetti: restano chiari anche nel tema scuro */
+}
+
+.gig-fig .gig-l { stroke: var(--ill-linea); stroke-width: 1.5; stroke-linejoin: round; }
+.gig-fig .gig-l1 { stroke: var(--ill-linea); stroke-width: 1.2; stroke-linejoin: round; }
+.gig-fig .gig-l2 { stroke: var(--ill-linea); stroke-width: 2; stroke-linejoin: round; }
+
+/* la stanza */
+.gig-fig .gig-soffitto { fill: var(--ill-tela-2); }
+.gig-fig .gig-muro { fill: var(--ill-beige-2); }
+.gig-fig .gig-muro-fondo { fill: var(--ill-beige); }
+.gig-fig .gig-pavimento { fill: var(--ill-beige-3); }
+.gig-fig .gig-piastrelle { fill: none; stroke: var(--ill-beige-2); stroke-width: 1; opacity: .7; }
+.gig-fig .gig-battiscopa { fill: none; stroke: var(--ill-linea); stroke-width: 2; }
+.gig-fig .gig-lampada { fill: none; stroke: #fffbea; stroke-width: 4; stroke-linecap: round; }
+.gig-fig .gig-lampada-alone { fill: none; stroke: #fff1bf; stroke-width: 13; stroke-linecap: round; opacity: .28; }
+.gig-fig .gig-ombra { fill: #000; opacity: .16; }
+
+/* i pannelli dell'ENIAC */
+.gig-fig .gig-pannello { fill: var(--ill-scuro); }
+.gig-fig .gig-pannello2 { fill: var(--ill-scuro-2); }
+.gig-fig .gig-zoccolo { fill: var(--ill-chip); }
+.gig-fig .gig-neon { fill: var(--ill-ambra); }
+.gig-fig .gig-neon-spento { fill: #6a5126; }
+.gig-fig .gig-vetro { fill: var(--ill-grigio-2); }
+.gig-fig .gig-filamento { fill: var(--ill-ambra); }
+.gig-fig .gig-manopola { fill: var(--ill-grigio); }
+.gig-fig .gig-indice { fill: none; stroke: var(--ill-chip); stroke-width: 1.4; stroke-linecap: round; }
+.gig-fig .gig-presa { fill: var(--ill-chip); stroke: var(--ill-grigio-2); stroke-width: .8; }
+.gig-fig .gig-riga-neon { fill: none; stroke: var(--ill-ambra); stroke-width: 2.2; stroke-dasharray: 1.5 3.4; stroke-linecap: round; opacity: .9; }
+.gig-fig .gig-riga-valvole { fill: none; stroke: var(--ill-grigio-2); stroke-width: 4.5; stroke-dasharray: 2.2 2.8; }
+.gig-fig .gig-riga-comm { fill: none; stroke: var(--ill-grigio); stroke-width: 4.5; stroke-dasharray: 4.5 5; stroke-linecap: round; }
+.gig-fig .gig-riga-prese { fill: none; stroke: var(--ill-chip); stroke-width: 2.2; stroke-dasharray: 2 4; stroke-linecap: round; }
+.gig-fig .gig-cavo { fill: none; stroke-width: 2; stroke-linecap: round; }
+.gig-fig .gig-c1 { stroke: var(--ill-led); }
+.gig-fig .gig-c2 { stroke: #5aa0e6; }
+.gig-fig .gig-c3 { stroke: var(--ill-ambra); }
+.gig-fig .gig-c4 { stroke: #e9e4d4; }
+
+/* la persona che dà la scala */
+.gig-fig .gig-persona { fill: var(--ill-blu); stroke: var(--ill-linea); }
+.gig-fig .gig-persona-testa { fill: var(--ill-beige-3); stroke: var(--ill-linea); }
+
+/* la sala dell'Elea 9003 */
+.gig-fig .gig-condotto { fill: var(--ill-grigio); }
+.gig-fig .gig-giunto { fill: none; stroke: var(--ill-grigio-2); stroke-width: 1.5; }
+.gig-fig .gig-armadio { fill: var(--ill-grigio); }
+.gig-fig .gig-armadio-cima { fill: var(--ill-grigio-2); }
+.gig-fig .gig-armadio-fronte { fill: var(--gig-pannello-chiaro); }
+.gig-fig .gig-griglia-aria { fill: none; stroke: var(--ill-grigio-2); stroke-width: 1.6; stroke-linecap: round; }
+.gig-fig .gig-maniglia { fill: var(--ill-grigio-2); }
+.gig-fig .gig-s1 { fill: var(--ill-blu); }
+.gig-fig .gig-s2 { fill: var(--ill-ambra); }
+.gig-fig .gig-s3 { fill: #c8402f; }
+.gig-fig .gig-s4 { fill: #3d9a5f; }
+.gig-fig .gig-spia-a { fill: var(--ill-ambra); }
+.gig-fig .gig-spia-v { fill: #3fbf72; }
+.gig-fig .gig-spia-r { fill: var(--ill-led); }
+.gig-fig .gig-spia-b { fill: #6fb2f2; }
+.gig-fig .gig-vetro-scuro { fill: var(--ill-schermo); }
+.gig-fig .gig-bobina { fill: var(--ill-grigio); }
+.gig-fig .gig-bobina-nastro { fill: #5b4632; }
+.gig-fig .gig-mozzo { fill: var(--ill-grigio-2); }
+.gig-fig .gig-foro { fill: var(--ill-schermo); }
+.gig-fig .gig-nastro { fill: none; stroke: #5b4632; stroke-width: 2; }
+.gig-fig .gig-testina { fill: var(--ill-grigio-2); }
+.gig-fig .gig-console { fill: var(--ill-grigio); }
+.gig-fig .gig-console-ombra { fill: var(--ill-grigio-2); opacity: .55; }
+.gig-fig .gig-piano { fill: var(--ill-beige-3); }
+.gig-fig .gig-pannello-console { fill: var(--ill-scuro-2); }
+.gig-fig .gig-tasto { fill: var(--gig-pannello-chiaro); }
+
+/* =====================================================================
+ * Laboratorio «Il computer che si rimpicciolisce» (sempre scuro).
+ * ===================================================================== */
+
+.gig-lab { --gig-testo: #e6f0ec; --gig-tenue: #7f9a90; }
+.gig-lab :is(button, input):focus-visible { outline: 2px solid var(--trace-3); outline-offset: 2px; }
+
+/* comandi */
+.gig-comandi { display: grid; gap: 10px; }
+.gig-epoche { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 3px; width: 100%; box-sizing: border-box; }
+.gig-lab .gig-epoche button {
+  min-height: 46px; padding: 4px 6px; display: grid; align-content: center; justify-items: center; gap: 1px; line-height: 1.15;
+  transition-property: color, background-color, box-shadow, transform; transition-duration: var(--dur-fast); transition-timing-function: var(--ease-smooth);
+}
+.gig-lab .gig-epoche button:active { transform: scale(.97); }
+.gig-epoca-anno { font: 700 .72rem var(--mono); color: var(--gig-tenue); font-variant-numeric: tabular-nums; }
+.gig-epoca-nome { font: 700 .86rem var(--font); white-space: nowrap; }
+.gig-epoche button[aria-pressed="true"] .gig-epoca-anno { color: var(--trace-2); }
+.gig-riga-comandi { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; }
+.gig-cursore { flex: 1 1 200px; min-width: 0; color: var(--scope-text); }
+.gig-cursore span { font: 700 .72rem var(--mono); text-transform: uppercase; letter-spacing: .1em; color: var(--gig-tenue); }
+.gig-lab .gig-cursore input[type="range"] { flex: 1; width: auto; min-width: 0; height: 40px; margin: 0; cursor: pointer; }
+.gig-freccia { font-size: 1.05rem; width: 44px; padding: 0; }
+.gig-freccia[aria-disabled="true"] { opacity: .4; cursor: default; }
+.gig-freccia[aria-disabled="true"]:hover { color: var(--scope-text); border-color: var(--scope-grid); }
+.gig-tour { min-width: 12.5em; }
+
+/* palco */
+.gig-palco-box { position: relative; border-radius: 12px; overflow: hidden; border: 1px solid var(--scope-grid); background: var(--scope-bg); }
+.gig-palco { display: block; width: 100%; height: auto; touch-action: manipulation; }
+.gig-sfondo { fill: #08100d; }
+.gig-griglia { fill: none; stroke: #23362f; stroke-width: 1; shape-rendering: crispEdges; }
+.gig-terra { fill: #111d19; }
+.gig-linea-terra { fill: none; stroke: #3d6a5a; stroke-width: 1.5; }
+.gig-anno { fill: #fff; opacity: .1; font-family: var(--mono); font-weight: 800; letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
+
+/* oggetti del mondo: compaiono e spariscono in dissolvenza */
+.gig-oggetto { opacity: 0; visibility: hidden; transition: opacity var(--dur-slow) var(--ease-smooth), visibility 0s linear var(--dur-slow); }
+.gig-oggetto.on { opacity: 1; visibility: visible; transition: opacity var(--dur-slow) var(--ease-smooth), visibility 0s linear 0s; }
+
+.gig-mondo .gw-l, .gig-mondo .gw-cavo { vector-effect: non-scaling-stroke; }
+.gig-mondo .gw-l { stroke: #0b0e10; stroke-width: 1.2px; stroke-linejoin: round; }
+.gig-mondo .gw-cavo { fill: none; stroke-width: 1.6px; stroke-linecap: round; opacity: .9; }
+.gw-c1 { stroke: var(--trace-4); }
+.gw-c2 { stroke: var(--trace-3); }
+.gw-c3 { stroke: var(--trace-2); }
+.gw-persona { fill: var(--trace-2); }
+
+/* ENIAC */
+.gw-telaio { fill: #3b434a; }
+.gw-testata { fill: #23292e; }
+.gw-zoccolo { fill: #121518; }
+.gw-neon { fill: #5a4422; }
+.gw-neon.on { fill: #ffc04d; }
+.gw-pat-fondo { fill: #23292e; }
+.gw-pat-vetro { fill: #5d6870; }
+.gw-pat-filamento { fill: #ffb547; }
+.gw-pat-fondo2 { fill: #2d3439; }
+.gw-pat-manopola { fill: #8f99a1; }
+.gw-pat-indice { fill: #15181b; }
+.gw-pat-presa { fill: #0b0e10; }
+.gw-pat-luce { fill: #ffc04d; opacity: .85; }
+
+/* UNIVAC I */
+.gw-grigio { fill: #8e999f; }
+.gw-grigio2 { fill: #6b767d; }
+.gw-anta { fill: #a2acb2; }
+.gw-crema { fill: #d5c7a6; }
+.gw-crema2 { fill: #b9a77f; }
+.gw-vetro { fill: #16242a; }
+.gw-bobina-disco { fill: #c7cdd1; }
+.gw-bobina-nastro { fill: #5b4632; }
+.gw-mozzo { fill: #3e454d; }
+.gw-foro { fill: #16242a; }
+.gw-nastro { fill: #5b4632; }
+.gw-maniglia { fill: #2b3036; }
+
+/* IBM 1401 */
+.gw-ibm { fill: #b9c1c7; }
+.gw-ibm2 { fill: #8c969d; }
+.gw-ibm-blu { fill: #2f5fa7; }
+.gw-pannello { fill: #1f2428; }
+.gw-luce { fill: #3e3826; }
+.gw-luce.on { fill: #ffc04d; }
+.gw-carta { fill: #f4f1e8; }
+.gw-righe-carta { fill: #c9c2b0; }
+.gw-scuro { fill: #1c1f23; }
+
+/* PDP-8 */
+.gw-dec { fill: #b7bdc2; }
+.gw-dec2 { fill: #8b949b; }
+.gw-fume { fill: #262b2f; }
+.gw-pat-fume { fill: #262b2f; }
+.gw-pat-scheda { fill: #2f5a48; }
+.gw-console { fill: #e4dac2; }
+.gw-led { fill: #4b3c1f; }
+.gw-led.on { fill: #ffc04d; }
+.gw-sw1 { fill: #a64a12; }
+.gw-sw2 { fill: #e9dfc7; }
+
+/* IBM PC e scrivania */
+.gw-legno { fill: #9a6b3f; }
+.gw-legno2 { fill: #7a5230; }
+.gw-beige { fill: #e9dfc7; }
+.gw-beige2 { fill: #d5c7a6; }
+.gw-tasti { fill: #b9a77f; }
+.gw-cornice { fill: #2b3036; }
+.gw-schermo { fill: #07100c; }
+.gw-fosforo { fill: #3ee08f; }
+.gw-cursore.spento { opacity: 0; }
+
+/* portatile e smartphone */
+.gw-alluminio { fill: #c5cbd0; }
+.gw-alluminio2 { fill: #9aa3ab; }
+.gw-schermo2 { fill: #10213a; }
+.gw-ui-barra { fill: #e7ebee; opacity: .55; }
+.gw-ui-fin1 { fill: #2f5fa7; }
+.gw-ui-fin2 { fill: #e7ebee; }
+.gw-ui-traccia { fill: #b9c1c7; }
+.gw-ui-progresso { fill: #19a463; }
+.gw-ui-testo { fill: #9aa3ab; }
+.gw-supporto { fill: #3e454d; }
+.gw-telefono { fill: #1c1f23; }
+.gw-ic1 { fill: #ff7aa8; }
+.gw-ic2 { fill: #5cc8ff; }
+.gw-ic3 { fill: #ffc04d; }
+.gw-ic4 { fill: #3ee08f; }
+.gw-ic5 { fill: #b197fc; }
+.gw-ic6 { fill: #ff9f43; }
+.gw-ping { fill: #ff4d4d; }
+
+/* sovrimpressioni: quota della persona, etichetta, scala */
+.gig-palco text { paint-order: stroke; stroke: #08100d; stroke-width: 3px; stroke-linejoin: round; }
+.gig-quota { transition: opacity var(--dur-fast) var(--ease-smooth); }
+.gig-quota-linea { fill: none; stroke: var(--trace-2); stroke-width: 1.5; }
+.gig-quota-testo { fill: var(--trace-2); font: 700 12px var(--mono); text-anchor: middle; }
+.gig-et-nome { fill: #fff; font: 800 13.5px var(--font); }
+.gig-et-misura { fill: var(--scope-text); font: 600 12px var(--mono); }
+.gig-et-linea { fill: none; stroke: rgba(255, 255, 255, .35); stroke-width: 1; stroke-dasharray: 2 3; }
+.gig-scala-barra { fill: none; stroke: #fff; stroke-width: 2; stroke-linejoin: round; }
+.gig-scala-testo { fill: #fff; font: 700 12.5px var(--mono); }
+.gig-campo { fill: var(--scope-text); font: 600 12px var(--mono); }
+
+/* riga sotto la scena, solo quando il palco è stretto */
+.gig-didascalia { display: none; margin: 0; padding: 8px 12px 9px; border-top: 1px solid var(--scope-grid); font: 600 .8rem/1.4 var(--mono); color: var(--scope-text); }
+.gig-didascalia strong { color: #fff; font-family: var(--font); font-weight: 800; }
+.gig-stretto .gig-didascalia { display: block; }
+
+/* sotto il palco */
+.gig-sotto { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 14px; }
+.gig-lab .gig-modo button { min-height: 40px; }
+.gig-suggerimento { margin: 0; font-size: .84rem; color: var(--gig-tenue); }
+.gig-pannelli { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: 14px; align-items: start; }
+.gig-colonna { display: grid; gap: 12px; }
+.gig-nota { min-height: 7.8em; }
+.gig-kv { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.gig-kv dd { font: 600 .86rem/1.35 var(--font); color: var(--gig-testo); }
+
+/* barre logaritmiche */
+.gig-confronto { display: grid; gap: 12px; }
+.gig-confronto-testa { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px; font: 700 .7rem var(--mono); text-transform: uppercase; letter-spacing: .1em; color: var(--gig-tenue); }
+.gig-legenda { display: inline-flex; gap: 12px; text-transform: none; letter-spacing: .02em; font-weight: 600; }
+.gig-legenda > span { display: inline-flex; align-items: center; gap: 5px; }
+.gig-legenda i { display: inline-block; width: 12px; height: 8px; border-radius: 2px; background: var(--trace-1); }
+.gig-legenda i.gig-leg-rif { width: 2px; height: 13px; border-radius: 1px; background: var(--trace-4); }
+.gig-barra { display: grid; gap: 5px; }
+.gig-barra-testa { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.gig-barra-nome { font-weight: 700; font-size: .86rem; color: var(--gig-testo); }
+.gig-barra-val { font: 700 .82rem var(--mono); color: var(--trace-1); font-variant-numeric: tabular-nums; text-align: right; }
+.gig-barra-binario { position: relative; height: 12px; border-radius: 6px; background: #0a100e; border: 1px solid var(--scope-grid); }
+.gig-barra-tacche {
+  position: absolute; inset: 0; border-radius: inherit;
+  background-image: repeating-linear-gradient(90deg, rgba(169, 195, 185, .26) 0 1px, transparent 1px calc(100% / var(--decadi, 10)));
+}
+.gig-barra-pieno, .gig-barra-fascia {
+  position: absolute; top: 1px; bottom: 1px; left: 1px; right: 1px; border-radius: 5px; transform-origin: left center;
+  transition: transform var(--dur-slow) var(--ease-smooth);
+}
+.gig-barra-pieno { background: var(--trace-1); transform: scaleX(0); }
+.gig-barra-fascia { background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--trace-1) 60%, transparent) 0 3px, transparent 3px 6px); transform: translateX(0) scaleX(0); }
+.gig-barra-rif { position: absolute; top: -4px; bottom: -4px; width: 2px; margin-left: -1px; border-radius: 1px; background: var(--trace-4); box-shadow: 0 0 0 2px #0f1916; }
+.gig-barra-frase { font-size: .84rem; color: var(--scope-text); }
+.gig-barra.manca .gig-barra-val { color: var(--gig-tenue); font-weight: 600; }
+.gig-barra.manca .gig-barra-frase { font-style: italic; }
+.gig-piede { margin: 2px 0 0; font-size: .78rem; line-height: 1.45; color: var(--gig-tenue); }
+
+/* schermi stretti */
+@media (max-width: 760px) {
+  .gig-pannelli { grid-template-columns: minmax(0, 1fr); }
+  .gig-epoche { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .gig-nota { min-height: 0; }
+}
+@media (max-width: 480px) {
+  .gig-tour { flex: 1 1 100%; }
+  .gig-cursore span { display: none; }
+  .gig-suggerimento { font-size: .8rem; }
+  .gig-kv { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gig-oggetto, .gig-oggetto.on, .gig-quota, .gig-barra-pieno, .gig-barra-fascia { transition: none; }
+  .gig-lab .gig-epoche button:active { transform: none; }
+}

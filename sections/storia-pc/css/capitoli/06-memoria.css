@@ -6,6 +6,10 @@
  * ====================================================================== */
 
 .mem-ill text { font-family: var(--font); }
+/* Ferrite dei nuclei: quasi nera sulla carta chiara, grigio ferro nel tema scuro (resta visibile sulla tela scura). */
+.mem-ill { --mem-ferrite: var(--ill-chip); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .mem-ill { --mem-ferrite: #66717b; } }
+:root[data-theme="dark"] .mem-ill { --mem-ferrite: #66717b; }
 .mem-fig-et { font-size: 15px; font-weight: 800; fill: var(--ink); letter-spacing: -0.01em; }
 .mem-fig-det { font-size: 12.5px; font-weight: 700; }
 
@@ -54,14 +58,15 @@
 .mem-finestra { fill: var(--ill-tela-2); stroke: var(--ill-linea); stroke-width: 1.2; }
 .mem-filo { fill: none; stroke: var(--ill-rame); stroke-width: 1.8; }
 .mem-lettura { fill: none; stroke: var(--ill-blu); stroke-width: 1.3; opacity: .85; }
-.mem-nucleo { fill: none; stroke: var(--ill-chip); stroke-width: 3.8; }
+.mem-nucleo { fill: none; stroke: var(--mem-ferrite); stroke-width: 3.8; }
 .mem-nucleo.sel { stroke: var(--ill-led); }
 .mem-filo-sel { fill: none; stroke: var(--ill-ambra); stroke-width: 3.2; stroke-linecap: round; }
 .mem-corrente { stroke-dasharray: 12 9; animation: mem-scorre 1.1s linear infinite; }
 .mem-alone { fill: var(--ill-led); opacity: .28; animation: mem-pulsa 2.4s var(--ease-smooth) infinite alternate; }
 .mem-punta { fill: var(--ill-ambra); stroke: var(--ill-linea); stroke-width: 1; }
 .mem-fig-corr { fill: var(--ink); }
-.mem-anello { fill: none; stroke: var(--ill-chip); stroke-width: 16; }
+.mem-lente { fill: var(--ill-tela-2); stroke: var(--ill-grigio); stroke-width: 1.2; stroke-dasharray: 5 4; }
+.mem-anello { fill: none; stroke: var(--mem-ferrite); stroke-width: 16; }
 .mem-anello-ombra { fill: none; stroke: var(--ill-linea); stroke-width: 16; opacity: .25; }
 .mem-anello-luce { fill: none; stroke: var(--ill-grigio-2); stroke-width: 1.2; }
 .mem-magn { fill: none; stroke: var(--ill-ambra); stroke-width: 3.2; stroke-linecap: round; }
@@ -73,17 +78,21 @@
 .mem-base { fill: none; stroke: var(--ill-grigio-2); stroke-width: 1.2; }
 .mem-impulso { fill: none; stroke: var(--ill-ambra); stroke-width: 2.6; stroke-linejoin: round; }
 .mem-soglia { fill: none; stroke: var(--ill-led); stroke-width: 1.4; stroke-dasharray: 5 4; }
+.mem-supera { fill: none; stroke: var(--ill-led); stroke-width: 2.8; stroke-linejoin: round; }
+.mem-supera-area { fill: var(--ill-led); opacity: .22; }
 .mem-fig-soglia { fill: var(--ill-led); font-size: 12.5px; }
 .mem-riflesso { animation: mem-ruota 2.6s linear infinite; }
 
+/* Fuori dallo schermo le animazioni delle figure restano ferme (classe messa da soloInVista). */
+.mem-fermo .mem-corrente, .mem-fermo .mem-alone, .mem-fermo .mem-giro, .mem-fermo .mem-riflesso { animation-play-state: paused; }
 @keyframes mem-scorre { to { stroke-dashoffset: -21; } }
 @keyframes mem-pulsa { from { opacity: .12; } to { opacity: .5; } }
 @keyframes mem-ruota { to { transform: rotate(360deg); } }
 
 /* Sui telefoni le etichette crescono (restano leggibili) e i dettagli passano alla didascalia. */
 @media (max-width: 640px) {
-  .mem-fig-et { font-size: 23px; }
-  .mem-fig-imp { font-size: 22px; }
+  .mem-fig-et { font-size: 24px; }
+  .mem-fig-imp { font-size: 24px; }
   .mem-fig-cifra { font-size: 30px; }
   .mem-fig-det { display: none; }
 }
@@ -112,7 +121,11 @@
 .mem-intro, .mem-descr { margin: 0; font-size: .94rem; line-height: 1.5; color: #b9d2c8; max-width: 72ch; }
 .mem-intro strong { color: #fff; }
 .mem-descr { min-height: 3em; }
-.mem-lab .lab-note { min-height: 4.7em; }
+.mem-lab .lab-note { min-height: 4.7em; transition: opacity var(--dur-fast) var(--ease-smooth); }
+.mem-lab .lab-note.mem-vecchia { opacity: .5; }
+/* La cornice comune taglia gli angoli con overflow: hidden, che però impedirebbe all'orologio
+ * di restare adesivo sui telefoni: clip taglia allo stesso modo senza creare un'area di scorrimento. */
+#lab-memoria { overflow: clip; }
 .mem-nota-dati, .mem-nota-passo { font-family: var(--mono); font-size: .86em; color: var(--trace-2); }
 .mem-nota-passo { color: var(--mem-tenue); }
 
@@ -142,8 +155,8 @@
   background: #0c1412; border: 2px solid #2a3f39; color: #9fc2b6;
   transition-property: border-color, color, background-color; transition-duration: var(--dur-normal); transition-timing-function: var(--ease-smooth);
 }
-.mem-liv-ico svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
-.mem-liv-ico svg text { fill: currentColor; stroke: none; font: 800 8.5px var(--mono); }
+.mem-liv-ico svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.mem-liv-ico svg text { fill: currentColor; stroke: none; font: 800 12px var(--mono); letter-spacing: -0.04em; }
 .mem-liv-ico::after {
   content: ""; position: absolute; inset: -5px; border-radius: 50%; border: 2px solid var(--mem-manc);
   opacity: 0; transform: scale(.8); pointer-events: none;
@@ -195,7 +208,14 @@
 
 @container (max-width: 720px) {
   .mem-scala-grid { grid-template-columns: minmax(0, 1fr); }
-  .mem-scala-lato { order: -1; }
+  /* Orologio sopra la scala e adesivo (resta in vista mentre si tocca un livello in basso),
+   * spiegazione sotto la scala. */
+  .mem-scala-lato { display: contents; }
+  .mem-orologio {
+    order: -1; position: sticky; top: calc(var(--mem-cima, 0px) + 6px); z-index: 4;
+    box-shadow: 0 14px 22px -16px rgba(0, 0, 0, .95);
+  }
+  .mem-scala-lato > .lab-note { order: 1; }
 }
 @container (max-width: 560px) {
   .mem-liv {
@@ -269,6 +289,8 @@
 .mem-pop text { font-size: 13px; font-weight: 800; letter-spacing: .08em; fill: #ffd1e1; }
 .mem-pop.colpo rect { fill: #0f3324; stroke: var(--mem-colpo); }
 .mem-pop.colpo text { fill: #c9ffe3; }
+/* Schema stretto (telefoni): l'SVG si rimpicciolisce, i testi minori crescono per restare sopra gli 11 px. */
+.mem-svg.stretto .mem-s-int, .mem-svg.stretto .mem-s-vuota, .mem-svg.stretto .mem-lru text { font-size: 13.5px; }
 
 .mem-storia { display: flex; gap: 2px; padding: 0 2px; }
 .mem-storia i {

@@ -87,6 +87,8 @@
   display: grid; gap: 14px; min-width: 0;
 }
 .altair [hidden] { display: none !important; }
+/* bersagli di almeno 40 px anche per i pulsanti segmentati comuni (che di base sono alti 36 px) */
+.altair .lab-seg button { min-height: 40px; }
 .altair-banco, .altair-lati, .altair-info, .altair-missione { min-width: 0; }
 .altair-lati { display: grid; gap: 14px; align-items: start; }
 /* Colonne esplicite a ogni livello: una griglia annidata con una colonna 1fr, misurata
