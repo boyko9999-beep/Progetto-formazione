@@ -1,7 +1,7 @@
 // Test del modello fisico del capitolo "L'alimentatore: dalla presa ai 5 volt" (valori da libro di testo).
 const test = require('node:test');
 const assert = require('node:assert');
-const { chapter } = require('./harness.js');
+const { EI, chapter } = require('./harness.js');
 
 const m = chapter('alimentatore').model;
 const close = (a, b, eps, msg) => assert.ok(Math.abs(a - b) <= eps, (msg ? msg + ': ' : '') + a + ' invece di ' + b);
@@ -106,4 +106,41 @@ test('il carico senza regolatore riceve tutta la tensione del condensatore', () 
   assert.ok(r.pReg === 0);
   close(m.loadCurrent(15, 0.5, false), 1.5, 1e-9, 'la resistenza da 10 Ω a 15 V prende 1,5 A');
   close(m.loadCurrent(15, 0.5, true), 0.5, 1e-9, 'dietro al 7805 prende 0,5 A');
+});
+
+test('le sfide del laboratorio hanno una soluzione con i valori dei comandi', () => {
+  // la stessa simulazione del banco: 3 periodi registrati dopo 2 di assestamento
+  const bench = (p) => m.simulate(Object.assign({ load: 'carico', reg: true, periods: 3, settle: 2, dt: 1e-5, every: 5 }, p));
+  const caps = EI.seriesValues('E6', 100e-6, 10e-3);
+  assert.strictEqual(caps.length, 13, 'da 100 µF a 10 000 µF');
+  // 1. il condensatore più piccolo che regge 500 mA: 330 µF con il secondario da 15 V e il ponte
+  let best = null;
+  for (const C of caps) {
+    for (const vrms of [9, 12, 15]) {
+      for (const mode of ['ponte', 'semionda']) {
+        if (!best && bench({ vrms: vrms, mode: mode, C: C, I: 0.5 }).regulated) best = { C: C, vrms: vrms, mode: mode };
+      }
+    }
+  }
+  close(best.C, 330e-6, 1e-9);
+  assert.deepStrictEqual([best.vrms, best.mode], [15, 'ponte']);
+  // 2. il dropout si raggiunge: 12 V e 330 µF a 500 mA
+  const drop = bench({ vrms: 12, mode: 'ponte', C: 330e-6, I: 0.5 });
+  assert.ok(drop.vmin < 7 && drop.vmax >= 7 && !drop.regulated);
+  // 3. meno di 1 V di ripple a 1 A: serve il condensatore più grande, 10 000 µF
+  assert.ok(bench({ vrms: 12, mode: 'ponte', C: 10e-3, I: 1 }).ripple < 1);
+  assert.ok(bench({ vrms: 12, mode: 'ponte', C: 6.8e-3, I: 1 }).ripple > 1);
+  // 4. a 500 mA in regolazione il 7805 scalda sempre più di 2 W, ma con 9 V si resta sotto 3 W
+  let minP = Infinity;
+  for (const C of caps) {
+    for (const vrms of [9, 12, 15]) {
+      for (const mode of ['ponte', 'semionda']) {
+        const r = bench({ vrms: vrms, mode: mode, C: C, I: 0.5 });
+        if (r.regulated) minP = Math.min(minP, r.pReg);
+      }
+    }
+  }
+  assert.ok(minP > 2 && minP < 3, 'potenza minima in regolazione: ' + minP + ' W');
+  assert.ok(bench({ vrms: 9, mode: 'ponte', C: 2200e-6, I: 0.5 }).pReg < 3);
+  assert.ok(bench({ vrms: 12, mode: 'ponte', C: 10e-3, I: 0.5 }).pReg > 3, 'con 12 V non basta nessun condensatore');
 });

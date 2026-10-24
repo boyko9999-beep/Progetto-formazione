@@ -4,7 +4,7 @@
  * da 12 V (lampada, oppure motore con diodo di ricircolo). Il gate si comanda con un generatore
  * regolabile o con il piedino di un microcontrollore a 3,3 o 5 V. Accanto allo schema c'è la sezione
  * del transistor: il gate respinge le lacune, attira gli elettroni e apre il canale tra source e drain.
- * La carica del gate (un circuito RC con Rg e la capacità d'ingresso, mezzo microsecondo) è mostrata
+ * La carica del gate (un circuito RC con Rg e la capacità d'ingresso, τ di circa 0,4 µs) è mostrata
  * rallentata un milione di volte.
  */
 (function () {
@@ -359,10 +359,11 @@
       // cariche che scorrono (verso convenzionale), sopra a tutto
       const pth = (parent, d) => s('path', { d: d, class: 'ei-wire', style: 'opacity:0' }, parent);
       o.fSup = new EI.Flow(g, pth(g, 'M' + B.x + ' ' + (B.y + 60) + 'V' + G.railY + 'H' + L.x));
-      o.fLoad = new EI.Flow(g, pth(g, 'M' + L.x + ' ' + G.railY + 'V' + L.node), { phase: 6 });
+      // nel carico le cariche spariscono dentro la lampada o il motore e riappaiono dall'altra parte
+      o.fLoad = new EI.Flow(g, pth(g, 'M' + L.x + ' ' + G.railY + 'V' + (L.cy - L.r - 1) + 'M' + L.x + ' ' + (L.cy + L.r + 1) + 'V' + L.node), { phase: 6 });
       o.fMos = new EI.Flow(g, pth(g, 'M' + L.x + ' ' + L.node + 'V' + (M.y - 12.5) + 'H' + M.x + 'V' + (M.y + 12.5) + 'H' + xD + 'V' + G.gndY + 'H' + B.x + 'V' + (B.y + 60)), { phase: 11 });
       o.fDiode = new EI.Flow(o.gMotor, pth(o.gMotor, 'M' + L.x + ' ' + L.node + 'H' + L.dX + 'V' + G.railY + 'H' + L.x));
-      o.fGate = new EI.Flow(g, pth(g, 'M' + G.rg.x + ' ' + yG + 'H' + (M.x - 8)), { spacing: 15 });
+      o.fGate = new EI.Flow(g, pth(g, 'M' + G.rg.x + ' ' + yG + 'H' + (M.x - 8)), { spacing: 15, cls: 'cool' });
       return o;
     }
 
@@ -461,8 +462,8 @@
       o.wS = wire(g, [[T.s, T.y], [T.s, oy]]);
       o.wG = wire(g, [[T.g, T.y], [T.g, gy]]);
       o.wD = wire(g, [[T.d, T.y], [T.d, oy]]);
-      o.wB = wire(g, [[366, subBot + 8], [366, subBot + 16]]);
-      sym.ground(g, { x: 366, y: subBot + 16 });
+      o.wB = wire(g, [[372, subBot + 8], [372, subBot + 16]]);
+      sym.ground(g, { x: 372, y: subBot + 16 });
       [[T.s, 'S', 'source'], [T.g, 'G', 'gate'], [T.d, 'D', 'drain']].forEach(([x, k, word]) => {
         s('circle', { cx: x, cy: T.y, r: 5, class: 'mosfet-term' }, g);
         const t = s('text', { x: x, y: T.y - 17, class: 'mosfet-tname', 'text-anchor': 'middle' }, g);
@@ -502,7 +503,7 @@
       // legenda
       const lg = s('g', { class: 'mosfet-legend', transform: 'translate(0,' + (xh - 16) + ')' }, g);
       const tall = G.tall;
-      const pos = tall ? [20, 116, 196, 290] : [22, 108, 180, 268];
+      const pos = tall ? [16, 108, 186, 276] : [22, 108, 180, 268];
       s('circle', { cx: pos[0], cy: -4, r: 3, class: 'ei-e' }, lg);
       s('text', { x: pos[0] + 9, y: 0, text: 'elettrone' }, lg);
       s('circle', { cx: pos[1], cy: -4, r: 4, class: 'ei-h' }, lg);
@@ -565,7 +566,7 @@
 
     const pT = lab.plot({
       title: 'Trasferimento · Id contro Vgs, con il carico', height: 200,
-      x: { min: 0, max: 10, unit: 'V', count: 10 },
+      x: { min: 0, max: 10, unit: 'V', count: 5 },
       y: { min: 0, max: 2.5, unit: 'A', count: 5 },
       legend: [{ label: 'Id nel circuito', color: 'var(--trace-1)' }, { label: 'k/2·(Vgs − Vth)²', color: 'var(--trace-3)' }, { label: 'l\'altro MOSFET', color: '#5f746d' }],
       aria: 'Corrente di drain in funzione della tensione del gate, con la soglia e il punto di lavoro',
@@ -846,8 +847,8 @@
       [X.pCh, X.pDep].forEach((p) => {
         if (p.w) return;
         let w = 0;
-        try { w = p.tx.getComputedTextLength(); } catch (e) { w = 0; }
-        const fs = G.tall ? 13.5 : 11;
+        try { w = p.tx.getComputedTextLength(); } catch { w = 0; }
+        const fs = G.tall ? 13.5 : 12;
         p.w = (w > 0 ? w : p.est * fs * 0.56) + 20;
         if (!(w > 0)) p.w = -p.w; // provvisoria: riprova al prossimo fotogramma
         const ww = Math.abs(p.w);
@@ -902,9 +903,13 @@
       pT.vline(dev.vth, { color: P.t2, alpha: 0.8, label: 'Vth ' + num(dev.vth, 1) + ' V' });
       if (st.mode === 'uc') {
         pT.vline(st.vlogic, { color: P.t3, alpha: 0.7, dash: [2, 3] });
-        pT.tag(pT.X(st.vlogic), pT.py1 - 30, 'µC ' + num(st.vlogic, 1) + ' V', P.t3, 'right');
+        pT.tag(pT.X(st.vlogic), pT.py1 - 36, 'µC ' + num(st.vlogic, 1) + ' V', P.t3, 'right');
       }
-      pT.point(st.vg, sol.id, { color: P.t2, label: si(sol.id, 'A'), labelPos: st.vg > 6.5 ? 'left' : 'right' });
+      // vicino al limite del carico l'etichetta del punto scende sotto la curva, lontano da quella del limite
+      const nearTop = sol.id > 0.75 * VDD / load.r;
+      const side = st.vg > 6.5 ? 'left' : 'right';
+      pT.point(st.vg, sol.id, { color: P.t2, label: nearTop ? '' : si(sol.id, 'A'), labelPos: side });
+      if (nearTop) pT.tag(pT.X(st.vg), pT.Y(sol.id, pT.opts.y) + 22, si(sol.id, 'A'), P.t2, side);
 
       pG.clear();
       pG.hline(0, { axis: 'y2', color: P.t3, alpha: 0.35, dash: [2, 4] });
@@ -947,7 +952,7 @@
         } else m += ' e dissipa ' + si(target.pd, 'W') + '.';
       } else {
         m = 'Canale largo e pieno di elettroni: il MOSFET è acceso del tutto e fa da piccola resistenza, la [[rds-on|Rds(on)]] = <b>' + si(target.vds / target.id, 'Ω') + '</b>. Sul carico arrivano quasi tutti i 12 V (Vds = <b>' + si(target.vds, 'V') + '</b>) e il MOSFET scalda solo P = I²·R = <b>' + si(target.pd, 'W') + '</b>.';
-        if (target.pd > 0.25) m += ' Un po\' troppo per un TO-220 senza dissipatore: alza Vgs o scegli un MOSFET con Rds(on) più bassa.';
+        if (target.pd > 0.25) m += ' Senza dissipatore il chip arriverebbe a circa ' + num(Math.round(model.junction(target.pd)), 0) + ' °C: con più tensione sul gate la Rds(on) scende e il calore quasi sparisce.';
         else if (st.mode === 'uc') m += ' Il microcontrollore ha speso solo la carica del gate: a regime non gli serve corrente.';
         if (st.load === 'motor') m += ' Il diodo accanto al motore serve allo spegnimento: protegge il MOSFET dalla sovratensione della bobina.';
       }
@@ -1081,7 +1086,7 @@
     let ch = '';
     for (let i = -1; i < 8; i++) ch += '<circle class="f-n-dot" cx="' + (172 + i * 20) + '" cy="123.5" r="2.4"/>';
     const well = (x0, x1) => 'M' + x0 + ' 120V156A14 14 0 0 0 ' + (x0 + 14) + ' 170H' + (x1 - 14) + 'A14 14 0 0 0 ' + x1 + ' 156V120Z';
-    return '<svg viewBox="0 0 480 300">' +
+    return '<svg viewBox="34 0 412 300" class="mosfet-fig1">' +
       '<defs><clipPath id="mosfet-fig-ch"><rect x="170" y="119" width="140" height="9"/></clipPath></defs>' +
       '<path class="f-line" d="M113 108V44M240 78V44M367 108V44M240 258V272"/>' +
       '<circle class="f-paper" cx="113" cy="38" r="6"/><circle class="f-paper" cx="240" cy="38" r="6"/><circle class="f-paper" cx="367" cy="38" r="6"/><circle class="f-paper" cx="240" cy="278" r="6"/>' +
@@ -1098,7 +1103,7 @@
       '<text class="f-n-text" x="113" y="156" text-anchor="middle">N+</text>' +
       '<text class="f-n-text" x="367" y="156" text-anchor="middle">N+</text>' +
       '<rect class="f-accent-soft" x="152" y="108" width="176" height="12" rx="1.5"/>' +
-      '<rect class="f-paper" x="164" y="78" width="152" height="30" rx="3"/>' +
+      '<rect class="f-soft" x="164" y="78" width="152" height="30" rx="3"/>' +
       '<rect class="f-soft" x="80" y="108" width="66" height="12" rx="1.5"/><rect class="f-soft" x="334" y="108" width="66" height="12" rx="1.5"/>' +
       '<text class="f-text" x="156" y="97" text-anchor="end">gate</text>' +
       '<text class="f-accent-text" x="302" y="58" text-anchor="middle">ossido SiO₂</text>' +
@@ -1111,25 +1116,28 @@
       '</svg>';
   }
 
-  // Figura 2: dal contenitore TO-220 alle celle di un MOSFET di potenza.
+  // Figura 2: dal contenitore TO-220 alle celle di un MOSFET di potenza. Due versioni: in riga e,
+  // sul telefono, in colonna (contenitore e chip sopra, la cella sotto), per tenere il testo leggibile.
   function scaleFigure() {
-    let hex = '';
-    const hr = 6.3;
-    for (let r = 0; r < 9; r++) {
-      for (let c = 0; c < 8; c++) {
-        const cx = 186 + c * 13 + (r % 2) * 6.5;
-        const cy = 53 + r * 11.4;
-        if (cx > 281) continue;
-        let d = '';
-        for (let k = 0; k < 6; k++) {
-          const a = Math.PI / 6 + k * Math.PI / 3;
-          d += (k ? 'L' : 'M') + (cx + hr * Math.cos(a)).toFixed(1) + ' ' + (cy + hr * Math.sin(a)).toFixed(1);
+    const hexes = (hr0, hc0) => {
+      let hex = '';
+      const hr = 6.3;
+      for (let r = 0; r < 9; r++) {
+        for (let c = 0; c < 8; c++) {
+          const cx = 186 + c * 13 + (r % 2) * 6.5;
+          const cy = 53 + r * 11.4;
+          if (cx > 281) continue;
+          let d = '';
+          for (let k = 0; k < 6; k++) {
+            const a = Math.PI / 6 + k * Math.PI / 3;
+            d += (k ? 'L' : 'M') + (cx + hr * Math.cos(a)).toFixed(1) + ' ' + (cy + hr * Math.sin(a)).toFixed(1);
+          }
+          hex += '<path class="' + (r === hr0 && c === hc0 ? 'f-accent-soft' : 'f-thin') + '" d="' + d + 'Z"/>';
         }
-        hex += '<path class="' + (r === 4 && c === 5 ? 'f-accent-soft' : 'f-thin') + '" d="' + d + 'Z"/>';
       }
-    }
-    return '<svg viewBox="0 0 480 290">' +
-      // contenitore TO-220
+      return hex;
+    };
+    const to220 =
       '<text class="f-text" x="78" y="20" text-anchor="middle">contenitore TO-220</text>' +
       '<rect class="f-soft" x="40" y="32" width="76" height="52" rx="3"/>' +
       '<circle class="f-paper" cx="78" cy="55" r="9"/>' +
@@ -1138,16 +1146,11 @@
       '<rect class="f-soft" x="47.5" y="162" width="8" height="58"/><rect class="f-soft" x="74" y="162" width="8" height="58"/><rect class="f-soft" x="100.5" y="162" width="8" height="58"/>' +
       '<text class="f-mono" x="51.5" y="237" text-anchor="middle">G</text><text class="f-mono" x="78" y="237" text-anchor="middle">D</text><text class="f-mono" x="104.5" y="237" text-anchor="middle">S</text>' +
       '<path class="f-thin" d="M36 252H120M36 247V257M120 247V257"/>' +
-      '<text class="f-small" x="78" y="272" text-anchor="middle">circa 1 cm</text>' +
-      // zoom verso il chip
-      '<path class="f-dash" d="M96 100L176 44M96 136L176 156"/>' +
+      '<text class="f-small" x="78" y="272" text-anchor="middle">circa 1 cm</text>';
+    const chip = (hr0, hc0) =>
       '<text class="f-text" x="232" y="20" text-anchor="middle">il chip di silicio</text>' +
-      '<rect class="f-soft" x="176" y="44" width="112" height="112" rx="3"/>' +
-      hex +
-      '<text class="f-small" x="232" y="176" text-anchor="middle">migliaia di celle</text>' +
-      '<text class="f-small" x="232" y="190" text-anchor="middle">uguali, in parallelo</text>' +
-      // zoom verso una cella
-      '<path class="f-dash" d="M257 94L320 44M257 105L320 222"/>' +
+      '<rect class="f-soft" x="176" y="44" width="112" height="112" rx="3"/>' + hexes(hr0, hc0);
+    const cell =
       '<text class="f-text" x="392" y="20" text-anchor="middle">una cella, in sezione</text>' +
       '<rect class="f-n" x="320" y="74" width="144" height="118"/>' +
       '<rect class="f-n" x="320" y="192" width="144" height="22"/>' +
@@ -1166,8 +1169,24 @@
       '<path class="f-accent mosfet-fig-flow" d="M352 80H368Q386 80 389 100V184M432 80H416Q398 80 395 100V184"/>' +
       '<path class="f-accent-fill" d="M385 182L392 194L399 182Z"/>' +
       '<text class="f-mono" x="392" y="240" text-anchor="middle">D · drain sul retro</text>' +
-      '<text class="f-small" x="392" y="256" text-anchor="middle">collegato alla linguetta</text>' +
+      '<text class="f-small" x="392" y="256" text-anchor="middle">collegato alla linguetta</text>';
+    const wide = '<svg viewBox="0 0 480 290" class="mosfet-fig-wide">' +
+      to220 +
+      '<path class="f-dash" d="M96 100L176 44M96 136L176 156"/>' +
+      chip(4, 5) +
+      '<text class="f-small" x="232" y="176" text-anchor="middle">migliaia di celle</text>' +
+      '<text class="f-small" x="232" y="190" text-anchor="middle">uguali, in parallelo</text>' +
+      '<path class="f-dash" d="M257 94L320 44M257 105L320 222"/>' +
+      cell +
       '</svg>';
+    const narrow = '<svg viewBox="0 0 320 552" class="mosfet-fig-narrow" role="img" aria-label="Un MOSFET in contenitore TO-220, il chip con le celle esagonali e la sezione di una cella verticale">' +
+      '<g transform="translate(-12,0)">' + to220 + '</g>' +
+      '<path class="f-dash" d="M84 100L198 44M84 136L198 156"/>' +
+      '<g transform="translate(22,0)">' + chip(8, 5) + '<text class="f-small" x="232" y="37" text-anchor="middle">migliaia di celle</text></g>' +
+      '<path class="f-dash" d="M273 144L84 292M273 144L236 292"/>' +
+      '<g transform="translate(-232,286)">' + cell + '</g>' +
+      '</svg>';
+    return wide + narrow;
   }
 
   /* ---------- capitolo ---------- */
@@ -1176,7 +1195,7 @@
     id: 'mosfet',
     icon: 'mosfet',
     minutes: 14,
-    summary: 'Il MOSFET è un transistor che si comanda con una tensione, non con una corrente: il [[gate]], isolato dal silicio da un velo di ossido, attira gli elettroni e apre un canale tra source e drain. In continua il gate non assorbe corrente, per questo il piedino di un microcontrollore può accendere motori e lampade da molti ampere. Ed è il transistor più fabbricato della storia: ce ne sono miliardi in ogni chip.',
+    summary: 'Il MOSFET è un transistor che si comanda con una tensione, non con una corrente: il [[gate]], isolato dal silicio da un velo di ossido, attira gli elettroni e apre un canale tra source e drain. In continua il gate non assorbe corrente, per questo il piedino di un microcontrollore può accendere motori e lampade da molti ampere. Ed è l\'oggetto più fabbricato della storia: un solo processore moderno ne contiene miliardi.',
     keywords: ['mosfet', 'effetto-di-campo', 'gate', 'ossido-di-gate', 'canale-di-inversione', 'soglia-mosfet', 'rds-on', 'mosfet-logico'],
     model: model,
     css: [
@@ -1184,8 +1203,8 @@
       '.mosfet-svg .mosfet-xtitle { fill: var(--scope-text); font: 800 10.5px var(--mono); letter-spacing: .16em; }',
       '.mosfet-svg .mosfet-term { fill: var(--scope-bg); stroke: var(--sym); stroke-width: 2; }',
       '.mosfet-svg .mosfet-tname { fill: #fff; font: 800 14px var(--mono); }',
-      '.mosfet-svg .mosfet-tword { fill: var(--scope-text); font: 600 11px var(--font); }',
-      '.mosfet-svg .mosfet-tval { fill: var(--trace-2); font: 700 11.5px var(--mono); }',
+      '.mosfet-svg .mosfet-tword { fill: var(--scope-text); font: 600 12px var(--font); }',
+      '.mosfet-svg .mosfet-tval { fill: var(--trace-2); font: 700 12px var(--mono); }',
       '.mosfet-svg .mosfet-gate { stroke: #d3e5de; stroke-width: 1.2; }',
       '.mosfet-svg .mosfet-gate-tint { mix-blend-mode: screen; }',
       '.mosfet-svg .mosfet-oxide { fill: rgba(186, 226, 255, .18); stroke: rgba(186, 226, 255, .6); stroke-width: 1; }',
@@ -1198,7 +1217,7 @@
       '.mosfet-svg .mosfet-field path.mosfet-field-head { fill: var(--trace-2); stroke: none; }',
       '.mosfet-svg .mosfet-ion-sign { stroke: var(--lab-ink); stroke-width: 1.4; stroke-linecap: round; }',
       '.mosfet-svg .mosfet-ion.exposed circle { stroke-width: 2; filter: drop-shadow(0 0 3px var(--trace-4)); }',
-      '.mosfet-svg .mosfet-xlabel { fill: var(--lab-ink); font: 700 11px var(--font); paint-order: stroke; stroke: #0d1714; stroke-width: 3px; stroke-linejoin: round; transition: opacity var(--t-normal) ease; }',
+      '.mosfet-svg .mosfet-xlabel { fill: var(--lab-ink); font: 700 12px var(--font); paint-order: stroke; stroke: #0d1714; stroke-width: 3px; stroke-linejoin: round; transition: opacity var(--t-normal) ease; }',
       '.mosfet-svg .mosfet-xlabel.dim { fill: var(--scope-text); font-weight: 600; }',
       '.mosfet-svg .mosfet-xlabel.n { fill: var(--trace-3); }',
       '.mosfet-svg .mosfet-xlabel.p { fill: var(--trace-4); }',
@@ -1206,17 +1225,17 @@
       '.mosfet-svg .mosfet-xlabel.big { font: 800 13px var(--mono); }',
       '.mosfet-svg .mosfet-leader { stroke: var(--scope-text); stroke-width: 1; fill: none; opacity: .7; }',
       '.mosfet-svg .mosfet-pill rect { fill: #0d1714; fill-opacity: .9; stroke-width: 1.2; }',
-      '.mosfet-svg .mosfet-pill text { font: 700 11px var(--font); }',
+      '.mosfet-svg .mosfet-pill text { font: 700 12px var(--font); }',
       '.mosfet-svg .mosfet-pill-lead { fill: none; stroke-width: 1.1; stroke-dasharray: 2 2.5; }',
       '.mosfet-svg .mosfet-pill.n rect, .mosfet-svg .mosfet-pill.n .mosfet-pill-lead { stroke: var(--trace-3); }',
       '.mosfet-svg .mosfet-pill.n text, .mosfet-svg .mosfet-pill.n .mosfet-pill-dot { fill: var(--trace-3); }',
       '.mosfet-svg .mosfet-pill.amber rect, .mosfet-svg .mosfet-pill.amber .mosfet-pill-lead { stroke: var(--trace-2); }',
       '.mosfet-svg .mosfet-pill.amber text, .mosfet-svg .mosfet-pill.amber .mosfet-pill-dot { fill: var(--trace-2); }',
-      '.mosfet-svg .mosfet-legend text { fill: var(--scope-text); font: 600 10.5px var(--font); }',
+      '.mosfet-svg .mosfet-legend text { fill: var(--scope-text); font: 600 11.5px var(--font); }',
       '.mosfet-svg .mosfet-lens rect { fill: none; stroke: var(--trace-3); stroke-width: 1.4; stroke-dasharray: 5 4; opacity: .65; }',
       '.mosfet-svg .mosfet-zoom { fill: none; stroke: var(--trace-3); stroke-width: 1; stroke-dasharray: 3 5; opacity: .4; }',
-      '.mosfet-svg .mosfet-tag { fill: var(--trace-3); font: 700 11.5px var(--mono); }',
-      '.mosfet-svg .mosfet-pinl { fill: var(--scope-text); font: 700 10.5px var(--mono); }',
+      '.mosfet-svg .mosfet-tag { fill: var(--trace-3); font: 700 12px var(--mono); }',
+      '.mosfet-svg .mosfet-pinl { fill: var(--scope-text); font: 700 11px var(--mono); }',
       '.mosfet-svg .mosfet-val { fill: var(--trace-2); }',
       '.mosfet-svg .mosfet-bulb { fill: rgba(255, 214, 120, 0); stroke: currentColor; stroke-width: 2.2; }',
       '.mosfet-svg .mosfet-fil { fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; }',
@@ -1246,6 +1265,14 @@
       '  .mosfet-svg.tall .mosfet-xtitle { font-size: 12.5px; }',
       '  .mosfet-svg.tall .mosfet-pin-state { font-size: 12px; }',
       '}',
+      '.ei-figure svg.mosfet-fig-narrow { display: none; }',
+      '@media (max-width: 640px) {',
+      '  .ei-figure svg.mosfet-fig-wide { display: none; }',
+      '  .ei-figure svg.mosfet-fig-narrow { display: block; }',
+      '  .ei-figure .mosfet-fig1 .f-title { font-size: 16px; }',
+      '  .ei-figure .mosfet-fig1 .f-text, .ei-figure .mosfet-fig1 .f-n-text, .ei-figure .mosfet-fig1 .f-p-text, .ei-figure .mosfet-fig1 .f-accent-text { font-size: 15px; }',
+      '  .ei-figure .mosfet-fig1 .f-small { font-size: 13px; }',
+      '}',
       '.mosfet-fig-e { animation: mosfet-drift 1.6s linear infinite; }',
       '@keyframes mosfet-drift { from { transform: translateX(0); } to { transform: translateX(20px); } }',
       '.mosfet-fig-flow { stroke-dasharray: 6 6; animation: mosfet-dash 1s linear infinite; }',
@@ -1262,9 +1289,9 @@
       'Con il gate a 0 V, tra source e drain ci sono due giunzioni P‑N una contro l\'altra: in qualunque verso provi a far passare corrente, una delle due è in [[polarizzazione-inversa|inversa]]. Il MOSFET è un interruttore aperto.',
       'Se il gate diventa positivo rispetto al source, il campo elettrico attraversa l\'ossido e spinge in profondità le [[lacuna|lacune]]: sotto il gate si forma una [[zona-di-svuotamento|zona svuotata]] con gli ioni negativi fissi. È l\'[[effetto-di-campo]]: si comanda il silicio senza toccarlo.',
       'Oltre la [[soglia-mosfet|tensione di soglia]] Vth il campo attira sotto l\'ossido così tanti elettroni che lì il silicio P si comporta come un N: è il [[canale-di-inversione|canale]], uno strato di inversione che collega source e drain. Più Vgs supera Vth, più il canale è spesso e conduce.',
-      'Con Vgs poco sopra la soglia il canale è stretto e si strozza vicino al drain: la corrente non cresce più con Vds e vale Id = k/2·(Vgs − Vth)², è la [[saturazione-mosfet|saturazione]]. Con Vgs alta il MOSFET entra nella zona ohmica e diventa una piccola resistenza, la [[rds-on|Rds(on)]]: il calore vale P = I²·Rds(on).',
-      'Il gate è isolato: in continua non assorbe corrente, perché è l\'armatura di un condensatore, la [[capacita-di-gate|capacità di gate]] di qualche nanofarad. Serve solo una breve punta di corrente quando la tensione cambia, come in un [[costante-di-tempo|circuito RC]]. Durante la commutazione la capacità tra gate e drain la fa sembrare ancora più grande (effetto Miller).',
-      'Come interruttore il MOSFET va tenuto tutto acceso o tutto spento, perché a metà strada dissipa moltissimo. Un MOSFET standard è garantito acceso solo con 10 V sul gate; un [[mosfet-logico]] già con 4,5 V, e si comanda direttamente da un piedino a 5 V o, se ha la soglia abbastanza bassa, a 3,3 V. Esiste anche il MOSFET a canale P, con le zone scambiate: si accende con il gate più basso del source e fa da interruttore verso il positivo.',
+      'Con Vgs poco sopra la soglia e molta tensione sul drain, il canale si strozza vicino al drain: la corrente non cresce più con Vds e vale Id = k/2·(Vgs − Vth)². È la [[saturazione-mosfet|saturazione]], che nel MOSFET vuol dire «a metà strada», non «tutto acceso» come nel BJT. Con Vgs alta il MOSFET entra nella zona ohmica e diventa una piccola resistenza, la [[rds-on|Rds(on)]]: il calore vale P = I²·Rds(on).',
+      'Il gate è isolato: in continua non assorbe corrente, perché è l\'armatura di un condensatore, la [[capacita-di-gate|capacità di gate]], che in un MOSFET di potenza vale qualche nanofarad. Serve solo una breve punta di corrente quando la tensione cambia, come in un [[costante-di-tempo|circuito RC]]. Durante la commutazione la capacità tra gate e drain la fa sembrare ancora più grande (effetto Miller).',
+      'Come interruttore il MOSFET va tenuto tutto acceso o tutto spento, perché a metà strada dissipa moltissimo. Un MOSFET standard è garantito acceso solo con 10 V sul gate; un [[mosfet-logico]] già con 4,5 V, e si comanda direttamente da un piedino a 5 V; per un piedino a 3,3 V conviene un modello con la Rds(on) garantita anche a 2,5 V. Esiste anche il MOSFET a canale P, con le zone scambiate: si accende con il gate più basso del source e fa da interruttore verso il positivo.',
     ],
     formulas: [
       {
@@ -1283,7 +1310,7 @@
         name: 'La corrente del gate',
         expr: '<var>I</var><sub>G</sub> = <var>C</var> · <span class="frac"><span>Δ<var>V</var><sub>GS</sub></span><span>Δ<var>t</var></span></span>',
         legend: [['C', 'capacità del gate, qualche nanofarad'], ['ΔV/Δt', 'quanto in fretta cambia la tensione del gate']],
-        note: 'Se la tensione è ferma, I<sub>G</sub> = 0. Con R<sub>g</sub> = 220 Ω e C = 1,7 nF il gate si carica con τ = R·C ≈ 0,37 µs, come in un [[costante-di-tempo|circuito RC]]; la punta iniziale vale 5 V / 220 Ω ≈ 23 mA.',
+        note: 'Se la tensione è ferma, I<sub>G</sub> = 0. Con R<sub>g</sub> = 220 Ω e C = 1,7 nF il gate si carica con τ = R·C ≈ 0,37 µs, come un condensatore in un <a href="#rc-filtri">circuito RC</a>; la punta iniziale vale 5 V / 220 Ω ≈ 23 mA.',
       },
     ],
     figures: [
@@ -1304,7 +1331,7 @@
       text: [
         'L\'idea del transistor a effetto di campo è più vecchia del transistor stesso. Nel 1925 Julius Edgar Lilienfeld, un fisico nato a Leopoli che insegnava all\'Università di Lipsia, depositò in Canada, e l\'anno dopo negli Stati Uniti, il brevetto di un dispositivo in cui la tensione di un elettrodo comandava la corrente in uno strato di semiconduttore. Nel 1934 il tedesco Oskar Heil propose un elettrodo isolato che agisce sul semiconduttore come l\'armatura di un condensatore. Erano idee giuste, ma non risulta che nessuno dei due abbia costruito un dispositivo funzionante.',
         'Il problema era la superficie del cristallo. Nel 1945, ai Bell Labs, William Shockley provò a comandare un sottile strato di semiconduttore con un campo elettrico, ma l\'effetto era molto più debole del previsto. John Bardeen capì perché: gli elettroni attirati restavano intrappolati negli «stati di superficie» e schermavano il campo. Da quegli studi nacque, nel 1947, il transistor a punte di contatto, l\'antenato del transistor <a href="#bjt">bipolare</a>.',
-        'La soluzione arrivò dal silicio stesso. Nel 1955 Carl Frosch e Lincoln Derick scoprirono per caso che il silicio, in un forno con un po\' di vapore acqueo, si ricopre di uno strato di biossido che lo protegge; Mohamed Atalla mostrò poi che un ossido cresciuto con cura toglie alla superficie gran parte delle sue trappole. Nel 1959 Atalla e Dawon Kahng costruirono così il primo MOSFET funzionante, presentato nel 1960. Era lento e la AT&T non lo sviluppò, ma era semplice da fabbricare e minuscolo: negli anni Sessanta diventò il mattone dei circuiti integrati e, in coppia N e P, delle porte <a href="../porte-logiche/index.html#famiglie">CMOS</a>, nate nel 1963.',
+        'La soluzione arrivò dal silicio stesso. Nel 1955 Carl Frosch e Lincoln Derick scoprirono per caso che il silicio, in un forno con un po\' di vapore acqueo, si ricopre di uno strato di biossido che lo protegge; Mohamed Atalla mostrò poi che un ossido cresciuto con cura toglie alla superficie gran parte delle sue trappole. Nel 1959 Atalla e Dawon Kahng costruirono così il primo MOSFET funzionante, presentato nel 1960. Era lento e non serviva alla rete telefonica, così la AT&T non lo sviluppò; ma era semplice da fabbricare e si poteva fare minuscolo: negli anni Sessanta diventò il mattone dei circuiti integrati e, in coppia N e P, delle porte <a href="../porte-logiche/index.html#famiglie">CMOS</a>, nate nel 1963.',
         'Negli anni Settanta il MOSFET diventò anche di potenza: dopo i VMOS della Siliconix, nel 1978 l\'International Rectifier presentò l\'HEXFET, con migliaia di celle esagonali in parallelo sullo stesso chip. Da allora i MOSFET comandano motori, lampade e alimentatori; e intanto, rimpiccioliti fino a poche decine di nanometri, riempiono i chip. Secondo una stima pubblicata nel 2018 dal Computer History Museum ne erano stati fabbricati circa 13 triliardi, più di qualunque altro oggetto costruito dall\'uomo.',
       ],
       events: [
@@ -1332,7 +1359,7 @@
       'ossido-di-gate': { term: 'Ossido di gate', def: 'Lo strato isolante di biossido di silicio (SiO₂) sotto il gate: pochi nanometri nei chip, qualche decina nei MOSFET di potenza. Non lascia passare la corrente, ma lascia passare il campo elettrico.' },
       'canale-di-inversione': { term: 'Canale di inversione', def: 'Lo strato sottile di elettroni che si forma sotto l\'ossido quando Vgs supera la soglia: lì il silicio P si comporta come un N e collega source e drain.' },
       'soglia-mosfet': { term: 'Tensione di soglia (Vth)', def: 'La tensione tra gate e source oltre la quale nel MOSFET si forma il canale e comincia a passare corrente. Nei MOSFET di potenza va più o meno da 1 a 4 volt.' },
-      'rds-on': { term: 'Rds(on)', def: 'La resistenza tra drain e source di un MOSFET acceso del tutto, da pochi milliohm a qualche decina. Il calore prodotto vale P = I²·Rds(on).' },
+      'rds-on': { term: 'Rds(on)', def: 'La resistenza tra drain e source di un MOSFET acceso del tutto: nei MOSFET di potenza va da circa un milliohm a qualche decimo di ohm. Il calore prodotto vale P = I²·Rds(on).' },
       'saturazione-mosfet': { term: 'Saturazione (MOSFET)', def: 'La zona in cui il canale è strozzato vicino al drain e la corrente non cresce più con Vds: Id = k/2·(Vgs − Vth)². Attenzione: è il contrario della saturazione del BJT, dove il transistor è tutto acceso.' },
       'capacita-di-gate': { term: 'Capacità di gate', def: 'La capacità che il gate forma con il canale e con gli altri terminali: qualche nanofarad nei MOSFET di potenza. Va caricata e scaricata a ogni commutazione, con brevi punte di corrente.' },
       'mosfet-logico': { term: 'MOSFET logico', def: 'MOSFET a livello logico: ha la soglia bassa ed è garantito acceso del tutto già con 4,5 V sul gate (alcuni anche con 2,5 V), quindi si comanda direttamente dai piedini di un microcontrollore.' },

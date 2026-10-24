@@ -160,7 +160,6 @@
   const SECONDARI = [9, 12, 15];
   const YMAX = { 9: 15, 12: 20, 15: 25 };   // fondo scala dell'oscilloscopio per ogni secondario
   const GHOST = '#5f746d';
-  const MONO = 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace';
 
   const fmtC = (c) => Math.round(c * 1e6).toLocaleString('it-IT') + NB + 'µF';
   const fmtI = (i) => (i < 0.9995 ? Math.round(i * 1000) + NB + 'mA' : num(i, 2) + NB + 'A');
@@ -203,24 +202,24 @@
     zone: [12, 70, 170, 240],
     yP: 190, yG: 330, node: 490, capY: 236, gauge: [440, 210, 82],
     ic: [570, 162, 96, 56], jumpY: 132, lamp: [790, 232], term: 902, gnd: 846,
-    tp: { tp1: [252, 98], tp2: [526, 190], tp3: [732, 190], tp4: [456, 190] }, tp4v: false,
+    tp: { tp1: [252, 98], tp2: [526, 190], tp3: [732, 190], tp4: [456, 190] },
     caption: [356, 374],
     titles: [['rete', 66, 'RETE'], ['tr', 184, 'TRASFORMATORE'], ['br', 356, ''], ['c', 490, 'FILTRO'], ['reg', 618, 'REGOLATORE'], ['load', 790, 'CARICO'], ['out', 902, 'USCITA']],
     titleY: 28,
   };
   const NARROW = {
-    W: 400, H: 574, narrow: true,
+    W: 400, H: 586, narrow: true,
     src: 34, tr: [98, 170], sx: 180, lead: 28, br: [286, 170, 54],
     zone: [6, 64, 104, 186],
     ret: 286, retX: 374, railX: 14,
-    yP: 342, yG: 494, node: 64, capY: 394, gauge: [34, 370, 86],
-    ic: [148, 314, 92, 56], jumpY: 302, lamp: [318, 392], term: 382, gnd: 40,
-    tp: { tp1: [180, 86], tp2: [106, 342], tp3: [278, 342], tp4: [374, 230] }, tp4v: true,
+    yP: 354, yG: 506, node: 64, capY: 406, gauge: [34, 382, 86],
+    ic: [148, 326, 92, 56], jumpY: 312, lamp: [318, 404], term: 382, gnd: 40,
+    tp: { tp1: [180, 86], tp2: [106, 354], tp3: [278, 354], tp4: [358, 170] },
     caption: [200, 273],
     titles: [['rete', 40, 'RETE'], ['tr', 142, 'TRASFORMATORE'], ['br', 290, '']],
     titleY: 22,
     titles2: [['c', 64, 'FILTRO'], ['reg', 194, 'REGOLATORE'], ['load', 318, 'CARICO']],
-    title2Y: 532,
+    title2Y: 544,
   };
 
   function mount(lab) {
@@ -282,7 +281,7 @@
     });
     lab.choice({
       into: g1, label: 'Raddrizzatore', value: 'ponte',
-      options: [{ value: 'semionda', label: 'Semionda · 1 diodo' }, { value: 'ponte', label: 'Ponte di Graetz · 4 diodi' }],
+      options: [{ value: 'semionda', label: 'Semionda · 1 diodo' }, { value: 'ponte', label: 'Ponte · 4 diodi' }],
       onChange: (v) => { st.mode = v; st.dirty = true; build(); },
     });
     const g2 = lab.group('Condensatore, regolatore e carico');
@@ -438,7 +437,7 @@
       sc.w.plus.push(wIn);
       ground([ic.gnd, [ic.gnd[0], yG]]);
       dot(lay.sym, ic.gnd[0], yG);
-      const xOut = st.reg ? ic.out[0] : ic.out[0] + 12;
+      const xOut = st.reg ? ic.out[0] : ic.out[0] + (G.narrow ? 4 : 12);
       if (st.reg) {
         sc.f.feed = mkFlow([[cx, yP], ic.in]);
         sc.waves = [0, 1, 2].map((i) => s('path', {
@@ -513,19 +512,18 @@
         tp4: { color: 'var(--trace-4)', aria: 'TP4: pinza amperometrica, corrente nei diodi' },
       };
       const [cx4, cy4] = G.tp.tp4;
-      s('ellipse', { cx: cx4, cy: cy4, rx: G.tp4v ? 13 : 6, ry: G.tp4v ? 6 : 13, class: 'alimentatore-clamp' }, lay.top);
+      s('ellipse', { cx: cx4, cy: cy4, rx: 6, ry: 13, class: 'alimentatore-clamp' }, lay.top);
       Object.keys(tps).forEach((id) => {
         const [px, py] = G.tp[id];
-        const below = G.narrow && id === 'tp4';
         sc.probes[id] = sym.probe(lay.top, {
-          x: px, y: py, id: id, label: id.toUpperCase(), color: tps[id].color, aria: tps[id].aria, labelBelow: below,
+          x: px, y: py, id: id, label: id.toUpperCase(), color: tps[id].color, aria: tps[id].aria,
           onClick: toggleProbe,
         });
         sc.probes[id].set(st.probes[id]);
       });
 
       S = sc;
-      updateStatic();
+      if (st.dirty) resim(); else updateStatic();
       lab.invalidate();
     }
 
@@ -553,6 +551,8 @@
     function resim() {
       st.dirty = false;
       const R = labSim(st);
+      // i comandi con cui è stata fatta questa simulazione: le sfide li leggono da qui, sempre coerenti con i risultati
+      R.q = { vrms: st.vrms, mode: st.mode, C: st.C, cOn: st.cOn, reg: st.reg, I: st.I };
       R.pts = {};
       ['vs', 'vr', 'vc', 'vout', 'iD'].forEach((key) => {
         const a = new Array(R.n);
@@ -615,10 +615,9 @@
       scopeLegend();
       lensLegend();
       lab.explain(explainText());
-      lab.check({
-        vrms: st.vrms, mode: st.mode, C: st.C, cOn: st.cOn, reg: st.reg, I: st.I,
+      lab.check(Object.assign({}, R.q, {
         regulated: R.regulated, vmin: R.vmin, vmax: R.vmax, ripple: R.ripple, pReg: R.pReg,
-      });
+      }));
     }
 
     function lensLegend() {
@@ -650,7 +649,7 @@
       if (tj > TJ_MAX) {
         return 'L\'uscita è ferma a 5 V, ma il 7805 deve trasformare in calore <b>' + fmtW(R.pReg) + '</b>: anche sul [[dissipatore]] la giunzione arriverebbe a circa <b>' + Math.round(tj) + NB + '°C</b>, oltre i 125 °C ammessi, e la protezione termica lo spegnerebbe. Troppa tensione in ingresso: prova un secondario con meno volt.';
       }
-      const base = (ponte ? 'Il ponte' : 'Il diodo') + ' ricarica C vicino ai picchi (<b>' + fmtV(R.vmax, 1) + '</b>); tra un picco e l\'altro è C da solo ad alimentare il carico e scende di <b>' + fmtRip(R.ripple) + '</b>: è il [[ripple]], a ' + hz + ' Hz (la stima I/(' + (ponte ? '2·' : '') + 'f·C) dà ' + fmtRip(est) + '). L\'ingresso non va mai sotto <b>' + fmtV(R.vmin) + '</b>, sopra i 7 V che servono: il [[regolatore-lineare]] tiene l\'uscita a <b>5,00 V</b>';
+      const base = (ponte ? 'Il ponte' : 'Il diodo') + ' ricarica C vicino ai picchi (<b>' + fmtV(R.vmax, 1) + '</b>); tra un picco e l\'altro è C da solo ad alimentare il carico e scende di <b>' + fmtRip(R.ripple) + '</b>: è il [[ripple]], a ' + hz + NB + 'Hz (la stima I/(' + (ponte ? '2·' : '') + 'f·C), che fa scaricare C per tutto il tempo tra due picchi, dà ' + fmtRip(est) + '). L\'ingresso non va mai sotto <b>' + fmtV(R.vmin) + '</b>, sopra i 7 V che servono: il [[regolatore-lineare]] tiene l\'uscita a <b>5,00 V</b>';
       if (R.pReg > 4) return base + ', ma spreca <b>' + fmtW(R.pReg) + '</b> in calore (circa ' + Math.round(tj) + NB + '°C sul [[dissipatore]]): il [[rendimento]] è solo del <b>' + num(R.eff * 100, 0) + '%</b>.';
       return base + ' e scalda <b>' + fmtW(R.pReg) + '</b>; il [[rendimento]] è del ' + num(R.eff * 100, 0) + '%.';
     }
@@ -665,7 +664,7 @@
         scope.opts.y2 = { min: bip ? -im : 0, max: im, unit: 'A', color: P.t4, count: 4 };
       } else scope.opts.y2 = null;
       scope.clear();
-      if (st.probes.tp2 || st.probes.tp3) scope.hline(VREG + DROPOUT, { color: P.t4, alpha: 0.45, label: '7 V', at: 'left' });
+      if (st.probes.tp2 || st.probes.tp3) scope.hline(VREG + DROPOUT, { color: P.t4, alpha: 0.45, label: '7 V' });
       const live = !lab.reduced;
       const tr = [];
       if (st.probes.tp1) tr.push({ pts: R.pts.vs, color: P.t3 });
@@ -705,7 +704,7 @@
       if (show7 !== st.lensShow7) { st.lensShow7 = show7; lensLegend(); }
       if (show7) {
         lens.band(L.lo, thr, { color: P.t4, alpha: 0.08 });
-        lens.hline(thr, { color: P.t4, alpha: 0.75, label: '7 V', at: 'left' });
+        lens.hline(thr, { color: P.t4, alpha: 0.75, label: '7 V' });
       }
       if (st.cOn) {
         // stima da manuale: il condensatore si scarica con I costante per tutto il tempo tra due picchi
@@ -840,7 +839,8 @@
       if (sc.txt.vout.textContent !== vt) sc.txt.vout.textContent = vt;
       sc.txt.vout.classList.toggle('bad', over || (st.reg && vo < VREG - 0.01));
       if (sc.txt.out) {
-        const ot = fmtV(R.voutAvg) + ' medi';
+        // uscita ferma oppure l'intervallo in cui oscilla
+        const ot = R.outRipple < 0.01 ? fmtV(R.voutAvg) + ' stabili' : num(R.voutMin, 1) + '–' + num(R.voutMax, 1) + NB + 'V';
         if (sc.txt.out.textContent !== ot) sc.txt.out.textContent = ot;
       }
 
@@ -1242,7 +1242,7 @@
       'tensione-di-dropout': { term: 'Tensione di dropout', def: 'La differenza minima tra ingresso e uscita perché un regolatore funzioni. Per il 7805 è di circa 2 V: servono almeno 7 V in ingresso per avere 5 V stabili.' },
       'dissipatore': { term: 'Dissipatore', def: 'Pezzo di metallo con alette su cui si avvita un componente di potenza: allarga la superficie che cede calore all\'aria e tiene il chip più fresco.' },
       'rendimento': { term: 'Rendimento', def: 'Il rapporto tra la potenza che arriva al carico e quella presa dalla sorgente, di solito in percentuale. Quello che manca diventa calore.' },
-      'alimentatore-switching': { term: 'Alimentatore switching', def: 'Alimentatore che accende e spegne la corrente decine di migliaia di volte al secondo e la trasforma con un piccolo trasformatore ad alta frequenza: spreca molto meno di uno lineare ed è più leggero.' },
+      'alimentatore-switching': { term: 'Alimentatore switching', def: 'Alimentatore che accende e spegne la corrente decine o centinaia di migliaia di volte al secondo e la trasforma con un piccolo trasformatore ad alta frequenza: spreca molto meno di uno lineare ed è più leggero.' },
     },
   });
 })();
