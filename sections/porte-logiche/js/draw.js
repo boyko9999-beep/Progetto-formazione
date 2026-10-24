@@ -275,8 +275,8 @@
     g.append(
       s('line', { class: 'pl-battery-plate', x1: x - 16, y1: y - 5, x2: x + 16, y2: y - 5 }),
       s('line', { class: 'pl-battery-plate is-short', x1: x - 9, y1: y + 5, x2: x + 9, y2: y + 5 }),
-      draw.label(x + 24, y - 1, '+', 'pl-t-small'),
-      o.label ? draw.label(x - 26, y + 4, o.label, 'pl-t-small', 'end') : null);
+      draw.label(x + 24, y - 1, '+', 'pl-t-small'));
+    if (o.label) g.append(draw.label(x - 26, y + 4, o.label, 'pl-t-small', 'end'));
     return { g, top: { x, y: y - 5 }, bottom: { x, y: y + 5 } };
   };
 
@@ -321,9 +321,9 @@
     const g = s('g', { class: 'pl-mos is-' + o.kind });
     const gx = x - k * 0.55;
     const bubble = o.kind === 'p';
+    g.append(s('line', { class: 'pl-mos-lead', x1: x - k * 1.25, y1: y, x2: bubble ? gx - 9 : gx, y2: y }));
+    if (bubble) g.append(s('circle', { class: 'pl-mos-bubble', cx: gx - 4.5, cy: y, r: 4.5 }));
     g.append(
-      s('line', { class: 'pl-mos-lead', x1: x - k * 1.25, y1: y, x2: bubble ? gx - 9 : gx, y2: y }),
-      bubble ? s('circle', { class: 'pl-mos-bubble', cx: gx - 4.5, cy: y, r: 4.5 }) : null,
       s('line', { class: 'pl-mos-gate', x1: gx, y1: y - k * 0.6, x2: gx, y2: y + k * 0.6 }),
       s('line', { class: 'pl-mos-channel', x1: x - k * 0.3, y1: y - k * 0.7, x2: x - k * 0.3, y2: y + k * 0.7 }),
       s('path', { class: 'pl-mos-lead', d: `M${n2(x - k * 0.3)} ${n2(y - k * 0.55)}H${x}V${n2(y - k)}` }),
