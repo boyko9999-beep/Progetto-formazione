@@ -1,0 +1,110 @@
+/* Capitolo 9 · laboratorio "Oscilloscopio e trasformatore". */
+
+.alt-scena { display: grid; gap: 14px; }
+.alt-viste { justify-self: start; padding: 4px; gap: 4px; border-radius: 13px; background: #08100e; border: 1px solid var(--lab-line); }
+.alt-viste legend { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.alt-viste label > span { border-color: transparent; background: transparent; padding: 7px 14px; }
+.alt-viste input:checked + span { background: var(--lab-strong); color: #0b1210; }
+.alt-viste label:hover > span { border-color: transparent; color: var(--lab-strong); }
+.alt-viste input:checked:hover + span { color: #0b1210; }
+.alt-viste .alt-lungo { display: inline; padding: 0; border: 0; border-radius: 0; background: none; color: inherit; font: inherit; }
+
+.alt-banco { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr); gap: 18px; align-items: center; }
+.alt-banco.alt-due { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); }
+.alt-banco[hidden], .alt-fig[hidden], .alt-cella[hidden], .alt-lettura[hidden] { display: none; }
+
+/* oscilloscopio */
+.alt-strumento { padding: 10px 10px 8px; border-radius: 16px; background: linear-gradient(180deg, #18241f, #0d1513); border: 1px solid #2b3c36; box-shadow: inset 0 1px 0 rgb(255 255 255 / 6%), 0 22px 36px -26px rgb(0 0 0 / 85%); }
+.alt-schermo { border-radius: 10px; overflow: hidden; background: radial-gradient(120% 95% at 50% 42%, #0f221c 0%, #060e0c 70%, #030806 100%); box-shadow: inset 0 0 0 1px #0a1512, inset 0 0 30px rgb(0 0 0 / 75%); }
+.alt-schermo .eb-tela { touch-action: auto; }
+.alt-info { margin: 8px 4px 0; display: flex; flex-wrap: wrap; gap: 2px 16px; font: 600 .74rem var(--mono); color: var(--lab-dim); }
+.alt-info b { color: var(--lab-v); font-weight: 800; margin-right: 2px; }
+.alt-info .alt-ch2 b { color: #ffe7b3; }
+.alt-info .alt-lento { color: var(--lab-t); }
+
+.alt-fig { display: grid; justify-items: center; align-content: center; gap: 6px; }
+.alt-fig svg { display: block; width: 100%; height: auto; }
+.alt-lampada { max-width: 270px; }
+.alt-trasf { max-width: 400px; }
+.alt-linea { max-width: 640px; }
+.alt-didascalia { margin: 0; max-width: 34ch; min-height: 2.8em; text-align: center; font-size: .84rem; line-height: 1.4; color: var(--lab-text); }
+.alt-fig-linea .alt-didascalia { max-width: 60ch; min-height: 0; }
+.alt-entra { animation: alt-entra .5s var(--ease-out); }
+@keyframes alt-entra { from { opacity: 0; transform: translateY(6px); } }
+
+/* lampada e sorgente */
+.alt-stop { stop-color: var(--lab-luce); }
+.alt-vetro { fill: rgb(255 210 122 / 5%); stroke: #4b625a; stroke-width: 2; }
+.alt-bagliore { fill: var(--lab-luce); }
+.alt-filamento { fill: none; stroke-width: 2.2; stroke-linejoin: round; filter: drop-shadow(0 0 3px rgb(255 190 90 / 60%)); }
+.alt-supporto { fill: none; stroke: #6f8a80; stroke-width: 1.5; }
+.alt-attacco { fill: #8d989d; stroke: #5d6a6e; stroke-width: 1; }
+.alt-filetto { stroke: #5d6a6e; stroke-width: 1.2; }
+.alt-filo { fill: none; stroke: var(--rame); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; opacity: .75; }
+.alt-sorgente, .alt-gen { fill: #0d1714; stroke: #3b5049; stroke-width: 1.5; }
+.alt-simbolo { fill: none; stroke: var(--lab-v); stroke-width: 2.2; stroke-linecap: round; }
+.alt-sorg-t { fill: var(--lab-v); font: 700 13px var(--mono); }
+.alt-ico { width: 20px; height: 14px; vertical-align: -2px; margin-right: 6px; }
+.alt-ico path { fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; }
+
+/* trasformatore */
+.alt-nucleo { fill: #1b2724; stroke: #4a5f58; stroke-width: 1.5; }
+.alt-lamierini { fill: none; stroke: #2c3c37; stroke-width: 1; }
+.alt-flusso { fill: none; stroke: var(--lab-b); stroke-width: 3; stroke-dasharray: 10 12; stroke-linecap: round; filter: drop-shadow(0 0 4px rgb(62 224 143 / 55%)); }
+.alt-freccia { fill: var(--lab-b); }
+.alt-bobina path { fill: none; stroke: var(--rame); stroke-linecap: round; filter: drop-shadow(0 1px 0 rgb(0 0 0 / 60%)); }
+.alt-lamp2 { stroke: #4b625a; stroke-width: 1.5; }
+.alt-val { fill: var(--lab-v); font: 700 13px var(--mono); }
+.alt-n { fill: var(--lab-b); font: 700 13px var(--mono); }
+.alt-et { fill: var(--lab-dim); font: 600 12px var(--font); }
+.alt-phi { fill: var(--lab-b); font: 700 13px var(--font); }
+
+/* linea elettrica */
+.alt-suolo { stroke: #22332d; stroke-width: 1.5; }
+.alt-edificio { fill: #13201c; stroke: #3e544c; stroke-width: 1.5; stroke-linejoin: round; }
+.alt-traliccio { fill: none; stroke: #4d635b; stroke-width: 2; stroke-linejoin: round; }
+.alt-trafo { fill: none; stroke: #8fa39b; stroke-width: 1.6; }
+.alt-finestra { fill: var(--lab-luce); filter: drop-shadow(0 0 3px var(--lab-luce)); transition: opacity .5s ease; }
+.alt-cavo { fill: none; stroke: #5d6f69; stroke-width: 2.5; stroke-linejoin: round; }
+.alt-cavo-caldo { --c: var(--alt-calore, 0); fill: none; stroke: color-mix(in srgb, #ff4d2e calc(var(--c) * 100%), var(--rame)); stroke-width: calc(2.5px + var(--c) * 2px); stroke-linejoin: round; opacity: calc(.2 + var(--c) * .8); filter: drop-shadow(0 0 calc(var(--c) * 7px) #ff6a2e); transition: opacity .6s ease, stroke .6s ease; }
+.alt-energia { fill: var(--lab-p); }
+.alt-vapore { fill: none; stroke: #ff8a5c; stroke-width: 2; stroke-linecap: round; opacity: 0; filter: blur(.6px); }
+.alt-caldo .alt-vapore { opacity: .45; animation: alt-sale 2.2s ease-out infinite; }
+@keyframes alt-sale { from { opacity: 0; transform: translateY(8px); } 45% { opacity: .55; } to { opacity: 0; transform: translateY(-8px); } }
+.alt-linea .alt-val, .alt-cor, .alt-per, .alt-res { font: 700 14px var(--mono); }
+.alt-linea .alt-et { font-size: 14px; }
+.alt-cor { fill: var(--lab-i); }
+.alt-per { fill: var(--lab-p); }
+.alt-res { fill: var(--lab-r); }
+.alt-avviso rect { fill: color-mix(in srgb, var(--lab-f) 20%, #0b1210); stroke: var(--lab-f); stroke-width: 1.5; }
+.alt-avviso text { fill: var(--lab-f); font: 800 14px var(--font); letter-spacing: .04em; }
+
+/* comandi */
+.alt-comandi { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 16px 24px; align-items: start; }
+.alt-cella { grid-column: span 2; display: grid; gap: 10px; align-content: start; min-width: 0; }
+.alt-cella.alt-larga { grid-column: span 3; }
+.alt-cella .eb-switch { justify-self: start; }
+.alt-preset { display: flex; flex-wrap: wrap; gap: 8px; }
+.alt-preset .eb-btn { min-height: 34px; padding: 5px 12px; font-family: var(--mono); }
+.alt-preset small { font: 600 .72rem var(--font); color: var(--lab-dim); }
+.alt-spento { opacity: .45; }
+.alt-dati { margin: 0; align-self: center; font-size: .9rem; line-height: 1.5; color: var(--lab-text); }
+.alt-dati .alt-p { color: var(--lab-p); }
+.alt-dati .alt-r { color: var(--lab-r); }
+
+@media (max-width: 760px) {
+  .alt-comandi { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .alt-cella, .alt-cella.alt-larga { grid-column: span 1; }
+  .alt-cella.alt-dati { grid-column: 1 / -1; }
+}
+@media (max-width: 640px) {
+  .alt-banco, .alt-banco.alt-due { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 520px) {
+  .alt-comandi { grid-template-columns: minmax(0, 1fr); }
+  .alt-viste { justify-self: stretch; display: grid; grid-template-columns: repeat(3, auto); justify-content: space-between; }
+  .alt-viste label > span { padding: 7px 11px; }
+  .alt-viste .alt-lungo { display: none; }
+  .alt-scena .alt-linea text { font-size: 17px; }
+  .alt-scena .alt-linea .alt-res { font-size: 15px; }
+}

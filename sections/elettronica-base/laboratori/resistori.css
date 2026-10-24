@@ -1,0 +1,136 @@
+/* Capitolo 3 · laboratorio "Leggi il resistore". */
+
+.res-scena { container-type: inline-size; display: grid; gap: 10px; }
+.res-scena [hidden] { display: none !important; }
+
+/* resistore e linee che portano alle etichette */
+.res-banco { position: relative; z-index: 2; }
+.res-svg { display: block; width: 100%; height: auto; }
+.res-bordo { fill: none; stroke: #4a3b22; stroke-opacity: .45; stroke-width: 1.2; }
+.res-guida { fill: none; stroke: #2c443e; stroke-width: 1.6; transition: stroke .25s ease; }
+.res-guida-punto { fill: #3b5750; transition: fill .25s ease; }
+.res-guida.attiva { stroke: #cfe3dc; }
+.res-guida-punto.attiva { fill: #fff; }
+
+/* le bande sono pulsanti trasparenti sopra il disegno */
+.res-bande { position: absolute; inset: 0; pointer-events: none; }
+.res-banda-btn {
+  position: absolute; margin: 0; padding: 0; border: 0; border-radius: 12px; background: transparent;
+  cursor: pointer; pointer-events: auto; outline: 2px solid transparent; transition: box-shadow .2s ease;
+}
+.res-banda-btn:hover { box-shadow: 0 0 0 1.5px rgb(255 255 255 / 32%); }
+.res-banda-btn:focus-visible { outline: 2px solid transparent; box-shadow: 0 0 0 2px var(--lab-bg), 0 0 0 4px #fff; }
+.res-banda-btn[aria-expanded="true"] { box-shadow: 0 0 0 2px var(--lab-bg), 0 0 0 4px var(--lab-r), 0 0 26px -2px var(--lab-r); }
+.res-banda-btn:disabled { cursor: default; box-shadow: none; }
+
+/* tavolozza dei colori */
+.res-tavolozza {
+  position: absolute; z-index: 5; width: min(328px, 100%); padding: 10px; border-radius: 14px; pointer-events: auto;
+  background: #101b18; border: 1px solid #2c403a; box-shadow: 0 24px 48px -18px rgb(0 0 0 / 85%);
+  animation: res-apri .22s var(--ease-out);
+}
+.res-tavolozza::before {
+  content: ""; position: absolute; top: -7px; left: calc(var(--freccia, 50%) - 6px); width: 12px; height: 12px;
+  background: #101b18; border-left: 1px solid #2c403a; border-top: 1px solid #2c403a; transform: rotate(45deg);
+}
+.res-tav-t { margin: 0 4px 8px; font: 700 .7rem var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--lab-dim); }
+.res-tav-griglia { display: grid; grid-auto-flow: column; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; }
+.res-opz { position: relative; display: block; cursor: pointer; }
+.res-opz input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+.res-opz-c {
+  display: grid; grid-template-columns: 18px minmax(0, 1fr) auto; align-items: center; gap: 8px; min-height: 34px; padding: 4px 8px;
+  border-radius: 9px; border: 1px solid transparent; font-size: .86rem; color: var(--lab-text); transition: background .15s ease, border-color .15s ease;
+}
+.res-opz:hover .res-opz-c { background: #172521; }
+.res-opz input:checked + .res-opz-c { background: #1a2a25; border-color: var(--lab-r); color: var(--lab-strong); }
+.res-opz input:focus-visible + .res-opz-c { outline: 2px solid #fff; outline-offset: 1px; }
+.res-opz-v { font: 700 .78rem var(--mono); color: var(--lab-dim); white-space: nowrap; }
+.res-opz input:checked + .res-opz-c .res-opz-v { color: var(--lab-r); }
+.res-tav-nota { margin: 8px 4px 0; font-size: .78rem; line-height: 1.4; color: var(--lab-dim); }
+.res-tav-nota:empty { display: none; }
+.res-sw {
+  display: inline-block; width: 16px; height: 16px; border-radius: 50%; background: var(--c);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 30%), 0 1px 2px rgb(0 0 0 / 50%);
+}
+@keyframes res-apri { from { opacity: 0; transform: translateY(-6px) scale(.98); } }
+
+/* nomi dei colori sotto le bande */
+.res-etichette { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin-top: -8px; }
+.res-etichetta {
+  display: grid; justify-items: center; align-content: start; gap: 1px; padding: 6px 2px 8px; border-radius: 10px;
+  text-align: center; cursor: pointer; transition: background .2s ease;
+}
+.res-etichetta.attiva { background: #12201c; }
+.res-misteriosi .res-etichetta { cursor: default; }
+.res-etichetta-sw { width: 36px; height: 8px; margin-bottom: 4px; border-radius: 4px; background: var(--c); box-shadow: inset 0 0 0 1px rgb(255 255 255 / 28%); }
+.res-etichetta-nome { font: 700 .95rem var(--font); color: var(--lab-strong); }
+.res-etichetta-val { font: 700 1.02rem var(--mono); color: var(--lab-text); white-space: nowrap; }
+.res-etichetta-ruolo { font-size: .74rem; color: var(--lab-dim); }
+
+/* valore, fascia di tolleranza e formula */
+.res-valore { display: grid; gap: 12px; }
+.res-letture { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
+.res-fascia { display: grid; gap: 5px; padding: 0 2px; }
+.res-fascia-scala {
+  position: relative; height: 12px; border-radius: 6px; overflow: hidden; border: 1px solid var(--lab-line);
+  background: repeating-linear-gradient(90deg, #1c2b26 0 1px, transparent 1px 5%), #0a1311;
+}
+.res-fascia-banda {
+  position: absolute; inset: 0; background: var(--lab-r); opacity: .88; transform-origin: 50% 50%;
+  box-shadow: 0 0 12px var(--lab-r); transition: transform .5s var(--ease-out);
+}
+.res-fascia-zero { position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: #fff; }
+.res-fascia-assi { display: flex; justify-content: space-between; font: 600 .74rem var(--mono); color: var(--lab-dim); }
+.res-fascia-t { color: var(--lab-r); font-weight: 700; }
+
+/* resistori misteriosi */
+.res-quiz { display: grid; gap: 12px; }
+.res-quiz-testa { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 16px; }
+.res-quiz-t { margin: 0; font: 700 1.1rem var(--serif); color: var(--lab-strong); }
+.res-serie { margin: 0; display: inline-flex; align-items: center; gap: 10px; font: 600 .8rem var(--mono); color: var(--lab-text); }
+.res-serie-punti { display: inline-flex; gap: 6px; }
+.res-serie-p { width: 12px; height: 12px; border-radius: 50%; border: 2px solid #35504a; transition: background .25s ease, border-color .25s ease; }
+.res-serie-p.pieno { background: var(--lab-b); border-color: var(--lab-b); box-shadow: 0 0 8px var(--lab-b); }
+.res-risposte { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.res-risposta { min-height: 50px; font: 700 1.05rem var(--mono); color: var(--lab-r); }
+.res-risposta[aria-disabled="true"] { cursor: default; }
+.res-risposta[aria-disabled="true"]:not(.giusta):not(.sbagliata) { opacity: .5; }
+.res-risposta.giusta { color: var(--lab-strong); border-color: var(--lab-b); background: color-mix(in srgb, var(--lab-b) 18%, #15221e); }
+.res-risposta.sbagliata { color: var(--lab-strong); border-color: var(--lab-f); background: color-mix(in srgb, var(--lab-f) 16%, #15221e); }
+.res-risposta.giusta::before { content: "✓"; color: var(--lab-b); }
+.res-risposta.sbagliata::before { content: "✗"; color: var(--lab-f); }
+.res-quiz-piede { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; min-height: 40px; }
+.res-esito { margin: 0; font-weight: 700; color: var(--lab-strong); }
+
+/* tabella del codice colori */
+.res-pannello { grid-column: 1 / -1; display: grid; gap: 12px; align-content: start; }
+/* (annulla le regole generali delle tabelle del sito, pensate per gli elenchi lunghi) */
+.res-tab { width: 100%; min-width: 0; border-collapse: collapse; font-size: .8rem; }
+.res-tab caption { margin-bottom: 6px; text-align: left; font: 700 .66rem var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--lab-dim); }
+.res-tab th, .res-tab td { height: 23px; padding: 1px 2px; border-bottom: 1px solid #15221e; vertical-align: middle; }
+.res-tab thead th { position: static; background: none; font: 700 .7rem var(--mono); letter-spacing: 0; text-transform: none; color: var(--lab-dim); text-align: center; border-bottom-color: var(--lab-line); }
+.res-tab thead th:first-child { text-align: left; }
+.res-tab tbody th { border-left: 0; text-align: left; font-weight: 600; color: var(--lab-text); white-space: nowrap; }
+.res-tab tbody tr:hover { background: #111d1a; }
+.res-tab tbody .res-sw { width: 12px; height: 12px; margin-right: 7px; vertical-align: -1px; }
+.res-tab td { text-align: center; font: 600 .76rem var(--mono); color: var(--lab-dim); white-space: nowrap; }
+.res-tab td span { display: inline-block; padding: 0 4px; border-radius: 6px; line-height: 18px; transition: background .25s ease, color .25s ease; }
+.res-tab td.res-uso span { background: var(--c); color: #0b1210; font-weight: 800; box-shadow: 0 0 0 1px rgb(255 255 255 / 35%); }
+.res-tab td.res-uso.res-chiaro span { color: #fff; }
+.res-consiglio { margin: 0; font-size: .8rem; line-height: 1.45; color: var(--lab-text); }
+.res-consiglio strong { color: var(--lab-strong); }
+
+.res-spento { opacity: .45; }
+.res-spento input { cursor: not-allowed; }
+
+@container (max-width: 560px) {
+  .res-letture { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .res-letture > :first-child { grid-column: 1 / -1; }
+  .res-risposte { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .res-etichetta-nome { font-size: .86rem; }
+  .res-etichetta-ruolo { font-size: .66rem; }
+}
+
+@media (max-width: 900px) and (min-width: 600px) {
+  .res-pannello { grid-template-columns: minmax(0, 340px) minmax(0, 1fr); gap: 24px; align-items: start; }
+}

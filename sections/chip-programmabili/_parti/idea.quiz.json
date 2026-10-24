@@ -1,0 +1,70 @@
+[
+  {
+    "q": "Che cosa distingue un chip programmabile da un circuito a logica cablata?",
+    "options": [
+      "Il suo comportamento dipende dal programma scritto in memoria",
+      "Non ha bisogno di porte logiche né di transistor per funzionare",
+      "Si può usare soltanto dentro le calcolatrici da tavolo"
+    ],
+    "answer": 0,
+    "why": "Nella logica cablata la funzione sta nei collegamenti tra le porte. In un sistema programmabile l'hardware resta uguale e la funzione la decide il programma in memoria.",
+    "chapter": "idea",
+    "level": 1,
+    "topic": "logica cablata e programmabile"
+  },
+  {
+    "q": "Per quale prodotto Busicom chiese a Intel un set di chip su misura, nel 1969?",
+    "options": [
+      "La 141-PF, una calcolatrice da tavolo con stampante",
+      "Un registratore di cassa per i grandi magazzini",
+      "Il computer di bordo di un aereo da caccia",
+      "Un orologio digitale da polso a cristalli liquidi"
+    ],
+    "answer": 0,
+    "why": "La Nippon Calculating Machine Corporation, con il marchio Busicom, progettava la calcolatrice da tavolo 141-PF e chiese a Intel i chip per costruirla.",
+    "chapter": "idea",
+    "level": 1,
+    "topic": "Busicom 141-PF"
+  },
+  {
+    "q": "Che cosa proposero Ted Hoff e Stan Mazor al posto dei chip su misura chiesti da Busicom?",
+    "options": [
+      "Un processore generico a 4 bit con una ROM per il programma e una RAM per i dati",
+      "Un unico grande chip con tutta la logica della calcolatrice cablata dentro",
+      "Una calcolatrice meccanica a ingranaggi, più robusta e meno costosa"
+    ],
+    "answer": 0,
+    "why": "Hoff trovò il progetto troppo complicato e propose un processore semplice e generico: le funzioni della calcolatrice diventavano un programma nella ROM.",
+    "chapter": "idea",
+    "level": 2,
+    "topic": "l'idea di Hoff"
+  },
+  {
+    "q": "Che cosa conteneva la ROM 4001 della famiglia MCS-4?",
+    "options": [
+      "256 byte di programma, scritti in fabbrica, e una porta di I/O a 4 bit",
+      "I numeri del calcolo in corso, cancellati a ogni spegnimento",
+      "Il clock del sistema e i registri interni del processore",
+      "Un registro a scorrimento da 10 bit per la stampante"
+    ],
+    "answer": 0,
+    "why": "La 4001 è una ROM a maschera da 256 parole da 8 bit con una porta di I/O a 4 bit: il programma si scrive in fabbrica, con la maschera dello strato di metallo.",
+    "chapter": "idea",
+    "level": 2,
+    "topic": "ROM 4001"
+  },
+  {
+    "q": "Come ottenne Intel il diritto di vendere i chip MCS-4 a tutti i clienti?",
+    "options": [
+      "Nel maggio 1971 restituì a Busicom i 60.000 dollari, escluse le calcolatrici",
+      "Nel 1974 comprò Busicom e il suo marchio, dopo il fallimento dell'azienda",
+      "Depositò il brevetto del chip prima di Busicom, nel novembre 1969",
+      "Riprogettò da zero il chip in modo che fosse diverso da quello di Busicom"
+    ],
+    "answer": 0,
+    "why": "Busicom chiese di rinegoziare il contratto: Intel le restituì i 60.000 dollari investiti nello sviluppo e in cambio ottenne il diritto di vendere i chip per ogni uso tranne le calcolatrici.",
+    "chapter": "idea",
+    "level": 3,
+    "topic": "i diritti sul chip"
+  }
+]

@@ -1,0 +1,58 @@
+/* Capitolo 9 · figura del trasformatore a nucleo chiuso. */
+
+/* nucleo: faccia frontale, spessore del pacco di lamierini, facce interne della finestra */
+.fig-alternata-nucleo { fill: color-mix(in srgb, var(--muted) 16%, var(--surface)); fill-rule: evenodd; stroke: color-mix(in srgb, var(--muted) 72%, transparent); stroke-width: 1.4; stroke-linejoin: round; }
+.fig-alternata-sopra { fill: color-mix(in srgb, var(--muted) 30%, var(--surface)); stroke: color-mix(in srgb, var(--muted) 72%, transparent); stroke-width: 1.2; stroke-linejoin: round; }
+.fig-alternata-fianco { fill: color-mix(in srgb, var(--muted) 42%, var(--surface)); stroke: color-mix(in srgb, var(--muted) 72%, transparent); stroke-width: 1.2; stroke-linejoin: round; }
+.fig-alternata-lamierini, .fig-alternata-filetti { fill: none; stroke: color-mix(in srgb, var(--muted) 58%, transparent); stroke-width: .7; }
+
+/* flusso nel ferro: i trattini avanzano e tornano indietro seguendo la sinusoide */
+.fig-alternata-flusso { fill: none; stroke: var(--q-b); stroke-width: 2.6; stroke-linecap: round; stroke-dasharray: 8 6; animation: fig-alternata-flusso 2s cubic-bezier(.37, 0, .63, 1) infinite alternate; }
+@keyframes fig-alternata-flusso { to { stroke-dashoffset: -28; } }
+
+/* bobine: tante spire sottili nel primario, poche spire grosse nel secondario */
+.fig-alternata-avvolgimento { fill: color-mix(in srgb, var(--rame) 20%, var(--surface)); stroke: color-mix(in srgb, var(--rame) 50%, transparent); stroke-width: 1; }
+.fig-alternata-spire { fill: none; stroke: var(--rame); stroke-linecap: round; }
+.fig-alternata-primario { stroke-width: 2.3; }
+.fig-alternata-secondario { stroke-width: 4.2; }
+.fig-alternata-filo { fill: none; stroke: var(--rame); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+
+/* sorgente alternata e lampadina */
+.fig-alternata-sorgente { fill: var(--surface); stroke: var(--ink); stroke-width: 1.6; }
+.fig-alternata-onda { fill: none; stroke: var(--q-v); stroke-width: 2.2; stroke-linecap: round; }
+.fig-alternata-alone { fill: color-mix(in srgb, #ffc04d 26%, transparent); }
+.fig-alternata-vetro { fill: color-mix(in srgb, #ffc04d 18%, var(--surface)); stroke: color-mix(in srgb, var(--muted) 75%, transparent); stroke-width: 1.4; stroke-linejoin: round; }
+.fig-alternata-filamento { fill: none; stroke: #e8890c; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.fig-alternata-attacco { fill: color-mix(in srgb, var(--muted) 38%, var(--surface)); stroke: color-mix(in srgb, var(--muted) 80%, transparent); stroke-width: 1.2; }
+.fig-alternata-punta { fill: var(--ink); }
+
+/* piccolo schermo: il flusso nel tempo, con il punto che segna l'istante */
+.fig-alternata-schermo { fill: color-mix(in srgb, var(--q-b) 7%, var(--surface)); stroke: color-mix(in srgb, var(--muted) 55%, transparent); stroke-width: 1.2; }
+.fig-alternata-griglia { fill: none; stroke: color-mix(in srgb, var(--muted) 30%, transparent); stroke-width: .8; stroke-dasharray: 2 3; }
+.fig-alternata-asse { fill: none; stroke: color-mix(in srgb, var(--muted) 60%, transparent); stroke-width: 1; }
+.fig-alternata-sinusoide { fill: none; stroke: var(--q-b); stroke-width: 2; stroke-linecap: round; }
+.fig-alternata-istante { stroke: color-mix(in srgb, var(--q-b) 45%, transparent); stroke-width: 1; }
+.fig-alternata-punto circle { fill: var(--q-b); stroke: var(--surface); stroke-width: 1.4; }
+
+/* Un periodo dura 4 s (rallentato): il punto scorre lungo la sinusoide in sincronia con il flusso. */
+.fig-alternata-cursore { animation: fig-alternata-tempo 4s linear infinite; }
+@keyframes fig-alternata-tempo {
+  from { transform: translateX(-16px); }
+  to { transform: translateX(48px); }
+}
+.fig-alternata-punto { animation: fig-alternata-valore 4s infinite; }
+@keyframes fig-alternata-valore {
+  0% { transform: translateY(14px); animation-timing-function: cubic-bezier(.61, 1, .88, 1); }
+  25% { transform: translateY(0); animation-timing-function: cubic-bezier(.12, 0, .39, 0); }
+  50% { transform: translateY(14px); animation-timing-function: cubic-bezier(.61, 1, .88, 1); }
+  75% { transform: translateY(28px); animation-timing-function: cubic-bezier(.12, 0, .39, 0); }
+  100% { transform: translateY(14px); }
+}
+
+.fig-alternata-t { fill: var(--muted); font: 600 11px var(--font); }
+.fig-alternata-tb { fill: var(--q-b); font: 700 11px var(--font); }
+
+/* Senza animazioni resta l'istante di flusso massimo: punto sul picco, trattini fermi. */
+@media (prefers-reduced-motion: reduce) {
+  .fig-alternata-flusso, .fig-alternata-cursore, .fig-alternata-punto { animation: none; }
+}

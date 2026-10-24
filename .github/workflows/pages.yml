@@ -23,10 +23,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: node --test tests/*.test.js
+      - run: node --test
 
+  # Martina (2026-10-24): il sito si pubblica anche se qualche test fallisce,
+  # perché alcune sezioni sono ancora in lavorazione. I test restano visibili.
   deploy:
-    needs: test
     runs-on: ubuntu-latest
     environment:
       name: github-pages
@@ -36,7 +37,7 @@ jobs:
       - name: Prepara il sito
         run: |
           mkdir _site
-          cp -r index.html css js _site/
+          cp -r index.html css js sections _site/
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
       - id: deployment

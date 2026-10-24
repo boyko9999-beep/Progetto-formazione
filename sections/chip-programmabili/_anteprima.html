@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Anteprima capitolo</title>
+  <link rel="stylesheet" href="../../css/style.css">
+  <link rel="stylesheet" href="css/base.css">
+  <script>window.CP_MANUAL_BOOT = true;</script>
+</head>
+<body class="cp">
+  <!-- Pagina di sviluppo: carica un solo capitolo da _parti/<id>.html. Uso: _anteprima.html?c=intel-4004 (servita via http). -->
+  <header class="topbar">
+    <a class="brand" href="../../index.html"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7"/><path d="M4 22h6V10h6v12h6V10h6"/></svg><span>BusLab</span></a>
+    <nav class="topnav" aria-label="Sito"><a href="../index.html">Sezioni</a><a href="index.html" aria-current="page">Anteprima</a></nav>
+    <div class="cp-read" aria-hidden="true"><span>Lettura</span><span class="cp-read-track"><span id="cp-read-bar"></span></span></div>
+  </header>
+  <main id="contenuto" class="cp-main">
+    <article class="cp-chapters"><section class="cp-chapter" id="anteprima"></section></article>
+  </main>
+  <script src="js/core.js"></script>
+  <script>
+    (async function () {
+      const id = new URLSearchParams(location.search).get('c') || 'idea';
+      const sec = document.querySelector('.cp-chapter');
+      sec.id = id;
+      sec.setAttribute('aria-labelledby', id + '-titolo');
+      const v = '?v=' + Date.now();
+      async function exists(url) {
+        try { return (await fetch(url, { method: 'HEAD', cache: 'no-store' })).ok; } catch (e) { return false; }
+      }
+      function load(tag, attrs) {
+        return new Promise((resolve) => {
+          const el = document.createElement(tag);
+          Object.assign(el, attrs);
+          el.onload = () => resolve(true);
+          el.onerror = () => resolve(false);
+          document.head.append(el);
+        });
+      }
+      const res = await fetch('_parti/' + id + '.html' + v, { cache: 'no-store' });
+      sec.innerHTML = res.ok ? await res.text() : '<p>Manca _parti/' + id + '.html</p>';
+      if (await exists('css/' + id + '.css')) await load('link', { rel: 'stylesheet', href: 'css/' + id + '.css' + v });
+      if (await exists('js/' + id + '-core.js')) await load('script', { src: 'js/' + id + '-core.js' + v });
+      if (await exists('js/' + id + '.js')) await load('script', { src: 'js/' + id + '.js' + v });
+      CP.boot();
+      document.title = 'Anteprima · ' + id;
+      document.documentElement.dataset.ready = '1';
+    })();
+  </script>
+</body>
+</html>

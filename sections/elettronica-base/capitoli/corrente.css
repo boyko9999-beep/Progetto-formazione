@@ -1,0 +1,47 @@
+/* Capitolo 2 · figura della pila di Volta che scompone l'acqua. */
+
+.fig-corrente-legno { fill: color-mix(in srgb, #a87444 58%, var(--surface)); stroke: color-mix(in srgb, #a87444 70%, var(--ink)); stroke-width: 1.2; }
+.fig-corrente-asta { fill: none; stroke: color-mix(in srgb, var(--muted) 55%, transparent); stroke-width: 3; stroke-linecap: round; }
+.fig-corrente-pomo { fill: var(--surface); stroke: color-mix(in srgb, var(--muted) 75%, transparent); stroke-width: 1.4; }
+
+/* dischi: zinco, panno bagnato, rame; la sfumatura dà il volume alla colonna */
+.fig-corrente-zn { fill: var(--zinco); stroke: color-mix(in srgb, var(--zinco) 45%, var(--ink)); stroke-width: .7; }
+.fig-corrente-cu { fill: var(--rame); stroke: color-mix(in srgb, var(--rame) 55%, var(--ink)); stroke-width: .7; }
+.fig-corrente-panno { fill: color-mix(in srgb, #dcc79c 82%, #7fb8d6); stroke: color-mix(in srgb, #a88a55 75%, var(--ink)); stroke-width: .6; }
+.fig-corrente-faccia { fill: color-mix(in srgb, var(--rame) 62%, #ffe3c8); stroke: color-mix(in srgb, var(--rame) 55%, var(--ink)); stroke-width: .7; }
+.fig-corrente-ombra { stop-color: #2b1a0e; stop-opacity: .34; }
+.fig-corrente-ombra-lieve { stop-color: #2b1a0e; stop-opacity: .05; }
+.fig-corrente-riflesso { stop-color: #fff6ea; stop-opacity: .42; }
+.fig-corrente-chiaro { stop-color: #fff6ea; stop-opacity: 0; }
+.fig-corrente-morsetto { fill: color-mix(in srgb, #c9a256 85%, var(--surface)); stroke: color-mix(in srgb, #8c6a2a 80%, var(--ink)); stroke-width: .8; }
+
+/* fili di rame e, sopra, gli elettroni che vanno dal polo negativo al positivo */
+.fig-corrente-filo { fill: none; stroke: var(--rame); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.fig-corrente-flusso { fill: none; stroke: var(--q-i); stroke-width: 3.2; stroke-linecap: round; stroke-dasharray: 0 15; animation: fig-corrente-flusso 1.5s linear infinite; }
+@keyframes fig-corrente-flusso { to { stroke-dashoffset: -15; } }
+
+/* bicchiere: idrogeno sul filo del polo negativo, il doppio dell'ossigeno sull'altro */
+.fig-corrente-vetro { fill: none; stroke: color-mix(in srgb, var(--muted) 70%, transparent); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.fig-corrente-acqua { fill: color-mix(in srgb, #5cc8ff 22%, transparent); }
+.fig-corrente-pelo { fill: none; stroke: color-mix(in srgb, #5cc8ff 60%, transparent); stroke-width: 1.2; stroke-linecap: round; }
+.fig-corrente-elettrodo { fill: color-mix(in srgb, var(--zinco) 80%, var(--surface)); stroke: color-mix(in srgb, var(--zinco) 45%, var(--ink)); stroke-width: .8; }
+.fig-corrente-bolle circle { fill: color-mix(in srgb, var(--surface) 65%, #5cc8ff); stroke: color-mix(in srgb, var(--ink) 62%, #5cc8ff); stroke-width: 1.2; opacity: .95; animation: fig-corrente-bolla 2.4s ease-in infinite; }
+.fig-corrente-h2 circle:nth-child(1) { transform: translateY(-4px); }
+.fig-corrente-h2 circle:nth-child(2) { transform: translateY(-13px); animation-delay: -.6s; }
+.fig-corrente-h2 circle:nth-child(3) { transform: translateY(-22px); animation-delay: -1.2s; }
+.fig-corrente-h2 circle:nth-child(4) { transform: translateY(-31px); animation-delay: -1.8s; }
+.fig-corrente-o2 circle:nth-child(1) { transform: translateY(-9px); }
+.fig-corrente-o2 circle:nth-child(2) { transform: translateY(-27px); animation-delay: -1.2s; }
+@keyframes fig-corrente-bolla {
+  0% { transform: translateY(0); opacity: 0; }
+  15% { opacity: .9; }
+  80% { opacity: .85; }
+  100% { transform: translateY(-36px); opacity: 0; }
+}
+
+.fig-corrente-guida { fill: none; stroke: color-mix(in srgb, var(--muted) 65%, transparent); stroke-width: 1; }
+.fig-corrente-freccia { fill: none; stroke: var(--q-i); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.fig-corrente-t { fill: var(--muted); font: 600 11px var(--font); }
+.fig-corrente-segno { font: 700 15px var(--font); }
+.fig-corrente-pos { fill: var(--q-f); }
+.fig-corrente-neg { fill: var(--q-i); }

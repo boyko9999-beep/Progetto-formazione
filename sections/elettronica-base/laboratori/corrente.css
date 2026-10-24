@@ -1,0 +1,77 @@
+/* Capitolo 2 · laboratorio "Dentro il filo". */
+
+.cor-scena { display: grid; }
+.cor-circuito { display: block; width: 100%; }
+
+/* fili, impulso della spinta, tratto ingrandito */
+.cor-filo { fill: none; stroke: #2a3b35; stroke-linecap: round; stroke-linejoin: round; }
+.cor-filo-rame { fill: none; stroke: var(--rame); opacity: .85; stroke-linecap: round; stroke-linejoin: round; }
+.cor-impulso { fill: none; stroke: var(--lab-v); stroke-width: 3.5; stroke-linecap: round; opacity: 0; filter: drop-shadow(0 0 4px var(--lab-v)); }
+.cor-tratto {
+  fill: color-mix(in srgb, var(--rame) 12%, transparent);
+  stroke: color-mix(in srgb, var(--rame) 80%, #fff); stroke-width: 1.4;
+  filter: drop-shadow(0 0 5px color-mix(in srgb, var(--rame) 60%, transparent));
+}
+.cor-cono-1 { stop-color: var(--rame); stop-opacity: .22; }
+.cor-cono-2 { stop-color: var(--rame); stop-opacity: .04; }
+.cor-cono-bordo { fill: none; stroke: var(--rame); stroke-opacity: .5; stroke-width: 1; stroke-dasharray: 3 4; }
+.cor-etichetta { fill: var(--lab-dim); font: 600 12px var(--font); }
+.cor-etichetta.cor-rame { fill: color-mix(in srgb, var(--rame) 65%, #fff); }
+.cor-ohm { fill: var(--lab-r); font-family: var(--mono); font-weight: 700; }
+
+/* pile */
+.cor-pila-testo { fill: var(--lab-v); font: 700 12px var(--mono); }
+.cor-segno { font: 800 14px var(--mono); }
+.cor-segno.pos { fill: var(--lab-pos); }
+.cor-segno.neg { fill: var(--lab-neg); }
+.cor-cella { fill: #14211d; stroke: #3d544c; stroke-width: 1.2; }
+.cor-cella-carica { fill: var(--lab-v); opacity: .85; }
+.cor-cella-polo { fill: #9aa8a2; }
+
+/* interruttore */
+.cor-interruttore { cursor: pointer; }
+.cor-presa { fill: transparent; }
+.cor-morsetto { fill: #0d1714; stroke: #8fa39b; stroke-width: 1.6; }
+.cor-lama { stroke: #cfdad5; stroke-width: 4; stroke-linecap: round; transition: stroke .15s ease; }
+.cor-pomello { fill: #22332d; stroke: #cfdad5; stroke-width: 1.4; }
+.cor-interruttore:hover .cor-lama { stroke: #fff; }
+
+/* lampadina */
+.cor-portalampada { fill: #14211d; stroke: #3d544c; stroke-width: 1.2; }
+.cor-attacco { fill: #8d9893; }
+.cor-filetto { stroke: #59665f; stroke-width: 1.2; }
+.cor-vetro { fill: rgb(255 255 255 / 4%); stroke: #7d958c; stroke-width: 1.3; }
+.cor-supporto { fill: none; stroke: #7d958c; stroke-width: 1; }
+.cor-filamento { fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.cor-accesa .cor-filamento { filter: drop-shadow(0 0 3px var(--lab-luce)); }
+.cor-alone-1 { stop-color: var(--lab-luce); stop-opacity: .9; }
+.cor-alone-2 { stop-color: var(--lab-luce); stop-opacity: .32; }
+.cor-alone-3 { stop-color: var(--lab-luce); stop-opacity: 0; }
+
+/* verso convenzionale */
+.cor-freccia { fill: var(--lab-i); stroke: var(--lab-bg); stroke-width: 1.5; paint-order: stroke; }
+.cor-freccia-t { fill: var(--lab-i); font: italic 700 15px var(--serif); }
+
+/* il filo ingrandito */
+.cor-lente {
+  position: relative; border-radius: 12px; overflow: hidden;
+  background: radial-gradient(120% 120% at 50% 40%, #1b1611 0%, #100f0c 55%, #0a0c0b 100%);
+}
+.cor-lente::after {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  border: 1px solid color-mix(in srgb, var(--rame) 50%, transparent);
+  box-shadow: inset 0 0 50px rgb(0 0 0 / 45%);
+}
+.cor-lente .eb-tela { touch-action: auto; }
+.cor-legenda { display: flex; flex-wrap: wrap; gap: 4px 18px; margin: 10px 2px 2px; font-size: .8rem; line-height: 1.45; color: var(--lab-dim); }
+.cor-legenda > span { display: inline-flex; align-items: center; gap: 7px; }
+.cor-sw { width: 12px; height: 12px; border-radius: 50%; flex: none; }
+.cor-sw-ione { background: radial-gradient(circle at 35% 35%, #eab08a, var(--rame) 55%, #5c2c10); }
+.cor-sw-el { width: 9px; height: 9px; margin: 0 1.5px; background: var(--lab-neg); box-shadow: 0 0 6px color-mix(in srgb, var(--lab-neg) 60%, transparent); }
+.cor-sw-seguito { width: 9px; height: 9px; margin: 0 1.5px; background: var(--lab-neg); box-shadow: 0 0 0 2px var(--lab-bg), 0 0 0 3.5px #fff; }
+
+/* comandi */
+.cor-gruppo { display: grid; gap: 6px; justify-items: start; }
+.cor-gruppo-t { font-size: .86rem; font-weight: 600; color: var(--lab-text); }
+.cor-sezione { --lab-accent: var(--rame); }
+.cor-apice { font-size: .6em; line-height: 0; vertical-align: .75em; margin-left: .1em; }

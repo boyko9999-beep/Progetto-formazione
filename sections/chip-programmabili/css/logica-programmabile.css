@@ -1,0 +1,266 @@
+/*
+ * Capitolo 7 · Hardware che si riprogramma (#logica-programmabile).
+ * Ogni selettore inizia con #logica-programmabile; le classi del capitolo hanno il prefisso lp-.
+ * I colori dei segnali vengono da base.css: --sig-on (1), --sig-off (0), --sig-addr, --sig-data, --sig-ctrl, --sig-idle.
+ */
+
+/* ---------- testo e figure ---------- */
+
+/* lettera negata: la barra sopra, come nei manuali */
+#logica-programmabile .lp-neg { text-decoration: overline; text-decoration-thickness: .09em; }
+
+#logica-programmabile .lp-pair { margin: 8px 0 30px; }
+#logica-programmabile .lp-pair > .lp-fig { margin: 6px 0 0; }
+#logica-programmabile .lp-nowrap { white-space: nowrap; }
+#logica-programmabile .lp-fig .cp-art { padding: 14px; }
+
+/* ---------- laboratorio: struttura ---------- */
+
+#logica-programmabile [hidden] { display: none !important; }
+
+#logica-programmabile .lp-top { background: linear-gradient(180deg, rgba(255, 255, 255, .03), transparent); }
+#logica-programmabile .lp-tabs button { font-weight: 750; }
+#logica-programmabile .lp-tools .cp-bar { background: rgba(0, 0, 0, .14); }
+#logica-programmabile .lp-k { font: 700 .7rem var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--lab-dim); }
+#logica-programmabile .lp-ins { gap: 4px 10px; }
+
+#logica-programmabile .lp-stage {
+  display: grid; align-content: center; padding: 12px 14px;
+  background-color: var(--lab-bg);
+  background-image:
+    radial-gradient(120% 80% at 30% 0%, rgba(62, 224, 143, .05), transparent 60%),
+    linear-gradient(color-mix(in srgb, var(--lab-line) 55%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--lab-line) 55%, transparent) 1px, transparent 1px);
+  background-size: auto, 24px 24px, 24px 24px;
+  background-position: 0 0, -1px -1px, -1px -1px;
+}
+#logica-programmabile .lp-pane { min-width: 0; }
+#logica-programmabile .lp-svg { display: block; width: 100%; height: auto; overflow: visible; -webkit-user-select: none; user-select: none; }
+#logica-programmabile .lp-svg text { font-family: var(--mono); }
+
+/* elementi SVG che si possono premere */
+#logica-programmabile .lp-focus { cursor: pointer; outline: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+#logica-programmabile .lp-focus:focus-visible { outline: none; }
+#logica-programmabile .lp-hit { fill: transparent; }
+#logica-programmabile .lp-ring { fill: none; stroke: var(--lab-gold); stroke-width: 2.5; opacity: 0; transition: opacity var(--t-fast); }
+#logica-programmabile .lp-focus:focus-visible .lp-ring { opacity: 1; }
+
+/* fili: base spenta e copia accesa sopra */
+#logica-programmabile .lp-w polyline { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+#logica-programmabile .lp-w-base { stroke: var(--sig-off); stroke-width: 2.2; }
+#logica-programmabile .lp-w-hi { stroke: var(--sig-on); stroke-width: 2.6; opacity: 0; transition: opacity var(--t-normal) var(--ease-smooth) var(--d, 0ms); }
+#logica-programmabile .lp-w.is-on .lp-w-hi { opacity: 1; }
+#logica-programmabile .lp-row .lp-w-base { stroke-width: 2.4; }
+#logica-programmabile .lp-out .lp-w-base, #logica-programmabile .lp-out .lp-w-hi { stroke-width: 3.4; }
+
+/* interruttori disegnati [ A | 0 ] */
+#logica-programmabile .lp-tog-body { fill: var(--lab-raise); stroke: #3b544c; stroke-width: 1.3; transition: stroke var(--t-fast); }
+#logica-programmabile .lp-tog-name { fill: var(--lab-ink); font-weight: 800; }
+#logica-programmabile .lp-tog-val { fill: var(--lab-sunk); stroke: var(--sig-off); stroke-width: 1.2; transform-box: fill-box; transform-origin: center; transition: fill var(--t-fast), stroke var(--t-fast); }
+#logica-programmabile .lp-tog-vt { fill: var(--lab-dim); font-weight: 800; transition: fill var(--t-fast); }
+#logica-programmabile .lp-tog:hover .lp-tog-body { stroke: var(--sig-on); }
+#logica-programmabile .lp-tog.is-on .lp-tog-val { fill: var(--sig-on); stroke: var(--sig-on); }
+#logica-programmabile .lp-tog.is-on .lp-tog-vt { fill: #04150d; }
+
+/* LED */
+#logica-programmabile .lp-led-halo { fill: var(--sig-on); opacity: 0; transition: opacity var(--t-normal) var(--ease-smooth) var(--d, 0ms); }
+#logica-programmabile .lp-led-core { fill: #0f1a16; stroke: var(--sig-off); stroke-width: 2; transform-box: fill-box; transform-origin: center; transition: fill var(--t-fast) var(--d, 0ms), stroke var(--t-fast) var(--d, 0ms); }
+#logica-programmabile .lp-led-t { fill: var(--lab-dim); font-weight: 800; transition: fill var(--t-fast) var(--d, 0ms); }
+#logica-programmabile .lp-led.is-on .lp-led-halo { opacity: .24; }
+#logica-programmabile .lp-led.is-on .lp-led-core { fill: var(--sig-on); stroke: #b8f5d6; }
+#logica-programmabile .lp-led.is-on .lp-led-t { fill: #04150d; }
+
+#logica-programmabile .lp-cap { fill: var(--lab-dim); font-weight: 700; letter-spacing: .06em; }
+#logica-programmabile .lp-bar { stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; }
+
+/* ---------- 1 · PAL ---------- */
+
+#logica-programmabile .lp-inv { fill: none; stroke: #6f8f84; stroke-width: 1.4; stroke-linejoin: round; }
+#logica-programmabile .lp-head { color: var(--lab-text); transition: color var(--t-fast); }
+#logica-programmabile .lp-head rect { fill: var(--lab-sunk); stroke: var(--lab-line); stroke-width: 1.2; transition: stroke var(--t-fast); }
+#logica-programmabile .lp-head text { fill: currentColor; font-weight: 800; }
+#logica-programmabile .lp-head.is-on { color: var(--sig-on); }
+#logica-programmabile .lp-head.is-on rect { stroke: color-mix(in srgb, var(--sig-on) 60%, transparent); }
+
+#logica-programmabile .lp-gate { fill: #101a17; stroke: #4c6a60; stroke-width: 1.7; stroke-linejoin: round; transition: fill var(--t-normal) var(--ease-smooth) var(--d, 0ms), stroke var(--t-normal) var(--ease-smooth) var(--d, 0ms); }
+#logica-programmabile .lp-gate.is-on { fill: rgba(62, 224, 143, .16); stroke: var(--sig-on); }
+
+#logica-programmabile .lp-term { color: var(--lab-dim); transition: color var(--t-fast); }
+#logica-programmabile .lp-term text { fill: currentColor; font-weight: 750; }
+#logica-programmabile .lp-term.is-on { color: var(--sig-on); }
+#logica-programmabile .lp-term .lp-term-zero { fill: var(--lab-dim); opacity: .75; }
+#logica-programmabile .lp-term .lp-term-one { fill: var(--lab-gold); }
+#logica-programmabile .lp-term .lp-term-dot { font-weight: 900; }
+
+/* fusibili: intatto = filo dorato continuo; bruciato = filo spezzato e annerito */
+#logica-programmabile .lp-fbody { fill: rgba(205, 182, 122, .1); stroke: #cdb67a; stroke-width: 1.3; transition: fill var(--t-fast), stroke var(--t-fast); }
+#logica-programmabile .lp-fl, #logica-programmabile .lp-fr {
+  stroke: #cdb67a; stroke-width: 2.2; stroke-linecap: round; transform-box: fill-box;
+  transition: transform var(--t-normal) var(--ease-bounce), stroke var(--t-fast);
+}
+#logica-programmabile .lp-fl { transform-origin: left center; }
+#logica-programmabile .lp-fr { transform-origin: right center; }
+#logica-programmabile .lp-ember { fill: #6b5246; opacity: 0; transition: opacity var(--t-fast); }
+#logica-programmabile .lp-spark { fill: none; stroke: var(--lab-gold); stroke-width: 2; opacity: 0; transform-box: fill-box; transform-origin: center; pointer-events: none; }
+#logica-programmabile .lp-fuse:hover .lp-fbody { stroke: var(--lab-gold); fill: rgba(240, 176, 74, .16); }
+#logica-programmabile .lp-fuse.is-hot .lp-fl, #logica-programmabile .lp-fuse.is-hot .lp-fr { stroke: var(--sig-on); }
+#logica-programmabile .lp-fuse.is-hot .lp-fbody { stroke: color-mix(in srgb, var(--sig-on) 70%, #cdb67a); }
+#logica-programmabile .lp-fuse.is-burnt .lp-fbody { fill: rgba(107, 82, 70, .12); stroke: #6b5246; stroke-dasharray: 3 2; }
+#logica-programmabile .lp-fuse.is-burnt .lp-fl { stroke: #6b5246; transform: rotate(-32deg) scaleX(.8); }
+#logica-programmabile .lp-fuse.is-burnt .lp-fr { stroke: #6b5246; transform: rotate(32deg) scaleX(.8); }
+#logica-programmabile .lp-fuse.is-burnt .lp-ember { opacity: 1; }
+#logica-programmabile .lp-fuse.is-burnt:hover .lp-fbody { stroke: var(--lab-gold); }
+
+/* pannello della PAL */
+#logica-programmabile .lp-intro { font-size: .9rem; }
+#logica-programmabile .lp-pick { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin: 4px 0 14px; }
+#logica-programmabile .lp-pick .cp-seg button { padding: 0 10px; }
+#logica-programmabile .lp-explain h4 { margin-top: 2px; }
+#logica-programmabile .lp-eq { display: grid; gap: 3px; padding: 8px 12px; border-radius: 10px; background: var(--lab-sunk); border: 1px solid var(--lab-line); font-size: .86rem; }
+#logica-programmabile .lp-eq-line { min-width: 0; overflow-wrap: anywhere; }
+#logica-programmabile .lp-expr { font: 800 .95rem var(--mono); color: var(--lab-ink); letter-spacing: .02em; }
+#logica-programmabile .lp-eq code { color: var(--lab-gold); }
+
+/* tabella di verità in orizzontale: una colonna per combinazione */
+#logica-programmabile .lp-tt { width: 100%; min-width: 0; border-collapse: separate; border-spacing: 0; margin: 0 0 12px; font: 700 .8rem var(--mono); font-variant-numeric: tabular-nums; table-layout: fixed; }
+/* annulla le regole globali delle tabelle di BusLab (intestazione appiccicosa, bordo colorato, evidenziazione) */
+#logica-programmabile .lp-tt thead th { position: static; background: none; color: inherit; text-transform: none; letter-spacing: normal; font-size: inherit; }
+#logica-programmabile .lp-tt tbody th { border-left: 0; }
+#logica-programmabile .lp-tt tbody tr:hover { background: none; }
+#logica-programmabile .lp-tt th, #logica-programmabile .lp-tt td { padding: 4px 0; text-align: center; vertical-align: middle; border-bottom: 1px solid var(--lab-line); }
+#logica-programmabile .lp-tt tr:last-child > * { border-bottom: 0; }
+#logica-programmabile .lp-tt th[scope="row"] { width: 74px; padding-right: 6px; text-align: left; font: 700 .66rem var(--font); letter-spacing: .08em; text-transform: uppercase; color: var(--lab-dim); white-space: nowrap; }
+#logica-programmabile .lp-tt .lp-c { transition: background var(--t-fast); }
+#logica-programmabile .lp-tt .lp-c.is-cur { background: rgba(240, 176, 74, .12); }
+#logica-programmabile .lp-combo {
+  display: block; width: calc(100% - 4px); margin: 0 auto; min-height: 30px; padding: 0; border-radius: 6px; cursor: pointer;
+  border: 1px solid var(--lab-line); background: var(--lab-raise); color: var(--lab-ink); font: 700 .78rem var(--mono); letter-spacing: .02em;
+  transition: border-color var(--t-fast), background var(--t-fast);
+}
+#logica-programmabile .lp-combo:hover { border-color: var(--sig-on); }
+#logica-programmabile .is-cur .lp-combo { border-color: var(--lab-gold); box-shadow: inset 0 0 0 1px var(--lab-gold); }
+#logica-programmabile .lp-v { color: var(--lab-dim); }
+#logica-programmabile .lp-v.is-one { color: var(--sig-on); font-weight: 800; }
+#logica-programmabile .lp-want { opacity: .85; }
+#logica-programmabile .lp-res.is-ok { color: var(--sig-on); }
+#logica-programmabile .lp-res.is-ko { color: #ff9b8f; }
+
+#logica-programmabile .lp-status { padding: 8px 12px; border-radius: 10px; background: var(--lab-sunk); border: 1px solid var(--lab-line); font-size: .88rem; }
+#logica-programmabile .lp-status.is-ok { color: var(--lab-ink); background: rgba(62, 224, 143, .08); border-color: color-mix(in srgb, var(--sig-on) 55%, transparent); }
+#logica-programmabile .lp-hint { padding: 7px 12px; border-left: 3px solid var(--lab-gold); border-radius: 0 8px 8px 0; background: rgba(240, 176, 74, .07); font-size: .88rem; color: var(--lab-ink); }
+
+/* ---------- 2 · LUT ---------- */
+
+#logica-programmabile .lp-band { fill: rgba(255, 192, 77, .1); stroke: rgba(255, 192, 77, .5); stroke-width: 1; transition: transform var(--t-normal) var(--ease-smooth); }
+#logica-programmabile .lp-addr-k { fill: var(--sig-addr); font-weight: 800; }
+#logica-programmabile .lp-addr-d { fill: var(--lab-dim); font-weight: 600; transition: fill var(--t-fast); }
+#logica-programmabile .lp-addr-d.is-cur { fill: var(--sig-addr); font-weight: 800; }
+
+#logica-programmabile .lp-cell-box { fill: #101a17; stroke: #29403a; stroke-width: 1.2; transform-box: fill-box; transform-origin: center; transition: fill var(--t-fast), stroke var(--t-fast); }
+#logica-programmabile .lp-cell-t { fill: var(--lab-dim); font-weight: 700; pointer-events: none; transition: fill var(--t-fast); }
+#logica-programmabile .lp-cell:hover .lp-cell-box { stroke: var(--sig-on); }
+#logica-programmabile .lp-cell.is-one .lp-cell-box { fill: rgba(62, 224, 143, .2); stroke: color-mix(in srgb, var(--sig-on) 70%, transparent); }
+#logica-programmabile .lp-cell.is-one .lp-cell-t { fill: var(--sig-on); font-weight: 800; }
+#logica-programmabile .lp-cell.is-sel .lp-cell-box { stroke: var(--sig-data); stroke-width: 2.4; }
+
+#logica-programmabile .lp-sel { stroke: var(--sig-addr); stroke-width: 1.2; stroke-dasharray: 2 5; opacity: .28; transition: opacity var(--t-fast); }
+#logica-programmabile .lp-sel.is-on { opacity: .75; }
+#logica-programmabile .lp-tw { fill: none; stroke: var(--sig-off); stroke-width: 1.6; stroke-linejoin: round; transition: stroke var(--t-fast); }
+#logica-programmabile .lp-tw.is-one { stroke: var(--sig-on); }
+#logica-programmabile .lp-mux path { fill: #121c19; stroke: #3b544c; stroke-width: 1.4; stroke-linejoin: round; transition: stroke var(--t-fast); }
+#logica-programmabile .lp-mux.is-path path { stroke: var(--sig-data); }
+#logica-programmabile .lp-mux-sw { stroke: var(--lab-ink); stroke-width: 2; stroke-linecap: round; transition: transform var(--t-normal) var(--ease-bounce) var(--d, 0ms); }
+#logica-programmabile .lp-path { fill: none; stroke: var(--sig-data); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; opacity: .9; }
+#logica-programmabile .lp-token { opacity: 0; pointer-events: none; transition: opacity var(--t-fast); }
+#logica-programmabile .lp-token.is-go { opacity: 1; }
+#logica-programmabile .lp-token rect { fill: var(--lab-raise); stroke: var(--sig-data); stroke-width: 1.6; }
+#logica-programmabile .lp-token text { fill: var(--lab-ink); font-weight: 800; }
+#logica-programmabile .lp-token.is-one rect { fill: var(--sig-on); }
+#logica-programmabile .lp-token.is-one text { fill: #04150d; }
+
+#logica-programmabile .lp-live { font-size: .92rem; }
+#logica-programmabile .lp-live b { font-family: var(--mono); color: var(--lab-ink); }
+#logica-programmabile .lp-live b.is-one, #logica-programmabile .lp-io b.is-one { color: var(--sig-on); }
+#logica-programmabile .lp-fnline { font-size: .85rem; color: var(--lab-dim); }
+
+/* ---------- 3 · Bitstream ---------- */
+
+#logica-programmabile .lp-chip { fill: rgba(255, 255, 255, .018); stroke: #2c3f39; stroke-width: 1.6; }
+#logica-programmabile .lp-ep { fill: var(--lab-ink); font-weight: 800; letter-spacing: .04em; }
+#logica-programmabile .lp-port { fill: #2c3f39; stroke: #4c6a60; stroke-width: 1; }
+#logica-programmabile .lp-din .lp-w-base { stroke: var(--sig-idle); stroke-width: 3; }
+#logica-programmabile .lp-din .lp-w-hi { stroke: var(--sig-ctrl); stroke-width: 3; stroke-dasharray: 3 7; }
+/* il flusso sul filo DIN si muove solo mentre arriva il bitstream (qualche secondo), mai a riposo */
+#logica-programmabile .lp-din.is-on .lp-w-hi { animation: lp-flow .6s linear infinite; }
+@keyframes lp-flow { to { stroke-dashoffset: -20; } }
+@media (prefers-reduced-motion: reduce) {
+  #logica-programmabile .lp-din.is-on .lp-w-hi { animation: none; }
+}
+
+#logica-programmabile .lp-stat circle { fill: var(--lab-sunk); stroke: #3a5049; stroke-width: 1.4; transform-box: fill-box; transform-origin: center; transition: fill var(--t-fast); }
+#logica-programmabile .lp-stat.is-on circle { fill: var(--sig-on); stroke: #b8f5d6; }
+#logica-programmabile .lp-stat.is-ctrl.is-on circle { fill: var(--sig-ctrl); stroke: #ffd0e0; }
+
+#logica-programmabile .lp-route .lp-w-base { stroke: var(--sig-idle); stroke-width: 2; stroke-dasharray: 2 4; transition: stroke var(--t-fast) var(--d, 0ms); }
+#logica-programmabile .lp-route.is-cfg .lp-w-base { stroke: var(--sig-off); stroke-width: 2.4; stroke-dasharray: none; }
+#logica-programmabile .lp-route .lp-w-hi { stroke-width: 2.6; }
+#logica-programmabile .lp-pip { fill: var(--lab-sunk); stroke: #3a5049; stroke-width: 1.3; transform-box: fill-box; transform-origin: center; transition: fill var(--t-fast), stroke var(--t-fast); }
+#logica-programmabile .lp-pip.is-cfg { fill: var(--sig-ctrl); stroke: #ffd0e0; }
+
+#logica-programmabile .lp-clb-box { fill: #101a17; stroke: #2c3f39; stroke-width: 1.5; transition: stroke var(--t-fast), fill var(--t-fast); }
+#logica-programmabile .lp-clb-name { fill: var(--lab-dim); font-weight: 700; letter-spacing: .04em; }
+#logica-programmabile .lp-clb.is-writing .lp-clb-box { stroke: var(--sig-ctrl); }
+#logica-programmabile .lp-clb.is-used .lp-clb-box { stroke: #5c8a78; fill: #13221d; }
+#logica-programmabile .lp-mc { fill: var(--lab-sunk); stroke: #22332e; stroke-width: 1; transition: fill var(--t-fast), stroke var(--t-fast); }
+#logica-programmabile .lp-mc.is-set { fill: #1c2925; stroke: #3a5049; }
+#logica-programmabile .lp-mc.is-set.is-one { fill: var(--sig-ctrl); stroke: #ffd0e0; }
+#logica-programmabile .lp-fn { fill: var(--lab-ink); font-weight: 800; letter-spacing: .04em; transform-box: fill-box; transform-origin: center; }
+#logica-programmabile .lp-pin { fill: #2c3f39; transition: fill var(--t-fast); }
+#logica-programmabile .lp-pin.is-on { fill: var(--sig-on); }
+
+#logica-programmabile .lp-pad rect { fill: #1a2622; stroke: #4c6a60; stroke-width: 1.2; transition: fill var(--t-fast); }
+#logica-programmabile .lp-pad-t { fill: var(--lab-text); font-weight: 800; transition: fill var(--t-fast); }
+#logica-programmabile .lp-pad.is-on rect { fill: var(--sig-on); }
+#logica-programmabile .lp-pad.is-on .lp-pad-t { fill: var(--sig-on); }
+#logica-programmabile .lp-pad-lead { stroke: var(--sig-idle); stroke-width: 2; stroke-dasharray: 2 4; transition: stroke var(--t-fast); }
+#logica-programmabile .lp-pad-out.is-driven .lp-pad-lead { stroke: var(--sig-off); stroke-dasharray: none; }
+#logica-programmabile .lp-pad-out.is-on .lp-pad-lead { stroke: var(--sig-on); }
+
+#logica-programmabile .lp-tok { opacity: 0; pointer-events: none; }
+#logica-programmabile .lp-tok.is-go { opacity: 1; }
+#logica-programmabile .lp-tok circle { fill: #8aa39a; stroke: #0b1210; stroke-width: 1.2; }
+#logica-programmabile .lp-tok.is-one circle { fill: var(--sig-ctrl); }
+
+/* il bitstream scritto nel pannello */
+#logica-programmabile .lp-bits { display: flex; flex-wrap: wrap; gap: 6px; flex-basis: 100%; font: 700 .82rem var(--mono); }
+#logica-programmabile .lp-bits .grp { display: inline-flex; flex-wrap: wrap; align-items: baseline; padding: 3px 7px 4px; border-radius: 7px; background: var(--lab-sunk); border: 1px solid var(--lab-line); }
+#logica-programmabile .lp-bits .k { flex-basis: 100%; font: 700 .6rem var(--font); letter-spacing: .08em; text-transform: uppercase; color: var(--lab-dim); }
+#logica-programmabile .lp-bits i { width: 1.15ch; font-style: normal; text-align: center; color: var(--lab-dim); opacity: .4; border-radius: 2px; transition: opacity var(--t-fast), color var(--t-fast); }
+#logica-programmabile .lp-bits i.is-in { opacity: 1; color: var(--lab-text); }
+#logica-programmabile .lp-bits i.one.is-in { color: var(--sig-ctrl); }
+#logica-programmabile .lp-bits i.is-cur { background: var(--lab-gold); color: #241603; }
+#logica-programmabile .lp-note { font-size: .8rem; color: var(--lab-dim); }
+
+/* ---------- schermi stretti ---------- */
+
+@media (max-width: 640px) {
+  #logica-programmabile .lp-fig .cp-art { padding: 8px; }
+  #logica-programmabile .lp-pair > .lp-fig { margin-top: 18px; }
+  /* sul telefono il conteggio delle risposte giuste sta accanto al pulsante principale, sopra il palco */
+  #logica-programmabile .lp-tools .grow { display: none; }
+  #logica-programmabile .lp-tools .cp-readout { order: 1; }
+  #logica-programmabile .lp-tools .cp-bar > .cp-btn:not(.primary) { order: 2; }
+  #logica-programmabile .lp-stage { padding: 8px 4px; }
+  #logica-programmabile .lp-tt { font-size: .74rem; }
+  #logica-programmabile .lp-tt th[scope="row"] { width: 62px; font-size: .6rem; letter-spacing: .04em; }
+  #logica-programmabile .lp-combo { font-size: .72rem; min-height: 32px; }
+  #logica-programmabile .lp-tools .cp-btn { padding: 0 10px; font-size: .86rem; }
+}
+
+/* ---------- meno movimento: gli stati cambiano subito, nessuno spostamento ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  #logica-programmabile .cp-lab *, #logica-programmabile .cp-lab *::before, #logica-programmabile .cp-lab *::after { transition-delay: 0s !important; transition-duration: .15s !important; }
+  #logica-programmabile .lp-fl, #logica-programmabile .lp-fr, #logica-programmabile .lp-mux-sw, #logica-programmabile .lp-band,
+  #logica-programmabile .cp-switch-knob, #logica-programmabile .cp-btn { transition-property: opacity, color, fill, stroke, background-color, border-color !important; }
+}

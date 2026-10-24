@@ -1,0 +1,60 @@
+/* Capitolo 8 · figura del relè telegrafico. */
+
+.fig-rele-legno { fill: color-mix(in srgb, var(--rame) 24%, var(--surface)); stroke: color-mix(in srgb, var(--rame) 50%, var(--line)); stroke-width: 1.2; }
+.fig-rele-venatura { fill: none; stroke: color-mix(in srgb, var(--rame) 36%, transparent); stroke-width: 1; stroke-linecap: round; }
+.fig-rele-filo { fill: none; stroke: var(--rame); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.fig-rele-ferro { fill: color-mix(in srgb, #7d8790 78%, var(--surface)); stroke: color-mix(in srgb, #7d8790 55%, var(--ink)); stroke-width: 1; }
+.fig-rele-ottone { fill: color-mix(in srgb, #c9a227 60%, var(--surface)); stroke: color-mix(in srgb, #9a7a14 70%, var(--ink)); stroke-width: 1; }
+.fig-rele-avvolgimento { fill: color-mix(in srgb, var(--rame) 80%, var(--surface)); }
+.fig-rele-spire { fill: none; stroke: color-mix(in srgb, var(--rame) 50%, #3a1d08); stroke-width: 1.1; }
+.fig-rele-flangia { fill: color-mix(in srgb, var(--ink) 60%, var(--surface)); }
+.fig-rele-molla { fill: none; stroke: var(--muted); stroke-width: 1.5; stroke-linejoin: round; }
+.fig-rele-vite { fill: var(--surface); stroke: var(--muted); stroke-width: 1.2; }
+.fig-rele-contatto { fill: var(--zinco); stroke: color-mix(in srgb, var(--muted) 70%, var(--ink)); stroke-width: 1; }
+.fig-rele-perno { fill: var(--surface); stroke: var(--ink); stroke-width: 1.6; }
+.fig-rele-pila { fill: color-mix(in srgb, var(--q-v) 26%, var(--surface)); stroke: var(--q-v); stroke-width: 1.3; }
+.fig-rele-polo { fill: var(--q-v); }
+.fig-rele-vetro { fill: color-mix(in srgb, var(--surface) 55%, transparent); stroke: var(--muted); stroke-width: 1.4; }
+.fig-rele-filamento { fill: none; stroke: color-mix(in srgb, #ff9f43 75%, var(--ink)); stroke-width: 1.2; stroke-linejoin: round; }
+.fig-rele-attacco { fill: color-mix(in srgb, var(--muted) 45%, var(--surface)); stroke: var(--muted); stroke-width: 1; }
+.fig-rele-g0 { stop-color: var(--lab-luce); stop-opacity: .95; }
+.fig-rele-g1 { stop-color: var(--lab-luce); stop-opacity: .35; }
+.fig-rele-g2 { stop-color: var(--lab-luce); stop-opacity: 0; }
+.fig-rele-campo path { fill: none; stroke: var(--q-b); stroke-width: 1.5; stroke-dasharray: 3 4; stroke-linecap: round; }
+.fig-rele-t { fill: var(--muted); font: 600 11px var(--font); }
+
+/* Il relè batte la lettera A (un punto e una linea): campo, ancora e lampada vanno insieme.
+   Senza animazioni resta il fotogramma «eccitato»: ancora attratta, campo visibile, lampada accesa. */
+.fig-rele-leva { transform-origin: 200px 76px; animation: fig-rele-leva 5s infinite; }
+.fig-rele-campo { animation: fig-rele-campo 5s infinite; }
+.fig-rele-luce { animation: fig-rele-luce 5s infinite; }
+
+@keyframes fig-rele-leva {
+  0%, 12.4% { transform: rotate(4deg); animation-timing-function: cubic-bezier(.55, 0, 1, .45); }
+  14% { transform: rotate(0deg); animation-timing-function: ease-out; }
+  14.8% { transform: rotate(.6deg); animation-timing-function: ease-in; }
+  15.6%, 20.4% { transform: rotate(0deg); animation-timing-function: cubic-bezier(.55, 0, 1, .45); }
+  22% { transform: rotate(4deg); animation-timing-function: ease-out; }
+  22.8% { transform: rotate(3.4deg); animation-timing-function: ease-in; }
+  23.6%, 28.4% { transform: rotate(4deg); animation-timing-function: cubic-bezier(.55, 0, 1, .45); }
+  30% { transform: rotate(0deg); animation-timing-function: ease-out; }
+  30.8% { transform: rotate(.6deg); animation-timing-function: ease-in; }
+  31.6%, 52.4% { transform: rotate(0deg); animation-timing-function: cubic-bezier(.55, 0, 1, .45); }
+  54% { transform: rotate(4deg); animation-timing-function: ease-out; }
+  54.8% { transform: rotate(3.4deg); animation-timing-function: ease-in; }
+  55.6%, 100% { transform: rotate(4deg); }
+}
+@keyframes fig-rele-campo {
+  0%, 12% { opacity: 0; }
+  13%, 20% { opacity: 1; }
+  21.5%, 28% { opacity: 0; }
+  29%, 52% { opacity: 1; }
+  53.5%, 100% { opacity: 0; }
+}
+@keyframes fig-rele-luce {
+  0%, 13.8% { opacity: 0; }
+  15.6%, 20.4% { opacity: 1; }
+  23%, 29.8% { opacity: 0; }
+  31.6%, 52.4% { opacity: 1; }
+  55%, 100% { opacity: 0; }
+}

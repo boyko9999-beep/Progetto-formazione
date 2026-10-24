@@ -1,0 +1,68 @@
+[
+  {
+    "q": "Che cosa distingue un microcontrollore da un microprocessore?",
+    "options": [
+      "Ha CPU, memorie e periferiche nello stesso chip",
+      "Ha una CPU più veloce e con più bit",
+      "Funziona solo con un sistema operativo"
+    ],
+    "answer": 0,
+    "why": "Un microprocessore ha bisogno di ROM, RAM e circuiti di ingresso e uscita esterni; il microcontrollore li mette nello stesso chip della CPU, insieme a timer e porte.",
+    "chapter": "microcontrollori",
+    "level": 1,
+    "topic": "Microcontrollore"
+  },
+  {
+    "q": "Quale famiglia di chip, messa in catalogo da Texas Instruments nel 1974, è considerata il primo microcontrollore in commercio?",
+    "options": [
+      "TMS1000",
+      "Intel 8051",
+      "Intel 4004",
+      "Motorola 6800"
+    ],
+    "answer": 0,
+    "why": "La famiglia TMS1000, a 4 bit, nasceva dal TMS1802NC di Gary Boone e Michael Cochran, una calcolatrice in un chip del 1971.",
+    "chapter": "microcontrollori",
+    "level": 1,
+    "topic": "TMS1000"
+  },
+  {
+    "q": "Che cosa caratterizza l'architettura Harvard, usata da molti microcontrollori?",
+    "options": [
+      "Memorie e bus separati per programma e dati",
+      "Programma e dati nella stessa memoria",
+      "Un bus unico condiviso a turno"
+    ],
+    "answer": 0,
+    "why": "Con due bus la CPU può prelevare l'istruzione successiva mentre legge o scrive un dato; nell'architettura di von Neumann le due cose si mettono in fila sullo stesso bus.",
+    "chapter": "microcontrollori",
+    "level": 2,
+    "topic": "Harvard e von Neumann"
+  },
+  {
+    "q": "Che cosa fa la CPU di un microcontrollore quando arriva un'interruzione, per esempio dalla porta del frigo?",
+    "options": [
+      "Salva il punto in cui era, esegue la routine e poi riprende",
+      "Ricomincia il programma dalla prima istruzione",
+      "Spegne tutte le uscite e attende un nuovo comando"
+    ],
+    "answer": 0,
+    "why": "La CPU finisce l'istruzione in corso, mette l'indirizzo di ritorno nella pila in RAM, esegue la routine dell'interruzione e con RETI torna esattamente dove era.",
+    "chapter": "microcontrollori",
+    "level": 2,
+    "topic": "Interruzioni"
+  },
+  {
+    "q": "Nel frigorifero del laboratorio il compressore si ferma a 4 °C ma riparte solo a 6 °C. Perché?",
+    "options": [
+      "Il differenziale evita avvii e arresti troppo frequenti",
+      "L'ADC non sa misurare tra 4 e 6 °C",
+      "Il timer blocca il compressore per 6 ore"
+    ],
+    "answer": 0,
+    "why": "È l'isteresi: con SET 4 °C e differenziale 2 °C il compressore lavora a cicli lunghi e si consuma meno; in più il ritardo di antipendolazione gli impone alcuni minuti di riposo tra un avvio e l'altro.",
+    "chapter": "microcontrollori",
+    "level": 3,
+    "topic": "Isteresi"
+  }
+]

@@ -1,0 +1,404 @@
+/*
+ * Capitolo 6 · Il computer in un chip.
+ * Illustrazioni del capitolo e laboratorio «Il frigorifero intelligente» (js/microcontrollori.js).
+ * Ogni selettore comincia con #microcontrollori: nessuna regola esce dal capitolo.
+ */
+
+/* ---------- illustrazioni del testo ---------- */
+
+#microcontrollori .microcontrollori-duo {
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px 32px;
+  max-width: 880px; margin: 0 auto; align-items: start;
+}
+#microcontrollori .microcontrollori-duo > svg { display: block; width: 100%; height: auto; }
+#microcontrollori .microcontrollori-fig-arch .cp-art { padding: 18px 18px 14px; }
+#microcontrollori .microcontrollori-f-title { fill: var(--lab-ink); font-size: 16px; font-weight: 800; }
+#microcontrollori .cp-fig .microcontrollori-f-lbl { fill: var(--lab-dim); font-size: 12.5px; font-weight: 600; }
+#microcontrollori .microcontrollori-fig-arch .cp-blk text { font-size: 14px; }
+#microcontrollori .microcontrollori-fig-arch .cp-blk text.sub { font-size: 12px; }
+#microcontrollori .microcontrollori-f-pkt rect { stroke: rgba(0, 0, 0, .45); stroke-width: 1; }
+#microcontrollori .microcontrollori-f-pkt .microcontrollori-f-pkt-a { fill: var(--sig-addr); }
+#microcontrollori .microcontrollori-f-pkt .microcontrollori-f-pkt-d { fill: var(--sig-data); }
+#microcontrollori .microcontrollori-f-pkt text { fill: #10171b; font-size: 11.5px; font-weight: 800; }
+#microcontrollori .cp-steps { margin-top: 8px; }
+/* scheda tecnica: tre per riga, così le nove voci fanno un quadrato */
+@media (min-width: 641px) {
+  #microcontrollori .cp-specs > div { flex: 1 1 30%; }
+}
+
+@media (max-width: 640px) {
+  #microcontrollori .microcontrollori-duo { grid-template-columns: minmax(0, 1fr); gap: 22px; }
+  #microcontrollori .cp-fig .cp-art { padding: 12px; }
+}
+
+/* ---------- laboratorio: barre dei controlli ---------- */
+
+#microcontrollori .microcontrollori-lab > .cp-bar:first-child { background: rgba(255, 255, 255, .018); }
+#microcontrollori .microcontrollori-k { font: 700 .7rem var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--lab-dim); margin-right: 2px; }
+#microcontrollori .microcontrollori-set output { min-width: 7ch; }
+#microcontrollori .microcontrollori-door-btn { min-width: 9.6em; }
+#microcontrollori .microcontrollori-door-btn[aria-pressed="true"] { border-color: var(--sig-ctrl); box-shadow: inset 0 0 0 1px var(--sig-ctrl); color: #ffd0e0; }
+
+/* ---------- laboratorio: impaginazione ---------- */
+
+#microcontrollori .microcontrollori-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas: "stage" "explain" "code" "reads" "chart";
+}
+#microcontrollori .microcontrollori-stage { grid-area: stage; }
+#microcontrollori .microcontrollori-explain { grid-area: explain; border-top: 1px solid var(--lab-line); }
+#microcontrollori .microcontrollori-code { grid-area: code; border-top: 1px solid var(--lab-line); }
+#microcontrollori .microcontrollori-reads { grid-area: reads; border-top: 1px solid var(--lab-line); }
+#microcontrollori .microcontrollori-chart { grid-area: chart; border-top: 1px solid var(--lab-line); }
+
+#microcontrollori .microcontrollori-lab[data-size="md"] .microcontrollori-grid {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-rows: auto auto 1fr auto;
+  grid-template-areas: "stage stage" "explain code" "reads code" "chart chart";
+}
+#microcontrollori .microcontrollori-lab[data-size="md"] .microcontrollori-reads { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-content: start; }
+#microcontrollori .microcontrollori-lab[data-size="md"] .microcontrollori-code { border-left: 1px solid var(--lab-line); }
+
+#microcontrollori .microcontrollori-lab[data-size="xl"] .microcontrollori-grid {
+  grid-template-columns: minmax(0, 1.85fr) minmax(0, 1fr);
+  grid-template-rows: auto 1fr auto auto;
+  grid-template-areas: "stage code" "explain code" "reads code" "chart chart";
+}
+#microcontrollori .microcontrollori-lab[data-size="xl"] .microcontrollori-code { border-top: 0; border-left: 1px solid var(--lab-line); }
+#microcontrollori .microcontrollori-lab[data-size="xl"] .microcontrollori-explain {
+  display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 0 22px; align-items: start;
+}
+
+/* ---------- il palco ---------- */
+
+#microcontrollori .microcontrollori-stage {
+  background:
+    radial-gradient(70% 60% at 22% 30%, rgba(92, 200, 255, .05), transparent 70%),
+    radial-gradient(60% 60% at 80% 40%, rgba(62, 224, 143, .04), transparent 70%),
+    linear-gradient(rgba(29, 43, 39, .3) 1px, transparent 1px) 0 0 / 100% 24px,
+    linear-gradient(90deg, rgba(29, 43, 39, .3) 1px, transparent 1px) 0 0 / 24px 100%;
+}
+#microcontrollori .microcontrollori-svg { display: block; width: 100%; height: auto; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
+#microcontrollori .microcontrollori-svg text { font-family: var(--font); }
+#microcontrollori .microcontrollori-svg .mono { font-family: var(--mono); }
+
+/* --- il frigorifero in sezione --- */
+
+#microcontrollori .microcontrollori-f-shell { fill: #16201d; stroke: #3b5048; stroke-width: 1.5; }
+#microcontrollori .microcontrollori-f-panel { fill: #121b18; stroke: #3b5048; stroke-width: 1.5; }
+#microcontrollori .microcontrollori-f-foot, #microcontrollori .microcontrollori-f-base { fill: #2b3a35; }
+#microcontrollori .microcontrollori-f-lcd { fill: #04100b; stroke: #2c4a3d; stroke-width: 1.2; transition: stroke var(--t-fast); }
+#microcontrollori .microcontrollori-f-lcdtxt { fill: #8ff0bf; font-size: 14px; font-weight: 700; letter-spacing: .02em; transition: fill var(--t-fast); }
+#microcontrollori .microcontrollori-f-lcd.is-alarm { stroke: #ff7a6b; }
+#microcontrollori .microcontrollori-f-lcd.is-alarm + .microcontrollori-f-lcdtxt { fill: #ffb3a9; }
+#microcontrollori .microcontrollori-f-lcd.is-sig { stroke: var(--sig-data); }
+#microcontrollori .microcontrollori-f-alarm { opacity: .3; transition: opacity var(--t-fast); }
+#microcontrollori .microcontrollori-f-spk { fill: #5b6f66; }
+#microcontrollori .microcontrollori-f-waves { fill: none; stroke: #5b6f66; stroke-width: 1.6; stroke-linecap: round; }
+#microcontrollori .microcontrollori-f-alarmtxt { fill: var(--lab-dim); font-size: 12px; font-weight: 700; }
+#microcontrollori .microcontrollori-f-alarm.is-on { opacity: 1; }
+#microcontrollori .microcontrollori-f-alarm.is-on .microcontrollori-f-spk { fill: #ff7a6b; }
+#microcontrollori .microcontrollori-f-alarm.is-on .microcontrollori-f-waves { stroke: #ff7a6b; }
+#microcontrollori .microcontrollori-f-alarm.is-on .microcontrollori-f-alarmtxt { fill: #ffb3a9; }
+
+#microcontrollori .microcontrollori-f-cavity { fill: #3f3220; stroke: #2f433b; stroke-width: 1.2; transition: fill .9s linear; }
+#microcontrollori .microcontrollori-f-cone { opacity: 0; transition: opacity var(--t-normal) var(--ease-smooth); pointer-events: none; }
+#microcontrollori .microcontrollori-f-cone.is-on { opacity: 1; }
+#microcontrollori .microcontrollori-f-shelf { fill: none; stroke: #557065; stroke-width: 2.2; }
+#microcontrollori .microcontrollori-f-food { stroke: rgba(0, 0, 0, .35); stroke-width: 1; }
+#microcontrollori .microcontrollori-f-food.a { fill: #5d806c; }
+#microcontrollori .microcontrollori-f-food.b { fill: #a86a4b; }
+#microcontrollori .microcontrollori-f-food.c { fill: #7c7d5d; }
+#microcontrollori .microcontrollori-f-drawer { fill: rgba(255, 255, 255, .045); stroke: #557065; stroke-width: 1.2; }
+
+#microcontrollori .microcontrollori-f-duct { fill: #101916; stroke: #2f433b; stroke-width: 1.2; }
+#microcontrollori .microcontrollori-f-back { fill: none; stroke: #3b5048; stroke-width: 1.4; stroke-dasharray: 4 4; }
+#microcontrollori .microcontrollori-f-fins { fill: none; stroke: #7f938c; stroke-width: 1.6; stroke-linecap: round; transition: stroke .9s linear; }
+#microcontrollori .microcontrollori-f-frost { fill: #e9f6ff; }
+#microcontrollori .microcontrollori-f-heater { fill: none; stroke: #6a594c; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; transition: stroke var(--t-normal); }
+#microcontrollori .microcontrollori-f-heater.is-on { stroke: #ff8a4c; filter: drop-shadow(0 0 3px rgba(255, 138, 76, .85)); }
+#microcontrollori .microcontrollori-f-drops { fill: #8fd3ff; opacity: 0; transition: opacity var(--t-normal); }
+#microcontrollori .microcontrollori-f-drops.is-on { opacity: 1; }
+#microcontrollori .microcontrollori-f-fanring { fill: #0c1411; stroke: #3b5048; stroke-width: 1.4; transition: stroke var(--t-normal); }
+#microcontrollori .microcontrollori-f-fan path { fill: #4b6259; transition: fill var(--t-normal); }
+#microcontrollori .microcontrollori-f-fanhub { fill: #7d978d; }
+#microcontrollori .microcontrollori-f-fan.is-on path { fill: #cfe8dc; }
+#microcontrollori .microcontrollori-f-fan.is-on .microcontrollori-f-fanring { stroke: var(--sig-on); }
+#microcontrollori .microcontrollori-f-air { opacity: 0; transition: opacity var(--t-slow) var(--ease-smooth); }
+#microcontrollori .microcontrollori-f-air path { fill: #8fd3ff; stroke: #8fd3ff; stroke-width: 1.8; stroke-linecap: round; stroke-dasharray: 6 5; }
+#microcontrollori .microcontrollori-f-air.is-on { opacity: .75; }
+#microcontrollori .microcontrollori-f-probe { fill: #c9d6d0; stroke: #0b1210; stroke-width: 1; transition: fill var(--t-fast); }
+#microcontrollori .microcontrollori-f-probe.is-sig { fill: #ffffff; filter: drop-shadow(0 0 4px rgba(223, 233, 228, .9)); }
+
+#microcontrollori .microcontrollori-f-room { fill: #0e1513; stroke: #2f433b; stroke-width: 1.2; }
+#microcontrollori .microcontrollori-f-pipe { fill: none; stroke: #4b6259; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; transition: stroke var(--t-normal); }
+#microcontrollori .microcontrollori-f-pipe.is-on { stroke: #5cc8ff; }
+#microcontrollori .microcontrollori-f-dome { fill: #283632; stroke: #4b6259; stroke-width: 1.5; transition: fill var(--t-normal), stroke var(--t-normal); }
+#microcontrollori .microcontrollori-f-vib { fill: none; stroke: var(--sig-on); stroke-width: 1.6; stroke-linecap: round; opacity: 0; transition: opacity var(--t-normal); }
+#microcontrollori .microcontrollori-f-comp.is-on .microcontrollori-f-dome { fill: #1d4434; stroke: var(--sig-on); }
+#microcontrollori .microcontrollori-f-comp.is-on .microcontrollori-f-vib { opacity: 1; }
+
+#microcontrollori .microcontrollori-f-socket { fill: #3b5048; }
+#microcontrollori .microcontrollori-f-bulb { fill: #3a4842; stroke: #5b6f66; stroke-width: 1.2; transition: fill var(--t-fast), stroke var(--t-fast); }
+#microcontrollori .microcontrollori-f-bulb.is-on { fill: #ffe7a3; stroke: #fff3c4; filter: drop-shadow(0 0 6px rgba(255, 231, 163, .9)); }
+#microcontrollori .microcontrollori-f-plunger { fill: #9aa3a9; }
+#microcontrollori .microcontrollori-f-switch { fill: #26332f; stroke: #5b6f66; stroke-width: 1.2; transition: fill var(--t-fast), stroke var(--t-fast); }
+#microcontrollori .microcontrollori-f-switch.is-sig { fill: #3b1f2b; stroke: var(--sig-ctrl); }
+#microcontrollori .microcontrollori-f-airdoor path { stroke-width: 2.2; stroke-linecap: round; stroke-dasharray: 6 5; }
+#microcontrollori .microcontrollori-f-airdoor .warm { fill: #ff9f43; stroke: #ff9f43; }
+#microcontrollori .microcontrollori-f-airdoor .cold { fill: #8fd3ff; stroke: #8fd3ff; }
+#microcontrollori .microcontrollori-f-lbls { pointer-events: none; }
+#microcontrollori .microcontrollori-fridge .microcontrollori-f-lbl {
+  fill: #c3d6ce; font-size: 13px; font-weight: 650;
+  paint-order: stroke; stroke: rgba(7, 13, 11, .72); stroke-width: 3px; stroke-linejoin: round;
+}
+
+/* la porta: pulsante */
+#microcontrollori .microcontrollori-f-door { cursor: pointer; outline: none; }
+#microcontrollori .microcontrollori-f-hit { fill: transparent; }
+#microcontrollori .microcontrollori-f-slab { fill: #1d2925; stroke: #4b6259; stroke-width: 1.4; transition: fill var(--t-fast), stroke var(--t-fast); }
+#microcontrollori .microcontrollori-f-handle { fill: #6d837a; }
+#microcontrollori .microcontrollori-f-faceplate { fill: #1d2925; stroke: #4b6259; stroke-width: 1.4; }
+#microcontrollori .microcontrollori-f-bin { fill: rgba(255, 255, 255, .05); stroke: #4b6259; stroke-width: 1.2; }
+#microcontrollori .microcontrollori-f-binstuff { fill: none; stroke: #8aa197; stroke-width: 1.4; }
+#microcontrollori .microcontrollori-f-door:hover .microcontrollori-f-slab,
+#microcontrollori .microcontrollori-f-door:hover .microcontrollori-f-faceplate { stroke: #8aa197; fill: #23312c; }
+
+/* anello del fuoco per gli elementi SVG che sono pulsanti */
+#microcontrollori .microcontrollori-svg .microcontrollori-focus { fill: none; stroke: transparent; stroke-width: 2.5; pointer-events: none; }
+#microcontrollori .microcontrollori-f-door:focus-visible .microcontrollori-focus,
+#microcontrollori .microcontrollori-blk:focus-visible .microcontrollori-focus { stroke: var(--lab-gold); }
+#microcontrollori .microcontrollori-blk.is-picked .microcontrollori-focus { stroke: var(--lab-gold); stroke-dasharray: 5 4; }
+
+/* --- il microcontrollore --- */
+
+#microcontrollori .microcontrollori-die { fill: #0c1512; stroke: #2d4139; stroke-width: 1.6; }
+#microcontrollori .microcontrollori-pin { fill: #8d949b; }
+#microcontrollori .microcontrollori-die-title { fill: var(--lab-dim); font: 800 10.5px var(--mono); letter-spacing: .16em; }
+#microcontrollori .microcontrollori-dbus { stroke-width: 5; }
+#microcontrollori .microcontrollori-dbus.is-active.k-prog,
+#microcontrollori .microcontrollori-dbus.is-active.k-addr { stroke: var(--sig-addr); }
+#microcontrollori .microcontrollori-pbus { stroke-width: 5; }
+#microcontrollori .microcontrollori-irqline, #microcontrollori .microcontrollori-tint { stroke-width: 3; }
+#microcontrollori .microcontrollori-buslbl { fill: var(--lab-dim); font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+#microcontrollori .microcontrollori-buslbl-prog { transition: opacity var(--t-normal); }
+#microcontrollori .microcontrollori-leader { fill: none; stroke: var(--lab-dim); stroke-width: 1; stroke-dasharray: 2 3; }
+
+#microcontrollori .microcontrollori-blk { cursor: pointer; outline: none; }
+#microcontrollori .microcontrollori-blk .microcontrollori-box { fill: #111b18; stroke: #2c3f38; stroke-width: 1.5; transition: stroke var(--t-fast), fill var(--t-fast); }
+#microcontrollori .microcontrollori-blk:hover .microcontrollori-box { stroke: #4b6259; }
+#microcontrollori .microcontrollori-blk.is-active .microcontrollori-box { stroke: var(--sig-on); fill: #12241d; }
+#microcontrollori .microcontrollori-blk.is-active.k-data .microcontrollori-box,
+#microcontrollori .microcontrollori-blk.is-active.k-serial .microcontrollori-box { stroke: var(--sig-data); fill: #0f1d22; }
+#microcontrollori .microcontrollori-blk.is-active.k-prog .microcontrollori-box,
+#microcontrollori .microcontrollori-blk.is-active.k-addr .microcontrollori-box { stroke: var(--sig-addr); fill: #1d1b10; }
+#microcontrollori .microcontrollori-blk.is-active.k-irq .microcontrollori-box { stroke: var(--sig-ctrl); fill: #221319; }
+#microcontrollori .microcontrollori-blk.is-active.k-analog .microcontrollori-box { stroke: #dfe9e4; fill: #18211e; }
+#microcontrollori .microcontrollori-blk .microcontrollori-bt { fill: var(--lab-ink); font-size: 13.5px; font-weight: 750; }
+#microcontrollori .microcontrollori-blk .microcontrollori-bs { fill: var(--lab-text); font-size: 11.5px; font-weight: 600; }
+
+/* uscite: un bit per piedino */
+#microcontrollori .microcontrollori-blk .microcontrollori-cell { fill: #08100d; stroke: #2c3f38; stroke-width: 1.2; transition: fill var(--t-fast), stroke var(--t-fast); }
+#microcontrollori .microcontrollori-blk .microcontrollori-cell.is-on { fill: rgba(62, 224, 143, .2); stroke: var(--sig-on); }
+#microcontrollori .microcontrollori-blk .microcontrollori-cellt { fill: var(--lab-dim); font-size: 10.5px; font-weight: 700; }
+#microcontrollori .microcontrollori-blk .microcontrollori-cellt.is-on { fill: var(--sig-on); }
+
+/* ROM, CPU, RAM */
+#microcontrollori .microcontrollori-blk .microcontrollori-romhi { fill: transparent; stroke: transparent; stroke-width: 1; transition: fill var(--t-fast), stroke var(--t-fast); }
+#microcontrollori .microcontrollori-blk .microcontrollori-romhi.is-on { fill: rgba(255, 192, 77, .14); stroke: rgba(255, 192, 77, .55); }
+#microcontrollori .microcontrollori-blk .microcontrollori-roma { fill: var(--lab-dim); font-size: 12px; font-weight: 700; }
+#microcontrollori .microcontrollori-blk .microcontrollori-romb { fill: var(--lab-text); font-size: 12px; font-weight: 600; }
+#microcontrollori .microcontrollori-blk .microcontrollori-romhi.is-on + .microcontrollori-roma,
+#microcontrollori .microcontrollori-blk .microcontrollori-romhi.is-on + .microcontrollori-roma + .microcontrollori-romb { fill: var(--sig-addr); }
+#microcontrollori .microcontrollori-blk .microcontrollori-reg { fill: #08100d; stroke: #26372f; stroke-width: 1.2; }
+#microcontrollori .microcontrollori-blk .microcontrollori-regk { fill: var(--lab-dim); font-size: 11px; font-weight: 800; }
+#microcontrollori .microcontrollori-blk .microcontrollori-regv { fill: var(--lab-ink); font-size: 13px; font-weight: 700; }
+#microcontrollori .microcontrollori-blk .microcontrollori-instr { fill: var(--lab-text); font-size: 11.5px; font-weight: 600; }
+#microcontrollori .microcontrollori-blk .microcontrollori-ramk { fill: var(--lab-dim); font-size: 11.5px; font-weight: 700; }
+#microcontrollori .microcontrollori-blk .microcontrollori-ramv { fill: var(--lab-ink); font-size: 12px; font-weight: 700; }
+#microcontrollori .microcontrollori-irqbadge rect { fill: transparent; stroke: #3b5048; stroke-width: 1.2; transition: fill var(--t-fast), stroke var(--t-fast); }
+#microcontrollori .microcontrollori-blk .microcontrollori-irqbadge text { fill: var(--lab-dim); font: 800 10.5px var(--mono); letter-spacing: .06em; transition: fill var(--t-fast); }
+#microcontrollori .microcontrollori-irqbadge.is-on rect { fill: var(--sig-ctrl); stroke: var(--sig-ctrl); }
+#microcontrollori .microcontrollori-blk .microcontrollori-irqbadge.is-on text { fill: #2e0716; }
+
+/* --- fili e relè fra frigorifero e chip --- */
+
+#microcontrollori .microcontrollori-wire { fill: none; stroke: #2b3b36; stroke-width: 2; stroke-linejoin: round; transition: stroke var(--t-normal); }
+#microcontrollori .microcontrollori-wire.is-on { stroke: color-mix(in srgb, var(--sig-on) 55%, #2b3b36); }
+#microcontrollori .microcontrollori-wire.is-sig.k-analog { stroke: #8fa39b; }
+#microcontrollori .microcontrollori-wire.is-sig.k-irq { stroke: color-mix(in srgb, var(--sig-ctrl) 60%, #2b3b36); }
+#microcontrollori .microcontrollori-wire.is-sig.k-serial { stroke: color-mix(in srgb, var(--sig-data) 60%, #2b3b36); }
+#microcontrollori .microcontrollori-narrow .microcontrollori-wire { stroke-width: 1.5; }
+/* telefono: il palco largo 392 unità sta in circa 358 px, quindi i testi piccoli crescono un po' */
+#microcontrollori .microcontrollori-narrow .microcontrollori-fridge .microcontrollori-f-lbl { font-size: 14px; }
+#microcontrollori .microcontrollori-narrow .microcontrollori-f-alarmtxt { font-size: 13.5px; }
+#microcontrollori .microcontrollori-narrow .microcontrollori-buslbl,
+#microcontrollori .microcontrollori-narrow .microcontrollori-die-title { font-size: 11.5px; }
+#microcontrollori .microcontrollori-narrow .microcontrollori-blk .microcontrollori-cellt,
+#microcontrollori .microcontrollori-narrow .microcontrollori-blk .microcontrollori-irqbadge text { font-size: 11px; }
+#microcontrollori .microcontrollori-relay-box { fill: #111b18; stroke: #3b5048; stroke-width: 1.2; transition: stroke var(--t-fast); }
+#microcontrollori .microcontrollori-relay-pt { fill: #7d978d; }
+#microcontrollori .microcontrollori-relay-arm { fill: none; stroke: #7d978d; stroke-width: 1.8; stroke-linecap: round; }
+#microcontrollori .microcontrollori-relay.is-on .microcontrollori-relay-box { stroke: var(--sig-on); }
+#microcontrollori .microcontrollori-relay.is-on .microcontrollori-relay-arm,
+#microcontrollori .microcontrollori-relay.is-on .microcontrollori-relay-pt { stroke: var(--sig-on); fill: var(--sig-on); }
+#microcontrollori .microcontrollori-relay-lbl { fill: var(--lab-dim); font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+
+/* --- pacchetti e scie --- */
+
+#microcontrollori .microcontrollori-trails, #microcontrollori .microcontrollori-pkts { pointer-events: none; }
+#microcontrollori .microcontrollori-trail { fill: none; stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round; }
+#microcontrollori .microcontrollori-trail.k-data, #microcontrollori .microcontrollori-trail.k-serial { stroke: var(--sig-data); filter: drop-shadow(0 0 3px rgba(92, 200, 255, .55)); }
+#microcontrollori .microcontrollori-trail.k-prog, #microcontrollori .microcontrollori-trail.k-addr { stroke: var(--sig-addr); filter: drop-shadow(0 0 3px rgba(255, 192, 77, .55)); }
+#microcontrollori .microcontrollori-trail.k-irq { stroke: var(--sig-ctrl); filter: drop-shadow(0 0 3px rgba(255, 122, 168, .55)); }
+#microcontrollori .microcontrollori-trail.k-analog { stroke: #dfe9e4; stroke-width: 2.5; filter: drop-shadow(0 0 3px rgba(223, 233, 228, .5)); }
+#microcontrollori .microcontrollori-trail.k-on { stroke: var(--sig-on); stroke-width: 3; filter: drop-shadow(0 0 3px rgba(62, 224, 143, .6)); }
+#microcontrollori .microcontrollori-pkt rect { stroke: rgba(0, 0, 0, .5); stroke-width: 1; }
+#microcontrollori .microcontrollori-pkt text { font-size: 11px; font-weight: 800; }
+#microcontrollori .microcontrollori-pkt.k-data rect, #microcontrollori .microcontrollori-pkt.k-serial rect { fill: var(--sig-data); }
+#microcontrollori .microcontrollori-pkt.k-data text, #microcontrollori .microcontrollori-pkt.k-serial text { fill: #022233; }
+#microcontrollori .microcontrollori-pkt.k-prog rect, #microcontrollori .microcontrollori-pkt.k-addr rect { fill: var(--sig-addr); }
+#microcontrollori .microcontrollori-pkt.k-prog text, #microcontrollori .microcontrollori-pkt.k-addr text { fill: #2a1a00; }
+#microcontrollori .microcontrollori-pkt.k-irq rect { fill: var(--sig-ctrl); }
+#microcontrollori .microcontrollori-pkt.k-irq text { fill: #2e0716; }
+#microcontrollori .microcontrollori-pkt.k-analog rect { fill: #dfe9e4; }
+#microcontrollori .microcontrollori-pkt.k-analog text { fill: #14201b; }
+
+/* ---------- spiegazione ---------- */
+
+#microcontrollori .microcontrollori-explain { padding: 16px 18px; }
+#microcontrollori .microcontrollori-now { min-width: 0; }
+#microcontrollori .microcontrollori-now p:last-child { margin-bottom: 0; }
+#microcontrollori .microcontrollori-now h4 { font-size: 1.05rem; }
+#microcontrollori .microcontrollori-note {
+  margin-top: 10px; padding: 8px 10px; border-radius: 8px; font-size: .84rem; line-height: 1.45;
+  color: var(--lab-dim); background: var(--lab-sunk); border: 1px solid var(--lab-line);
+}
+#microcontrollori .microcontrollori-side { min-width: 0; display: grid; gap: 12px; align-content: start; }
+#microcontrollori .microcontrollori-lab:not([data-size="xl"]) .microcontrollori-side { margin-top: 14px; }
+#microcontrollori .microcontrollori-info {
+  position: relative; padding: 12px 14px; border-radius: 10px;
+  background: color-mix(in srgb, var(--lab-gold) 7%, var(--lab-panel)); border: 1px solid color-mix(in srgb, var(--lab-gold) 45%, var(--lab-line));
+}
+#microcontrollori .microcontrollori-info[hidden] { display: none; }
+#microcontrollori .microcontrollori-info p { font-size: .9rem; margin: 0 0 10px; }
+#microcontrollori .microcontrollori-info-x { min-height: 32px; font-size: .82rem; }
+#microcontrollori .microcontrollori-events h5 { margin: 0 0 6px; font: 700 .7rem var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--lab-dim); }
+#microcontrollori .microcontrollori-log { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+#microcontrollori .microcontrollori-log li {
+  padding: 5px 10px; border-radius: 7px; font-size: .84rem; line-height: 1.4;
+  background: rgba(255, 255, 255, .025); border-left: 3px solid var(--lab-line);
+}
+#microcontrollori .microcontrollori-log time { font: 700 .74rem var(--mono); color: var(--lab-gold); margin-right: 4px; }
+#microcontrollori .microcontrollori-log .microcontrollori-log-ok { border-left-color: var(--sig-on); }
+#microcontrollori .microcontrollori-log .microcontrollori-log-warn { border-left-color: #ff7a6b; }
+#microcontrollori .microcontrollori-log .microcontrollori-log-empty { color: var(--lab-dim); border-left-color: transparent; background: none; padding-left: 0; }
+
+/* ---------- il listato del programma ---------- */
+
+#microcontrollori .microcontrollori-code { padding: 14px 14px 16px; min-width: 0; }
+#microcontrollori .microcontrollori-code > h4 { color: var(--lab-ink); margin: 0 0 10px 4px; font-size: 1rem; }
+#microcontrollori .microcontrollori-secs { display: grid; gap: 10px; }
+#microcontrollori .microcontrollori-sec { border-radius: 10px; padding: 6px 4px 6px; background: rgba(0, 0, 0, .18); border: 1px solid var(--lab-line); }
+#microcontrollori .microcontrollori-sec.is-isr { border-color: color-mix(in srgb, var(--sig-ctrl) 28%, var(--lab-line)); }
+#microcontrollori .microcontrollori-sec h5 {
+  margin: 0 0 4px; padding: 2px 8px; font: 700 .72rem var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--lab-text);
+  display: flex; flex-wrap: wrap; gap: 2px 8px; align-items: baseline;
+}
+#microcontrollori .microcontrollori-sec.is-isr h5 { color: #ffb0cb; }
+#microcontrollori .microcontrollori-sec h5 small { font: 600 .74rem var(--font); letter-spacing: 0; text-transform: none; color: var(--lab-dim); }
+#microcontrollori .microcontrollori-sec ol { list-style: none; margin: 0; padding: 0; }
+#microcontrollori .microcontrollori-ln {
+  position: relative; display: grid; grid-template-columns: 4.4ch minmax(0, 1fr) auto; grid-template-areas: "a c r";
+  gap: 0 10px; align-items: baseline; padding: 3px 8px 3px 10px; border-radius: 6px;
+  font-size: .84rem; line-height: 1.45; transition: background-color var(--t-fast);
+}
+#microcontrollori .microcontrollori-ln::before {
+  content: ""; position: absolute; left: 0; top: 4px; bottom: 4px; width: 3px; border-radius: 2px;
+  background: transparent; transition: background-color var(--t-fast);
+}
+#microcontrollori .microcontrollori-ln-a { grid-area: a; font: 600 .76rem var(--mono); color: var(--lab-dim); }
+#microcontrollori .microcontrollori-ln-c { grid-area: c; color: var(--lab-text); font-family: var(--mono); font-size: .8rem; }
+#microcontrollori .microcontrollori-ln-r { grid-area: r; font: 700 .74rem var(--mono); color: var(--lab-dim); text-align: right; white-space: nowrap; opacity: .8; }
+#microcontrollori .microcontrollori-ln-m { display: inline-block; min-width: 1.4ch; }
+#microcontrollori .microcontrollori-ln[data-ok="si"] .microcontrollori-ln-m { color: var(--sig-on); }
+#microcontrollori .microcontrollori-ln[data-ok="no"] .microcontrollori-ln-m { color: #ff9b8f; }
+#microcontrollori .microcontrollori-ln-ret {
+  grid-area: r; display: none; justify-self: end; padding: 0 7px; border-radius: 999px;
+  font: 700 .68rem var(--mono); letter-spacing: .06em; text-transform: uppercase; color: #ffd0e0;
+  border: 1px dashed var(--sig-ctrl);
+}
+#microcontrollori .microcontrollori-ln.is-ret .microcontrollori-ln-r { visibility: hidden; }
+#microcontrollori .microcontrollori-ln.is-ret .microcontrollori-ln-ret { display: inline-block; }
+#microcontrollori .microcontrollori-ln.is-ret::before { background: color-mix(in srgb, var(--sig-ctrl) 55%, transparent); }
+#microcontrollori .microcontrollori-ln.is-current { background: rgba(255, 192, 77, .13); }
+#microcontrollori .microcontrollori-ln.is-current::before { background: var(--sig-addr); }
+#microcontrollori .microcontrollori-ln.is-current .microcontrollori-ln-a { color: var(--sig-addr); }
+#microcontrollori .microcontrollori-ln.is-current .microcontrollori-ln-c { color: var(--lab-ink); }
+#microcontrollori .microcontrollori-ln.is-current .microcontrollori-ln-r { color: var(--lab-ink); opacity: 1; }
+#microcontrollori .microcontrollori-sec.is-isr .microcontrollori-ln.is-current { background: rgba(255, 122, 168, .13); }
+#microcontrollori .microcontrollori-sec.is-isr .microcontrollori-ln.is-current::before { background: var(--sig-ctrl); }
+#microcontrollori .microcontrollori-sec.is-isr .microcontrollori-ln.is-current .microcontrollori-ln-a { color: #ffb0cb; }
+
+/* ---------- indicatori e grafico ---------- */
+
+#microcontrollori .microcontrollori-reads { display: flex; flex-wrap: wrap; gap: 8px; padding: 12px 16px; }
+#microcontrollori .microcontrollori-reads .cp-readout { flex: 1 1 120px; }
+#microcontrollori .microcontrollori-lab[data-size="xl"] .microcontrollori-reads { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-content: start; }
+#microcontrollori .microcontrollori-chart { padding: 12px 16px 10px; }
+#microcontrollori .microcontrollori-chart-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 12px; margin-bottom: 4px; }
+#microcontrollori .microcontrollori-chart-head h4 { margin: 0; color: var(--lab-ink); font-size: 1rem; }
+#microcontrollori .microcontrollori-chart-win { font: 700 .72rem var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--lab-dim); }
+#microcontrollori .microcontrollori-chart-svg { display: block; width: 100%; height: auto; }
+#microcontrollori .microcontrollori-chart-svg text { font-family: var(--mono); }
+#microcontrollori .microcontrollori-ch-grid line, #microcontrollori .microcontrollori-ch-time line { stroke: var(--lab-line); stroke-width: 1; }
+#microcontrollori .microcontrollori-ch-time line { stroke-dasharray: 2 4; }
+#microcontrollori .microcontrollori-ch-grid text, #microcontrollori .microcontrollori-ch-time text { fill: var(--lab-dim); font-size: 11px; font-weight: 600; }
+#microcontrollori .microcontrollori-ch-band { fill: rgba(62, 224, 143, .07); }
+#microcontrollori .microcontrollori-ch-set { stroke: #8fd3ff; stroke-width: 1.4; stroke-dasharray: 6 4; }
+#microcontrollori .microcontrollori-ch-hi { stroke: #ffc04d; stroke-width: 1.4; stroke-dasharray: 6 4; opacity: .85; }
+#microcontrollori .microcontrollori-ch-lbl { fill: #ffd78a; font-size: 11px; font-weight: 700; }
+#microcontrollori .microcontrollori-ch-lbl.set { fill: #a9defc; }
+#microcontrollori .microcontrollori-chart-key { display: flex; flex-wrap: wrap; gap: 4px 16px; margin: 0 0 6px; font-size: .8rem; color: var(--lab-text); }
+#microcontrollori .microcontrollori-chart-key i { display: inline-block; width: 18px; height: 0; margin-right: 6px; vertical-align: middle; border-top: 2px dashed; }
+#microcontrollori .microcontrollori-key-set i { border-color: #8fd3ff; }
+#microcontrollori .microcontrollori-key-hi i { border-color: #ffc04d; }
+#microcontrollori .microcontrollori-key-def i { height: 10px; border: 0; border-radius: 2px; background: rgba(255, 138, 76, .35); }
+#microcontrollori .microcontrollori-ch-defband { fill: rgba(255, 138, 76, .12); }
+#microcontrollori .microcontrollori-ch-temp { fill: none; stroke: #eef6f2; stroke-width: 2.2; stroke-linejoin: round; stroke-linecap: round; }
+#microcontrollori .microcontrollori-ch-dot { fill: #eef6f2; stroke: var(--lab-bg); stroke-width: 2; }
+#microcontrollori .microcontrollori-ch-dotlbl {
+  fill: var(--lab-ink); font-size: 12px; font-weight: 800;
+  paint-order: stroke; stroke: var(--lab-bg); stroke-width: 4px; stroke-linejoin: round;
+}
+#microcontrollori .microcontrollori-ch-trk.k-c { fill: var(--sig-on); }
+#microcontrollori .microcontrollori-ch-trk.k-d { fill: var(--sig-ctrl); }
+#microcontrollori .microcontrollori-ch-trk.k-f { fill: #ff8a4c; }
+#microcontrollori .microcontrollori-ch-tlbl { fill: var(--lab-text); font-size: 11px; font-weight: 600; font-family: var(--font); }
+#microcontrollori .microcontrollori-chart-svg .microcontrollori-ch-tlbl { font-family: var(--font); }
+#microcontrollori .microcontrollori-ch-tbase { stroke: var(--lab-line); stroke-width: 1; }
+
+/* ---------- obiettivo ---------- */
+
+#microcontrollori .microcontrollori-goal > span { line-height: 1.5; }
+#microcontrollori .microcontrollori-g { transition: color var(--t-normal); }
+#microcontrollori .microcontrollori-g.is-ok { color: var(--sig-on); font-weight: 700; }
+#microcontrollori .microcontrollori-g.is-ok::before { content: "✓ "; }
+
+/* ---------- schermi stretti ---------- */
+
+#microcontrollori .microcontrollori-lab[data-size="sm"] .microcontrollori-explain { padding: 14px; }
+#microcontrollori .microcontrollori-lab[data-size="sm"] .microcontrollori-code { padding: 12px 10px 14px; }
+#microcontrollori .microcontrollori-lab[data-size="sm"] .microcontrollori-reads { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 12px; }
+#microcontrollori .microcontrollori-lab[data-size="sm"] .microcontrollori-chart { padding: 12px 8px 8px; }
+#microcontrollori .microcontrollori-lab[data-size="sm"] .microcontrollori-chart-head { padding: 0 6px; }
+
+@media (max-width: 640px) {
+  #microcontrollori .microcontrollori-k { display: none; }
+  #microcontrollori .microcontrollori-door-btn { min-width: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #microcontrollori .microcontrollori-f-cavity, #microcontrollori .microcontrollori-f-fins { transition: none; }
+}

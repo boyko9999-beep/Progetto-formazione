@@ -1,0 +1,288 @@
+<header class="cp-ch-head">
+  <div>
+    <p class="cp-ch-num"><b>02</b> 1956–1987</p>
+    <h2 id="memorie-titolo">Memorie che si programmano</h2>
+    <p class="cp-ch-lead">Un microprocessore senza programma non sa fare nulla. Ecco dove abita il programma: in bit fissati in fabbrica, in fusibili bruciati, in elettroni intrappolati che la luce o un impulso elettrico possono liberare.</p>
+  </div>
+  <figure class="cp-specimen" data-dip='{"pins":24,"label":"C1702A","top":"intel","body":"ceramic","window":true}'>
+    <figcaption class="cp-specimen-cap">Intel C1702A · 24 piedini<span class="mem-spec-sub">finestra di quarzo per la luce UV</span></figcaption>
+  </figure>
+</header>
+
+<div class="cp-cols wide-left mem-intro">
+  <div class="cp-prose cp-reveal">
+    <h3>Dove abita un programma</h3>
+    <p>Nel <a href="#idea">capitolo 1</a> lo stesso chip cambiava mestiere cambiando programma. Ma il programma deve restare scritto anche a corrente spenta, in una memoria <dfn>non volatile</dfn>. Per anni la risposta è stata la <dfn>ROM</dfn> (Read-Only Memory, memoria di sola lettura), che si legge ma non si scrive.</p>
+    <p>L'idea più semplice è una griglia di fili: ogni riga è una <dfn>parola</dfn> (un gruppo di bit letti insieme), ogni colonna è un bit. A un incrocio può esserci un diodo, che lascia passare la corrente in un solo verso: quando si accende una riga, la corrente arriva solo alle colonne collegate, che si leggono 1.</p>
+    <p>Nei <a href="../porte-logiche/index.html#moore">circuiti integrati</a> quei collegamenti si disegnano in una delle maschere usate per fabbricare il chip: è la <dfn>ROM a maschera</dfn>, la più economica per migliaia di copie identiche. Ma per cambiare un solo bit servono una maschera nuova e settimane di attesa.</p>
+  </div>
+  <figure class="cp-fig cp-reveal mem-fig-matrice">
+    <div class="cp-art">
+      <svg viewBox="0 0 400 312" role="img" aria-label="Schema di una ROM a matrice di diodi: quattro righe, una per parola, e quattro colonne, una per bit. Il decodificatore accende la riga dell'indirizzo 2; la corrente scende solo nelle colonne collegate da un diodo, e il dato letto è 1011.">
+      <defs><marker id="memorie-m-giu" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="accent"/></marker></defs>
+      <text x="44" y="34" text-anchor="middle" class="ink mem-t-b">indirizzo 2</text>
+      <rect x="8" y="46" width="72" height="204" rx="8" class="paper mem-box"/>
+      <text x="0" y="0" transform="translate(32 148) rotate(-90)" text-anchor="middle" class="muted mem-t">decodificatore</text>
+      <text x="140" y="40" text-anchor="middle" class="muted mem-t">bit 3</text>
+      <line x1="140" y1="50" x2="140" y2="200" class="mem-wire"/>
+      <line x1="140" y1="200" x2="140" y2="262" class="mem-wire-on" marker-end="url(#memorie-m-giu)"/>
+      <text x="200" y="40" text-anchor="middle" class="muted mem-t">bit 2</text>
+      <line x1="200" y1="50" x2="200" y2="262" class="mem-wire"/>
+      <text x="260" y="40" text-anchor="middle" class="muted mem-t">bit 1</text>
+      <line x1="260" y1="50" x2="260" y2="200" class="mem-wire"/>
+      <line x1="260" y1="200" x2="260" y2="262" class="mem-wire-on" marker-end="url(#memorie-m-giu)"/>
+      <text x="320" y="40" text-anchor="middle" class="muted mem-t">bit 0</text>
+      <line x1="320" y1="50" x2="320" y2="200" class="mem-wire"/>
+      <line x1="320" y1="200" x2="320" y2="262" class="mem-wire-on" marker-end="url(#memorie-m-giu)"/>
+      <line x1="80" y1="76" x2="356" y2="76" class="mem-wire"/>
+      <text x="72" y="81" text-anchor="end" class="muted mem-t">0</text>
+      <line x1="80" y1="126" x2="356" y2="126" class="mem-wire"/>
+      <text x="72" y="131" text-anchor="end" class="muted mem-t">1</text>
+      <line x1="80" y1="176" x2="356" y2="176" class="mem-wire-on"/>
+      <text x="72" y="181" text-anchor="end" class="accent mem-t-b">2</text>
+      <line x1="80" y1="226" x2="356" y2="226" class="mem-wire"/>
+      <text x="72" y="231" text-anchor="end" class="muted mem-t">3</text>
+      <g class="mem-diode"><path d="M122 76 V82 M122 92 V100 H140" class="mem-d-wire"/><path d="M116 82 H128 L122 92 Z" class="mem-d-body"/><path d="M116 92 H128" class="mem-d-wire"/><circle cx="140" cy="100" r="2.6" class="mem-d-dot"/></g>
+      <g class="mem-diode"><path d="M302 76 V82 M302 92 V100 H320" class="mem-d-wire"/><path d="M296 82 H308 L302 92 Z" class="mem-d-body"/><path d="M296 92 H308" class="mem-d-wire"/><circle cx="320" cy="100" r="2.6" class="mem-d-dot"/></g>
+      <g class="mem-diode"><path d="M182 126 V132 M182 142 V150 H200" class="mem-d-wire"/><path d="M176 132 H188 L182 142 Z" class="mem-d-body"/><path d="M176 142 H188" class="mem-d-wire"/><circle cx="200" cy="150" r="2.6" class="mem-d-dot"/></g>
+      <g class="mem-diode"><path d="M242 126 V132 M242 142 V150 H260" class="mem-d-wire"/><path d="M236 132 H248 L242 142 Z" class="mem-d-body"/><path d="M236 142 H248" class="mem-d-wire"/><circle cx="260" cy="150" r="2.6" class="mem-d-dot"/></g>
+      <g class="mem-diode is-on"><path d="M122 176 V182 M122 192 V200 H140" class="mem-d-wire"/><path d="M116 182 H128 L122 192 Z" class="mem-d-body"/><path d="M116 192 H128" class="mem-d-wire"/><circle cx="140" cy="200" r="2.6" class="mem-d-dot"/></g>
+      <g class="mem-diode is-on"><path d="M242 176 V182 M242 192 V200 H260" class="mem-d-wire"/><path d="M236 182 H248 L242 192 Z" class="mem-d-body"/><path d="M236 192 H248" class="mem-d-wire"/><circle cx="260" cy="200" r="2.6" class="mem-d-dot"/></g>
+      <g class="mem-diode is-on"><path d="M302 176 V182 M302 192 V200 H320" class="mem-d-wire"/><path d="M296 182 H308 L302 192 Z" class="mem-d-body"/><path d="M296 192 H308" class="mem-d-wire"/><circle cx="320" cy="200" r="2.6" class="mem-d-dot"/></g>
+      <g class="mem-diode"><path d="M182 226 V232 M182 242 V250 H200" class="mem-d-wire"/><path d="M176 232 H188 L182 242 Z" class="mem-d-body"/><path d="M176 242 H188" class="mem-d-wire"/><circle cx="200" cy="250" r="2.6" class="mem-d-dot"/></g>
+      <g class="mem-diode"><path d="M302 226 V232 M302 242 V250 H320" class="mem-d-wire"/><path d="M296 232 H308 L302 242 Z" class="mem-d-body"/><path d="M296 242 H308" class="mem-d-wire"/><circle cx="320" cy="250" r="2.6" class="mem-d-dot"/></g>
+      <text x="44" y="292" text-anchor="middle" class="muted mem-t">dato letto</text>
+      <text x="140" y="294" text-anchor="middle" class="accent mem-t-big">1</text>
+      <text x="200" y="294" text-anchor="middle" class="muted mem-t-big">0</text>
+      <text x="260" y="294" text-anchor="middle" class="accent mem-t-big">1</text>
+      <text x="320" y="294" text-anchor="middle" class="accent mem-t-big">1</text>
+      </svg>
+    </div>
+    <figcaption><b>Una ROM a matrice di diodi.</b> Il decodificatore accende la riga dell'indirizzo 2: la corrente scende solo nelle colonne con un diodo e il dato letto è 1011.</figcaption>
+  </figure>
+</div>
+
+<div class="cp-prose cp-reveal">
+  <h3>PROM: un fusibile per ogni bit</h3>
+  <p>Nel 1956 Wen Tsing Chow lavorava alla Arma, un'azienda di Garden City, vicino a New York. L'aeronautica militare statunitense cercava un modo flessibile e sicuro per conservare le costanti di puntamento nel computer di guida del missile Atlas.</p>
+  <p>Chow inventò una matrice che usciva dalla fabbrica tutta uguale e si personalizzava dopo: la <dfn>PROM</dfn> (Programmable ROM, ROM programmabile). Ogni elemento poteva essere interrotto per sempre da un forte impulso di corrente: dal suo brevetto, rimasto segreto per anni, viene il verbo «bruciare» una PROM.</p>
+  <p>Poi le PROM diventano circuiti integrati in vendita a tutti: ogni bit è un minuscolo fusibile metallico e un apparecchio, il <dfn>programmatore</dfn>, brucia quelli giusti. Senza ritorno: un errore, e il chip si butta.</p>
+
+  <h3>EPROM: la memoria che si cancella con la luce</h3>
+  <p>Nel 1969 Intel chiese a Dov Frohman, arrivato da poco dalla Fairchild, di capire perché la sua memoria 1101 non era affidabile. Studiando i guasti, Frohman capì che un gate rimasto scollegato, cioè «flottante» e chiuso nell'isolante, può trattenere a lungo una carica elettrica. Invece di vederci solo un difetto, ci vide un modo per conservare i bit.</p>
+  <p>Ne nacque l'<dfn>EPROM</dfn> (Erasable PROM, PROM cancellabile), che si scrive con impulsi elettrici e si cancella con la luce ultravioletta. Frohman presentò il prototipo nel febbraio 1971 a Philadelphia, alla International Solid-State Circuits Conference; Gordon Moore ricordava il filmato in cui, sotto la luce UV, i bit sparivano uno dopo l'altro finché restava solo il logo di Intel.</p>
+  <p>Lo stesso anno Intel annunciò la 1702: 2.048 bit, cioè 256 byte, in un contenitore di ceramica con una finestrella di quarzo sopra il chip.</p>
+</div>
+
+<p class="cp-specs-title">Scheda tecnica · Intel 1702A</p>
+<dl class="cp-specs cp-reveal">
+  <div><dt>Capacità</dt><dd>2.048 bit</dd></div>
+  <div><dt>Organizzazione</dt><dd>256 × 8 bit</dd></div>
+  <div><dt>Contenitore</dt><dd>ceramico, 24 piedini</dd></div>
+  <div><dt>Tecnologia</dt><dd>PMOS, gate flottante</dd></div>
+  <div><dt>Tempo di accesso</dt><dd>circa 1 µs</dd></div>
+  <div><dt>Cancellazione</dt><dd>luce UV, 253,7 nm</dd></div>
+</dl>
+
+<figure class="cp-fig cp-reveal mem-fig-cella">
+  <div class="cp-art">
+    <div class="mem-pair">
+      <svg viewBox="0 0 380 304" role="img" aria-label="Sezione di una cella a gate flottante cancellata: il gate flottante è vuoto, la soglia è sotto la tensione di lettura, il canale tra source e drain si apre e la cella si legge 1.">
+      <defs><marker id="memorie-m-flusso" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10 z" class="mem-m-ok"/></marker></defs>
+      <text x="16" y="24" class="ink mem-t-title">Cancellata: si legge 1</text>
+      <text x="64" y="52" text-anchor="middle" class="muted mem-t">massa</text>
+      <text x="190" y="52" text-anchor="middle" class="muted mem-t">riga</text>
+      <text x="316" y="52" text-anchor="middle" class="muted mem-t">colonna</text>
+      <path d="M64 60 V152 M316 60 V152 M190 60 V70" class="mem-term"/>
+      <circle cx="64" cy="60" r="3.5" class="paper mem-term"/><circle cx="190" cy="60" r="3.5" class="paper mem-term"/><circle cx="316" cy="60" r="3.5" class="paper mem-term"/>
+      <rect x="14" y="152" width="352" height="96" rx="8" class="mem-sub"/>
+      <path d="M30 152 H106 V172 A14 14 0 0 1 92 186 H44 A14 14 0 0 1 30 172 Z" class="mem-n"/>
+      <path d="M274 152 H350 V172 A14 14 0 0 1 336 186 H288 A14 14 0 0 1 274 172 Z" class="mem-n"/>
+      <text x="68" y="174" text-anchor="middle" class="ink mem-t">source</text>
+      <text x="312" y="174" text-anchor="middle" class="ink mem-t">drain</text>
+      <text x="24" y="240" class="muted mem-t">substrato di silicio</text>
+      <rect x="92" y="64" width="196" height="88" rx="4" class="mem-ox"/>
+      <rect x="104" y="70" width="172" height="24" rx="3" class="mem-cg"/>
+      <text x="190" y="87" text-anchor="middle" class="ink mem-t">gate di controllo</text>
+      <rect x="104" y="101" width="172" height="40" rx="3" class="mem-fgate"/>
+      <text x="190" y="126" text-anchor="middle" class="ink mem-t">gate flottante, vuoto</text>
+      <text x="18" y="122" class="muted mem-t">ossido</text>
+      <path d="M58 124 L97 144" class="mem-lead"/>
+      <rect x="106" y="152" width="168" height="7" class="mem-chan"/>
+      <circle cx="122" cy="168" r="3.2" class="mem-el-dot"/>
+      <circle cx="156" cy="168" r="3.2" class="mem-el-dot"/>
+      <circle cx="190" cy="168" r="3.2" class="mem-el-dot"/>
+      <circle cx="224" cy="168" r="3.2" class="mem-el-dot"/>
+      <circle cx="258" cy="168" r="3.2" class="mem-el-dot"/>
+      <path d="M118 196 H262" class="mem-flow" marker-end="url(#memorie-m-flusso)"/>
+      <text x="190" y="216" text-anchor="middle" class="mem-t mem-ok">elettroni in moto: passa corrente</text>
+      <text x="60" y="262" class="muted mem-t-s">tensione sul gate</text>
+      <line x1="60" y1="276" x2="322" y2="276" class="mem-scale"/>
+      <line x1="190" y1="262" x2="190" y2="288" class="mem-read"/>
+      <circle cx="110" cy="276" r="7" class="accent"/>
+      <text x="110" y="298" text-anchor="middle" class="accent mem-t-b">soglia</text>
+      <text x="190" y="298" text-anchor="middle" class="muted mem-t">lettura</text>
+      </svg>
+      <svg viewBox="0 0 380 304" role="img" aria-label="Sezione di una cella a gate flottante programmata: sei elettroni sono intrappolati sul gate flottante, la soglia è sopra la tensione di lettura, il canale resta chiuso e la cella si legge 0.">
+      <text x="16" y="24" class="ink mem-t-title">Programmata: si legge 0</text>
+      <text x="64" y="52" text-anchor="middle" class="muted mem-t">massa</text>
+      <text x="190" y="52" text-anchor="middle" class="muted mem-t">riga</text>
+      <text x="316" y="52" text-anchor="middle" class="muted mem-t">colonna</text>
+      <path d="M64 60 V152 M316 60 V152 M190 60 V70" class="mem-term"/>
+      <circle cx="64" cy="60" r="3.5" class="paper mem-term"/><circle cx="190" cy="60" r="3.5" class="paper mem-term"/><circle cx="316" cy="60" r="3.5" class="paper mem-term"/>
+      <rect x="14" y="152" width="352" height="96" rx="8" class="mem-sub"/>
+      <path d="M30 152 H106 V172 A14 14 0 0 1 92 186 H44 A14 14 0 0 1 30 172 Z" class="mem-n"/>
+      <path d="M274 152 H350 V172 A14 14 0 0 1 336 186 H288 A14 14 0 0 1 274 172 Z" class="mem-n"/>
+      <text x="68" y="174" text-anchor="middle" class="ink mem-t">source</text>
+      <text x="312" y="174" text-anchor="middle" class="ink mem-t">drain</text>
+      <text x="24" y="240" class="muted mem-t">substrato di silicio</text>
+      <rect x="92" y="64" width="196" height="88" rx="4" class="mem-ox"/>
+      <rect x="104" y="70" width="172" height="24" rx="3" class="mem-cg"/>
+      <text x="190" y="87" text-anchor="middle" class="ink mem-t">gate di controllo</text>
+      <rect x="104" y="101" width="172" height="40" rx="3" class="mem-fgate"/>
+      <g class="mem-el"><circle cx="126" cy="113" r="6"/><path d="M123 113 H129"/></g>
+      <g class="mem-el"><circle cx="153.6" cy="113" r="6"/><path d="M150.6 113 H156.6"/></g>
+      <g class="mem-el"><circle cx="181.2" cy="113" r="6"/><path d="M178.2 113 H184.2"/></g>
+      <g class="mem-el"><circle cx="208.8" cy="113" r="6"/><path d="M205.8 113 H211.8"/></g>
+      <g class="mem-el"><circle cx="236.4" cy="113" r="6"/><path d="M233.4 113 H239.4"/></g>
+      <g class="mem-el"><circle cx="264" cy="113" r="6"/><path d="M261 113 H267"/></g>
+      <text x="190" y="135" text-anchor="middle" class="ink mem-t-s">elettroni intrappolati</text>
+      <text x="190" y="212" text-anchor="middle" class="muted mem-t">canale chiuso: nessuna corrente</text>
+      <text x="60" y="262" class="muted mem-t-s">tensione sul gate</text>
+      <line x1="60" y1="276" x2="322" y2="276" class="mem-scale"/>
+      <line x1="190" y1="262" x2="190" y2="288" class="mem-read"/>
+      <circle cx="270" cy="276" r="7" class="accent"/>
+      <text x="270" y="298" text-anchor="middle" class="accent mem-t-b">soglia</text>
+      <text x="190" y="298" text-anchor="middle" class="muted mem-t">lettura</text>
+      </svg>
+    </div>
+  </div>
+  <figcaption><b>Il transistor a gate flottante, in sezione</b>, come nelle EPROM a canale n venute dopo la 1702. Nella 1702, a canale p e senza gate di controllo, valeva il contrario: cancellata, la cella si&nbsp;leggeva&nbsp;0.</figcaption>
+</figure>
+
+<div class="cp-prose cp-reveal">
+  <h3>Elettroni in trappola</h3>
+  <p>Il cuore della EPROM è il <dfn>transistor a gate flottante</dfn>, un'idea proposta nel 1967 da Dawon Kahng e Simon Sze ai Bell Labs. In un transistor MOS il <dfn>gate</dfn> è l'elettrodo di comando: con la tensione giusta apre un canale tra due zone del silicio, <dfn>source</dfn> e <dfn>drain</dfn>, e passa corrente. Nella forma più diffusa, quella della figura, sotto il gate di controllo ce n'è un secondo, il gate flottante, chiuso da ogni lato nell'ossido, un ottimo isolante.</p>
+  <p>Per programmare si applicano impulsi di alcune decine di volt: alcuni elettroni prendono abbastanza energia da superare l'ossido e restano intrappolati sul gate flottante, per anni. La loro carica negativa alza la <dfn>soglia</dfn>, la tensione che serve per aprire il canale: in lettura la cella carica non conduce e vale 0, quella vuota conduce e vale 1.</p>
+  <p>Per cancellare si toglie il chip dalla scheda e lo si mette sotto una lampada ultravioletta a 253,7 nanometri per 15-20 minuti, secondo i datasheet: la luce dà agli elettroni l'energia per fuggire e tutte le celle tornano a 1. Non si sceglie che cosa cancellare, si cancella tutto. Le versioni <dfn>OTP</dfn> (One Time Programmable) hanno lo stesso chip in plastica senza finestra: costano meno, ma si scrivono una volta sola.</p>
+</div>
+
+<section class="cp-lab" data-lab="memorie" aria-labelledby="lab-memorie-titolo">
+  <header class="cp-lab-head">
+    <span class="cp-lab-tag">Laboratorio</span>
+    <h3 id="lab-memorie-titolo">Scrivi e cancella la memoria</h3>
+    <p>Scegli una tecnologia e clicca le celle per scrivere i bit: scoprirai che cosa ti permette la fisica di ciascuna. Una ROM che non cambia, fusibili che si bruciano, la luce ultravioletta, cancellazioni di un solo byte o di un blocco intero.</p>
+  </header>
+  <div class="cp-lab-mount"><p class="cp-lab-fallback">Caricamento del laboratorio…</p></div>
+</section>
+
+<aside class="cp-fact cp-reveal">
+  <p><strong>Lo sapevi?</strong> La finestra di una EPROM va coperta con un'etichetta opaca: anche il sole e alcuni tubi fluorescenti emettono un po' di ultravioletto. Secondo i datasheet, al sole diretto basta circa una settimana per cancellarla; alla luce di una stanza servono circa tre anni.</p>
+</aside>
+
+<div class="cp-prose cp-reveal">
+  <h3>Cancellare con l'elettricità: EEPROM e Flash</h3>
+  <p>Nel 1976, alla Hughes Microelectronics, in California, Eli Harari propose di assottigliare l'ossido sotto il gate flottante da circa 100 a circa 10 nanometri. Uno strato così fine gli elettroni lo attraversano per <dfn>effetto tunnel</dfn> (un fenomeno quantistico che fa superare una barriera sottilissima), nei due sensi, comandati solo da una tensione. Nasce la <dfn>EEPROM</dfn> (Electrically Erasable PROM): niente più lampada.</p>
+  <p>Nel 1978 George Perlegos e i suoi colleghi di Intel svilupparono la 2816, 16.384 bit che si cancellano un byte alla volta senza togliere il chip dalla scheda; fu presentata nel 1980. Il prezzo: ogni cella ha due transistor, uno per il dato e uno per selezionarla, e la memoria resta piccola e cara.</p>
+  <p>Alla Toshiba, all'inizio degli anni Ottanta, il gruppo di Fujio Masuoka progettò una cella con un solo transistor: densa come una EPROM, cancellabile con l'elettricità come una EEPROM, ma solo un blocco intero alla volta. Il collega Shoji Ariizumi propose il nome <dfn>flash</dfn>: la cancellazione gli ricordava il lampo di una macchina fotografica.</p>
+  <p>Masuoka presentò la Flash di tipo NOR nel 1984, all'International Electron Devices Meeting di San Francisco: le celle sono collegate in parallelo, come i transistor di una <a href="../porte-logiche/index.html#calcolo">porta NOR</a>. Nel 1987, allo stesso convegno, presentò la NAND, con le celle in fila come in una porta NAND: ancora più densa, oggi riempie <a href="../../index.html#/bus/usb">chiavette USB</a> e dischi SSD.</p>
+</div>
+
+<figure class="cp-fig cp-reveal mem-fig-cancella">
+  <div class="cp-art">
+    <div class="mem-trio">
+      <div class="mem-trio-i">
+        <svg viewBox="0 0 184 204" role="img" aria-label="EPROM: la luce ultravioletta cancella insieme tutte le celle del chip.">
+          <defs>
+            <pattern id="memorie-pd-1" x="12" y="36" width="80" height="40" patternUnits="userSpaceOnUse"><rect x="2" y="2" width="16" height="16" rx="3.5" class="mem-p-cell"/><rect x="22" y="2" width="16" height="16" rx="3.5" class="mem-p-cell"/><rect x="42" y="2" width="16" height="16" rx="3.5" class="mem-p-cell"/><rect x="62" y="2" width="16" height="16" rx="3.5" class="mem-p-cell"/><rect x="2" y="22" width="16" height="16" rx="3.5" class="mem-p-cell"/><rect x="22" y="22" width="16" height="16" rx="3.5" class="mem-p-cell"/><rect x="42" y="22" width="16" height="16" rx="3.5" class="mem-p-cell"/><rect x="62" y="22" width="16" height="16" rx="3.5" class="mem-p-cell"/><circle cx="10" cy="10" r="3.6" class="mem-p-e"/><circle cx="50" cy="10" r="3.6" class="mem-p-e"/><circle cx="70" cy="10" r="3.6" class="mem-p-e"/><circle cx="30" cy="30" r="3.6" class="mem-p-e"/><circle cx="50" cy="30" r="3.6" class="mem-p-e"/></pattern>
+            <pattern id="memorie-pz-1" x="12" y="36" width="20" height="20" patternUnits="userSpaceOnUse"><rect x="2" y="2" width="16" height="16" rx="3.5" class="mem-p-cell-uv"/></pattern>
+          </defs>
+          <path d="M36 2 q4 4 0 8 q-4 4 0 8 M64 2 q4 4 0 8 q-4 4 0 8 M92 2 q4 4 0 8 q-4 4 0 8 M120 2 q4 4 0 8 q-4 4 0 8 M148 2 q4 4 0 8 q-4 4 0 8" class="mem-p-ray"/>
+          <rect x="4" y="28" width="176" height="176" rx="12" class="mem-p-die"/>
+          <rect x="12" y="36" width="160" height="160" fill="url(#memorie-pd-1)"/>
+          <rect x="8" y="32" width="168" height="168" rx="9" class="mem-p-bg"/>
+          <rect x="8" y="32" width="168" height="168" rx="9" fill="url(#memorie-pz-1)"/>
+          <rect x="8" y="32" width="168" height="168" rx="9" class="mem-p-ring-uv"/>
+        </svg>
+        <p class="mem-trio-t"><b>EPROM</b><span>tutto il chip, con la luce UV</span></p>
+      </div>
+      <div class="mem-trio-i">
+        <svg viewBox="0 0 184 204" role="img" aria-label="EEPROM: un impulso elettrico cancella una sola riga, cioè un byte; le altre celle restano come prima.">
+          <defs>
+            <pattern id="memorie-pd-2" x="12" y="36" width="80" height="40" patternUnits="userSpaceOnUse"><rect x="2" y="2" width="16" height="16" rx="3.5" class="mem-p-cell"/><rect x="22" y="2" width="16" height="16" rx="3.5" class="mem-p-cell"/><rect x="42" y="2" width="16" height="16" rx="3.5" class="mem-p-cell"/><rect x="62" y="2" width="16" height="16" rx="3.5" class="mem-p-cell"/><rect x="2" y="22" width="16" height="16" rx="3.5" class="mem-p-cell"/><rect x="22" y="22" width="16" height="16" rx="3.5" class="mem-p-cell"/><rect x="42" y="22" width="16" height="16" rx="3.5" class="mem-p-cell"/><rect x="62" y="22" width="16" height="16" rx="3.5" class="mem-p-cell"/><circle cx="10" cy="10" r="3.6" class="mem-p-e"/><circle cx="50" cy="10" r="3.6" class="mem-p-e"/><circle cx="70" cy="10" r="3.6" class="mem-p-e"/><circle cx="30" cy="30" r="3.6" class="mem-p-e"/><circle cx="50" cy="30" r="3.6" class="mem-p-e"/></pattern>
+            <pattern id="memorie-pz-2" x="12" y="36" width="20" height="20" patternUnits="userSpaceOnUse"><rect x="2" y="2" width="16" height="16" rx="3.5" class="mem-p-cell-el"/></pattern>
+          </defs>
+          <path d="M98 0 L84 14 H92 L87 25 L102 10 H94 Z" class="mem-p-bolt"/>
+          <rect x="4" y="28" width="176" height="176" rx="12" class="mem-p-die"/>
+          <rect x="12" y="36" width="160" height="160" fill="url(#memorie-pd-2)"/>
+          <rect x="8" y="136" width="168" height="20" rx="5" class="mem-p-bg"/>
+          <rect x="8" y="136" width="168" height="20" rx="5" fill="url(#memorie-pz-2)"/>
+          <rect x="8" y="136" width="168" height="20" rx="5" class="mem-p-ring-el"/>
+        </svg>
+        <p class="mem-trio-t"><b>EEPROM</b><span>un byte, con l'elettricità</span></p>
+      </div>
+      <div class="mem-trio-i">
+        <svg viewBox="0 0 184 204" role="img" aria-label="Flash: un impulso elettrico cancella in un colpo tutte le righe di un blocco; l'altro blocco resta come prima.">
+          <defs>
+            <pattern id="memorie-pd-3" x="12" y="36" width="80" height="40" patternUnits="userSpaceOnUse"><rect x="2" y="2" width="16" height="16" rx="3.5" class="mem-p-cell"/><rect x="22" y="2" width="16" height="16" rx="3.5" class="mem-p-cell"/><rect x="42" y="2" width="16" height="16" rx="3.5" class="mem-p-cell"/><rect x="62" y="2" width="16" height="16" rx="3.5" class="mem-p-cell"/><rect x="2" y="22" width="16" height="16" rx="3.5" class="mem-p-cell"/><rect x="22" y="22" width="16" height="16" rx="3.5" class="mem-p-cell"/><rect x="42" y="22" width="16" height="16" rx="3.5" class="mem-p-cell"/><rect x="62" y="22" width="16" height="16" rx="3.5" class="mem-p-cell"/><circle cx="10" cy="10" r="3.6" class="mem-p-e"/><circle cx="50" cy="10" r="3.6" class="mem-p-e"/><circle cx="70" cy="10" r="3.6" class="mem-p-e"/><circle cx="30" cy="30" r="3.6" class="mem-p-e"/><circle cx="50" cy="30" r="3.6" class="mem-p-e"/></pattern>
+            <pattern id="memorie-pz-3" x="12" y="36" width="20" height="20" patternUnits="userSpaceOnUse"><rect x="2" y="2" width="16" height="16" rx="3.5" class="mem-p-cell-el"/></pattern>
+          </defs>
+          <path d="M98 0 L84 14 H92 L87 25 L102 10 H94 Z" class="mem-p-bolt"/>
+          <rect x="4" y="28" width="176" height="176" rx="12" class="mem-p-die"/>
+          <rect x="12" y="36" width="160" height="160" fill="url(#memorie-pd-3)"/>
+          <rect x="8" y="116" width="168" height="80" rx="6" class="mem-p-bg"/>
+          <rect x="8" y="116" width="168" height="80" rx="6" fill="url(#memorie-pz-3)"/>
+          <rect x="8" y="116" width="168" height="80" rx="6" class="mem-p-ring-el"/>
+        </svg>
+        <p class="mem-trio-t"><b>Flash</b><span>un blocco intero, con l'elettricità</span></p>
+      </div>
+    </div>
+  </div>
+  <figcaption><b>Che cosa si cancella in un colpo.</b> I pallini sono elettroni intrappolati, i riquadri colorati le celle appena cancellate. ROM e PROM non si cancellano affatto.</figcaption>
+</figure>
+
+<ol class="cp-steps cp-reveal" aria-label="Le tappe delle memorie programmabili">
+  <li><time datetime="1956">1956</time>PROM, per il missile Atlas.</li>
+  <li><time datetime="1971">1971</time>EPROM: la Intel 1702.</li>
+  <li><time datetime="1976">1976</time>EEPROM a ossido sottile, alla Hughes.</li>
+  <li><time datetime="1978">1978</time>Intel 2816, un byte alla volta.</li>
+  <li><time datetime="1984">1984</time>Flash NOR, alla Toshiba.</li>
+  <li><time datetime="1987">1987</time>Flash NAND.</li>
+</ol>
+
+<div class="cp-prose cp-reveal">
+  <h3>Perché l'EPROM ha fatto correre i microprocessori</h3>
+  <p>Con una ROM a maschera ogni correzione costava settimane; con una EPROM bastavano minuti: scrivi il programma, lo provi, trovi l'errore, cancelli e riscrivi. Il primo microprocessore, il <a href="#intel-4004">4004</a>, nacque nello stesso anno e nella stessa azienda: per chi lo programmava, poter sbagliare a buon mercato fu decisivo.</p>
+</div>
+
+<blockquote class="cp-quote cp-reveal">
+  <p>«Importante per lo sviluppo dell'industria dei microcomputer quanto il microprocessore stesso.»</p>
+  <footer>Gordon Moore, cofondatore di Intel, sull'EPROM (citato dal <a href="https://computerhistory.org/blog/2018-museum-fellow-dov-frohman-bentchkowsky-silicon-science-memory-survival/">Computer History Museum</a>; traduzione nostra)</footer>
+</blockquote>
+
+<div class="cp-prose cp-reveal">
+  <p>Microcontrollori come l'Intel 8748 portano la EPROM, con la sua finestra, sullo stesso chip della CPU (<a href="#microcontrollori">capitolo 6</a>); le GAL rendono cancellabile anche la logica programmabile (<a href="#logica-programmabile">capitolo 7</a>). E oggi la Flash custodisce il <dfn>firmware</dfn>, il programma di base, di quasi ogni apparecchio: anche quello della <a href="../storia-pc/index.html#scheda-madre">scheda madre</a> di un PC.</p>
+</div>
+
+<p class="mem-kicker">Le persone</p>
+<ul class="cp-people">
+  <li class="cp-person"><span class="ini" aria-hidden="true">WC</span><div><b>Wen Tsing Chow</b><small>Arma · 1956</small><p>Inventa la PROM per il missile Atlas.</p></div></li>
+  <li class="cp-person"><span class="ini" aria-hidden="true">DF</span><div><b>Dov Frohman</b><small>Intel · 1971</small><p>Trasforma un difetto in un'invenzione: la EPROM.</p></div></li>
+  <li class="cp-person"><span class="ini" aria-hidden="true">EH</span><div><b>Eli Harari</b><small>Hughes · 1976</small><p>Rende pratica la EEPROM; nel 1988 cofonda SanDisk.</p></div></li>
+  <li class="cp-person"><span class="ini" aria-hidden="true">GP</span><div><b>George Perlegos</b><small>Intel · 1978</small><p>Sviluppa la 2816; poi fonda Seeq e Atmel.</p></div></li>
+  <li class="cp-person"><span class="ini" aria-hidden="true">FM</span><div><b>Fujio Masuoka</b><small>Toshiba · 1984</small><p>Inventa la memoria Flash, prima NOR e poi NAND.</p></div></li>
+</ul>
+
+<details class="cp-fonti">
+  <summary>Fonti</summary>
+  <ol>
+    <li>Computer History Museum, <a href="https://www.computerhistory.org/siliconengine/reusable-programmable-rom-introduces-iterative-design-flexibility/">1971: Reusable Programmable ROM Introduces Iterative Design Flexibility</a>, The Silicon Engine.</li>
+    <li>Intel, <a href="https://www.intel.com/content/www/us/en/history/virtual-vault/articles/eprom.html">A Success… Out of Quality Control Issues</a>, la storia della EPROM.</li>
+    <li>ETHW, <a href="https://ethw.org/Milestones:The_Floating_Gate_EEPROM,_1976_-_1978">Milestones: The Floating Gate EEPROM, 1976–1978</a> (IEEE Milestone).</li>
+    <li>IEEE Spectrum, <a href="https://spectrum.ieee.org/chip-hall-of-fame-toshiba-nand-flash-memory">Chip Hall of Fame: Toshiba NAND Flash Memory</a>.</li>
+    <li>Intel, <a href="https://mark-ogden.uk/files/intel/publications/Datasheet%202716%2016k%20%282k%20x%208%29%20UV%20Erasable%20PROM%20%284-23_4-27%29.pdf">2716 16K (2K × 8) UV Erasable PROM</a>, datasheet originale (caratteristiche di cancellazione), nell'archivio di Mark Ogden.</li>
+    <li>Wikipedia, <a href="https://en.wikipedia.org/wiki/Programmable_ROM">Programmable ROM</a> (la PROM di Wen Tsing Chow), come appoggio.</li>
+  </ol>
+</details>
+
+<nav class="cp-next"><a href="#intel-4004"><small>Capitolo successivo →</small>Intel 4004, il primo microprocessore</a></nav>
