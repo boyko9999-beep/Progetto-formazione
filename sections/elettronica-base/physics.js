@@ -16,9 +16,14 @@
   const PREFISSI = [[1e9, 'G'], [1e6, 'M'], [1e3, 'k'], [1, ''], [1e-3, 'm'], [1e-6, 'µ'], [1e-9, 'n'], [1e-12, 'p']];
   const NBSP = ' ';
 
+  // Le migliaia si separano con uno spazio indivisibile (12 000), come vuole il SI.
+  function migliaia(testo) {
+    return testo.replace(/\./g, NBSP);
+  }
+
   function numero(v, decimali) {
     const d = decimali == null ? 2 : decimali;
-    return Number(v).toLocaleString('it-IT', { minimumFractionDigits: d, maximumFractionDigits: d });
+    return migliaia(Number(v).toLocaleString('it-IT', { minimumFractionDigits: d, maximumFractionDigits: d }));
   }
 
   // formatta(0.12, 'A') → "120 mA"; formatta(4700, 'Ω') → "4,7 kΩ".
@@ -40,7 +45,7 @@
     }
     const n = r / scala;
     const testo = n.toLocaleString('it-IT', { maximumSignificantDigits: cifre, useGrouping: o.prefissi === false });
-    return testo.replace('-', '−') + (unita ? NBSP + pre + unita : '');
+    return migliaia(testo).replace('-', '−') + (unita ? NBSP + pre + unita : '');
   }
 
   /* ---------- carica e forza di Coulomb ---------- */

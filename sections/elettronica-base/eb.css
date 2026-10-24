@@ -251,8 +251,8 @@
 .eb-lab-stato { margin: 0; padding: 40px 16px; text-align: center; color: var(--lab-dim); }
 .eb-trascinabile { cursor: grab; }
 .eb-trascinabile.in-presa { cursor: grabbing; }
-.eb-lab svg [tabindex]:focus { outline: none; }
-.eb-lab svg [tabindex]:focus-visible { outline: 2px solid #fff; outline-offset: 3px; border-radius: 4px; }
+.eb-lab svg :where([tabindex]):focus { outline: none; }
+.eb-lab svg :where([tabindex]):focus-visible { outline: 2px solid #fff; outline-offset: 3px; border-radius: 4px; }
 .eb-lab.errore .eb-lab-stato { color: var(--lab-f); }
 
 .eb-lab-sfide { padding: 12px 18px 16px; border-top: 1px solid var(--lab-line); }
@@ -292,7 +292,7 @@
 
 /* scelte e interruttori */
 .eb-scelta { border: 0; margin: 0; padding: 0; min-width: 0; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
-.eb-scelta legend { float: left; width: 100%; margin-bottom: 6px; font-size: .86rem; font-weight: 600; color: var(--lab-text); }
+.eb-scelta legend { padding: 0; margin: 0 0 6px; font-size: .86rem; font-weight: 600; color: var(--lab-text); }
 .eb-scelta label { position: relative; cursor: pointer; }
 .eb-scelta input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
 .eb-scelta span { display: inline-block; padding: 7px 13px; border-radius: 9px; font-size: .86rem; font-weight: 650; background: #15221e; color: var(--lab-text); border: 1px solid var(--lab-line); transition: background .18s ease, color .18s ease, border-color .18s ease; }

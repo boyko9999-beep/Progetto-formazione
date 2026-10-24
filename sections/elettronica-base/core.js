@@ -191,8 +191,8 @@
   /* ---------- formule con le grandezze colorate ---------- */
 
   // Ogni grandezza ha sempre lo stesso colore: V tensione, I corrente, R resistenza...
-  // I pedici numerici e i suffissi tot, eff, max, min prendono il colore della grandezza base:
-  // V₁ e Vtot come V, q₂ come q. Le costanti con valore '' restano neutre (ε₀ non è una tensione).
+  // I pedici numerici e i suffissi tot, eff, max, min, x prendono il colore della grandezza base:
+  // V₁ e Vtot come V, q₂ come q, Rx come R. Le costanti con valore '' restano neutre (ε₀ non è una tensione).
   const GRANDEZZE = {
     V: 'v', U: 'v', ε: 'v', Vp: 'v', Vs: 'v', Vpicco: 'v',
     I: 'i', Ip: 'i', Is: 'i',
@@ -205,7 +205,7 @@
   };
   function grandezza(p) {
     if (p in GRANDEZZE) return GRANDEZZE[p];
-    const base = p.replace(/(?:[₀-₉0-9]+|tot|eff|max|min)$/, '');
+    const base = p.replace(/(?:[₀-₉0-9]+|tot|eff|max|min|x)$/, '');
     return base !== p && base in GRANDEZZE ? GRANDEZZE[base] : null;
   }
 
@@ -484,11 +484,12 @@
   };
 
   // Lettura digitale da strumento: etichetta piccola, valore grande a cifre fisse.
+  // nota(testo) cambia la riga piccola sotto il valore (la crea se manca, la toglie se il testo è vuoto).
   ui.lettura = function (o) {
     const val = EB.h('span', { class: 'eb-lettura-v' }, o.valore || '–');
+    let notaEl = o.nota ? EB.h('span', { class: 'eb-lettura-n' }, o.nota) : null;
     const el = EB.h('div', { class: 'eb-lettura' + (o.grandezza ? ' q-' + o.grandezza : '') },
-      EB.h('span', { class: 'eb-lettura-l' }, o.etichetta), val,
-      o.nota ? EB.h('span', { class: 'eb-lettura-n' }, o.nota) : null);
+      EB.h('span', { class: 'eb-lettura-l' }, o.etichetta), val, notaEl);
     let ultimo = val.textContent;
     return {
       el: el,
@@ -502,10 +503,15 @@
           el.classList.add('cambia');
         }
       },
+      nota(testo) {
+        if (!testo) { if (notaEl) { notaEl.remove(); notaEl = null; } return; }
+        if (!notaEl) { notaEl = EB.h('span', { class: 'eb-lettura-n' }); el.append(notaEl); }
+        notaEl.textContent = testo;
+      },
     };
   };
 
-  // Formula che mostra i numeri del momento: [['I', 'i'], ' = ', ['12 V', 'v'], ...]
+  // Formula che mostra i numeri del momento: [['I', 'i'], ' = ', ['12 V', 'v'], ...]; '\n' va a capo.
   ui.formulaViva = function () {
     const el = EB.h('p', { class: 'eb-f eb-f-viva', 'aria-live': 'off' });
     return {
@@ -514,6 +520,7 @@
         el.innerHTML = '';
         parti.forEach((p) => {
           if (Array.isArray(p)) el.append(EB.h('var', { class: 'q-' + p[1] }, p[0]));
+          else if (p === '\n') el.append(EB.h('br'));
           else el.append(p);
         });
       },
