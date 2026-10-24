@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Primi chip programmabili · Enciclopedia</title>
+  <meta name="description" content="Storia e architettura dei primi chip programmabili: PROM, EPROM, Flash, Intel 4004, i microprocessori a 8 e 16 bit, i microcontrollori, PAL e FPGA. Testo, illustrazioni e laboratori interattivi.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230b1210'/%3E%3Cg fill='%23e0b04a'%3E%3Crect x='10' y='4' width='3' height='5' rx='1'/%3E%3Crect x='19' y='4' width='3' height='5' rx='1'/%3E%3Crect x='10' y='23' width='3' height='5' rx='1'/%3E%3Crect x='19' y='23' width='3' height='5' rx='1'/%3E%3C/g%3E%3Crect x='6' y='9' width='20' height='14' rx='2' fill='%23272b30' stroke='%233ee08f'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="../../css/style.css">
+  <link rel="stylesheet" href="css/base.css">
+  <!-- @stili -->
+  <!-- /stili -->
+</head>
+<body class="cp">
+  <a class="skip" href="#contenuto">Vai al contenuto</a>
+
+  <header class="topbar">
+    <a class="brand" href="../index.html" aria-label="Enciclopedia, torna all'elenco delle sezioni">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7"/><ellipse class="orbit" cx="16" cy="16" rx="12" ry="5" transform="rotate(-30 16 16)"/><ellipse class="orbit" cx="16" cy="16" rx="12" ry="5" transform="rotate(30 16 16)"/><circle class="nucleo" cx="16" cy="16" r="3"/></svg>
+      <span>Enciclopedia</span>
+    </a>
+    <nav class="topnav" aria-label="Sito">
+      <a href="../index.html">Sezioni</a>
+      <a href="index.html" aria-current="page"><span class="hide-sm">5 · </span>Chip programmabili</a>
+      <a href="../../index.html">BusLab</a>
+    </nav>
+    <div class="cp-read" aria-hidden="true">
+      <span>Lettura</span>
+      <span class="cp-read-track"><span id="cp-read-bar"></span></span>
+    </div>
+  </header>
+
+  <main id="contenuto" class="cp-main" tabindex="-1">
+    <section class="cp-hero" aria-labelledby="cp-titolo">
+      <div>
+        <p class="eyebrow">Enciclopedia · Sezione 5 · 1956–1985</p>
+        <h1 id="cp-titolo">Primi chip <em>programmabili</em></h1>
+        <p class="lead">Negli anni Sessanta un circuito integrato sapeva fare una cosa sola: per cambiargli mestiere bisognava progettarne un altro. Poi il silicio ha imparato a cambiare comportamento cambiando programma. È la storia delle memorie che si scrivono, del primo microprocessore e dei chip che si ricablano da soli.</p>
+        <div class="cp-hero-actions">
+          <a class="btn primary" href="#idea">Inizia dal capitolo 1</a>
+          <a class="btn" href="#ciclo">Programma una CPU</a>
+        </div>
+        <ul class="cp-hero-stats">
+          <li><b>8</b><span>capitoli</span></li>
+          <li><b>8</b><span>laboratori interattivi</span></li>
+          <li><b id="cp-fatti">0/8</b><span>laboratori completati</span></li>
+        </ul>
+      </div>
+      <figure class="cp-hero-art" id="cp-hero-art">
+        <figcaption><span id="cp-hero-cap">Un 4004 aperto: le sue parti si accendono a turno, come quando esegue un'istruzione.</span><span class="phase" id="cp-hero-phase" aria-hidden="true">prendi · decodifica · esegui</span></figcaption>
+      </figure>
+    </section>
+
+    <section class="cp-drawer" aria-labelledby="cp-drawer-titolo">
+      <div class="cp-drawer-head">
+        <h2 id="cp-drawer-titolo">Il cassetto dei campioni</h2>
+        <p>I chip della sezione in ordine di nascita: scegline uno per andare al suo capitolo.</p>
+      </div>
+      <ol id="cp-drawer-list">
+        <li><a class="cp-sample" href="#memorie"><span class="pic" aria-hidden="true" data-dip='{"pins":16,"label":"PROM","body":"plastic"}'></span><span class="y">1956</span><span class="nm">PROM</span><span class="kind">memoria a fusibili, l'idea di Wen Tsing Chow</span></a></li>
+        <li><a class="cp-sample" href="#memorie"><span class="pic" aria-hidden="true" data-dip='{"pins":24,"label":"1702A","top":"intel","body":"ceramic","window":true}'></span><span class="y">1971</span><span class="nm">Intel 1702</span><span class="kind">la prima EPROM</span></a></li>
+        <li><a class="cp-sample" href="#intel-4004"><span class="pic" aria-hidden="true" data-dip='{"pins":16,"label":"C4004","top":"intel","body":"ceramic"}'></span><span class="y">1971</span><span class="nm">Intel 4004</span><span class="kind">il primo microprocessore in commercio</span></a></li>
+        <li><a class="cp-sample" href="#otto-bit"><span class="pic" aria-hidden="true" data-dip='{"pins":18,"label":"C8008","top":"intel","body":"ceramic"}'></span><span class="y">1972</span><span class="nm">Intel 8008</span><span class="kind">il primo a 8 bit</span></a></li>
+        <li><a class="cp-sample" href="#otto-bit"><span class="pic" aria-hidden="true" data-dip='{"pins":40,"label":"C8080A","top":"intel","body":"violet","lid":true}'></span><span class="y">1974</span><span class="nm">Intel 8080</span><span class="kind">il cuore dell'Altair 8800</span></a></li>
+        <li><a class="cp-sample" href="#microcontrollori"><span class="pic" aria-hidden="true" data-dip='{"pins":28,"label":"TMS1000","top":"TI","body":"plastic"}'></span><span class="y">1974</span><span class="nm">TI TMS1000</span><span class="kind">il primo microcontrollore in commercio</span></a></li>
+        <li><a class="cp-sample" href="#otto-bit"><span class="pic" aria-hidden="true" data-dip='{"pins":40,"label":"MC6800","top":"MOTOROLA","body":"ceramic"}'></span><span class="y">1974</span><span class="nm">Motorola 6800</span><span class="kind">una sola alimentazione a 5 V</span></a></li>
+        <li><a class="cp-sample" href="#otto-bit"><span class="pic" aria-hidden="true" data-dip='{"pins":40,"label":"MCS6502","top":"MOS","body":"plastic"}'></span><span class="y">1975</span><span class="nm">MOS 6502</span><span class="kind">25 dollari invece di centinaia</span></a></li>
+        <li><a class="cp-sample" href="#otto-bit"><span class="pic" aria-hidden="true" data-dip='{"pins":40,"label":"Z80 CPU","top":"ZILOG","body":"plastic"}'></span><span class="y">1976</span><span class="nm">Zilog Z80</span><span class="kind">di Federico Faggin, dopo Intel</span></a></li>
+        <li><a class="cp-sample" href="#microcontrollori"><span class="pic" aria-hidden="true" data-dip='{"pins":40,"label":"P8048","top":"intel","body":"plastic"}'></span><span class="y">1976</span><span class="nm">Intel 8048</span><span class="kind">CPU, ROM, RAM e porte in un chip</span></a></li>
+        <li><a class="cp-sample" href="#sedici-bit"><span class="pic" aria-hidden="true" data-dip='{"pins":40,"label":"C8086","top":"intel","body":"ceramic"}'></span><span class="y">1978</span><span class="nm">Intel 8086</span><span class="kind">nasce la famiglia x86</span></a></li>
+        <li><a class="cp-sample" href="#logica-programmabile"><span class="pic" aria-hidden="true" data-dip='{"pins":20,"label":"PAL16L8","top":"MMI","body":"plastic"}'></span><span class="y">1978</span><span class="nm">PAL</span><span class="kind">logica che si programma bruciando fusibili</span></a></li>
+        <li><a class="cp-sample" href="#sedici-bit"><span class="pic" aria-hidden="true" data-dip='{"pins":64,"label":"MC68000","top":"MOTOROLA","body":"ceramic","lid":true}'></span><span class="y">1979</span><span class="nm">Motorola 68000</span><span class="kind">registri a 32 bit, 64 piedini</span></a></li>
+        <li><a class="cp-sample" href="#microcontrollori"><span class="pic" aria-hidden="true" data-dip='{"pins":40,"label":"P8051","top":"intel","body":"plastic"}'></span><span class="y">1980</span><span class="nm">Intel 8051</span><span class="kind">imitato da decine di produttori</span></a></li>
+        <li><a class="cp-sample" href="#memorie"><span class="pic" aria-hidden="true" data-dip='{"pins":32,"label":"FLASH","top":"TOSHIBA","body":"plastic"}'></span><span class="y">1984</span><span class="nm">Memoria Flash</span><span class="kind">di Fujio Masuoka, Toshiba</span></a></li>
+        <li><a class="cp-sample" href="#logica-programmabile"><span class="pic" aria-hidden="true" data-dip='{"pins":48,"label":"XC2064","top":"XILINX","body":"ceramic"}'></span><span class="y">1985</span><span class="nm">Xilinx XC2064</span><span class="kind">la prima FPGA</span></a></li>
+      </ol>
+    </section>
+
+    <nav class="cp-toc" aria-label="Capitoli della sezione">
+      <ol>
+        <li><a href="#idea" data-cap="idea"><span class="n"><b>1</b></span>L'idea<span class="cp-sr"></span></a></li>
+        <li><a href="#memorie" data-cap="memorie"><span class="n"><b>2</b></span>Memorie<span class="cp-sr"></span></a></li>
+        <li><a href="#intel-4004" data-cap="intel-4004"><span class="n"><b>3</b></span>Intel 4004<span class="cp-sr"></span></a></li>
+        <li><a href="#ciclo" data-cap="ciclo"><span class="n"><b>4</b></span>Il ciclo<span class="cp-sr"></span></a></li>
+        <li><a href="#otto-bit" data-cap="otto-bit"><span class="n"><b>5</b></span>Gli 8 bit<span class="cp-sr"></span></a></li>
+        <li><a href="#microcontrollori" data-cap="microcontrollori"><span class="n"><b>6</b></span>Microcontrollori<span class="cp-sr"></span></a></li>
+        <li><a href="#logica-programmabile" data-cap="logica-programmabile"><span class="n"><b>7</b></span>Logica programmabile<span class="cp-sr"></span></a></li>
+        <li><a href="#sedici-bit" data-cap="sedici-bit"><span class="n"><b>8</b></span>16 bit e oltre<span class="cp-sr"></span></a></li>
+      </ol>
+    </nav>
+
+    <article class="cp-chapters">
+      <section class="cp-chapter" id="idea" aria-labelledby="idea-titolo">
+        <!-- @parte idea -->
+        <!-- /parte idea -->
+      </section>
+      <section class="cp-chapter" id="memorie" aria-labelledby="memorie-titolo">
+        <!-- @parte memorie -->
+        <!-- /parte memorie -->
+      </section>
+      <section class="cp-chapter" id="intel-4004" aria-labelledby="intel-4004-titolo">
+        <!-- @parte intel-4004 -->
+        <!-- /parte intel-4004 -->
+      </section>
+      <section class="cp-chapter" id="ciclo" aria-labelledby="ciclo-titolo">
+        <!-- @parte ciclo -->
+        <!-- /parte ciclo -->
+      </section>
+      <section class="cp-chapter" id="otto-bit" aria-labelledby="otto-bit-titolo">
+        <!-- @parte otto-bit -->
+        <!-- /parte otto-bit -->
+      </section>
+      <section class="cp-chapter" id="microcontrollori" aria-labelledby="microcontrollori-titolo">
+        <!-- @parte microcontrollori -->
+        <!-- /parte microcontrollori -->
+      </section>
+      <section class="cp-chapter" id="logica-programmabile" aria-labelledby="logica-programmabile-titolo">
+        <!-- @parte logica-programmabile -->
+        <!-- /parte logica-programmabile -->
+      </section>
+      <section class="cp-chapter" id="sedici-bit" aria-labelledby="sedici-bit-titolo">
+        <!-- @parte sedici-bit -->
+        <!-- /parte sedici-bit -->
+      </section>
+    </article>
+
+    <section class="cp-outro" aria-labelledby="cp-outro-titolo">
+      <h2 id="cp-outro-titolo">E adesso?</h2>
+      <a href="../quiz/index.html#chip-programmabili"><small>Mettiti alla prova</small><b>Quiz della sezione</b><span>Domande su tutti gli otto capitoli, dalla PROM all'ARM1.</span></a>
+      <a href="../storia-pc/index.html#primi-pc"><small>Sezione 6 →</small><b>Architettura e storia del PC</b><span>Dall'Altair 8800 all'IBM PC: i computer costruiti attorno a questi chip.</span></a>
+      <a href="../porte-logiche/index.html"><small>← Sezione 4</small><b>Porte logiche e circuiti integrati</b><span>Le porte, i flip-flop e i sommatori di cui sono fatti questi chip.</span></a>
+      <a href="../index.html"><small>Enciclopedia</small><b>Tutte le sezioni</b><span>Dall'elettronica di base alla storia della programmazione.</span></a>
+    </section>
+  </main>
+
+  <footer class="foot">
+    Enciclopedia "Dall'elettronica a oggi" · Sezione 5, Primi chip programmabili. I chip disegnati sono ricostruzioni didattiche, non fotografie: proporzioni e scritte sono semplificate. I laboratori usano modelli semplificati ma fedeli al funzionamento reale; le fonti sono indicate in fondo a ogni capitolo.
+  </footer>
+
+  <script src="../enciclopedia.js"></script>
+  <script src="section.js"></script>
+  <script src="js/core.js"></script>
+  <script src="js/hero.js"></script>
+  <!-- @script -->
+  <!-- /script -->
+</body>
+</html>

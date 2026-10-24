@@ -1,0 +1,309 @@
+/*
+ * Capitolo 2 · Memorie che si programmano.
+ * Illustrazioni su carta (si adattano al tema con i token della pagina) e laboratorio «Scrivi e cancella la memoria».
+ * Tutti i selettori partono da #memorie; le classi del capitolo hanno il prefisso mem-.
+ */
+
+#memorie {
+  /* elettroni: azzurro dei dati, scurito sulla carta chiara e schiarito su quella scura */
+  --mem-e: color-mix(in srgb, #5cc8ff 62%, var(--ink));
+  --mem-ox: color-mix(in srgb, #d9a441 13%, var(--surface));
+  --mem-ox-line: color-mix(in srgb, #b9852a 50%, transparent);
+  /* ultravioletto sulla carta: più scuro sul chiaro, più chiaro sullo scuro */
+  --mem-uv-p: color-mix(in srgb, #9a78ff 72%, var(--ink));
+  /* strumento scuro */
+  --mem-uv: #b18cff;
+  --mem-uv-soft: #d9c8ff;
+  --mem-e-lab: var(--sig-data);
+  --mem-cell0: #121d1a;
+  --mem-cell0-line: #2b3b36;
+  --mem-cell1: #12321f;
+  --mem-deny: #ff7a6b;
+}
+
+/* ---------- testo ---------- */
+
+#memorie .mem-intro { align-items: center; }
+#memorie .mem-intro .cp-fig { margin: 0; }
+#memorie .mem-kicker { font: 700 .78rem var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin: 34px 0 -12px; }
+#memorie .cp-specimen-cap { margin-top: 16px; line-height: 1.45; }
+#memorie .mem-spec-sub { display: block; }
+/* il pallino della linea del tempo è largo 12 px solo con border-box (gli pseudo-elementi non lo ereditano da *) */
+#memorie .cp-steps li::before { box-sizing: border-box; }
+/* cinque persone su una riga sugli schermi larghi */
+#memorie .cp-people { grid-template-columns: repeat(auto-fill, minmax(196px, 1fr)); }
+
+/* ---------- figure su carta ---------- */
+
+#memorie .cp-art .mem-t { font-size: 13px; }
+#memorie .cp-art .mem-t-s { font-size: 12px; }
+#memorie .cp-art .mem-t-b { font-size: 13px; font-weight: 750; }
+#memorie .cp-art .mem-t-big { font: 800 22px var(--mono); }
+#memorie .cp-art .mem-t-title { font-size: 15px; font-weight: 800; }
+
+/* figura 1: matrice di diodi */
+#memorie .cp-art .mem-box { stroke: color-mix(in srgb, var(--ink) 32%, transparent); stroke-width: 1.5; }
+#memorie .cp-art .mem-wire { stroke: color-mix(in srgb, var(--ink) 24%, transparent); stroke-width: 2.5; stroke-linecap: round; }
+#memorie .cp-art .mem-wire-on { stroke: var(--cp); stroke-width: 3.5; stroke-linecap: round; }
+#memorie .cp-art .mem-d-wire { fill: none; stroke: color-mix(in srgb, var(--ink) 50%, transparent); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+#memorie .cp-art .mem-d-body { fill: color-mix(in srgb, var(--ink) 55%, var(--surface)); }
+#memorie .cp-art .mem-d-dot { fill: color-mix(in srgb, var(--ink) 55%, var(--surface)); }
+#memorie .cp-art .mem-diode.is-on .mem-d-wire { stroke: var(--cp); }
+#memorie .cp-art .mem-diode.is-on .mem-d-body,
+#memorie .cp-art .mem-diode.is-on .mem-d-dot { fill: var(--cp); }
+
+/* figura 2: transistor a gate flottante */
+#memorie .mem-fig-cella .cp-art { padding: 18px 18px 14px; }
+#memorie .mem-pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 18px 32px; max-width: 900px; margin: 0 auto; }
+#memorie .mem-pair svg { display: block; width: 100%; height: auto; }
+#memorie .cp-art .mem-term { fill: none; stroke: color-mix(in srgb, var(--ink) 55%, transparent); stroke-width: 2.5; stroke-linecap: round; }
+#memorie .cp-art .mem-term.paper { fill: var(--surface); stroke-width: 2; }
+#memorie .cp-art .mem-sub { fill: color-mix(in srgb, var(--ink) 6%, var(--surface)); stroke: color-mix(in srgb, var(--ink) 22%, transparent); stroke-width: 1.2; }
+#memorie .cp-art .mem-n { fill: color-mix(in srgb, var(--cp) 18%, var(--surface)); stroke: color-mix(in srgb, var(--cp) 50%, transparent); stroke-width: 1.2; }
+#memorie .cp-art .mem-ox { fill: var(--mem-ox); stroke: var(--mem-ox-line); stroke-width: 1.2; }
+#memorie .cp-art .mem-cg { fill: color-mix(in srgb, var(--ink) 13%, var(--surface)); stroke: color-mix(in srgb, var(--ink) 45%, transparent); stroke-width: 1.4; }
+#memorie .cp-art .mem-fgate { fill: color-mix(in srgb, var(--mem-e) 10%, var(--surface)); stroke: color-mix(in srgb, var(--mem-e) 70%, transparent); stroke-width: 1.6; }
+#memorie .cp-art .mem-el circle { fill: var(--mem-e); }
+#memorie .cp-art .mem-el path { fill: none; stroke: var(--surface); stroke-width: 1.8; stroke-linecap: round; }
+#memorie .cp-art .mem-el-dot { fill: var(--mem-e); }
+#memorie .cp-art .mem-chan { fill: color-mix(in srgb, var(--ok) 50%, var(--surface)); }
+#memorie .cp-art .mem-flow { fill: none; stroke: var(--ok); stroke-width: 2.5; stroke-linecap: round; }
+#memorie .cp-art .mem-m-ok { fill: var(--ok); }
+#memorie .cp-art .mem-ok { fill: var(--ok); font-weight: 700; }
+#memorie .cp-art .mem-lead { fill: none; stroke: var(--muted); stroke-width: 1; }
+#memorie .cp-art .mem-scale { stroke: color-mix(in srgb, var(--ink) 22%, transparent); stroke-width: 3; stroke-linecap: round; }
+#memorie .cp-art .mem-read { stroke: var(--ink); stroke-width: 1.5; stroke-dasharray: 4 3; }
+
+/* figura 3: che cosa si cancella in un colpo (testi in HTML, così restano leggibili a ogni larghezza) */
+#memorie .mem-trio { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px 32px; max-width: 760px; margin: 0 auto; }
+#memorie .mem-trio-i { display: grid; justify-items: center; align-content: start; gap: 12px; text-align: center; min-width: 0; }
+#memorie .mem-trio-i svg { max-width: 184px; }
+#memorie .mem-trio-t { display: grid; gap: 2px; margin: 0; font-size: .92rem; line-height: 1.4; }
+#memorie .mem-trio-t b { font-size: 1.02rem; }
+#memorie .mem-trio-t span { color: var(--muted); }
+#memorie .cp-art .mem-p-die, #memorie .cp-art .mem-p-bg { fill: color-mix(in srgb, var(--ink) 5%, var(--surface)); }
+#memorie .cp-art .mem-p-die { stroke: color-mix(in srgb, var(--ink) 20%, transparent); stroke-width: 1.2; }
+#memorie .cp-art .mem-p-cell { fill: var(--surface); stroke: color-mix(in srgb, var(--ink) 28%, transparent); stroke-width: 1; }
+#memorie .cp-art .mem-p-e { fill: var(--mem-e); }
+#memorie .cp-art .mem-p-cell-uv { fill: color-mix(in srgb, var(--mem-uv-p) 20%, var(--surface)); stroke: color-mix(in srgb, var(--mem-uv-p) 60%, transparent); stroke-width: 1; }
+#memorie .cp-art .mem-p-cell-el { fill: color-mix(in srgb, var(--cp) 18%, var(--surface)); stroke: color-mix(in srgb, var(--cp) 55%, transparent); stroke-width: 1; }
+#memorie .cp-art .mem-p-ring-uv { fill: none; stroke: var(--mem-uv-p); stroke-width: 2; }
+#memorie .cp-art .mem-p-ring-el { fill: none; stroke: var(--cp); stroke-width: 2; }
+#memorie .cp-art .mem-p-ray { fill: none; stroke: var(--mem-uv-p); stroke-width: 2.2; stroke-linecap: round; }
+#memorie .cp-art .mem-p-bolt { fill: var(--cp); }
+
+/* ---------- laboratorio ---------- */
+
+#memorie .cp-lab .mem-actions { margin-left: auto; }
+#memorie .cp-lab .mem-actions .cp-btn[hidden] { display: none; }
+#memorie .cp-lab .mem-seg-l { display: inline-flex; align-items: center; gap: 5px; }
+#memorie .cp-lab .mem-tick { display: none; color: var(--sig-on); font-weight: 900; font-size: .8em; }
+#memorie .cp-lab .mem-tick.on { display: inline; }
+
+#memorie .mem-grid { grid-template-columns: minmax(0, 1.12fr) minmax(0, 1fr); }
+#memorie .mem-stage { display: grid; gap: 12px; align-content: start; padding: 14px 14px 16px; }
+#memorie .cp-stage > .mem-array { max-width: 580px; margin: 0 auto; user-select: none; -webkit-user-select: none; touch-action: manipulation; }
+
+/* memoria: testi */
+#memorie .mem-array text { font-family: var(--mono); }
+#memorie .mem-array .mem-head { fill: var(--lab-text); font: 700 13.5px var(--font); letter-spacing: .01em; }
+#memorie .mem-colnums text { fill: var(--lab-dim); font-size: 12.5px; font-weight: 700; }
+#memorie .mem-colnums .k { font-size: 11.5px; letter-spacing: .06em; }
+#memorie .mem-addr { fill: var(--sig-addr); font-size: 14px; font-weight: 700; }
+#memorie .mem-hex { fill: var(--lab-ink); font-size: 15px; font-weight: 800; transition: fill var(--t-slow) var(--ease-smooth); }
+#memorie .mem-hex.is-changed { fill: var(--lab-gold); transition: none; }
+
+/* memoria: piastrina, finestra, blocchi */
+#memorie .mem-die { fill: #0d1714; stroke: #1d2b27; stroke-width: 1.5; }
+#memorie .mem-rowband { fill: rgba(238, 246, 242, .04); transition: transform var(--t-fast) var(--ease-smooth), fill var(--t-fast); }
+#memorie .mem-rowband.is-busy { fill: rgba(255, 122, 168, .12); }
+#memorie .mem-band { fill: rgba(92, 200, 255, .03); stroke: rgba(92, 200, 255, .22); stroke-width: 1.5; stroke-dasharray: 6 5; transition: stroke var(--t-fast), fill var(--t-fast); }
+#memorie .mem-band.is-sel { fill: rgba(92, 200, 255, .07); stroke: rgba(92, 200, 255, .6); }
+#memorie .mem-tag { fill: var(--lab-dim); font-size: 12px; font-weight: 800; letter-spacing: .14em; }
+#memorie .mem-sep { stroke: rgba(92, 200, 255, .35); stroke-width: 1.5; stroke-dasharray: 3 4; }
+#memorie .mem-glass { stroke: none; }
+#memorie .mem-tint { fill: var(--mem-uv); }
+#memorie .mem-rim { fill: none; stroke: rgba(207, 227, 242, .38); stroke-width: 2; }
+#memorie .mem-band, #memorie .mem-tag, #memorie .mem-sep,
+#memorie .mem-win, #memorie .mem-lamp, #memorie .mem-rays, #memorie .mem-photons { display: none; }
+#memorie [data-tech="flash"] .mem-band, #memorie [data-tech="flash"] .mem-tag, #memorie [data-tech="flash"] .mem-sep { display: inline; }
+#memorie [data-tech="eprom"] .mem-win, #memorie [data-tech="eprom"] .mem-lamp,
+#memorie [data-tech="eprom"] .mem-rays, #memorie [data-tech="eprom"] .mem-photons { display: inline; }
+
+/* lampada UV */
+#memorie .mem-lamp-box { fill: #16131f; stroke: #3b3350; stroke-width: 1.5; }
+#memorie .mem-lamp-tube { fill: #2b2540; }
+#memorie .mem-lamp-on { fill: var(--mem-uv-soft); }
+#memorie .mem-lamp-halo { fill: rgba(177, 140, 255, .4); }
+#memorie .mem-lamp-t { fill: #cbbcf0; font-size: 12.5px; font-weight: 700; letter-spacing: .04em; }
+#memorie .mem-photon { fill: none; stroke: #cdb6ff; stroke-width: 2; stroke-linecap: round; }
+#memorie .mem-flash { fill: #e6f8ff; pointer-events: none; }
+#memorie .mem-rays, #memorie .mem-win, #memorie .mem-photons, #memorie .mem-fx, #memorie .mem-ring, #memorie .mem-target { pointer-events: none; }
+
+/* memoria: celle */
+#memorie .mem-cell { cursor: pointer; outline: none; }
+#memorie .mem-cell-bg { fill: var(--mem-cell0); stroke: var(--mem-cell0-line); stroke-width: 1.5; transition: fill var(--t-fast), stroke var(--t-fast); }
+#memorie .mem-cell-v { fill: var(--lab-dim); font-size: 16px; font-weight: 800; transition: fill var(--t-fast); }
+#memorie .mem-cell.is-one .mem-cell-bg { fill: var(--mem-cell1); stroke: var(--sig-on); }
+#memorie .mem-cell.is-one .mem-cell-v { fill: #eafff4; }
+#memorie [data-tech="eprom"] .mem-cell.is-zero .mem-cell-bg,
+#memorie [data-tech="eeprom"] .mem-cell.is-zero .mem-cell-bg,
+#memorie [data-tech="flash"] .mem-cell.is-zero .mem-cell-bg { fill: #0f1c24; stroke: rgba(92, 200, 255, .5); }
+#memorie [data-tech="eprom"] .mem-cell.is-one .mem-cell-bg,
+#memorie [data-tech="eeprom"] .mem-cell.is-one .mem-cell-bg,
+#memorie [data-tech="flash"] .mem-cell.is-one .mem-cell-bg { fill: #10281b; stroke: rgba(62, 224, 143, .7); }
+#memorie .mem-cell-e circle { fill: var(--mem-e-lab); }
+#memorie .mem-cell:hover .mem-cell-bg { stroke: #a9c3b9; }
+#memorie .mem-cell.is-one:hover .mem-cell-bg { stroke: #9ff0c4; }
+#memorie .mem-cell.is-denied .mem-cell-bg { stroke: var(--mem-deny); stroke-width: 2.5; }
+#memorie .mem-ring { fill: none; stroke: rgba(238, 246, 242, .8); stroke-width: 2; transition: transform var(--t-fast) var(--ease-smooth), stroke var(--t-fast); }
+#memorie .mem-ring.is-kbd { stroke: var(--lab-gold); stroke-width: 3; }
+#memorie .mem-target { fill: none; stroke: var(--lab-gold); stroke-width: 2.5; stroke-dasharray: 5 4; }
+
+/* memoria: effetti */
+#memorie .mem-pulse { fill: none; stroke: var(--sig-ctrl); stroke-width: 2.5; }
+#memorie .mem-pulse.k-erase { stroke: var(--sig-on); }
+#memorie .mem-spark line { stroke: #ffd27a; stroke-width: 2.4; stroke-linecap: round; }
+#memorie .mem-spark .core { fill: #fff3cf; }
+
+/* sotto la memoria: indicatori e prova */
+#memorie .mem-status { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+#memorie .mem-status .cp-readout { min-width: 84px; }
+#memorie .mem-task { position: relative; padding: 12px 14px 12px; border-radius: 12px; background: var(--lab-panel); border: 1px solid var(--lab-line); }
+#memorie .mem-task::after {
+  content: ""; position: absolute; inset: -1px; border-radius: inherit; pointer-events: none; opacity: 0;
+  box-shadow: 0 0 0 2px rgba(62, 224, 143, .55), 0 0 26px rgba(62, 224, 143, .28);
+}
+#memorie .mem-task.is-done { border-color: color-mix(in srgb, var(--sig-on) 45%, var(--lab-line)); }
+#memorie .mem-task.is-cheer { animation: mem-pop var(--t-slow) var(--ease-bounce); }
+#memorie .mem-task.is-cheer::after { animation: mem-glow 1.4s var(--ease-smooth); }
+#memorie .mem-task-k { display: block; font: 700 .72rem var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--lab-gold); }
+#memorie .mem-task.is-done .mem-task-k { color: var(--sig-on); }
+#memorie .mem-task-t { margin: 4px 0 8px; color: var(--lab-ink); font-size: .95rem; line-height: 1.5; }
+#memorie .mem-task-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; font-size: .9rem; }
+#memorie .mem-task-steps li { display: flex; align-items: center; gap: 9px; }
+#memorie .mem-task-steps li::before {
+  content: ""; flex: none; display: grid; place-items: center; width: 16px; height: 16px; border-radius: 50%;
+  border: 2px solid #3a4c46; box-sizing: border-box; font: 900 10px/1 var(--font); color: #04150d;
+}
+#memorie .mem-task-steps li.is-ok { color: var(--lab-ink); }
+#memorie .mem-task-steps li.is-ok::before { content: "✓"; background: var(--sig-on); border-color: var(--sig-on); }
+
+@keyframes mem-pop { 0% { transform: scale(1); } 35% { transform: scale(1.018); } 100% { transform: scale(1); } }
+@keyframes mem-glow { 0% { opacity: 0; } 25% { opacity: 1; } 100% { opacity: 0; } }
+
+/* spiegazione: lente e scheda */
+#memorie .mem-explain { container-type: inline-size; }
+#memorie .mem-explain-in { display: grid; gap: 16px; align-items: start; }
+#memorie .mem-lens-box { padding: 10px 12px 12px; border-radius: 12px; background: var(--lab-panel); border: 1px solid var(--lab-line); }
+#memorie .mem-lens-head { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
+#memorie .mem-lens-k { font: 700 .7rem var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--lab-dim); }
+#memorie .mem-lens-id { font: 700 .9rem var(--mono); color: var(--lab-ink); }
+#memorie .mem-pill { font: 700 .76rem var(--mono); padding: 2px 9px; border-radius: 999px; color: var(--lab-text); background: var(--lab-sunk); border: 1px solid var(--lab-line); }
+#memorie .mem-pill.one { color: #c9ffe2; border-color: color-mix(in srgb, var(--sig-on) 55%, transparent); background: rgba(62, 224, 143, .12); }
+#memorie .mem-lens-head .mem-readbtn { margin-left: auto; min-height: 34px; padding: 0 11px; font-size: .84rem; }
+#memorie .mem-lens { display: block; width: 100%; height: auto; margin-top: 8px; }
+#memorie .mem-lens-cap { margin: 6px 0 0; font-size: .88rem; line-height: 1.5; min-height: 4.5em; }
+
+#memorie .mem-card h4 { margin-bottom: 6px; }
+#memorie .mem-card-intro { font-size: .93rem; }
+#memorie .mem-rules { display: grid; margin: 4px 0 14px; }
+#memorie .mem-rules > div { display: grid; grid-template-columns: minmax(7.5em, 34%) minmax(0, 1fr); gap: 10px; padding: 6px 0; border-top: 1px solid var(--lab-line); }
+#memorie .mem-rules > div:last-child { border-bottom: 1px solid var(--lab-line); }
+#memorie .mem-rules dt { font: 700 .68rem var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--lab-dim); padding-top: 3px; }
+#memorie .mem-rules dd { margin: 0; color: var(--lab-ink); font-size: .9rem; }
+#memorie .mem-msg { padding: 10px 12px; border-radius: 10px; background: var(--lab-sunk); border: 1px solid var(--lab-line); border-left: 3px solid var(--lab-gold); }
+#memorie .mem-msg-k { display: block; font: 700 .68rem var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--lab-dim); }
+#memorie .mem-msg-t { margin: 4px 0 0; color: var(--lab-ink); min-height: 3em; }
+
+/* lente: testi */
+#memorie .mem-lens text { font-family: var(--font); fill: var(--lab-text); font-size: 13px; font-weight: 600; }
+#memorie .mem-lens text.s { font-size: 12px; }
+#memorie .mem-lens text.b { font: 800 14px var(--mono); fill: var(--lab-ink); }
+#memorie .mem-lens text.dim { fill: var(--lab-dim); }
+#memorie .mem-lens text.one { fill: var(--sig-on); }
+
+/* lente: gate flottante */
+#memorie .mem-l-term { fill: none; stroke: #6f877e; stroke-width: 2.5; stroke-linecap: round; transition: stroke var(--t-fast); }
+#memorie .mem-l-term.is-hot { stroke: var(--sig-ctrl); }
+#memorie .mem-l-term.is-read { stroke: var(--lab-gold); }
+#memorie .mem-l-pin { fill: var(--lab-panel); stroke: #7d978d; stroke-width: 1.5; }
+#memorie .mem-l-sub { fill: #141c19; stroke: #26342f; stroke-width: 1.2; }
+#memorie .mem-l-n { fill: rgba(92, 200, 255, .14); stroke: rgba(92, 200, 255, .45); stroke-width: 1.2; }
+#memorie .mem-l-chan { fill: var(--sig-on); }
+#memorie .mem-l-ox { fill: rgba(240, 176, 74, .07); stroke: rgba(240, 176, 74, .38); stroke-width: 1.2; }
+#memorie .mem-l-cgate { fill: #24332e; stroke: #7d978d; stroke-width: 1.4; }
+#memorie .mem-l-fgate { fill: #172429; stroke: rgba(92, 200, 255, .65); stroke-width: 1.6; }
+#memorie .mem-l-e { fill: var(--mem-e-lab); stroke: rgba(92, 200, 255, .28); stroke-width: 4; paint-order: stroke; }
+#memorie .mem-l-ph { fill: none; stroke: #cdb6ff; stroke-width: 2.2; stroke-linecap: round; }
+#memorie .mem-l-cross path { fill: none; stroke: var(--mem-deny); stroke-width: 3.5; stroke-linecap: round; }
+#memorie .mem-l-flash { fill: #e6f8ff; }
+#memorie .mem-l-lead { fill: none; stroke: #7d978d; stroke-width: 1; }
+#memorie .mem-l-track { stroke: #26342f; stroke-width: 4; stroke-linecap: round; }
+#memorie .mem-l-zone { stroke: rgba(62, 224, 143, .5); stroke-width: 4; stroke-linecap: round; }
+#memorie .mem-l-readline { stroke: #eef6f2; stroke-width: 1.5; stroke-dasharray: 4 3; }
+#memorie .mem-l-mark circle { fill: var(--lab-gold); }
+#memorie .mem-lens .mem-l-mark text { fill: var(--lab-gold); font-size: 12px; font-weight: 800; }
+
+/* lente: PROM e ROM */
+#memorie .mem-l-bus { fill: none; stroke: #26342f; stroke-width: 6; stroke-linecap: round; }
+#memorie .mem-l-wire { fill: none; stroke: #7d978d; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; transition: stroke var(--t-fast); }
+#memorie .mem-l-wire.is-hot { stroke: var(--sig-ctrl); }
+#memorie .mem-l-wire.is-read { stroke: var(--lab-gold); }
+#memorie .mem-l-diode { fill: #a9c3b9; }
+#memorie .mem-l-fuse { fill: #cdb98a; transition: fill var(--t-normal); }
+#memorie .mem-l-fuse.is-hot { fill: #ff9f43; }
+#memorie .mem-l-fuse.is-white { fill: #fff3cf; }
+#memorie .mem-l-soot { fill: #070b0a; stroke: #5a4630; stroke-width: 1.5; transition: stroke var(--t-fast); }
+#memorie .mem-l-soot.is-denied { stroke: var(--mem-deny); stroke-width: 2.5; }
+#memorie .mem-l-spark line { stroke: #ffd27a; stroke-width: 2.5; stroke-linecap: round; }
+#memorie .mem-l-cur { fill: var(--lab-gold); }
+#memorie .mem-l-cur.is-hot { fill: var(--sig-ctrl); }
+#memorie .mem-l-empty { fill: none; stroke: #3a4c46; stroke-width: 1.5; stroke-dasharray: 5 4; }
+#memorie .mem-l-lock rect, #memorie .mem-l-lock .shackle { stroke: var(--mem-deny); stroke-width: 3; }
+#memorie .mem-l-lock rect { fill: #2a1512; }
+#memorie .mem-l-lock .shackle { fill: none; }
+#memorie .mem-l-lock .hole { fill: var(--mem-deny); }
+
+/* ---------- impaginazione ---------- */
+
+@container (min-width: 620px) {
+  #memorie .mem-explain-in { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+}
+
+@media (max-width: 900px) {
+  #memorie .mem-grid { grid-template-columns: minmax(0, 1fr); }
+  #memorie .mem-intro .cp-fig { max-width: 520px; margin-bottom: 36px; }
+}
+
+@media (max-width: 560px) {
+  #memorie .mem-trio { grid-template-columns: minmax(0, 1fr); gap: 14px; max-width: 420px; }
+  #memorie .mem-trio-i { grid-template-columns: 104px minmax(0, 1fr); justify-items: start; align-items: center; gap: 16px; text-align: left; }
+}
+
+@media (max-width: 640px) {
+  #memorie .cp-art { padding: 12px; }
+  #memorie .mem-fig-cella .cp-art { padding: 12px 10px; }
+  #memorie .cp-lab .mem-actions { margin-left: 0; }
+  #memorie .cp-lab .cp-seg button { padding: 0 9px; font-size: .84rem; }
+  #memorie .mem-stage { padding: 10px 4px 12px; }
+  #memorie .mem-task { margin: 0 6px; }
+  #memorie .mem-status .cp-readout { min-width: 0; flex: 1 1 40%; }
+  /* testi della memoria un po' più grandi: lo schema si rimpicciolisce */
+  #memorie .mem-array .mem-head { font-size: 14.5px; }
+  #memorie .mem-colnums text { font-size: 13.5px; }
+  #memorie .mem-colnums .k { font-size: 13px; }
+  #memorie .mem-addr { font-size: 15px; }
+  #memorie .mem-hex { font-size: 16px; }
+  #memorie .mem-cell-v { font-size: 17px; }
+  #memorie .mem-tag { font-size: 13px; }
+  #memorie .mem-lamp-t { font-size: 13.5px; }
+  #memorie .mem-lens text { font-size: 13.5px; }
+  #memorie .mem-lens text.s { font-size: 12.5px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #memorie .mem-ring, #memorie .mem-rowband, #memorie .mem-hex, #memorie .mem-cell-bg, #memorie .mem-cell-v,
+  #memorie .mem-band, #memorie .mem-l-term, #memorie .mem-l-wire, #memorie .mem-l-fuse, #memorie .mem-l-soot { transition: none; }
+  #memorie .mem-task.is-cheer, #memorie .mem-task.is-cheer::after { animation: none; }
+}

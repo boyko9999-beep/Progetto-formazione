@@ -1,0 +1,223 @@
+/*
+ * Capitolo 3 · Intel 4004: figure del capitolo e laboratorio "Il 4004 al microscopio".
+ * Ogni selettore parte da #intel-4004; le classi proprie hanno il prefisso intel-4004-.
+ */
+
+/* ---------- figure del testo ---------- */
+
+#intel-4004 .intel-4004-fig-gate .cp-art { max-width: 880px; }
+#intel-4004 .intel-4004-duo { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px 30px; }
+#intel-4004 .cp-cols .intel-4004-fig-mcs { margin-top: 6px; }
+
+/* schema MCS-4 su sfondo da strumento */
+#intel-4004 .intel-4004-fig-mcs .intel-4004-arr { fill: var(--lab-dim); }
+#intel-4004 .intel-4004-fig-mcs .intel-4004-f-lbl { fill: var(--lab-text); font-size: 12px; font-weight: 600; }
+#intel-4004 .intel-4004-fig-mcs .intel-4004-f-data { fill: var(--sig-data); font-size: 12px; font-weight: 750; }
+#intel-4004 .intel-4004-fig-mcs .intel-4004-f-ctl { fill: none; stroke: var(--sig-ctrl); stroke-width: 2; }
+#intel-4004 .intel-4004-fig-mcs .intel-4004-f-ctl-t { fill: var(--sig-ctrl); font-size: 11.5px; font-weight: 750; font-family: var(--mono); }
+#intel-4004 .intel-4004-fig-mcs .intel-4004-f-port { fill: none; stroke: var(--lab-dim); stroke-width: 1.6; stroke-dasharray: 4 3; }
+#intel-4004 .intel-4004-fig-mcs .cp-blk text { font-size: 13.5px; }
+#intel-4004 .intel-4004-fig-mcs .cp-blk text.sub { font-size: 11px; }
+
+/* ---------- laboratorio: struttura ---------- */
+
+#intel-4004 .intel-4004-view[hidden] { display: none; }
+#intel-4004 .intel-4004-bar-note { font-size: .82rem; color: var(--lab-dim); }
+#intel-4004 .intel-4004-explain { min-width: 0; }
+#intel-4004 .intel-4004-explain h4 { font-size: 1.05rem; }
+#intel-4004 .intel-4004-tie { color: var(--lab-dim); font-size: .9rem; }
+#intel-4004 .intel-4004-progress { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--lab-line); }
+#intel-4004 .intel-4004-count { margin: 0 0 7px; font: 700 .8rem var(--mono); color: var(--lab-ink); }
+#intel-4004 .intel-4004-pips { display: flex; gap: 4px; }
+#intel-4004 .intel-4004-pip { flex: 1 1 0; height: 6px; border-radius: 3px; background: var(--lab-sunk); border: 1px solid var(--lab-line); transition: background var(--t-normal) var(--ease-smooth); }
+#intel-4004 .intel-4004-pip.on { background: var(--sig-on); border-color: transparent; }
+#intel-4004 .intel-4004-goal-part.ok { color: var(--sig-on); font-weight: 700; }
+
+/* ---------- esploratore del die ---------- */
+
+#intel-4004 .intel-4004-die-stage {
+  padding: 8px 10px 4px;
+  background: radial-gradient(70% 60% at 50% 48%, rgba(240, 176, 74, .07), transparent 72%);
+}
+#intel-4004 .intel-4004-die-stage.is-narrow > svg { max-width: 440px; margin: 0 auto; }
+#intel-4004 .intel-4004-die-svg text { font-family: var(--font); }
+#intel-4004 .intel-4004-body { stroke: #bdb39c; stroke-width: 1.2; }
+#intel-4004 .intel-4004-notch { fill: rgba(80, 64, 40, .32); }
+#intel-4004 .intel-4004-traces path { fill: none; stroke: #9f988a; stroke-width: 2.4; stroke-linejoin: round; opacity: .5; }
+#intel-4004 .intel-4004-seal { fill: none; stroke: #c9a043; stroke-width: 4; }
+#intel-4004 .intel-4004-cavity { fill: #221f1a; }
+#intel-4004 .intel-4004-finger { fill: #d9b257; }
+#intel-4004 .intel-4004-die { stroke: #e6d9a8; stroke-width: .8; }
+#intel-4004 .intel-4004-channels line { stroke: rgba(233, 220, 174, .36); stroke-width: 2.4; }
+
+#intel-4004 .intel-4004-area, #intel-4004 .intel-4004-pin { cursor: pointer; outline: none; }
+#intel-4004 .intel-4004-area-bg { fill: rgba(8, 14, 12, .5); stroke: rgba(233, 220, 174, .34); stroke-width: 1; transition: fill var(--t-fast), stroke var(--t-fast); }
+#intel-4004 .intel-4004-area-tex { opacity: .6; pointer-events: none; }
+#intel-4004 .intel-4004-area-flash { fill: var(--sig-on); opacity: 0; pointer-events: none; }
+#intel-4004 .intel-4004-area-lbl { fill: #f4ecd0; font-weight: 750; pointer-events: none; paint-order: stroke; stroke: rgba(8, 14, 12, .65); stroke-width: 3px; stroke-linejoin: round; }
+#intel-4004 .intel-4004-area-sub { fill: #d4cba9; font-weight: 600; font-family: var(--mono); pointer-events: none; paint-order: stroke; stroke: rgba(8, 14, 12, .65); stroke-width: 3px; }
+#intel-4004 .intel-4004-area-ok { fill: var(--sig-on); font-weight: 800; opacity: 0; pointer-events: none; transition: opacity var(--t-normal); }
+#intel-4004 .intel-4004-area.is-seen .intel-4004-area-ok { opacity: 1; }
+#intel-4004 .intel-4004-area:hover .intel-4004-area-bg { stroke: rgba(240, 176, 74, .9); }
+#intel-4004 .intel-4004-area.is-link .intel-4004-area-bg { stroke: var(--lab-gold); stroke-width: 2; stroke-dasharray: 5 4; }
+#intel-4004 .intel-4004-area.is-sel .intel-4004-area-bg { fill: rgba(62, 224, 143, .22); stroke: var(--sig-on); stroke-width: 2.2; stroke-dasharray: none; }
+#intel-4004 .intel-4004-area.is-sel .intel-4004-area-lbl { fill: #fff; }
+#intel-4004 .intel-4004-focus { fill: none; stroke: var(--lab-gold); stroke-width: 3; opacity: 0; pointer-events: none; }
+#intel-4004 .intel-4004-area:focus-visible .intel-4004-focus,
+#intel-4004 .intel-4004-pin:focus-visible .intel-4004-focus { opacity: 1; }
+
+/* anello delle piazzole */
+#intel-4004 .intel-4004-ring-hit { fill: rgba(0, 0, 0, 0); stroke: none; transition: fill var(--t-fast); }
+#intel-4004 .intel-4004-pad:hover .intel-4004-ring-hit { fill: rgba(240, 176, 74, .16); }
+#intel-4004 .intel-4004-pad.is-link .intel-4004-ring-hit { fill: rgba(240, 176, 74, .14); stroke: var(--lab-gold); stroke-width: 1.5; stroke-dasharray: 5 4; }
+#intel-4004 .intel-4004-pad.is-sel .intel-4004-ring-hit { fill: rgba(62, 224, 143, .24); stroke: var(--sig-on); stroke-width: 1.6; stroke-dasharray: none; }
+#intel-4004 .intel-4004-leader { fill: none; stroke: #c9a043; stroke-width: 1.4; stroke-dasharray: 3 3; }
+#intel-4004 .intel-4004-pad-lbl { fill: #3d382f; font-weight: 800; }
+#intel-4004 .intel-4004-pad.is-sel .intel-4004-pad-lbl { fill: #0d5c37; }
+#intel-4004 .intel-4004-pad .intel-4004-area-ok { fill: #1d7a3a; }
+#intel-4004 .intel-4004-wires { pointer-events: none; }
+#intel-4004 .intel-4004-pad-sq { fill: #e9dcae; }
+#intel-4004 .intel-4004-wire { fill: none; stroke: #e7c66a; stroke-width: 1.1; opacity: .9; transition: stroke var(--t-fast), stroke-width var(--t-fast); }
+#intel-4004 .intel-4004-wire.is-on { stroke: #fff3c4; stroke-width: 2.2; filter: drop-shadow(0 0 3px rgba(240, 176, 74, .9)); }
+#intel-4004 .intel-4004-ff { fill: #f4ecd0; font-family: var(--mono); font-weight: 700; opacity: .9; pointer-events: none; }
+
+/* piedini */
+#intel-4004 .intel-4004-pin-hit { fill: rgba(0, 0, 0, 0); transition: fill var(--t-fast); }
+#intel-4004 .intel-4004-pin:hover .intel-4004-pin-hit { fill: rgba(240, 176, 74, .12); }
+#intel-4004 .intel-4004-pin.is-sel .intel-4004-pin-hit { fill: rgba(62, 224, 143, .16); stroke: var(--sig-on); stroke-width: 1.5; }
+#intel-4004 .intel-4004-pin-num { fill: var(--lab-text); font-family: var(--mono); font-weight: 700; }
+#intel-4004 .intel-4004-pin.is-sel .intel-4004-pin-num { fill: var(--sig-on); }
+#intel-4004 .intel-4004-pin-name { fill: #35302a; font-family: var(--mono); font-weight: 800; paint-order: stroke; stroke: #efe9da; stroke-width: 3.2px; stroke-linejoin: round; }
+#intel-4004 .intel-4004-pin.is-sel .intel-4004-pin-name { fill: #0b5d36; }
+
+#intel-4004 .intel-4004-reticle { pointer-events: none; }
+#intel-4004 .intel-4004-reticle circle, #intel-4004 .intel-4004-reticle path { fill: none; stroke: var(--lab-gold); stroke-width: 1.6; }
+#intel-4004 .intel-4004-reticle circle { stroke-dasharray: 3 4; }
+
+/* ---------- ciclo di istruzione ---------- */
+
+#intel-4004 .intel-4004-prog-bar { background: rgba(255, 255, 255, .015); }
+#intel-4004 .intel-4004-prog-lbl { font: 700 .76rem var(--mono); text-transform: uppercase; letter-spacing: .08em; color: var(--lab-gold); }
+#intel-4004 .intel-4004-cyc-grid { display: grid; grid-template-columns: minmax(0, 1.65fr) minmax(0, 1fr); grid-template-areas: "stage explain" "timing explain"; }
+#intel-4004 .intel-4004-cyc-grid > .intel-4004-cyc-stage { grid-area: stage; }
+#intel-4004 .intel-4004-cyc-grid > .intel-4004-timing { grid-area: timing; }
+#intel-4004 .intel-4004-cyc-grid > .cp-explain { grid-area: explain; border-left: 1px solid var(--lab-line); }
+#intel-4004 .intel-4004-cyc-stage { padding: 8px 10px 4px; }
+#intel-4004 .intel-4004-cyc-svg, #intel-4004 .intel-4004-tim-svg { display: block; width: 100%; height: auto; }
+#intel-4004 .intel-4004-cyc-svg.is-narrow, #intel-4004 .intel-4004-tim-svg.is-narrow { max-width: 460px; margin: 0 auto; }
+#intel-4004 .intel-4004-cyc-svg text, #intel-4004 .intel-4004-tim-svg text { font-family: var(--font); }
+#intel-4004 .intel-4004-cyc-svg .mono, #intel-4004 .intel-4004-tim-svg .mono { font-family: var(--mono); }
+
+#intel-4004 .intel-4004-unit { fill: #0f1916; stroke: var(--lab-line); stroke-width: 1.5; transition: stroke var(--t-normal); }
+#intel-4004 .intel-4004-unit.is-on { stroke: color-mix(in srgb, var(--sig-on) 50%, var(--lab-line)); }
+#intel-4004 .intel-4004-unit-t { fill: var(--lab-ink); font-weight: 800; font-size: 14px; }
+#intel-4004 .intel-4004-lbl { fill: var(--lab-text); font-weight: 750; font-size: 12px; }
+#intel-4004 .intel-4004-lbl-s { fill: var(--lab-dim); font-weight: 650; font-size: 11px; }
+
+#intel-4004 .intel-4004-nib-bg { fill: var(--lab-sunk); stroke: var(--lab-line); stroke-width: 1.2; transition: stroke var(--t-fast), fill var(--t-fast); }
+#intel-4004 .intel-4004-nib-fl { fill: var(--lab-gold); opacity: 0; pointer-events: none; }
+#intel-4004 .intel-4004-nib-t { fill: var(--lab-ink); font-size: 14px; font-weight: 700; }
+#intel-4004 .intel-4004-reg .intel-4004-nib-t { font-size: 13px; }
+#intel-4004 .intel-4004-nib.is-empty .intel-4004-nib-t { fill: var(--lab-dim); }
+#intel-4004 .intel-4004-nib.is-addr .intel-4004-nib-bg { stroke: var(--sig-addr); stroke-width: 2; fill: color-mix(in srgb, var(--sig-addr) 14%, var(--lab-sunk)); }
+#intel-4004 .intel-4004-nib.is-addr .intel-4004-nib-fl { fill: var(--sig-addr); }
+#intel-4004 .intel-4004-nib.is-data .intel-4004-nib-bg { stroke: var(--sig-data); stroke-width: 2; fill: color-mix(in srgb, var(--sig-data) 14%, var(--lab-sunk)); }
+#intel-4004 .intel-4004-nib.is-data .intel-4004-nib-fl { fill: var(--sig-data); }
+#intel-4004 .intel-4004-nib.is-dec .intel-4004-nib-bg { stroke: var(--sig-ctrl); stroke-width: 2; }
+#intel-4004 .intel-4004-nib.is-dec .intel-4004-nib-fl { fill: var(--sig-ctrl); }
+#intel-4004 .intel-4004-nib.is-src .intel-4004-nib-bg { stroke: var(--lab-gold); stroke-width: 2; stroke-dasharray: 4 3; }
+#intel-4004 .intel-4004-nib.is-res .intel-4004-nib-bg { stroke: var(--sig-on); stroke-width: 2; fill: color-mix(in srgb, var(--sig-on) 16%, var(--lab-sunk)); }
+#intel-4004 .intel-4004-nib.is-res .intel-4004-nib-fl { fill: var(--sig-on); }
+#intel-4004 .intel-4004-reg-n { fill: var(--lab-dim); font-size: 10.5px; font-family: var(--mono); }
+
+#intel-4004 .intel-4004-alu-bg { fill: #13201b; stroke: var(--lab-line); stroke-width: 1.5; stroke-linejoin: round; transition: stroke var(--t-fast), fill var(--t-fast); }
+#intel-4004 .intel-4004-alu-fl { fill: var(--sig-on); opacity: 0; pointer-events: none; }
+#intel-4004 .intel-4004-alu.is-on .intel-4004-alu-bg { stroke: var(--sig-on); fill: #15291f; }
+#intel-4004 .intel-4004-alu-t { fill: var(--lab-ink); font-weight: 800; font-size: 13px; }
+#intel-4004 .intel-4004-alu-f { fill: var(--sig-on); font-size: 12px; font-weight: 700; }
+
+#intel-4004 .intel-4004-line { fill: none; stroke: var(--sig-idle); stroke-width: 5; stroke-linecap: round; transition: stroke var(--t-fast) var(--d, 0ms); }
+#intel-4004 .intel-4004-line.is-busy.k-addr { stroke: color-mix(in srgb, var(--sig-addr) 26%, var(--sig-idle)); }
+#intel-4004 .intel-4004-line.is-busy.k-data { stroke: color-mix(in srgb, var(--sig-data) 26%, var(--sig-idle)); }
+#intel-4004 .intel-4004-line.is-on.k-addr { stroke: var(--sig-addr); }
+#intel-4004 .intel-4004-line.is-on.k-data { stroke: var(--sig-data); }
+#intel-4004 .intel-4004-line-n { fill: var(--lab-dim); font-size: 10.5px; font-weight: 600; font-family: var(--mono); }
+#intel-4004 .intel-4004-ctl { fill: none; stroke: var(--sig-idle); stroke-width: 3; transition: stroke var(--t-fast); }
+#intel-4004 .intel-4004-ctl.is-on { stroke: var(--sig-ctrl); }
+#intel-4004 .intel-4004-m-ctl { fill: var(--lab-dim); }
+#intel-4004 .intel-4004-ctl-t { fill: var(--lab-dim); font-size: 11px; font-weight: 700; font-family: var(--mono); }
+#intel-4004 .intel-4004-ctl-t.is-on { fill: var(--sig-ctrl); }
+#intel-4004 .intel-4004-dir { fill: var(--lab-dim); font-size: 12px; font-weight: 750; }
+#intel-4004 .intel-4004-dir.k-addr { fill: var(--sig-addr); }
+#intel-4004 .intel-4004-dir.k-data { fill: var(--sig-data); }
+
+#intel-4004 .intel-4004-row-bg { fill: rgba(0, 0, 0, 0); stroke: none; transition: fill var(--t-fast), stroke var(--t-fast); }
+#intel-4004 .intel-4004-row-fl { fill: var(--sig-data); opacity: 0; pointer-events: none; }
+#intel-4004 .intel-4004-row-a { fill: var(--lab-dim); }
+#intel-4004 .intel-4004-row-b { fill: var(--lab-ink); font-weight: 700; }
+#intel-4004 .intel-4004-row-i { fill: var(--lab-text); font-weight: 650; }
+#intel-4004 .intel-4004-row-e { fill: var(--lab-dim); }
+#intel-4004 .intel-4004-row.is-second .intel-4004-row-i { fill: var(--lab-dim); font-style: italic; }
+#intel-4004 .intel-4004-row.is-done .intel-4004-row-b, #intel-4004 .intel-4004-row.is-done .intel-4004-row-i { opacity: .62; }
+#intel-4004 .intel-4004-row.is-cur .intel-4004-row-bg { fill: color-mix(in srgb, var(--sig-addr) 12%, transparent); stroke: var(--sig-addr); stroke-width: 1.2; }
+#intel-4004 .intel-4004-row.is-read .intel-4004-row-bg { fill: color-mix(in srgb, var(--sig-data) 14%, transparent); stroke: var(--sig-data); }
+#intel-4004 .intel-4004-row.is-cur .intel-4004-row-i, #intel-4004 .intel-4004-row.is-cur .intel-4004-row-b { fill: var(--lab-ink); }
+
+#intel-4004 .intel-4004-token, #intel-4004 .intel-4004-fly { pointer-events: none; }
+#intel-4004 .intel-4004-token-bg { fill: #0b1210; stroke: var(--lab-line); stroke-width: 2; }
+#intel-4004 .intel-4004-token.k-addr .intel-4004-token-bg { stroke: var(--sig-addr); }
+#intel-4004 .intel-4004-token.k-data .intel-4004-token-bg { stroke: var(--sig-data); }
+#intel-4004 .intel-4004-token-hex { fill: var(--lab-ink); font-size: 15px; font-weight: 800; }
+#intel-4004 .intel-4004-token.k-addr .intel-4004-token-hex { fill: var(--sig-addr); }
+#intel-4004 .intel-4004-token.k-data .intel-4004-token-hex { fill: var(--sig-data); }
+#intel-4004 .intel-4004-token-bin { fill: var(--lab-text); font-size: 11px; font-weight: 700; letter-spacing: .08em; }
+#intel-4004 .intel-4004-fly rect { fill: #0b1210; stroke: var(--sig-on); stroke-width: 2; }
+#intel-4004 .intel-4004-fly text { fill: var(--sig-on); font-size: 13px; font-weight: 800; }
+
+/* diagramma temporale */
+#intel-4004 .intel-4004-timing { border-top: 1px solid var(--lab-line); padding: 10px 10px 8px; }
+#intel-4004 .intel-4004-timing-h { margin: 0 2px 4px; font-size: .84rem; color: var(--lab-dim); }
+#intel-4004 .intel-4004-timing-h b { color: var(--lab-ink); }
+#intel-4004 .intel-4004-t-col { fill: rgba(240, 176, 74, .07); }
+#intel-4004 .intel-4004-t-col.k-addr { fill: color-mix(in srgb, var(--sig-addr) 10%, transparent); }
+#intel-4004 .intel-4004-t-col.k-data { fill: color-mix(in srgb, var(--sig-data) 10%, transparent); }
+#intel-4004 .intel-4004-t-grid line { stroke: var(--lab-line); stroke-width: 1; }
+#intel-4004 .intel-4004-t-grid .intel-4004-t-hl { stroke-dasharray: 2 4; opacity: .7; }
+#intel-4004 .intel-4004-t-grp { fill: var(--lab-dim); font-weight: 650; }
+#intel-4004 .intel-4004-t-grp.intel-4004-g0 { fill: color-mix(in srgb, var(--sig-addr) 75%, var(--lab-dim)); }
+#intel-4004 .intel-4004-t-grp.intel-4004-g1 { fill: color-mix(in srgb, var(--sig-data) 75%, var(--lab-dim)); }
+#intel-4004 .intel-4004-t-br { fill: none; stroke: var(--lab-line); stroke-width: 1.2; }
+#intel-4004 .intel-4004-t-ph { fill: var(--lab-dim); font-weight: 700; }
+#intel-4004 .intel-4004-t-ph.is-past { fill: var(--lab-text); }
+#intel-4004 .intel-4004-t-ph.is-cur { fill: var(--lab-gold); font-weight: 800; }
+#intel-4004 .intel-4004-t-row { fill: var(--lab-text); font-family: var(--mono); font-weight: 650; }
+#intel-4004 .intel-4004-t-row.clk { fill: #8fb3a6; }
+#intel-4004 .intel-4004-t-row.ctl { fill: var(--sig-ctrl); }
+#intel-4004 .intel-4004-s-clk { fill: none; stroke: #8fb3a6; stroke-width: 1.6; stroke-linejoin: round; }
+#intel-4004 .intel-4004-s-ctl { fill: none; stroke: var(--sig-ctrl); stroke-width: 2; stroke-linejoin: round; }
+#intel-4004 .intel-4004-s-addr { fill: none; stroke: var(--sig-addr); stroke-width: 2; }
+#intel-4004 .intel-4004-s-data { fill: none; stroke: var(--sig-data); stroke-width: 2; }
+#intel-4004 .intel-4004-s-free { fill: none; stroke: var(--lab-dim); stroke-width: 1.4; stroke-dasharray: 3 3; }
+#intel-4004 .intel-4004-s-val { font-weight: 800; fill: var(--lab-dim); }
+#intel-4004 .intel-4004-s-val.addr { fill: var(--sig-addr); }
+#intel-4004 .intel-4004-s-val.data { fill: var(--sig-data); }
+#intel-4004 .intel-4004-t-pen { stroke: var(--lab-gold); stroke-width: 1.5; }
+
+/* spiegazione del ciclo */
+#intel-4004 .intel-4004-readouts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--lab-line); }
+#intel-4004 .intel-4004-readouts .cp-readout { min-width: 50px; }
+#intel-4004 .intel-4004-result { padding: 8px 10px; border-radius: 8px; color: var(--lab-ink); font-weight: 650; background: color-mix(in srgb, var(--sig-on) 12%, transparent); border: 1px solid color-mix(in srgb, var(--sig-on) 45%, transparent); }
+
+/* ---------- schermi stretti ---------- */
+
+@media (max-width: 900px) {
+  #intel-4004 .intel-4004-cyc-grid { grid-template-columns: minmax(0, 1fr); grid-template-areas: "stage" "explain" "timing"; }
+  #intel-4004 .intel-4004-cyc-grid > .cp-explain { border-left: 0; border-top: 1px solid var(--lab-line); }
+}
+
+@media (max-width: 640px) {
+  #intel-4004 .intel-4004-duo { grid-template-columns: minmax(0, 1fr); }
+  #intel-4004 .intel-4004-bar-note { display: none; }
+  #intel-4004 .intel-4004-prog-bar .cp-range { flex: 1 1 100%; }
+  #intel-4004 .intel-4004-prog-bar .cp-range input { flex: 1 1 auto; }
+}

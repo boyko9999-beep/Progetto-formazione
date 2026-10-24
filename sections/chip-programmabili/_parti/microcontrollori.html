@@ -1,0 +1,218 @@
+<header class="cp-ch-head">
+  <div>
+    <p class="cp-ch-num"><b>06</b> 1971–1980</p>
+    <h2 id="microcontrollori-titolo">Il computer in un chip</h2>
+    <p class="cp-ch-lead">Un processore da solo non basta: servono memoria, ingressi e uscite. Negli anni Settanta qualcuno li ha chiusi tutti nello stesso pezzo di silicio, e da allora quasi ogni oggetto elettrico nasconde un piccolo computer.</p>
+  </div>
+  <figure class="cp-specimen" data-dip='{"pins":28,"label":"TMS1000","top":"TI","body":"plastic"}'>
+    <figcaption class="cp-specimen-cap">Texas Instruments TMS1000 · plastica, 28 piedini</figcaption>
+  </figure>
+</header>
+
+<div class="cp-prose cp-reveal">
+  <h3>Microprocessore o microcontrollore?</h3>
+  <p>Un microprocessore come l'<a href="#intel-4004">Intel 4004</a> è soltanto il cervello: la <dfn>CPU</dfn>, l'unità che esegue le istruzioni. Per lavorare ha bisogno di altri chip sulla scheda: una ROM che conserva il programma, una RAM per i dati che cambiano, circuiti per leggere tasti e accendere luci. È la strada dei computer, che segui nella sezione <a href="../storia-pc/index.html#primi-pc">Architettura e storia del PC</a>.</p>
+  <p>Un <dfn>microcontrollore</dfn> mette tutto nello stesso chip: CPU, ROM, RAM, porte di ingresso e uscita e un <dfn>timer</dfn>, un contatore che misura il tempo da solo. Ha poca memoria e non è veloce, ma costa poco, consuma poco e occupa un angolo della scheda. Non nasce per fare calcoli qualsiasi: nasce per comandare un oggetto, sempre lo stesso, dall'accensione allo spegnimento.</p>
+</div>
+
+<figure class="cp-fig cp-reveal microcontrollori-fig-duo">
+  <div class="cp-art">
+    <div class="microcontrollori-duo">
+      <svg viewBox="0 0 360 252" role="img" aria-label="Sistema a microprocessore: su una scheda la CPU è collegata da un bus a quattro chip separati, ROM, RAM, porte di ingresso e uscita e timer.">
+        <text x="12" y="22" class="ink" font-size="15" font-weight="800">Microprocessore: tanti chip</text>
+        <rect x="8" y="36" width="344" height="206" rx="12" class="paper stroke-line" stroke-width="1.5"/>
+        <g class="muted" opacity=".55">
+          <rect x="140" y="50" width="4" height="7" rx="1"/><rect x="152" y="50" width="4" height="7" rx="1"/><rect x="164" y="50" width="4" height="7" rx="1"/><rect x="176" y="50" width="4" height="7" rx="1"/><rect x="188" y="50" width="4" height="7" rx="1"/><rect x="200" y="50" width="4" height="7" rx="1"/><rect x="212" y="50" width="4" height="7" rx="1"/>
+          <rect x="140" y="99" width="4" height="7" rx="1"/><rect x="152" y="99" width="4" height="7" rx="1"/><rect x="164" y="99" width="4" height="7" rx="1"/><rect x="176" y="99" width="4" height="7" rx="1"/><rect x="188" y="99" width="4" height="7" rx="1"/><rect x="200" y="99" width="4" height="7" rx="1"/><rect x="212" y="99" width="4" height="7" rx="1"/>
+        </g>
+        <rect x="128" y="56" width="104" height="44" rx="5" class="accent"/>
+        <text x="180" y="83" text-anchor="middle" class="paper" font-size="14" font-weight="800">CPU</text>
+        <path d="M180 106 V136 M30 136 H330 M58 136 V170 M141 136 V170 M222 136 V170 M302 136 V170" class="stroke-accent" fill="none" stroke-width="3.2" stroke-linecap="round"/>
+        <text x="330" y="128" text-anchor="end" class="accent" font-size="12" font-weight="700">bus</text>
+        <g class="microcontrollori-f-chip">
+          <rect x="22" y="170" width="72" height="46" rx="5" class="paper stroke-ink" stroke-width="1.5"/>
+          <text x="58" y="191" text-anchor="middle" class="ink" font-size="13.5" font-weight="800">ROM</text>
+          <text x="58" y="207" text-anchor="middle" class="muted" font-size="11.5">programma</text>
+          <rect x="105" y="170" width="72" height="46" rx="5" class="paper stroke-ink" stroke-width="1.5"/>
+          <text x="141" y="191" text-anchor="middle" class="ink" font-size="13.5" font-weight="800">RAM</text>
+          <text x="141" y="207" text-anchor="middle" class="muted" font-size="11.5">dati</text>
+          <rect x="186" y="170" width="72" height="46" rx="5" class="paper stroke-ink" stroke-width="1.5"/>
+          <text x="222" y="191" text-anchor="middle" class="ink" font-size="13.5" font-weight="800">I/O</text>
+          <text x="222" y="207" text-anchor="middle" class="muted" font-size="11.5">porte</text>
+          <rect x="267" y="170" width="72" height="46" rx="5" class="paper stroke-ink" stroke-width="1.5"/>
+          <text x="303" y="191" text-anchor="middle" class="ink" font-size="13.5" font-weight="800">Timer</text>
+          <text x="303" y="207" text-anchor="middle" class="muted" font-size="11.5">tempo</text>
+        </g>
+        <text x="180" y="234" text-anchor="middle" class="muted" font-size="11.5">5 chip, centinaia di collegamenti sulla scheda</text>
+      </svg>
+      <svg viewBox="0 0 360 252" role="img" aria-label="Microcontrollore: le stesse parti, CPU, ROM, RAM, porte e timer, stanno dentro un solo chip collegate da un bus interno; i piedini restano liberi per sensori e attuatori.">
+        <text x="12" y="22" class="ink" font-size="15" font-weight="800">Microcontrollore: un chip solo</text>
+        <g class="muted" opacity=".55">
+          <rect x="40" y="58" width="9" height="4" rx="1"/><rect x="40" y="76" width="9" height="4" rx="1"/><rect x="40" y="94" width="9" height="4" rx="1"/><rect x="40" y="112" width="9" height="4" rx="1"/><rect x="40" y="130" width="9" height="4" rx="1"/><rect x="40" y="148" width="9" height="4" rx="1"/><rect x="40" y="166" width="9" height="4" rx="1"/><rect x="40" y="184" width="9" height="4" rx="1"/><rect x="40" y="202" width="9" height="4" rx="1"/>
+          <rect x="311" y="58" width="9" height="4" rx="1"/><rect x="311" y="76" width="9" height="4" rx="1"/><rect x="311" y="94" width="9" height="4" rx="1"/><rect x="311" y="112" width="9" height="4" rx="1"/><rect x="311" y="130" width="9" height="4" rx="1"/><rect x="311" y="148" width="9" height="4" rx="1"/><rect x="311" y="166" width="9" height="4" rx="1"/><rect x="311" y="184" width="9" height="4" rx="1"/><rect x="311" y="202" width="9" height="4" rx="1"/>
+        </g>
+        <rect x="48" y="44" width="264" height="174" rx="10" class="paper stroke-ink" stroke-width="2"/>
+        <rect x="132" y="56" width="96" height="40" rx="5" class="accent"/>
+        <text x="180" y="81" text-anchor="middle" class="paper" font-size="14" font-weight="800">CPU</text>
+        <path d="M180 96 V128 M76 128 H284 M90 128 V150 M147 128 V150 M213 128 V150 M270 128 V150" class="stroke-accent" fill="none" stroke-width="3" stroke-linecap="round"/>
+        <rect x="62" y="150" width="56" height="44" rx="4" class="paper stroke-ink" stroke-width="1.3"/>
+        <text x="90" y="177" text-anchor="middle" class="ink" font-size="13" font-weight="800">ROM</text>
+        <rect x="122" y="150" width="50" height="44" rx="4" class="paper stroke-ink" stroke-width="1.3"/>
+        <text x="147" y="177" text-anchor="middle" class="ink" font-size="13" font-weight="800">RAM</text>
+        <rect x="188" y="150" width="50" height="44" rx="4" class="paper stroke-ink" stroke-width="1.3"/>
+        <text x="213" y="177" text-anchor="middle" class="ink" font-size="13" font-weight="800">I/O</text>
+        <rect x="242" y="150" width="56" height="44" rx="4" class="paper stroke-ink" stroke-width="1.3"/>
+        <text x="270" y="177" text-anchor="middle" class="ink" font-size="13" font-weight="800">Timer</text>
+        <text x="12" y="240" class="muted" font-size="11.5">← sensori e tasti</text>
+        <text x="348" y="240" text-anchor="end" class="muted" font-size="11.5">relè e display →</text>
+      </svg>
+    </div>
+  </div>
+  <figcaption><b>Le stesse parti, due confezioni.</b> A sinistra un sistema a microprocessore: cinque chip collegati dal <dfn>bus</dfn>, il fascio di fili su cui viaggiano indirizzi e dati. A destra un microcontrollore: tutto in un chip, con i piedini liberi per sensori, tasti e attuatori.</figcaption>
+</figure>
+
+<div class="cp-prose cp-reveal">
+  <h3>Texas Instruments: una calcolatrice in un chip</h3>
+  <p>La prima strada la apre Texas Instruments (TI). Nel 1971 due suoi ingegneri, Gary Boone e Michael Cochran, progettano il <dfn>TMS1802NC</dfn>: un'intera calcolatrice in un chip, con la CPU, la memoria del programma, i registri per i numeri e i circuiti che leggono la tastiera e accendono il display. Fuori restano i tasti, le cifre luminose e la batteria. TI lo annuncia nel settembre 1971.</p>
+</div>
+
+<ul class="cp-people cp-reveal" aria-label="Le persone del primo microcontrollore">
+  <li class="cp-person"><span class="ini" aria-hidden="true">GB</span><div><b>Gary Boone</b><small>Texas Instruments</small><p>Progetta il TMS1802NC con Cochran. Il suo nome è sul brevetto del microcomputer in un chip.</p></div></li>
+  <li class="cp-person"><span class="ini" aria-hidden="true">MC</span><div><b>Michael Cochran</b><small>Texas Instruments</small><p>Coautore del TMS1802NC e del brevetto 4.074.351, concesso nel 1978.</p></div></li>
+</ul>
+
+<div class="cp-prose cp-reveal">
+  <p>Il passo successivo è un chip buono per qualunque mestiere. Nel 1974 TI mette in catalogo la famiglia <dfn>TMS1000</dfn>, a 4 bit: elabora quattro cifre binarie alla volta. Il cliente manda il suo programma e TI lo incide nella ROM durante la fabbricazione (una ROM a maschera, come racconta il capitolo <a href="#memorie">Memorie che si programmano</a>). Comprato a grandi lotti costava circa 2 dollari, e finì in calcolatrici, antifurto, apriporta per garage, forni a microonde e giocattoli come Simon e Speak &amp; Spell.</p>
+  <p>Boone e Cochran ottengono il brevetto del computer su un chip: il numero 4.074.351, concesso negli Stati Uniti il 14 febbraio 1978.</p>
+</div>
+
+<p class="cp-specs-title cp-reveal">Scheda tecnica · TMS1000</p>
+<dl class="cp-specs cp-reveal">
+  <div><dt>In catalogo</dt><dd>1974</dd></div>
+  <div><dt>Parola</dt><dd>4 bit</dd></div>
+  <div><dt>ROM</dt><dd>1 KB (1.024 × 8 bit)</dd></div>
+  <div><dt>RAM</dt><dd>64 × 4 bit</dd></div>
+  <div><dt>Istruzioni</dt><dd>43</dd></div>
+  <div><dt>Tecnologia</dt><dd>PMOS</dd></div>
+  <div><dt>Velocità</dt><dd>10–15 µs per istruzione, circa</dd></div>
+  <div><dt>Contenitore</dt><dd>DIP a 28 piedini</dd></div>
+  <div><dt>Prezzo</dt><dd>circa 2 dollari, a grandi lotti</dd></div>
+</dl>
+
+<div class="cp-prose cp-reveal">
+  <h3>Intel risponde: 8048 e 8051</h3>
+  <p>Intel entra nel gioco nel 1976 con la famiglia MCS-48. L'<dfn>8048</dfn> lavora a 8 bit e porta in un chip 1 KB di ROM, 64 byte di RAM, un timer e 27 linee di ingresso e uscita. Con lui arriva l'8748, uguale ma con una <dfn>EPROM</dfn>: una memoria che si scrive con un programmatore e si cancella con la luce ultravioletta, attraverso la finestrella di quarzo del contenitore. Così il programma si prova, si corregge e si riscrive prima di ordinare migliaia di pezzi con la ROM a maschera. L'8048 finisce in console per videogiochi come la Magnavox Odyssey² e in molte periferiche dei computer.</p>
+  <p>Nel 1980 arriva l'<dfn>8051</dfn> (famiglia MCS-51): 4 KB di ROM, 128 byte di RAM, 32 linee di ingresso e uscita divise in quattro porte da 8 bit, due timer da 16 bit, una porta seriale e un sistema di interruzioni con due livelli di priorità. Per un decennio è fra i microcontrollori più usati, in auto, elettrodomestici e periferiche. Intel ne ha fermato la produzione, ma molti altri produttori continuano a costruirlo, e il suo nucleo vive ancora dentro chip nuovi.</p>
+</div>
+
+<aside class="cp-fact cp-reveal">
+  <p><strong>Lo sapevi?</strong> Il primo IBM PC, del 1981, aveva un secondo computer nascosto nella tastiera: un Intel 8048 che controllava i tasti e mandava al PC un codice per ognuno, anche quando il tasto veniva rilasciato.</p>
+</aside>
+
+<div class="cp-prose cp-reveal">
+  <h3>Programma e dati: Harvard o von Neumann</h3>
+  <p>Nei computer da scrivania programma e dati abitano nella stessa memoria e viaggiano sullo stesso bus: è l'architettura di von Neumann, raccontata nella sezione <a href="../storia-pc/index.html#von-neumann">Architettura e storia del PC</a>. Molti microcontrollori fanno diversamente: la ROM del programma e la RAM dei dati hanno indirizzi e collegamenti separati. È l'<dfn>architettura Harvard</dfn>.</p>
+  <p>Il vantaggio è la velocità: mentre la CPU legge o scrive un dato, può già prelevare l'istruzione successiva. E le istruzioni possono avere una larghezza diversa dai dati: il PIC1650 di General Instrument usava istruzioni da 12 bit e dati da 8. L'8051 tiene separati gli spazi del programma e dei dati, fino a 64 KB ciascuno.</p>
+  <p>Il nome richiama i calcolatori costruiti a Harvard negli anni Quaranta, che tenevano il programma lontano dai numeri. Ma uno studio di Richard Pawson, pubblicato nel 2022 sugli IEEE Annals of the History of Computing, ha mostrato che l'espressione fu coniata decenni dopo, proprio progettando microcontrollori.</p>
+</div>
+
+<figure class="cp-fig dark cp-reveal microcontrollori-fig-arch">
+  <div class="cp-art">
+    <div class="microcontrollori-duo">
+      <svg viewBox="0 0 360 236" role="img" aria-label="Architettura di von Neumann: la CPU è collegata a una sola memoria, che contiene programma e dati, da un unico bus; istruzioni e dati passano a turno.">
+        <text x="12" y="22" class="microcontrollori-f-title">von Neumann</text>
+        <text x="12" y="40" class="microcontrollori-f-lbl">un bus, a turno</text>
+        <g class="cp-blk is-active">
+          <rect x="120" y="54" width="120" height="50" rx="8"/>
+          <text x="180" y="84" text-anchor="middle">CPU</text>
+        </g>
+        <path d="M180 104 V156" class="cp-bus data is-active"/>
+        <g class="microcontrollori-f-pkt">
+          <rect x="190" y="112" width="72" height="18" rx="9" class="microcontrollori-f-pkt-a"/>
+          <text x="226" y="125" text-anchor="middle">istruzione</text>
+          <rect x="190" y="134" width="72" height="18" rx="9" class="microcontrollori-f-pkt-d"/>
+          <text x="226" y="147" text-anchor="middle">poi il dato</text>
+        </g>
+        <g class="cp-blk">
+          <rect x="70" y="156" width="220" height="58" rx="8"/>
+          <text x="180" y="181" text-anchor="middle">Memoria unica</text>
+          <text x="180" y="200" text-anchor="middle" class="sub">programma + dati</text>
+        </g>
+      </svg>
+      <svg viewBox="0 0 360 236" role="img" aria-label="Architettura Harvard: la CPU ha due bus separati, uno verso la ROM del programma e uno verso la RAM dei dati; istruzione e dato passano nello stesso momento.">
+        <text x="12" y="22" class="microcontrollori-f-title">Harvard</text>
+        <text x="12" y="40" class="microcontrollori-f-lbl">due bus, insieme</text>
+        <g class="cp-blk is-active">
+          <rect x="120" y="54" width="120" height="50" rx="8"/>
+          <text x="180" y="84" text-anchor="middle">CPU</text>
+        </g>
+        <path d="M150 104 V130 H82 V156" class="cp-bus addr is-active"/>
+        <path d="M210 104 V130 H278 V156" class="cp-bus data is-active"/>
+        <g class="microcontrollori-f-pkt">
+          <rect x="22" y="112" width="72" height="18" rx="9" class="microcontrollori-f-pkt-a"/>
+          <text x="58" y="125" text-anchor="middle">istruzione</text>
+          <rect x="266" y="112" width="72" height="18" rx="9" class="microcontrollori-f-pkt-d"/>
+          <text x="302" y="125" text-anchor="middle">dato</text>
+        </g>
+        <g class="cp-blk">
+          <rect x="22" y="156" width="120" height="58" rx="8"/>
+          <text x="82" y="181" text-anchor="middle">ROM</text>
+          <text x="82" y="200" text-anchor="middle" class="sub">programma</text>
+        </g>
+        <g class="cp-blk">
+          <rect x="218" y="156" width="120" height="58" rx="8"/>
+          <text x="278" y="181" text-anchor="middle">RAM</text>
+          <text x="278" y="200" text-anchor="middle" class="sub">dati</text>
+        </g>
+      </svg>
+    </div>
+  </div>
+  <figcaption><b>Una strada o due.</b> Con un bus solo la CPU preleva l'istruzione e poi legge il dato, a turno. Con due bus separati le due cose avvengono nello stesso momento. Nel laboratorio qui sotto puoi passare da un modo all'altro e contare i cicli di bus.</figcaption>
+</figure>
+
+<div class="cp-prose cp-reveal">
+  <h3>I sensi e le mani del chip</h3>
+  <p>Attorno alla CPU, un microcontrollore ha le sue <dfn>periferiche</dfn>. Le <dfn>porte di I/O</dfn> (ingresso e uscita) sono piedini che il programma legge o comanda: scrivere 1 in un bit mette tensione su un piedino che, attraverso un relè, accende un motore. Il timer conta gli impulsi del clock mentre la CPU fa altro.</p>
+  <p>Le <dfn>interruzioni</dfn> evitano di controllare tutto di continuo. Quando succede qualcosa, un tasto premuto o il timer che scade, la CPU sospende il programma, salva il punto in cui era, esegue una breve routine e poi riprende. La <dfn>UART</dfn> spedisce i byte un bit alla volta su un filo solo: la vedi all'opera in <a href="../../index.html#/bus/uart">BusLab</a>. Il <dfn>convertitore analogico-digitale</dfn> (ADC) trasforma una tensione in un numero: così il chip legge un sensore di temperatura. Nel laboratorio trovi tutto insieme, al lavoro dentro un frigorifero.</p>
+</div>
+
+<section class="cp-lab" data-lab="microcontrollori" aria-labelledby="lab-microcontrollori-titolo">
+  <header class="cp-lab-head">
+    <span class="cp-lab-tag">Laboratorio</span>
+    <h3 id="lab-microcontrollori-titolo">Il frigorifero intelligente</h3>
+    <p>Un microcontrollore comanda un frigorifero appena acceso. Accelera il tempo, cambia la temperatura impostata, apri la porta: segui i dati che viaggiano nel chip e il programma che decide, riga per riga.</p>
+  </header>
+  <div class="cp-lab-mount"><p class="cp-lab-fallback">Caricamento del laboratorio…</p></div>
+</section>
+
+<div class="cp-prose cp-reveal">
+  <h3>Dalle calcolatrici ai frigoriferi</h3>
+  <p>Nel 1976 General Instrument presenta il <dfn>PIC1650</dfn>, nato per gestire ingressi e uscite del suo processore CP1600. Sul significato della sigla le fonti non concordano: la lettura più comune è Peripheral Interface Controller, cioè controllore delle periferiche. Nel 1987 GI rende autonoma la divisione di microelettronica, che nel 1989 diventa la società indipendente Microchip Technology: da qui discende la famiglia PIC. Motorola risponde con il 6801, la versione a chip singolo del suo processore 6800, e poi con il 6805, più economico e molto diffuso nelle auto.</p>
+</div>
+
+<ol class="cp-steps cp-reveal" aria-label="I primi microcontrollori">
+  <li><time>1971</time>TMS1802NC di Texas Instruments: una calcolatrice in un chip.</li>
+  <li><time>1974</time>Famiglia TMS1000: il primo microcontrollore in catalogo.</li>
+  <li><time>1976</time>Intel 8048 e 8748; General Instrument PIC1650.</li>
+  <li><time>1978</time>Motorola 6801, circa.</li>
+  <li><time>1980</time>Intel 8051.</li>
+</ol>
+
+<div class="cp-prose cp-reveal">
+  <p>Oggi i microcontrollori sono ovunque: nel telecomando, nella tastiera, nella lavatrice, e un'auto moderna ne contiene decine. Nel settembre 2011 Microchip ha consegnato il suo PIC numero 10 miliardi. Nei frigoriferi e negli impianti di climatizzazione leggono le sonde, comandano compressori, ventole e valvole, contano le ore per lo sbrinamento e segnalano gli allarmi, proprio come nel laboratorio.</p>
+  <p>Nel prossimo capitolo la prospettiva si ribalta: a cambiare non è più il programma dentro un chip fisso, ma il circuito stesso.</p>
+</div>
+
+<details class="cp-fonti">
+  <summary>Fonti</summary>
+  <ol>
+    <li>Computer History Museum, The Silicon Engine: <a href="https://www.computerhistory.org/siliconengine/general-purpose-microcontroller-family-is-announced/">1974: General-Purpose Microcontroller Family is Announced</a>; e il brevetto <a href="https://patents.google.com/patent/US4074351A/en">US 4.074.351, Variable function programmed calculator</a> (Boone e Cochran, 1978).</li>
+    <li>Texas Instruments, <a href="http://www.bitsavers.org/components/ti/TMS1000/TMS_1000_Series_Data_Manual_Dec76.pdf">TMS 1000 Series Data Manual</a> (dicembre 1976), archivio bitsavers.org.</li>
+    <li>Intel, <a href="http://www.bitsavers.org/components/intel/8051/8051_Microcomputer_Preliminary_Architectural_Specification_May80.pdf">8051 Microcomputer, Architectural Specification</a> (maggio 1980), bitsavers.org; Computer History Museum, <a href="https://archive.computerhistory.org/resources/text/Oral_History/Intel_8051/102658339.05.01.acc.pdf">Intel 8051 Microprocessor Oral History Panel</a> (2008).</li>
+    <li>EE Journal, A History of Early Microcontrollers: <a href="https://www.eejournal.com/article/a-history-of-early-microcontrollers-part-4-the-intel-8048-and-8748/">The Intel 8048 and 8748</a> e <a href="https://www.eejournal.com/article/a-history-of-early-microcontrollers-part-9-the-general-instruments-pic1650/">The General Instruments PIC1650</a>.</li>
+    <li>Microchip Technology, <a href="https://ir.microchip.com/news-events/press-releases/detail/879/microchip-technology-delivers-10-billionth-pic-microcontroller-to-samsung-electronics-co">Microchip Technology Delivers 10 Billionth PIC Microcontroller</a>, comunicato del 19 settembre 2011.</li>
+    <li>Richard Pawson, <a href="https://ieeexplore.ieee.org/document/9779481">The Myth of the Harvard Architecture</a>, IEEE Annals of the History of Computing, 44 (3), 2022.</li>
+  </ol>
+</details>
+
+<nav class="cp-next" aria-label="Capitolo successivo"><a href="#logica-programmabile"><small>Capitolo successivo →</small>Hardware che si riprogramma</a></nav>

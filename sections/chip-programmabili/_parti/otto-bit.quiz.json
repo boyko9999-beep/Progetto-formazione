@@ -1,0 +1,47 @@
+[
+  {
+    "q": "Perché il MOS 6502 fece scalpore alla fiera WESCON del settembre 1975?",
+    "options": ["Costava 25 dollari, contro quasi 200 di 8080 e 6800", "Era il primo microprocessore a 16 bit in vendita", "Aveva più transistor di tutti i concorrenti"],
+    "answer": 0,
+    "why": "MOS vendeva il 6502 a 25 dollari (il 6501 a 20) mentre 8080 e 6800 costavano quasi 200 dollari: un prezzo così basso che qualcuno pensò a uno scherzo.",
+    "chapter": "otto-bit",
+    "level": 1,
+    "topic": "prezzo del 6502"
+  },
+  {
+    "q": "Quale vantaggio pratico avevano il 6800, il 6502 e lo Z80 rispetto all'Intel 8080?",
+    "options": ["Bastava una sola alimentazione da +5 V", "Avevano un bus dei dati da 16 bit", "Contenevano anche la memoria del programma"],
+    "answer": 0,
+    "why": "L'8080 chiedeva tre tensioni, +12, +5 e −5 V; gli altri tre funzionavano con i soli +5 V dei normali chip logici, con alimentatori e schede più semplici.",
+    "chapter": "otto-bit",
+    "level": 1,
+    "topic": "alimentazioni"
+  },
+  {
+    "q": "Per quale prodotto nacque il progetto che diventò l'Intel 8008?",
+    "options": ["Il terminale Datapoint 2200 di CTC", "Le calcolatrici della Busicom", "Il computer in kit Altair 8800"],
+    "answer": 0,
+    "why": "CTC voleva stringere in un chip il processore del suo terminale programmabile; poi rinunciò all'esclusiva e nell'aprile 1972 Intel mise l'8008 in catalogo per tutti.",
+    "chapter": "otto-bit",
+    "level": 2,
+    "topic": "origine dell'8008"
+  },
+  {
+    "q": "Che cos'è la pagina zero del 6502?",
+    "options": ["I primi 256 byte di memoria, raggiunti con indirizzi da un byte", "Una piccola ROM interna con il programma di avvio", "Il registro che conta le istruzioni già eseguite", "La prima fetta di silicio prodotta da MOS"],
+    "answer": 0,
+    "why": "Le istruzioni che lavorano tra 0000h e 00FFh hanno un indirizzo di un solo byte: sono più corte e più veloci, e il 6502 usa quei 256 byte quasi come registri in più.",
+    "chapter": "otto-bit",
+    "level": 2,
+    "topic": "pagina zero"
+  },
+  {
+    "q": "Lo Z80 esegue gli stessi 8 byte dell'8080 per sommare due numeri, ma impiega 43 cicli di clock invece di 41. Perché?",
+    "options": ["Incrementare HL dura 6 cicli sullo Z80 e 5 sull'8080", "Lo Z80 rinfresca la DRAM prima di ogni istruzione", "Lo Z80 legge ogni indirizzo un bit alla volta"],
+    "answer": 0,
+    "why": "Il codice macchina è identico (21 80 00 7E 23 86 23 77), ma INC HL sullo Z80 costa un T-state in più di INX H sull'8080, e il programma lo usa due volte. A 2,5 MHz lo Z80 resta comunque più rapido: 17,2 µs contro 20,5.",
+    "chapter": "otto-bit",
+    "level": 3,
+    "topic": "cicli di clock"
+  }
+]

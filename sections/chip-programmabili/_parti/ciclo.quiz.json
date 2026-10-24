@@ -1,0 +1,47 @@
+[
+  {
+    "q": "In quale ordine una CPU ripete le tre fasi del ciclo di istruzione?",
+    "options": ["Prendi, decodifica, esegui", "Decodifica, prendi, esegui", "Esegui, prendi, decodifica", "Prendi, esegui, decodifica"],
+    "answer": 0,
+    "why": "Prima la CPU prende (fetch) l'istruzione dalla memoria, poi la decodifica per capire che cosa chiede, infine la esegue. Finita un'istruzione, il ciclo ricomincia con la successiva.",
+    "chapter": "ciclo",
+    "level": 1,
+    "topic": "fetch, decode, execute"
+  },
+  {
+    "q": "Che cosa contiene il contatore di programma (PC)?",
+    "options": ["L'indirizzo della prossima istruzione", "Il numero di istruzioni già eseguite", "Il risultato dell'ultimo calcolo", "La frequenza del clock in hertz"],
+    "answer": 0,
+    "why": "Il PC indica la cella da cui leggere la prossima istruzione: durante il fetch avanza di uno, così il ciclo successivo legge la cella dopo. Un salto lo riscrive con un altro indirizzo.",
+    "chapter": "ciclo",
+    "level": 1,
+    "topic": "contatore di programma"
+  },
+  {
+    "q": "Nella CPU-8 il byte 0010 1111 è l'istruzione ADD 15. Che cosa dicono i suoi 4 bit bassi, 1111?",
+    "options": ["La cella da cui prendere il numero", "Il codice dell'operazione da fare", "Quanti battiti di clock richiede", "Il registro che riceve la somma"],
+    "answer": 0,
+    "why": "I 4 bit alti (0010) sono il codice operativo, ADD; i 4 bassi sono l'operando, qui 1111, cioè 15: la cella che contiene il numero da sommare ad A. In esadecimale lo stesso byte si scrive 2F.",
+    "chapter": "ciclo",
+    "level": 2,
+    "topic": "codice operativo e operando"
+  },
+  {
+    "q": "Che cosa stabilisce il microcodice di una CPU, istruzione per istruzione?",
+    "options": ["Quali segnali accendere a ogni passo", "Quali numeri deve sommare la ALU", "In quale cella mettere il programma", "Quanti hertz deve battere il clock"],
+    "answer": 0,
+    "why": "Il microcodice è una tabella in una piccola memoria dentro l'unità di controllo: per ogni istruzione e ogni micro-passo dice quali segnali di controllo accendere. Lo propose Maurice Wilkes nel 1951; Ben Eater lo ha scritto in due EEPROM.",
+    "chapter": "ciclo",
+    "level": 2,
+    "topic": "unità di controllo e microcodice"
+  },
+  {
+    "q": "Dopo una SUB il registro A vale zero, quindi il flag Z è acceso. Che cosa fa ora l'istruzione JZ 5?",
+    "options": ["Scrive 5 nel PC: il prossimo fetch parte da lì", "Scrive 5 nel registro A e va alla cella dopo", "Aspetta finché il flag Z non torna a zero", "Salta cinque celle più avanti di quella attuale"],
+    "answer": 0,
+    "why": "JZ è un salto condizionato: con Z a 1 copia l'operando nel PC, e la prossima istruzione arriva dalla cella 5. Con Z a 0 non fa nulla e si prosegue con la cella successiva. Nel conto alla rovescia è così che si esce dal ciclo.",
+    "chapter": "ciclo",
+    "level": 3,
+    "topic": "salti condizionati"
+  }
+]

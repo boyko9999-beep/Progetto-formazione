@@ -1,0 +1,315 @@
+/*
+ * Capitolo 8 · Verso i 16 bit e oltre.
+ * Figure (l'8086 diviso in due, su fondo da strumento; le istruzioni dell'8086 e dell'ARM1, su carta)
+ * e laboratorio «Da 4 a 32 bit».
+ * Tutti i selettori partono da #sedici-bit; le classi del laboratorio hanno il prefisso sb-,
+ * quelle delle figure sedici-bit-.
+ */
+
+#sedici-bit {
+  /* larghezza dei registri: una sola tinta, l'azzurro dei dati; più chiaro = più bit (validata sui due fondi dello strumento) */
+  --sb-b4: #2e7896;
+  --sb-b8: #3fa2cc;
+  --sb-b16: #5cc8ff;
+  --sb-b32: #b9e8ff;
+  /* bit sui fili: 1 acceso, 0 spento */
+  --sb-bit1: var(--sig-data);
+  --sb-bit0: #2b4a5a;
+  /* bordi e linee dello strumento, un gradino sopra --lab-line */
+  --sb-edge: #2a3d37;
+  --sb-edge-2: #3a5048;
+  --sb-ko: #ffb3a9;
+  --sb-lost: #ff9b8f;
+}
+
+/* ---------- figure ---------- */
+
+#sedici-bit .sedici-bit-fig-biu .cp-art,
+#sedici-bit .sedici-bit-fig-isa .cp-art { padding: 16px; }
+#sedici-bit .cp-cols .cp-fig { margin-top: 6px; }
+
+/* figura 1: l'8086 diviso in due (fondo da strumento) */
+#sedici-bit .cp-art .sedici-bit-f-h { fill: var(--lab-ink); font-size: 15px; font-weight: 800; }
+#sedici-bit .cp-art .sedici-bit-f-t { fill: var(--lab-ink); font-size: 15px; font-weight: 800; font-family: var(--mono); }
+#sedici-bit .cp-art .sedici-bit-f-sub { fill: var(--lab-text); font-size: 13px; }
+#sedici-bit .cp-art .sedici-bit-f-lbl { fill: var(--lab-text); font-size: 13px; }
+#sedici-bit .cp-art .sedici-bit-f-addr { fill: var(--sig-addr); font-size: 13px; font-weight: 700; }
+#sedici-bit .cp-art .sedici-bit-f-data { fill: var(--sig-data); font-size: 13px; font-weight: 700; }
+#sedici-bit .cp-art .sedici-bit-f-big { fill: var(--sig-addr); font-size: 22px; font-weight: 800; }
+#sedici-bit .cp-art .sedici-bit-f-thin { stroke-width: 4; }
+#sedici-bit .cp-art .sedici-bit-f-arr-d { fill: var(--sig-data); }
+#sedici-bit .cp-art .sedici-bit-f-arr-a { fill: var(--sig-addr); }
+#sedici-bit .cp-art .sedici-bit-f-arr-n { fill: var(--lab-dim); }
+#sedici-bit .cp-art .sedici-bit-f-reg rect { fill: var(--lab-raise); stroke: var(--sb-edge-2); stroke-width: 1.2; }
+#sedici-bit .cp-art .sedici-bit-f-reg text { fill: var(--lab-ink); font: 700 13px var(--mono); }
+#sedici-bit .cp-art .sedici-bit-f-adder { fill: color-mix(in srgb, var(--sig-addr) 10%, var(--lab-panel)); stroke: var(--sig-addr); stroke-width: 1.6; stroke-linejoin: round; }
+#sedici-bit .cp-art .sedici-bit-f-alu { fill: var(--lab-raise); stroke: var(--sb-edge-2); stroke-width: 1.6; stroke-linejoin: round; }
+#sedici-bit .cp-art .sedici-bit-f-wire { fill: none; stroke: var(--lab-dim); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+#sedici-bit .cp-art .sedici-bit-f-wire-a { fill: none; stroke: var(--sig-addr); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+#sedici-bit .cp-art .sedici-bit-f-queue rect { fill: var(--lab-sunk); stroke: var(--sb-edge-2); stroke-width: 1.2; stroke-dasharray: 4 3; }
+#sedici-bit .cp-art .sedici-bit-f-queue rect.is-full { fill: color-mix(in srgb, var(--sig-data) 16%, var(--lab-sunk)); stroke: var(--sig-data); stroke-dasharray: none; }
+#sedici-bit .cp-art .sedici-bit-f-queue text { fill: var(--lab-ink); font: 700 14px var(--mono); }
+
+/* figura 2: istruzioni su misura e istruzioni tutte uguali (carta: segue il tema della pagina) */
+#sedici-bit .cp-art .sedici-bit-isa-b { fill: color-mix(in srgb, var(--cp) 11%, var(--surface)); stroke: color-mix(in srgb, var(--cp) 55%, transparent); stroke-width: 1.3; }
+#sedici-bit .cp-art .sedici-bit-isa-w { fill: color-mix(in srgb, #d9a441 15%, var(--surface)); stroke: color-mix(in srgb, #b9852a 70%, transparent); stroke-width: 1.3; }
+
+/* ---------- laboratorio: impaginazione ---------- */
+
+/* base.css dà display ai pulsanti (.cp-btn) e alle viste: senza questa regola l'attributo hidden non li nasconde */
+#sedici-bit .cp-lab [hidden] { display: none !important; }
+#sedici-bit .sb-view:not([hidden]) { animation: sedici-bit-in var(--t-normal) var(--ease-smooth); }
+@keyframes sedici-bit-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+#sedici-bit .sb-top { background: linear-gradient(180deg, rgba(255, 255, 255, .03), transparent); }
+#sedici-bit .sb-lbl { font: 700 .7rem var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--lab-dim); }
+
+#sedici-bit .sb-stage { padding: 8px 6px 0; }
+/* accanto a una spiegazione più alta, il disegno resta al centro invece di lasciare un vuoto sotto */
+#sedici-bit .sb-view-bus .sb-stage, #sedici-bit .sb-view-seg .sb-stage { display: flex; flex-direction: column; justify-content: center; padding-bottom: 8px; }
+#sedici-bit .sb-stage > svg { display: block; width: 100%; height: auto; -webkit-tap-highlight-color: transparent; }
+/* sul palco stretto il disegno non cresce oltre una misura leggibile */
+#sedici-bit .sb-stage > svg.is-narrow { max-width: 470px; margin: 0 auto; }
+#sedici-bit .sb-explain a { color: var(--sig-data); text-underline-offset: 2px; }
+#sedici-bit .sb-explain a:hover { color: var(--lab-ink); }
+#sedici-bit .sb-explain ol, #sedici-bit .sb-explain ul { margin: 0 0 .8em; }
+#sedici-bit .sb-muted { color: var(--lab-dim); font-size: .9rem; }
+#sedici-bit .sb-mono { font-family: var(--mono); color: var(--lab-ink); letter-spacing: .02em; }
+#sedici-bit .sb-h-mono { font-family: var(--mono); letter-spacing: .01em; }
+
+/* bagliore che si allarga (solo con movimento) */
+#sedici-bit .sb-ripple { fill: none; stroke: var(--lab-gold); stroke-width: 2; pointer-events: none; }
+#sedici-bit .sb-ripple.b4 { stroke: var(--sb-b4); }
+#sedici-bit .sb-ripple.b8 { stroke: var(--sb-b8); }
+#sedici-bit .sb-ripple.b16 { stroke: var(--sb-b16); }
+#sedici-bit .sb-ripple.b32 { stroke: var(--sb-b32); }
+#sedici-bit .sb-ripple.is-carry, #sedici-bit .sb-ripple.is-addr { stroke: var(--sig-addr); }
+
+/* ---------- 1 · grafico dei transistor ---------- */
+
+#sedici-bit .sb-gl-minor { stroke: var(--lab-line); stroke-width: 1; opacity: .7; }
+#sedici-bit .sb-gl-major { stroke: var(--sb-edge-2); stroke-width: 1; }
+#sedici-bit .sb-axis { stroke: var(--sb-edge-2); stroke-width: 1.2; }
+#sedici-bit .sb-tick-m { stroke: var(--sb-edge-2); stroke-width: 1; }
+#sedici-bit .sb-tick { fill: var(--lab-dim); font: 600 12px var(--mono); transition: fill var(--t-fast); }
+#sedici-bit .sb-tick.is-hot { fill: var(--lab-ink); font-weight: 800; }
+#sedici-bit .sb-axis-t { fill: var(--lab-dim); font-size: 12px; font-weight: 600; }
+
+#sedici-bit .sb-cursor { pointer-events: none; }
+#sedici-bit .sb-cursor-l { stroke: var(--lab-gold); stroke-width: 1.5; stroke-dasharray: 3 4; }
+#sedici-bit .sb-yearbig { fill: var(--lab-gold); font: 800 30px var(--mono); }
+#sedici-bit .sb-guide { pointer-events: none; transition: opacity var(--t-fast); }
+#sedici-bit .sb-guide-l { stroke: var(--lab-dim); stroke-width: 1; stroke-dasharray: 2 4; }
+
+#sedici-bit .sb-pt { cursor: pointer; outline: none; transition: opacity var(--t-normal) var(--ease-smooth); }
+#sedici-bit .sb-pt-hit { fill: transparent; }
+#sedici-bit .sb-pt-ring { fill: none; stroke: transparent; stroke-width: 2; transition: stroke var(--t-fast); }
+#sedici-bit .sb-pt-dot { stroke: var(--lab-bg); stroke-width: 2; }
+#sedici-bit .sb-pt-dot.b4 { fill: var(--sb-b4); }
+#sedici-bit .sb-pt-dot.b8 { fill: var(--sb-b8); }
+#sedici-bit .sb-pt-dot.b16 { fill: var(--sb-b16); }
+#sedici-bit .sb-pt-dot.b32 { fill: var(--sb-b32); }
+#sedici-bit .sb-pt-lbl {
+  fill: var(--lab-text); font-size: 12.5px; font-weight: 650;
+  paint-order: stroke; stroke: var(--lab-bg); stroke-width: 3px; stroke-linejoin: round;
+  transition: fill var(--t-fast);
+}
+#sedici-bit .sb-pt.is-hover .sb-pt-ring { stroke: var(--lab-dim); }
+#sedici-bit .sb-pt.is-hover .sb-pt-lbl { fill: var(--lab-ink); }
+#sedici-bit .sb-pt.is-sel .sb-pt-ring { stroke: var(--lab-gold); stroke-width: 2.5; }
+#sedici-bit .sb-pt.is-sel .sb-pt-lbl { fill: var(--lab-ink); font-weight: 800; }
+#sedici-bit .sb-pt:focus-visible { outline: none; }
+#sedici-bit .sb-pt:focus-visible .sb-pt-ring { stroke: var(--lab-gold); stroke-width: 3; stroke-dasharray: 4 3; }
+#sedici-bit .sb-pt.is-dim { opacity: .2; }
+#sedici-bit .sb-pt.is-dim:focus-visible, #sedici-bit .sb-pt.is-dim.is-hover { opacity: .75; }
+
+#sedici-bit .sb-tip { opacity: 0; pointer-events: none; transition: opacity var(--t-fast); }
+#sedici-bit .sb-tip.is-on { opacity: 1; }
+#sedici-bit .sb-tip-bg { fill: var(--lab-raise); stroke: var(--sb-edge-2); stroke-width: 1; }
+#sedici-bit .sb-tip-v { fill: var(--lab-ink); font-size: 13px; font-weight: 750; }
+#sedici-bit .sb-tip-k { fill: var(--lab-text); font-size: 12px; font-weight: 600; }
+
+#sedici-bit .sb-legend { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; padding: 6px 16px 12px; font-size: .82rem; color: var(--lab-text); }
+#sedici-bit .sb-legend-t { font: 700 .68rem var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--lab-dim); }
+#sedici-bit .sb-legend-i { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+#sedici-bit .sb-sw { display: inline-block; width: 12px; height: 12px; border-radius: 50%; box-shadow: 0 0 0 2px var(--lab-bg), 0 0 0 3px var(--sb-edge); }
+#sedici-bit .sb-sw.b4 { background: var(--sb-b4); }
+#sedici-bit .sb-sw.b8 { background: var(--sb-b8); }
+#sedici-bit .sb-sw.b16 { background: var(--sb-b16); }
+#sedici-bit .sb-sw.b32 { background: var(--sb-b32); }
+#sedici-bit .sb-legend-n { color: var(--lab-dim); }
+
+#sedici-bit .sb-card { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; margin: 10px 0 12px; }
+#sedici-bit .sb-card div { padding: 6px 10px; border-radius: 8px; background: var(--lab-sunk); border: 1px solid var(--lab-line); min-width: 0; }
+#sedici-bit .sb-card dt { font: 700 .64rem var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--lab-dim); }
+#sedici-bit .sb-card dd { margin: 2px 0 0; font: 700 .98rem var(--mono); color: var(--lab-ink); font-variant-numeric: tabular-nums; }
+#sedici-bit .sb-prog { margin: 12px 0 0; font: 650 .8rem var(--mono); color: var(--lab-gold); }
+#sedici-bit .sb-prog.is-ok { color: var(--sig-on); }
+
+#sedici-bit .sb-data { border-top: 1px solid var(--lab-line); padding: 0 16px; }
+#sedici-bit .sb-data > summary { cursor: pointer; padding: 10px 0; font-size: .9rem; font-weight: 650; color: var(--lab-text); }
+#sedici-bit .sb-data > summary:hover { color: var(--lab-ink); }
+#sedici-bit .sb-table-wrap { overflow-x: auto; }
+#sedici-bit .sb-table { width: 100%; min-width: 0; border-collapse: collapse; font-size: .86rem; }
+#sedici-bit .sb-table th, #sedici-bit .sb-table td { text-align: left; padding: 6px 10px 6px 0; border-bottom: 1px solid var(--lab-line); vertical-align: top; }
+#sedici-bit .sb-table thead th { position: static; background: none; font: 700 .66rem var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--lab-dim); }
+#sedici-bit .sb-table tbody th { border-left: 0; color: var(--lab-ink); font-weight: 650; }
+#sedici-bit .sb-table tbody tr:hover { background: var(--lab-raise); }
+#sedici-bit .sb-table .num { font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+#sedici-bit .sb-table td:last-child, #sedici-bit .sb-table th:last-child { text-align: right; padding-right: 0; }
+#sedici-bit .sb-table thead th.num { white-space: nowrap; }
+#sedici-bit .sb-data-note { margin: 10px 0 14px; font-size: .82rem; color: var(--lab-dim); max-width: 80ch; }
+
+/* ---------- 2 · quanto è largo il bus ---------- */
+
+#sedici-bit .sb-box { fill: var(--lab-panel); stroke: var(--lab-line); stroke-width: 1.5; }
+#sedici-bit .sb-box-cpu { stroke: var(--sb-edge); }
+#sedici-bit .sb-box-t { fill: var(--lab-ink); font: 800 13px var(--mono); letter-spacing: .12em; }
+#sedici-bit .sb-box-s { fill: var(--lab-text); font-size: 12.5px; }
+#sedici-bit .sb-note-t { fill: var(--lab-dim); font-size: 12px; }
+#sedici-bit .sb-port { fill: var(--sb-edge-2); }
+#sedici-bit .sb-lane { stroke: var(--sig-idle); stroke-width: 1.6; stroke-linecap: round; }
+#sedici-bit .sb-bus-l { fill: var(--sig-data); font: 700 12px var(--mono); }
+#sedici-bit .sb-row-l { fill: var(--lab-dim); font: 800 14px var(--mono); }
+#sedici-bit .sb-tile rect { fill: var(--lab-raise); stroke: var(--sb-edge); stroke-width: 1.2; transition: fill var(--t-fast), stroke var(--t-fast); }
+#sedici-bit .sb-tile text { fill: var(--lab-ink); font: 700 17px var(--mono); }
+#sedici-bit .sb-tile.is-hot rect { fill: color-mix(in srgb, var(--sig-data) 18%, var(--lab-sunk)); stroke: var(--sig-data); stroke-width: 2; }
+#sedici-bit .sb-tile.is-empty rect { fill: var(--lab-sunk); stroke-dasharray: 3 3; }
+#sedici-bit .sb-tile.is-empty text { fill: var(--lab-dim); }
+#sedici-bit .sb-tile.is-res rect { fill: color-mix(in srgb, var(--sig-on) 14%, var(--lab-sunk)); stroke: var(--sig-on); }
+#sedici-bit .sb-br { fill: none; stroke: var(--lab-dim); stroke-width: 1.5; stroke-linejoin: round; }
+#sedici-bit .sb-br.is-done { stroke: var(--sig-on); }
+#sedici-bit .sb-alu { transition: opacity var(--t-normal); }
+#sedici-bit .sb-alu.is-off { opacity: .45; }
+#sedici-bit .sb-alu-box { fill: var(--lab-raise); stroke: var(--sb-edge); stroke-width: 1.5; transition: stroke var(--t-fast); }
+#sedici-bit .sb-alu.is-busy .sb-alu-box { stroke: var(--sig-on); }
+#sedici-bit .sb-alu-t { fill: var(--lab-ink); font: 800 12px var(--mono); letter-spacing: .06em; }
+#sedici-bit .sb-alu-k { fill: var(--lab-dim); font: 700 14px var(--mono); }
+#sedici-bit .sb-alu-v { fill: var(--sig-data); font: 700 16px var(--mono); }
+#sedici-bit .sb-alu-res { fill: var(--sig-on); }
+#sedici-bit .sb-alu-line { stroke: var(--sb-edge-2); stroke-width: 1.2; }
+#sedici-bit .sb-carry { transition: opacity var(--t-normal); }
+#sedici-bit .sb-carry circle { fill: var(--lab-sunk); stroke: var(--sb-edge-2); stroke-width: 1.5; transition: fill var(--t-fast), stroke var(--t-fast); }
+#sedici-bit .sb-carry text { fill: var(--lab-dim); font: 800 15px var(--mono); }
+#sedici-bit .sb-carry .sb-carry-l { font: 600 12px var(--font); }
+#sedici-bit .sb-carry.is-1 circle { fill: color-mix(in srgb, var(--sig-addr) 18%, var(--lab-sunk)); stroke: var(--sig-addr); }
+#sedici-bit .sb-carry.is-1 text:not(.sb-carry-l) { fill: var(--sig-addr); }
+#sedici-bit .sb-carry.is-off { opacity: .4; }
+#sedici-bit .sb-dash.b1 { fill: var(--sb-bit1); }
+#sedici-bit .sb-dash.b0 { fill: var(--sb-bit0); }
+#sedici-bit .sb-pill rect { fill: color-mix(in srgb, var(--sig-data) 14%, var(--lab-sunk)); stroke: var(--sig-data); stroke-width: 1.2; }
+#sedici-bit .sb-pill text { fill: var(--lab-ink); font: 700 13px var(--mono); }
+
+#sedici-bit .sb-status { font-weight: 650; color: var(--lab-gold); }
+#sedici-bit .sb-status.is-ok { color: var(--sig-on); }
+#sedici-bit .sb-steps { padding-left: 1.4em; display: grid; gap: 4px; }
+#sedici-bit .sb-steps-sum { font-size: .9rem; }
+#sedici-bit .sb-cmp { list-style: none; margin: 12px 0; padding: 0; display: grid; gap: 3px; }
+#sedici-bit .sb-cmp li { display: grid; grid-template-columns: 3.9em minmax(0, 1fr) 7.6em 1em; gap: 8px; align-items: center; padding: 4px 8px; border-radius: 7px; font-size: .84rem; }
+#sedici-bit .sb-cmp li.is-cur { background: var(--lab-raise); box-shadow: inset 0 0 0 1px var(--sb-edge); color: var(--lab-ink); }
+#sedici-bit .sb-cmp-k { font: 700 .8rem var(--mono); white-space: nowrap; }
+#sedici-bit .sb-cmp-bar { height: 8px; border-radius: 4px; background: var(--lab-sunk); overflow: hidden; }
+#sedici-bit .sb-cmp-bar i { display: block; height: 100%; border-radius: 4px; background: var(--sig-data); }
+#sedici-bit .sb-cmp li:not(.is-cur) .sb-cmp-bar i { background: color-mix(in srgb, var(--sig-data) 45%, var(--lab-sunk)); }
+#sedici-bit .sb-cmp-v { font-variant-numeric: tabular-nums; white-space: nowrap; }
+#sedici-bit .sb-cmp-ok { color: var(--sig-on); font-weight: 800; }
+
+/* ---------- 3 · segmento:offset ---------- */
+
+#sedici-bit .sb-calc { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px; }
+#sedici-bit .sb-field { display: inline-grid; gap: 6px; }
+#sedici-bit .sb-field > span { font: 700 .66rem var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--lab-dim); }
+#sedici-bit .sb-input {
+  box-sizing: border-box; width: 7.2ch; min-height: 38px; padding: 0 8px; border-radius: 8px;
+  border: 1px solid var(--sb-edge-2); background: var(--lab-sunk); color: var(--lab-ink);
+  font: 700 1.05rem var(--mono); letter-spacing: .06em; text-transform: uppercase;
+}
+#sedici-bit .sb-input::placeholder { color: var(--lab-dim); opacity: 1; text-transform: none; letter-spacing: 0; font-weight: 600; font-size: .9rem; }
+#sedici-bit .sb-input:focus-visible { outline: 3px solid var(--lab-gold); outline-offset: 1px; }
+#sedici-bit .sb-input[aria-invalid="true"] { border-color: var(--sb-lost); }
+#sedici-bit .sb-input-ans { width: 9.5ch; }
+#sedici-bit .sb-colon { font: 800 1.3rem/38px var(--mono); color: var(--lab-dim); }
+#sedici-bit .sb-preset { font-family: var(--mono); letter-spacing: .02em; }
+
+#sedici-bit .sb-seg-l { fill: var(--lab-text); font-size: 14px; font-weight: 700; }
+#sedici-bit .sb-seg-l2 { fill: var(--lab-dim); font: 600 12.5px var(--mono); }
+#sedici-bit .sb-col { fill: transparent; stroke: transparent; transition: fill var(--t-fast), stroke var(--t-fast); }
+#sedici-bit .sb-col.is-on { fill: color-mix(in srgb, var(--sig-addr) 8%, transparent); stroke: color-mix(in srgb, var(--sig-addr) 55%, transparent); stroke-width: 1.2; stroke-dasharray: 4 3; }
+#sedici-bit .sb-dig rect { fill: var(--lab-raise); stroke: var(--sb-edge); stroke-width: 1.5; }
+#sedici-bit .sb-dig text { fill: var(--lab-ink); font: 800 24px var(--mono); }
+#sedici-bit .sb-dig.is-seg rect { fill: color-mix(in srgb, var(--sig-addr) 12%, var(--lab-sunk)); stroke: var(--sig-addr); }
+#sedici-bit .sb-dig.is-zero rect { fill: color-mix(in srgb, var(--sig-addr) 6%, var(--lab-sunk)); stroke: var(--sig-addr); stroke-dasharray: 4 3; }
+#sedici-bit .sb-dig.is-zero text { fill: var(--sig-addr); }
+#sedici-bit .sb-dig.is-off rect { fill: color-mix(in srgb, var(--sig-data) 12%, var(--lab-sunk)); stroke: var(--sig-data); }
+#sedici-bit .sb-dig.is-res rect { fill: color-mix(in srgb, var(--sig-on) 14%, var(--lab-sunk)); stroke: var(--sig-on); }
+#sedici-bit .sb-sumline { stroke: var(--lab-text); stroke-width: 2; stroke-linecap: round; }
+#sedici-bit .sb-cmark { fill: var(--sig-addr); font: 800 13px var(--mono); }
+#sedici-bit .sb-lost-t { fill: var(--sb-lost); font: 800 16px var(--mono); }
+#sedici-bit .sb-lost-l { fill: var(--sb-lost); font-size: 12px; font-weight: 700; }
+#sedici-bit .sb-lost-x { stroke: var(--sb-lost); stroke-width: 2; stroke-linecap: round; }
+#sedici-bit .sb-bits { fill: var(--sig-on); font: 700 13px var(--mono); letter-spacing: .05em; }
+#sedici-bit .sb-ann { fill: var(--sig-addr); font-size: 13px; font-weight: 700; }
+
+#sedici-bit .sb-blk rect { fill: var(--lab-sunk); stroke: var(--sb-edge); stroke-width: 1; transition: fill var(--t-fast), stroke var(--t-fast); }
+#sedici-bit .sb-blk text { fill: var(--lab-dim); font: 700 12px var(--mono); }
+#sedici-bit .sb-blk.is-hit rect { fill: color-mix(in srgb, var(--sig-on) 22%, var(--lab-sunk)); stroke: var(--sig-on); }
+#sedici-bit .sb-blk.is-hit text { fill: var(--lab-ink); }
+#sedici-bit .sb-win { fill: color-mix(in srgb, var(--sig-addr) 12%, transparent); stroke: var(--sig-addr); stroke-width: 1.4; stroke-dasharray: 5 3; }
+#sedici-bit .sb-mark { stroke: var(--sig-on); stroke-width: 2.5; stroke-linecap: round; }
+#sedici-bit .sb-mpill rect { fill: color-mix(in srgb, var(--sig-on) 16%, var(--lab-sunk)); stroke: var(--sig-on); stroke-width: 1.2; }
+#sedici-bit .sb-mpill text { fill: var(--lab-ink); font: 700 13px var(--mono); }
+#sedici-bit .sb-map-l { fill: var(--lab-dim); font: 600 12px var(--mono); }
+#sedici-bit .sb-map-t { fill: var(--lab-text); font-size: 12px; font-weight: 700; }
+
+#sedici-bit .sb-exdyn { margin-bottom: 14px; }
+#sedici-bit .sb-warn { color: var(--sb-ko); }
+#sedici-bit .sb-chal { padding: 12px 14px; border-radius: 12px; background: var(--lab-panel); border: 1px solid var(--sb-edge); }
+#sedici-bit .sb-chal .step { margin: 0 0 4px; }
+#sedici-bit .sb-chal-q { margin: 0 0 10px; color: var(--lab-ink); }
+#sedici-bit .sb-chal-row { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px; }
+#sedici-bit .sb-chal-msg { min-height: 1.4em; margin: 10px 0 8px; font-size: .9rem; }
+#sedici-bit .sb-chal-msg:empty { margin: 4px 0; }
+#sedici-bit .sb-chal-msg.is-ok { color: var(--sig-on); font-weight: 650; }
+#sedici-bit .sb-chal-msg.is-ko { color: var(--sb-ko); }
+
+/* ---------- obiettivo ---------- */
+
+#sedici-bit .sb-goal { flex-wrap: wrap; }
+#sedici-bit .sb-goal-t { flex: 1 1 20em; min-width: 0; }
+#sedici-bit .sb-goal-state { display: inline-flex; flex-wrap: wrap; gap: 6px; }
+#sedici-bit .sb-goal-k { padding: 3px 9px; border-radius: 999px; border: 1px solid var(--sb-edge); background: var(--lab-sunk); color: var(--lab-text); font: 700 .74rem var(--mono); white-space: nowrap; }
+#sedici-bit .sb-goal-k.is-ok { border-color: color-mix(in srgb, var(--sig-on) 60%, transparent); color: var(--sig-on); }
+
+/* ---------- schermi ---------- */
+
+/* il palco largo resta leggibile solo con tutta la larghezza: spiegazione sotto */
+@media (max-width: 1099px) {
+  #sedici-bit .sb-grid { grid-template-columns: minmax(0, 1fr); }
+  #sedici-bit .sb-grid > .cp-explain { border-left: 0; border-top: 1px solid var(--lab-line); }
+}
+
+@media (max-width: 640px) {
+  #sedici-bit .sedici-bit-fig-biu .cp-art,
+  #sedici-bit .sedici-bit-fig-isa .cp-art { padding: 10px; }
+  #sedici-bit .sb-stage { padding: 6px 2px 0; }
+  #sedici-bit .sb-top .cp-seg { display: grid; width: 100%; }
+  #sedici-bit .sb-top .cp-seg button { text-align: left; }
+  #sedici-bit .sb-legend { padding: 4px 12px 12px; gap: 6px 12px; }
+  #sedici-bit .sb-data { padding: 0 12px; }
+  /* il nome del chip dice già il produttore */
+  #sedici-bit .sb-table .sb-col-maker { display: none; }
+  #sedici-bit .sb-cmp li { grid-template-columns: 3.6em minmax(0, 1fr) 7.2em 1em; gap: 6px; padding: 4px 6px; }
+  #sedici-bit .sb-goal-k { font-size: .7rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #sedici-bit .sb-view:not([hidden]) { animation: none; }
+  #sedici-bit .sb-pt, #sedici-bit .sb-pt-ring, #sedici-bit .sb-pt-lbl, #sedici-bit .sb-tip, #sedici-bit .sb-guide,
+  #sedici-bit .sb-tick, #sedici-bit .sb-tile rect, #sedici-bit .sb-alu, #sedici-bit .sb-alu-box, #sedici-bit .sb-carry,
+  #sedici-bit .sb-carry circle, #sedici-bit .sb-col, #sedici-bit .sb-blk rect { transition: none; }
+}
+
+@media (forced-colors: active) {
+  #sedici-bit .sb-pt-dot { stroke: CanvasText; }
+  #sedici-bit .sb-pt:focus-visible .sb-pt-ring, #sedici-bit .sb-pt.is-sel .sb-pt-ring { stroke: Highlight; }
+}

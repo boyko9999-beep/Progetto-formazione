@@ -1,0 +1,200 @@
+<header class="cp-ch-head">
+  <div>
+    <p class="cp-ch-num"><b>01</b> 1969</p>
+    <h2 id="idea-titolo">Un chip, mille programmi</h2>
+    <p class="cp-ch-lead">Nel 1969 un'azienda giapponese chiede a Intel i chip per una calcolatrice. Ted Hoff propone qualcosa di più semplice e più potente: un processore generico, che cambia mestiere quando cambi il programma nella sua memoria.</p>
+  </div>
+  <figure class="cp-specimen" data-dip='{"pins":16,"label":"C4001","top":"intel","body":"ceramic"}'>
+    <figcaption class="cp-specimen-cap">Intel C4001 · la ROM che custodisce il programma: 256 byte e una porta di I/O a 4 bit</figcaption>
+  </figure>
+</header>
+
+<div class="cp-prose cp-reveal">
+  <h3>Un circuito per ogni mestiere</h3>
+  <p>Negli anni Sessanta ogni apparecchio elettronico aveva un circuito fatto apposta per lui. Dentro una calcolatrice, un semaforo o una macchina utensile c'erano porte logiche e flip-flop collegati in un ordine preciso, pensato per una sola funzione. È la <dfn>logica cablata</dfn>: il comportamento sta tutto nei collegamenti. Come funzionano porte e flip-flop lo racconta la sezione <a href="../porte-logiche/index.html#calcolo">Porte logiche e circuiti integrati</a>.</p>
+  <p>La logica cablata è veloce ed efficiente, finché non cambi idea. Una funzione nuova, o anche solo un errore da correggere, vuol dire ridisegnare il circuito. Se il circuito sta dentro un chip servono nuove <dfn>maschere</dfn>, le lastre con il disegno di ogni strato del chip, e poi un nuovo giro di fabbricazione e di prove.</p>
+  <p>Con la <dfn>logica programmabile</dfn> il comportamento passa dai fili alla memoria. L'hardware resta lo stesso; a cambiare è una lista di istruzioni, il <dfn>programma</dfn>.</p>
+</div>
+
+<figure class="cp-fig cp-reveal idea-fig">
+  <div class="cp-art">
+    <div class="idea-duo">
+      <svg viewBox="0 0 360 272" role="img" aria-label="Logica cablata: il circuito del semaforo e quello del dado sono fatti di flip-flop, porte e collegamenti diversi. Per passare dall'uno all'altro serve un nuovo progetto, con nuove maschere e nuovi chip.">
+        <defs>
+          <marker id="idea-f1-arr" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto">
+            <path d="M0 0 L8 4 L0 8 z" class="accent"/>
+          </marker>
+        </defs>
+        <text x="16" y="24" class="ink" font-size="15" font-weight="800">Logica cablata</text>
+        <text x="16" y="42" class="muted" font-size="12">ogni funzione è un circuito diverso</text>
+
+        <rect x="12" y="54" width="336" height="80" rx="10" class="paper stroke-line" stroke-width="1.5"/>
+        <g class="stroke-ink" fill="none" stroke-width="1.4" stroke-linejoin="round">
+          <path d="M22 74 H40 M22 108 H40"/>
+          <path d="M74 74 H92 V69 H112 M74 108 H98 V79 H112 M74 74 H86 V103 H112 M74 108 H104 V113 H112"/>
+          <path d="M146 74 H164 V86 H184 M146 108 H164 V96 H184 M218 91 H252"/>
+        </g>
+        <g class="idea-f-gate">
+          <rect x="40" y="62" width="34" height="24" rx="3" class="paper stroke-ink" stroke-width="1.4"/><text x="57" y="78" text-anchor="middle" class="ink mono" font-size="11.5" font-weight="700">FF</text>
+          <rect x="40" y="96" width="34" height="24" rx="3" class="paper stroke-ink" stroke-width="1.4"/><text x="57" y="112" text-anchor="middle" class="ink mono" font-size="11.5" font-weight="700">FF</text>
+          <rect x="112" y="62" width="34" height="24" rx="3" class="paper stroke-ink" stroke-width="1.4"/><text x="129" y="78" text-anchor="middle" class="ink mono" font-size="12" font-weight="700">&amp;</text>
+          <rect x="112" y="96" width="34" height="24" rx="3" class="paper stroke-ink" stroke-width="1.4"/><text x="129" y="112" text-anchor="middle" class="ink mono" font-size="12" font-weight="700">≥1</text>
+          <rect x="184" y="79" width="34" height="24" rx="3" class="paper stroke-ink" stroke-width="1.4"/><text x="201" y="95" text-anchor="middle" class="ink mono" font-size="12" font-weight="700">&amp;</text>
+        </g>
+        <circle cx="262" cy="91" r="8" class="accent"/>
+        <circle cx="284" cy="91" r="8" class="paper stroke-ink" stroke-width="1.4"/>
+        <circle cx="306" cy="91" r="8" class="paper stroke-ink" stroke-width="1.4"/>
+        <text x="336" y="72" text-anchor="end" class="ink" font-size="12.5" font-weight="700">semaforo</text>
+
+        <path d="M120 140 V164" class="stroke-accent" fill="none" stroke-width="2" marker-end="url(#idea-f1-arr)"/>
+        <text x="134" y="152" class="accent" font-size="11.5" font-weight="700">nuovo progetto,</text>
+        <text x="134" y="166" class="accent" font-size="11.5" font-weight="700">nuove maschere, nuovi chip</text>
+
+        <rect x="12" y="172" width="336" height="90" rx="10" class="paper stroke-line" stroke-width="1.5"/>
+        <g class="stroke-ink" fill="none" stroke-width="1.4" stroke-linejoin="round">
+          <path d="M22 191 H40 M22 217 H40 M22 243 H40"/>
+          <path d="M74 191 H90 V187 H112 M74 217 H96 V197 H112 M74 217 H90 V213 H112 M74 243 H102 V223 H112 M74 243 H90 V239 H112 M74 191 H84 V249 H112"/>
+          <path d="M146 191 H162 V200 H184 M146 217 H162 V210 H184 M146 243 H166 V237 H184 M218 204 H236 V210 H258 M218 237 H236 V226 H258"/>
+        </g>
+        <g class="idea-f-gate">
+          <rect x="40" y="180" width="34" height="22" rx="3" class="paper stroke-ink" stroke-width="1.4"/><text x="57" y="195" text-anchor="middle" class="ink mono" font-size="11.5" font-weight="700">FF</text>
+          <rect x="40" y="206" width="34" height="22" rx="3" class="paper stroke-ink" stroke-width="1.4"/><text x="57" y="221" text-anchor="middle" class="ink mono" font-size="11.5" font-weight="700">FF</text>
+          <rect x="40" y="232" width="34" height="22" rx="3" class="paper stroke-ink" stroke-width="1.4"/><text x="57" y="247" text-anchor="middle" class="ink mono" font-size="11.5" font-weight="700">FF</text>
+          <rect x="112" y="180" width="34" height="22" rx="3" class="paper stroke-ink" stroke-width="1.4"/><text x="129" y="195" text-anchor="middle" class="ink mono" font-size="12" font-weight="700">&amp;</text>
+          <rect x="112" y="206" width="34" height="22" rx="3" class="paper stroke-ink" stroke-width="1.4"/><text x="129" y="221" text-anchor="middle" class="ink mono" font-size="12" font-weight="700">&amp;</text>
+          <rect x="112" y="232" width="34" height="22" rx="3" class="paper stroke-ink" stroke-width="1.4"/><text x="129" y="247" text-anchor="middle" class="ink mono" font-size="12" font-weight="700">≥1</text>
+          <rect x="184" y="193" width="34" height="22" rx="3" class="paper stroke-ink" stroke-width="1.4"/><text x="201" y="208" text-anchor="middle" class="ink mono" font-size="12" font-weight="700">≥1</text>
+          <rect x="184" y="226" width="34" height="22" rx="3" class="paper stroke-ink" stroke-width="1.4"/><text x="201" y="241" text-anchor="middle" class="ink mono" font-size="12" font-weight="700">1</text>
+        </g>
+        <rect x="258" y="196" width="44" height="44" rx="8" class="paper stroke-ink" stroke-width="1.6"/>
+        <g class="accent">
+          <circle cx="269" cy="207" r="3.6"/><circle cx="291" cy="207" r="3.6"/><circle cx="280" cy="218" r="3.6"/><circle cx="269" cy="229" r="3.6"/><circle cx="291" cy="229" r="3.6"/>
+        </g>
+        <text x="336" y="190" text-anchor="end" class="ink" font-size="12.5" font-weight="700">dado</text>
+      </svg>
+      <svg viewBox="0 0 360 272" role="img" aria-label="Logica programmabile: gli stessi quattro chip, CPU, ROM, RAM e I/O, restano collegati dallo stesso bus. Per passare dal semaforo al dado cambiano solo i bit scritti nella ROM.">
+        <text x="16" y="24" class="ink" font-size="15" font-weight="800">Logica programmabile</text>
+        <text x="16" y="42" class="muted" font-size="12">stesso hardware, programma diverso</text>
+
+        <g class="stroke-accent" fill="none" stroke-linecap="round">
+          <path d="M24 118 H336" stroke-width="3.5"/>
+          <path d="M51 100 V118 M135 100 V118 M219 100 V118 M306 100 V118" stroke-width="2.5"/>
+        </g>
+        <rect x="14" y="56" width="74" height="44" rx="6" class="paper stroke-ink" stroke-width="1.5"/>
+        <rect x="98" y="56" width="74" height="44" rx="6" class="paper stroke-accent" stroke-width="2.6"/>
+        <rect x="182" y="56" width="74" height="44" rx="6" class="paper stroke-ink" stroke-width="1.5"/>
+        <rect x="266" y="56" width="80" height="44" rx="6" class="paper stroke-ink" stroke-width="1.5"/>
+        <text x="51" y="83" text-anchor="middle" class="ink" font-size="13" font-weight="800">CPU</text>
+        <text x="135" y="83" text-anchor="middle" class="accent" font-size="13" font-weight="800">ROM</text>
+        <text x="219" y="83" text-anchor="middle" class="ink" font-size="13" font-weight="800">RAM</text>
+        <text x="306" y="83" text-anchor="middle" class="ink" font-size="13" font-weight="800">I/O</text>
+        <text x="180" y="140" text-anchor="middle" class="accent" font-size="12" font-weight="700">cambia solo il contenuto della ROM</text>
+
+        <rect x="14" y="152" width="160" height="110" rx="8" class="paper stroke-line" stroke-width="1.5"/>
+        <rect x="186" y="152" width="160" height="110" rx="8" class="paper stroke-line" stroke-width="1.5"/>
+        <text x="24" y="172" class="ink" font-size="12.5" font-weight="700">programma: semaforo</text>
+        <text x="196" y="172" class="ink" font-size="12.5" font-weight="700">programma: dado</text>
+        <g transform="translate(24 182)"><rect x="0" y="0" width="11" height="11" rx="2" class="paper stroke-line" stroke-width="1.2"/><rect x="14" y="0" width="11" height="11" rx="2" class="accent"/><rect x="28" y="0" width="11" height="11" rx="2" class="accent"/><rect x="42" y="0" width="11" height="11" rx="2" class="accent"/><rect x="56" y="0" width="11" height="11" rx="2" class="paper stroke-line" stroke-width="1.2"/><rect x="70" y="0" width="11" height="11" rx="2" class="paper stroke-line" stroke-width="1.2"/><rect x="84" y="0" width="11" height="11" rx="2" class="paper stroke-line" stroke-width="1.2"/><rect x="98" y="0" width="11" height="11" rx="2" class="accent"/><text x="118" y="10" class="muted mono" font-size="11">71</text><rect x="0" y="18" width="11" height="11" rx="2" class="accent"/><rect x="14" y="18" width="11" height="11" rx="2" class="paper stroke-line" stroke-width="1.2"/><rect x="28" y="18" width="11" height="11" rx="2" class="paper stroke-line" stroke-width="1.2"/><rect x="42" y="18" width="11" height="11" rx="2" class="paper stroke-line" stroke-width="1.2"/><rect x="56" y="18" width="11" height="11" rx="2" class="accent"/><rect x="70" y="18" width="11" height="11" rx="2" class="paper stroke-line" stroke-width="1.2"/><rect x="84" y="18" width="11" height="11" rx="2" class="paper stroke-line" stroke-width="1.2"/><rect x="98" y="18" width="11" height="11" rx="2" class="accent"/><text x="118" y="28" class="muted mono" font-size="11">89</text><rect x="0" y="36" width="11" height="11" rx="2" class="paper stroke-line" stroke-width="1.2"/><rect x="14" y="36" width="11" height="11" rx="2" class="accent"/><rect x="28" y="36" width="11" height="11" rx="2" class="accent"/><rect x="42" y="36" width="11" height="11" rx="2" class="accent"/><rect x="56" y="36" width="11" height="11" rx="2" class="paper stroke-line" stroke-width="1.2"/><rect x="70" y="36" width="11" height="11" rx="2" class="paper stroke-line" stroke-width="1.2"/><rect x="84" y="36" width="11" height="11" rx="2" class="accent"/><rect x="98" y="36" width="11" height="11" rx="2" class="accent"/><text x="118" y="46" class="muted mono" font-size="11">73</text><rect x="0" y="54" width="11" height="11" rx="2" class="accent"/><rect x="14" y="54" width="11" height="11" rx="2" class="paper stroke-line" stroke-width="1.2"/><rect x="28" y="54" width="11" height="11" rx="2" class="paper stroke-line" stroke-width="1.2"/><rect x="42" y="54" width="11" height="11" rx="2" class="paper stroke-line" stroke-width="1.2"/><rect x="56" y="54" width="11" height="11" rx="2" class="paper stroke-line" stroke-width="1.2"/><rect x="70" y="54" width="11" height="11" rx="2" class="accent"/><rect x="84" y="54" width="11" height="11" rx="2" class="paper stroke-line" stroke-width="1.2"/><rect x="98" y="54" width="11" height="11" rx="2" class="accent"/><text x="118" y="64" class="muted mono" font-size="11">85</text></g>
+        <g transform="translate(196 182)"><rect x="0" y="0" width="11" height="11" rx="2" class="accent"/><rect x="14" y="0" width="11" height="11" rx="2" class="paper stroke-line" stroke-width="1.2"/><rect x="28" y="0" width="11" height="11" rx="2" class="paper stroke-line" stroke-width="1.2"/><rect x="42" y="0" width="11" height="11" rx="2" class="accent"/><rect x="56" y="0" width="11" height="11" rx="2" class="paper stroke-line" stroke-width="1.2"/><rect x="70" y="0" width="11" height="11" rx="2" class="accent"/><rect x="84" y="0" width="11" height="11" rx="2" class="accent"/><rect x="98" y="0" width="11" height="11" rx="2" class="paper stroke-line" stroke-width="1.2"/><text x="118" y="10" class="muted mono" font-size="11">96</text><rect x="0" y="18" width="11" height="11" rx="2" class="accent"/><rect x="14" y="18" width="11" height="11" rx="2" class="accent"/><rect x="28" y="18" width="11" height="11" rx="2" class="paper stroke-line" stroke-width="1.2"/><rect x="42" y="18" width="11" height="11" rx="2" class="paper stroke-line" stroke-width="1.2"/><rect x="56" y="18" width="11" height="11" rx="2" class="paper stroke-line" stroke-width="1.2"/><rect x="70" y="18" width="11" height="11" rx="2" class="paper stroke-line" stroke-width="1.2"/><rect x="84" y="18" width="11" height="11" rx="2" class="accent"/><rect x="98" y="18" width="11" height="11" rx="2" class="accent"/><text x="118" y="28" class="muted mono" font-size="11">C3</text><rect x="0" y="36" width="11" height="11" rx="2" class="accent"/><rect x="14" y="36" width="11" height="11" rx="2" class="accent"/><rect x="28" y="36" width="11" height="11" rx="2" class="paper stroke-line" stroke-width="1.2"/><rect x="42" y="36" width="11" height="11" rx="2" class="accent"/><rect x="56" y="36" width="11" height="11" rx="2" class="paper stroke-line" stroke-width="1.2"/><rect x="70" y="36" width="11" height="11" rx="2" class="paper stroke-line" stroke-width="1.2"/><rect x="84" y="36" width="11" height="11" rx="2" class="paper stroke-line" stroke-width="1.2"/><rect x="98" y="36" width="11" height="11" rx="2" class="paper stroke-line" stroke-width="1.2"/><text x="118" y="46" class="muted mono" font-size="11">D0</text><rect x="0" y="54" width="11" height="11" rx="2" class="accent"/><rect x="14" y="54" width="11" height="11" rx="2" class="paper stroke-line" stroke-width="1.2"/><rect x="28" y="54" width="11" height="11" rx="2" class="accent"/><rect x="42" y="54" width="11" height="11" rx="2" class="paper stroke-line" stroke-width="1.2"/><rect x="56" y="54" width="11" height="11" rx="2" class="paper stroke-line" stroke-width="1.2"/><rect x="70" y="54" width="11" height="11" rx="2" class="paper stroke-line" stroke-width="1.2"/><rect x="84" y="54" width="11" height="11" rx="2" class="paper stroke-line" stroke-width="1.2"/><rect x="98" y="54" width="11" height="11" rx="2" class="paper stroke-line" stroke-width="1.2"/><text x="118" y="64" class="muted mono" font-size="11">A0</text></g>
+      </svg>
+    </div>
+  </div>
+  <figcaption><b>Due modi di cambiare mestiere.</b> A sinistra, con la logica cablata, il semaforo e il dado sono due circuiti diversi: per passare dall'uno all'altro bisogna rifare il progetto. A destra gli stessi quattro chip fanno l'uno o l'altro a seconda dei numeri scritti nella ROM; qui ci sono le prime quattro righe dei programmi che trovi nel laboratorio.</figcaption>
+</figure>
+
+<div class="cp-prose cp-reveal">
+  <h3>Il programma è fatto di numeri</h3>
+  <p>Un processore sa fare poche cose semplici: leggere un numero, sommarlo a un altro, confrontarlo, saltare a un altro punto del programma. Ogni istruzione è scritta in memoria come un numero; il processore la legge, la esegue e passa alla successiva.</p>
+  <p>È l'idea del <dfn>programma memorizzato</dfn>, descritta nel 1945 da John von Neumann: istruzioni e dati stanno nella stessa memoria, e per cambiare programma basta cambiare dei numeri. A livello di computer completo la racconta la sezione <a href="../storia-pc/index.html#von-neumann">Architettura e storia del PC</a>; il viaggio di un'istruzione dentro il processore è nel capitolo <a href="#ciclo">Dentro la CPU</a>.</p>
+  <p>Nel 1969, però, un processore era fatto di intere schede piene di componenti e stava dentro i computer, non nelle calcolatrici da tavolo.</p>
+</div>
+
+<div class="cp-prose cp-reveal">
+  <h3>Busicom bussa alla porta di Intel</h3>
+  <p>Nel 1969 la Nippon Calculating Machine Corporation, che vendeva le sue calcolatrici con il marchio Busicom, stava progettando la 141-PF, una calcolatrice da tavolo con stampante. Per costruirla chiese a Intel, nata l'anno prima per fabbricare memorie, un set di chip su misura: una dozzina secondo Intel e secondo i ricordi di Ted Hoff e Stan Mazor, sette nella ricostruzione di Federico Faggin.</p>
+  <p>Hoff, l'ingegnere incaricato di seguire i tecnici giapponesi, trovò il progetto troppo complicato. In un altro lavoro usava un minicomputer, il PDP-8, molto più semplice di quella calcolatrice. Propose allora un processore generico a 4 bit, affiancato da una ROM per il programma e da una RAM per i dati: le funzioni della calcolatrice sarebbero diventate software.</p>
+  <p>Stan Mazor, arrivato in Intel nel settembre 1969, definì con lui l'architettura e le istruzioni. Busicom accettò, anche perché, ricorda Hoff, capiva che quel chip avrebbe potuto servire ad altro. Il suo ingegnere Masatoshi Shima avrebbe poi lavorato in Intel alla realizzazione del chip.</p>
+</div>
+
+<ul class="cp-people cp-reveal" aria-label="Le persone dell'idea">
+  <li class="cp-person"><span class="ini" aria-hidden="true">TH</span><div><b>Ted Hoff</b><small>Intel</small><p>Segue il progetto Busicom e propone un processore generico al posto dei chip su misura.</p></div></li>
+  <li class="cp-person"><span class="ini" aria-hidden="true">SM</span><div><b>Stan Mazor</b><small>Intel, dal settembre 1969</small><p>Definisce con Hoff l'architettura e l'insieme delle istruzioni.</p></div></li>
+  <li class="cp-person"><span class="ini" aria-hidden="true">MS</span><div><b>Masatoshi Shima</b><small>Busicom</small><p>Ingegnere della 141-PF; nel 1970 lavora in Intel con Faggin alla logica del chip.</p></div></li>
+  <li class="cp-person"><span class="ini" aria-hidden="true">FF</span><div><b>Federico Faggin</b><small>Intel, dall'aprile 1970</small><p>Trasforma l'architettura in quattro chip di silicio che funzionano.</p></div></li>
+  <li class="cp-person"><span class="ini" aria-hidden="true">RN</span><div><b>Robert Noyce</b><small>cofondatore di Intel</small><p>Nel 1971 riacquista da Busicom i diritti per vendere il chip a tutti.</p></div></li>
+</ul>
+
+<figure class="cp-fig cp-reveal idea-fig">
+  <div class="cp-art">
+    <div class="idea-duo">
+      <svg viewBox="0 0 360 252" role="img" aria-label="Il piano di Busicom: dodici chip progettati solo per la calcolatrice 141-PF. I primi sette sono disegnati pieni, come nella ricostruzione di Faggin; gli altri cinque tratteggiati arrivano ai dodici ricordati da Intel, Hoff e Mazor.">
+        <text x="16" y="24" class="ink" font-size="15" font-weight="800">Il piano di Busicom</text>
+        <text x="16" y="42" class="muted" font-size="12">chip progettati solo per la 141-PF</text>
+        <g><path d="M28 58 V53 M28 86 V91 M43.3 58 V53 M43.3 86 V91 M58.7 58 V53 M58.7 86 V91 M74 58 V53 M74 86 V91" class="stroke-ink" stroke-width="1.6" fill="none" opacity=".55"/><rect x="18" y="58" width="66" height="28" rx="4" class="paper stroke-ink" stroke-width="1.4"/><text x="51" y="76.5" text-anchor="middle" class="ink mono" font-size="11.5" font-weight="700">1</text><path d="M112 58 V53 M112 86 V91 M127.3 58 V53 M127.3 86 V91 M142.7 58 V53 M142.7 86 V91 M158 58 V53 M158 86 V91" class="stroke-ink" stroke-width="1.6" fill="none" opacity=".55"/><rect x="102" y="58" width="66" height="28" rx="4" class="paper stroke-ink" stroke-width="1.4"/><text x="135" y="76.5" text-anchor="middle" class="ink mono" font-size="11.5" font-weight="700">2</text><path d="M196 58 V53 M196 86 V91 M211.3 58 V53 M211.3 86 V91 M226.7 58 V53 M226.7 86 V91 M242 58 V53 M242 86 V91" class="stroke-ink" stroke-width="1.6" fill="none" opacity=".55"/><rect x="186" y="58" width="66" height="28" rx="4" class="paper stroke-ink" stroke-width="1.4"/><text x="219" y="76.5" text-anchor="middle" class="ink mono" font-size="11.5" font-weight="700">3</text><path d="M280 58 V53 M280 86 V91 M295.3 58 V53 M295.3 86 V91 M310.7 58 V53 M310.7 86 V91 M326 58 V53 M326 86 V91" class="stroke-ink" stroke-width="1.6" fill="none" opacity=".55"/><rect x="270" y="58" width="66" height="28" rx="4" class="paper stroke-ink" stroke-width="1.4"/><text x="303" y="76.5" text-anchor="middle" class="ink mono" font-size="11.5" font-weight="700">4</text><path d="M28 106 V101 M28 134 V139 M43.3 106 V101 M43.3 134 V139 M58.7 106 V101 M58.7 134 V139 M74 106 V101 M74 134 V139" class="stroke-ink" stroke-width="1.6" fill="none" opacity=".55"/><rect x="18" y="106" width="66" height="28" rx="4" class="paper stroke-ink" stroke-width="1.4"/><text x="51" y="124.5" text-anchor="middle" class="ink mono" font-size="11.5" font-weight="700">5</text><path d="M112 106 V101 M112 134 V139 M127.3 106 V101 M127.3 134 V139 M142.7 106 V101 M142.7 134 V139 M158 106 V101 M158 134 V139" class="stroke-ink" stroke-width="1.6" fill="none" opacity=".55"/><rect x="102" y="106" width="66" height="28" rx="4" class="paper stroke-ink" stroke-width="1.4"/><text x="135" y="124.5" text-anchor="middle" class="ink mono" font-size="11.5" font-weight="700">6</text><path d="M196 106 V101 M196 134 V139 M211.3 106 V101 M211.3 134 V139 M226.7 106 V101 M226.7 134 V139 M242 106 V101 M242 134 V139" class="stroke-ink" stroke-width="1.6" fill="none" opacity=".55"/><rect x="186" y="106" width="66" height="28" rx="4" class="paper stroke-ink" stroke-width="1.4"/><text x="219" y="124.5" text-anchor="middle" class="ink mono" font-size="11.5" font-weight="700">7</text><path d="M280 106 V101 M280 134 V139 M295.3 106 V101 M295.3 134 V139 M310.7 106 V101 M310.7 134 V139 M326 106 V101 M326 134 V139" class="stroke-ink" stroke-width="1.6" fill="none" opacity=".55"/><rect x="270" y="106" width="66" height="28" rx="4" fill="none" class="stroke-ink" stroke-width="1.2" stroke-dasharray="4 3" opacity=".75"/><text x="303" y="124.5" text-anchor="middle" class="muted mono" font-size="11.5" font-weight="700">8</text><path d="M28 154 V149 M28 182 V187 M43.3 154 V149 M43.3 182 V187 M58.7 154 V149 M58.7 182 V187 M74 154 V149 M74 182 V187" class="stroke-ink" stroke-width="1.6" fill="none" opacity=".55"/><rect x="18" y="154" width="66" height="28" rx="4" fill="none" class="stroke-ink" stroke-width="1.2" stroke-dasharray="4 3" opacity=".75"/><text x="51" y="172.5" text-anchor="middle" class="muted mono" font-size="11.5" font-weight="700">9</text><path d="M112 154 V149 M112 182 V187 M127.3 154 V149 M127.3 182 V187 M142.7 154 V149 M142.7 182 V187 M158 154 V149 M158 182 V187" class="stroke-ink" stroke-width="1.6" fill="none" opacity=".55"/><rect x="102" y="154" width="66" height="28" rx="4" fill="none" class="stroke-ink" stroke-width="1.2" stroke-dasharray="4 3" opacity=".75"/><text x="135" y="172.5" text-anchor="middle" class="muted mono" font-size="11.5" font-weight="700">10</text><path d="M196 154 V149 M196 182 V187 M211.3 154 V149 M211.3 182 V187 M226.7 154 V149 M226.7 182 V187 M242 154 V149 M242 182 V187" class="stroke-ink" stroke-width="1.6" fill="none" opacity=".55"/><rect x="186" y="154" width="66" height="28" rx="4" fill="none" class="stroke-ink" stroke-width="1.2" stroke-dasharray="4 3" opacity=".75"/><text x="219" y="172.5" text-anchor="middle" class="muted mono" font-size="11.5" font-weight="700">11</text><path d="M280 154 V149 M280 182 V187 M295.3 154 V149 M295.3 182 V187 M310.7 154 V149 M310.7 182 V187 M326 154 V149 M326 182 V187" class="stroke-ink" stroke-width="1.6" fill="none" opacity=".55"/><rect x="270" y="154" width="66" height="28" rx="4" fill="none" class="stroke-ink" stroke-width="1.2" stroke-dasharray="4 3" opacity=".75"/><text x="303" y="172.5" text-anchor="middle" class="muted mono" font-size="11.5" font-weight="700">12</text></g>
+        <rect x="18" y="210" width="16" height="11" rx="2" class="paper stroke-ink" stroke-width="1.4"/>
+        <text x="42" y="220" class="ink" font-size="12">7 nella ricostruzione di Faggin</text>
+        <rect x="18" y="230" width="16" height="11" rx="2" fill="none" class="stroke-ink" stroke-width="1.2" stroke-dasharray="3 2"/>
+        <text x="42" y="240" class="ink" font-size="12">fino a 12 per Intel, Hoff e Mazor</text>
+      </svg>
+      <svg viewBox="0 0 360 252" role="img" aria-label="La proposta di Hoff e Mazor: quattro tipi di chip generici. Il 4004 è la CPU a 4 bit, il 4001 è la ROM con il programma, il 4002 è la RAM per i dati, il 4003 è il registro a scorrimento per le uscite.">
+        <text x="16" y="24" class="ink" font-size="15" font-weight="800">La proposta di Hoff e Mazor</text>
+        <text x="16" y="42" class="muted" font-size="12">quattro tipi di chip generici e un programma</text>
+        <g><path d="M28 62 V57 M28 114 V119 M46.9 62 V57 M46.9 114 V119 M65.7 62 V57 M65.7 114 V119 M84.6 62 V57 M84.6 114 V119 M103.4 62 V57 M103.4 114 V119 M122.3 62 V57 M122.3 114 V119 M141.1 62 V57 M141.1 114 V119 M160 62 V57 M160 114 V119" class="stroke-ink" stroke-width="1.6" fill="none" opacity=".55"/><rect x="18" y="62" width="152" height="52" rx="5" class="paper stroke-ink" stroke-width="1.5"/><text x="32" y="85" class="ink mono" font-size="15" font-weight="800">4004</text><text x="32" y="103" class="muted" font-size="12">CPU a 4 bit</text><path d="M200 62 V57 M200 114 V119 M218.9 62 V57 M218.9 114 V119 M237.7 62 V57 M237.7 114 V119 M256.6 62 V57 M256.6 114 V119 M275.4 62 V57 M275.4 114 V119 M294.3 62 V57 M294.3 114 V119 M313.1 62 V57 M313.1 114 V119 M332 62 V57 M332 114 V119" class="stroke-ink" stroke-width="1.6" fill="none" opacity=".55"/><rect x="190" y="62" width="152" height="52" rx="5" class="paper stroke-accent" stroke-width="2.6"/><text x="204" y="85" class="accent mono" font-size="15" font-weight="800">4001</text><text x="204" y="103" class="muted" font-size="12">ROM: il programma</text><path d="M28 142 V137 M28 194 V199 M46.9 142 V137 M46.9 194 V199 M65.7 142 V137 M65.7 194 V199 M84.6 142 V137 M84.6 194 V199 M103.4 142 V137 M103.4 194 V199 M122.3 142 V137 M122.3 194 V199 M141.1 142 V137 M141.1 194 V199 M160 142 V137 M160 194 V199" class="stroke-ink" stroke-width="1.6" fill="none" opacity=".55"/><rect x="18" y="142" width="152" height="52" rx="5" class="paper stroke-ink" stroke-width="1.5"/><text x="32" y="165" class="ink mono" font-size="15" font-weight="800">4002</text><text x="32" y="183" class="muted" font-size="12">RAM: i dati</text><path d="M200 142 V137 M200 194 V199 M218.9 142 V137 M218.9 194 V199 M237.7 142 V137 M237.7 194 V199 M256.6 142 V137 M256.6 194 V199 M275.4 142 V137 M275.4 194 V199 M294.3 142 V137 M294.3 194 V199 M313.1 142 V137 M313.1 194 V199 M332 142 V137 M332 194 V199" class="stroke-ink" stroke-width="1.6" fill="none" opacity=".55"/><rect x="190" y="142" width="152" height="52" rx="5" class="paper stroke-ink" stroke-width="1.5"/><text x="204" y="165" class="ink mono" font-size="15" font-weight="800">4003</text><text x="204" y="183" class="muted" font-size="12">registro: le uscite</text></g>
+        <text x="180" y="240" text-anchor="middle" class="accent" font-size="12.5" font-weight="700">un solo progetto, adatto a tanti prodotti</text>
+      </svg>
+    </div>
+  </div>
+  <figcaption><b>Dalla dozzina alla famiglia di quattro.</b> Il piano di Busicom prevedeva chip pensati solo per la 141-PF: sette nella ricostruzione di Faggin, dodici nei ricordi di Intel, Hoff e Mazor. La proposta di Hoff e Mazor usava quattro tipi di chip, tutti generici; a fare la calcolatrice era il programma nella ROM 4001.</figcaption>
+</figure>
+
+<section class="cp-lab" data-lab="idea" aria-labelledby="lab-idea-titolo">
+  <header class="cp-lab-head">
+    <span class="cp-lab-tag">Laboratorio</span>
+    <h3 id="lab-idea-titolo">Stesso hardware, programmi diversi</h3>
+    <p>Scegli una funzione: il suo programma viene scritto nella ROM e lo stesso sistema cambia mestiere, senza toccare un filo. Poi passa alla logica cablata e prova a cambiare funzione anche lì.</p>
+  </header>
+  <div class="cp-lab-mount"><p class="cp-lab-fallback">Caricamento del laboratorio…</p></div>
+</section>
+
+<div class="cp-prose cp-reveal">
+  <h3>Dal foglio al silicio, e i diritti</h3>
+  <p>Per mesi la proposta restò sulla carta. Il 3 aprile 1970 entrò in Intel Federico Faggin, che trasformò l'architettura in quattro chip veri: la ROM 4001, la RAM 4002, il registro a scorrimento 4003 e il processore 4004, la famiglia <dfn>MCS-4</dfn>. Pochi giorni dopo arrivò dal Giappone Shima, che restò fino a ottobre per lavorare con lui. Come andò quella corsa lo racconta il capitolo <a href="#intel-4004">Intel 4004, il primo microprocessore</a>.</p>
+  <p>Intanto il mercato delle calcolatrici da tavolo era crollato e Busicom chiese di rinegoziare. Nel maggio 1971, su spinta dei progettisti, Robert Noyce restituì a Busicom i circa 60.000 dollari che aveva investito nello sviluppo. In cambio Intel ottenne il diritto di vendere i chip a chiunque, per ogni uso tranne le calcolatrici. Il 15 novembre 1971 li annunciò come prodotto da catalogo; Busicom fallì nel 1974.</p>
+</div>
+
+<p class="cp-specs-title cp-reveal">Scheda tecnica · Intel 4001</p>
+<dl class="cp-specs cp-reveal">
+  <div><dt>Tipo</dt><dd>ROM a maschera</dd></div>
+  <div><dt>Capacità</dt><dd>256 byte (2.048 bit)</dd></div>
+  <div><dt>Organizzazione</dt><dd>256 parole da 8 bit</dd></div>
+  <div><dt>Porta</dt><dd>I/O a 4 bit</dd></div>
+  <div><dt>Programmazione</dt><dd>in fabbrica, con la maschera del metallo</dd></div>
+  <div><dt>Tecnologia</dt><dd>PMOS a gate di silicio</dd></div>
+  <div><dt>Contenitore</dt><dd>DIP a 16 piedini</dd></div>
+  <div><dt>Famiglia</dt><dd>MCS-4, annunciata il 15 novembre 1971</dd></div>
+</dl>
+
+<aside class="cp-fact cp-reveal">
+  <p><strong>Lo sapevi?</strong> Il programma della 141-PF occupa 1.024 byte, quanto quattro ROM 4001. Nel 2005 Tim McNerney e Fred Huettig, con il Computer History Museum, lo hanno letto da una calcolatrice originale; nel 2006 McNerney e Barry e Brian Silverman lo hanno decifrato istruzione per istruzione. Oggi gira in un simulatore: un programma del 1971 che si può ancora leggere riga per riga.</p>
+</aside>
+
+<div class="cp-prose cp-reveal">
+  <h3>Perché il generico ha vinto</h3>
+  <p>Un chip su misura serve a un solo cliente. Progettarlo, disegnarne le maschere e collaudarlo costa lavoro, e quel lavoro si ripaga solo con i pezzi di un unico prodotto. Un chip generico si progetta una volta e si vende a mille clienti diversi: più se ne fabbricano, meno costa ciascuno.</p>
+  <p>Il programma, poi, si cambia senza toccare il resto. Nella 4001 è scritto in fabbrica da una sola maschera, quella dello strato di metallo: rifarla è molto più semplice che ridisegnare un circuito intero, e presto arrivarono memorie che si riscrivono, come racconta il prossimo capitolo. Gli errori si correggono nel software, le funzioni nuove si aggiungono senza cambiare la scheda.</p>
+  <p>Per Intel c'era un vantaggio in più: ogni processore venduto si portava dietro ROM e RAM, proprio le memorie che sapeva fabbricare. Da quell'idea nasce il resto di questa sezione, fino ai <a href="#microcontrollori">computer interi in un chip</a>.</p>
+</div>
+
+<details class="cp-fonti">
+  <summary>Fonti</summary>
+  <ol>
+    <li>Intel Newsroom, <a href="https://newsroom.intel.com/opinion/the-chip-that-changed-the-world">The Chip that Changed the World</a> (2021): i 12 chip del progetto iniziale, il riacquisto dei diritti nel maggio 1971 per 60.000 dollari, il fallimento di Busicom nel 1974.</li>
+    <li>Computer History Museum, <a href="https://www.computerhistory.org/collections/catalog/102657974">Intel 4004 microprocessor: oral history panel with Ted M. Hoff and Stan Mazor</a> (2006).</li>
+    <li>Federico Faggin, <a href="http://www.intel4004.com/qa4004.htm">4004 Q&amp;A</a>, sul sito intel4004.com: i sette chip di Busicom, l'arrivo in Intel il 3 aprile 1970, il lavoro con Shima.</li>
+    <li>IEEE Spectrum, <a href="https://spectrum.ieee.org/ted-hoff">How Ted Hoff Invented the First Microprocessor</a>: il confronto con il PDP-8 e la scelta di Busicom.</li>
+    <li>Intel, <a href="https://ieeemilestones.ethw.org/w/images/2/2d/Ref2-Intel_MCS-4_DataSheet.pdf">MCS-4 Micro Computer Set, scheda tecnica</a> (1971), nell'archivio IEEE Milestones di ETHW: la ROM 4001 da 256 × 8 bit con porta di I/O.</li>
+    <li>4004.com, <a href="https://www.4004.com/busicom-simulator-documentation.html">Documentation for Busicom 141-PF Simulator</a>: il recupero del programma originale della calcolatrice.</li>
+  </ol>
+</details>
+
+<nav class="cp-next" aria-label="Capitolo successivo"><a href="#memorie"><small>Capitolo successivo →</small>Memorie che si programmano</a></nav>

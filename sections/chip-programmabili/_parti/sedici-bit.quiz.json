@@ -1,0 +1,47 @@
+[
+  {
+    "q": "Perché nel 1976 Intel progettò l'8086 in fretta?",
+    "options": ["Il suo processore a 32 bit, l'iAPX 432, era in ritardo", "IBM le aveva chiesto un processore per il suo PC", "Il Motorola 68000 era già in vendita da un anno"],
+    "answer": 0,
+    "why": "Il progetto a 32 bit che diventò l'iAPX 432 andava a rilento, mentre lo Z80 conquistava il mercato: l'8086 nacque come ripiego. IBM scelse l'8088 solo nel 1981 e il 68000 arrivò nel 1979.",
+    "chapter": "sedici-bit",
+    "level": 1,
+    "topic": "origine dell'8086"
+  },
+  {
+    "q": "Qual è l'indirizzo fisico che l'8086 calcola per 2000:0345?",
+    "options": ["20345", "02345", "05450", "23450"],
+    "answer": 0,
+    "why": "Il segmento si moltiplica per 16: in esadecimale basta aggiungere uno 0 a destra, e 2000 diventa 20000. Poi si somma l'offset: 20000 + 0345 = 20345.",
+    "chapter": "sedici-bit",
+    "level": 2,
+    "topic": "segmento e offset"
+  },
+  {
+    "q": "Perché il Motorola 68000 viene spesso chiamato un processore «16/32 bit»?",
+    "options": ["Ha registri da 32 bit ma un bus dati esterno da 16", "Usa indirizzi da 16 bit e dati da 32 bit", "Parte a 16 bit e passa ai 32 bit dopo l'avvio"],
+    "answer": 0,
+    "why": "I suoi 16 registri, 8 per i dati e 8 per gli indirizzi, sono da 32 bit, ma i dati entrano ed escono su 16 fili: per leggere 32 bit servono due passaggi. Gli indirizzi hanno 24 bit, cioè 16 MB.",
+    "chapter": "sedici-bit",
+    "level": 2,
+    "topic": "68000"
+  },
+  {
+    "q": "Quanti passaggi sul bus dati servono per leggere un numero a 32 bit, con un 8088 e con un 8086?",
+    "options": ["4 con l'8088, 2 con l'8086", "2 con l'8088, 1 con l'8086", "8 con l'8088, 4 con l'8086", "2 con entrambi, dentro sono uguali"],
+    "answer": 0,
+    "why": "L'8088 ha un bus dati da 8 fili, l'8086 da 16: 32 diviso 8 fa 4 passaggi, 32 diviso 16 ne fa 2. Dentro i due chip sono quasi uguali, ma l'8088 scambia con la memoria un byte alla volta.",
+    "chapter": "sedici-bit",
+    "level": 3,
+    "topic": "larghezza del bus"
+  },
+  {
+    "q": "Che cosa distingue le istruzioni dell'ARM1 da quelle dell'8086?",
+    "options": ["Hanno tutte la stessa lunghezza, 32 bit", "Sono molte di più e ognuna fa più lavoro", "Occupano da 1 a 6 byte secondo l'operazione", "Sono scritte in un microcodice modificabile"],
+    "answer": 0,
+    "why": "L'ARM1 segue l'idea RISC: istruzioni semplici, tutte lunghe una parola da 32 bit, facili da decodificare. Nell'8086 un'istruzione occupa da 1 a 6 byte e il processore ne scopre la lunghezza solo leggendola.",
+    "chapter": "sedici-bit",
+    "level": 3,
+    "topic": "RISC e ARM1"
+  }
+]

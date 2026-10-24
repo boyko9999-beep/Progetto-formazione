@@ -1,0 +1,363 @@
+/*
+ * Capitolo 5 · La corsa agli 8 bit: figure del capitolo e laboratorio.
+ * Ogni selettore parte da #otto-bit; le classi proprie hanno il prefisso otto-bit-.
+ * Il laboratorio è uno strumento scuro in entrambi i temi: usa solo i colori --lab-* e --sig-* di base.css.
+ */
+
+/* ---------- figure del testo ---------- */
+
+#otto-bit .otto-bit-fig { max-width: 480px; }
+#otto-bit .cp-cols .otto-bit-fig { margin-top: 6px; }
+#otto-bit .otto-bit-fig .cp-art { padding: 14px; }
+#otto-bit .otto-bit-fig-tree .cp-art svg { overflow: visible; }
+
+/* ---------- laboratorio: struttura comune ---------- */
+
+#otto-bit .otto-bit-views button { white-space: nowrap; }
+#otto-bit .otto-bit-vn { color: var(--lab-gold); font-family: var(--mono); font-weight: 700; }
+#otto-bit .otto-bit-ro { min-width: 86px; }
+#otto-bit .otto-bit-stage { display: flex; flex-direction: column; }
+#otto-bit .otto-bit-host { position: relative; flex: 1 1 auto; min-width: 0; }
+#otto-bit .otto-bit-view { min-width: 0; }
+#otto-bit .otto-bit-svg { display: block; width: 100%; height: auto; overflow: visible; }
+#otto-bit .otto-bit-svg text { font-family: var(--font); }
+#otto-bit .otto-bit-explain { min-width: 0; }
+#otto-bit .otto-bit-ex h4 { font-size: 1.05rem; }
+#otto-bit .otto-bit-goal b { color: var(--lab-ink); }
+#otto-bit .is-done .otto-bit-goal b { color: var(--sig-on); }
+
+/* animazioni su elementi SVG: trasformazioni attorno al loro centro */
+#otto-bit .otto-bit-glow,
+#otto-bit .otto-bit-reg-in,
+#otto-bit .otto-bit-row,
+#otto-bit .otto-bit-tag,
+#otto-bit .otto-bit-chip-seen { transform-box: fill-box; transform-origin: center; }
+
+/* ---------- selettore dei chip (Galleria e Registri) ---------- */
+
+#otto-bit .otto-bit-rail {
+  display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px;
+  padding: 14px 14px 6px;
+}
+#otto-bit .otto-bit-rail[hidden] { display: none; }
+#otto-bit .otto-bit-chip {
+  position: relative; display: grid; justify-items: center; align-content: end; gap: 2px;
+  min-width: 0; min-height: 96px; padding: 10px 6px 8px; border-radius: 12px; cursor: pointer;
+  border: 1px solid var(--lab-line); background: var(--lab-panel); color: var(--lab-text);
+  font: 600 .8rem var(--font); line-height: 1.2;
+  transition: border-color var(--t-fast), background var(--t-fast), transform var(--t-fast) var(--ease-smooth), box-shadow var(--t-fast);
+}
+#otto-bit .otto-bit-chip:hover { border-color: color-mix(in srgb, var(--lab-gold) 55%, var(--lab-line)); color: var(--lab-ink); }
+#otto-bit .otto-bit-chip[aria-pressed="true"] {
+  background: var(--lab-raise); border-color: var(--lab-gold); color: var(--lab-ink);
+  box-shadow: inset 0 0 0 1px var(--lab-gold), 0 10px 22px -14px rgba(240, 176, 74, .55);
+  transform: translateY(-2px);
+}
+#otto-bit .otto-bit-chip-pic { display: grid; place-items: end center; height: 34px; margin-bottom: 6px; }
+/* stessa scala per tutti i package: il 40 piedini è davvero largo il doppio del 18 */
+#otto-bit .otto-bit-chip-pic svg { display: block; width: calc(var(--vbw) * .42px); height: auto; max-width: 100%; overflow: visible; }
+#otto-bit .otto-bit-chip-nm { font-weight: 750; color: var(--lab-ink); text-align: center; overflow-wrap: anywhere; }
+#otto-bit .otto-bit-chip-nm .mk { font-weight: 600; color: var(--lab-text); }
+#otto-bit .otto-bit-chip-yr { font: 700 .72rem var(--mono); color: var(--lab-dim); }
+#otto-bit .otto-bit-chip[aria-pressed="true"] .otto-bit-chip-yr { color: var(--lab-gold); }
+#otto-bit .otto-bit-chip-seen {
+  position: absolute; top: 6px; right: 6px; display: grid; place-items: center;
+  width: 18px; height: 18px; border-radius: 50%;
+  font: 800 .66rem var(--font); color: #04150d; background: var(--sig-on);
+  opacity: 0; transform: scale(.4); transition: opacity var(--t-fast), transform var(--t-normal) var(--ease-bounce);
+}
+#otto-bit .otto-bit-chip.is-seen .otto-bit-chip-seen { opacity: 1; transform: none; }
+
+/* ---------- 1 · Galleria ---------- */
+
+#otto-bit .otto-bit-v-gal { padding: 6px 12px 12px; }
+#otto-bit .otto-bit-panel-bg { fill: var(--lab-panel); stroke: var(--lab-line); stroke-width: 1; }
+#otto-bit .otto-bit-panel-title { fill: var(--lab-ink); font-size: 13px; font-weight: 750; }
+#otto-bit .otto-bit-band { fill: rgba(240, 176, 74, .1); stroke: rgba(240, 176, 74, .55); stroke-width: 1; }
+#otto-bit .otto-bit-row-lbl { fill: var(--lab-text); font: 700 12px var(--mono); }
+#otto-bit .otto-bit-row-lbl.is-total { font: 600 11.5px var(--font); fill: var(--lab-dim); }
+#otto-bit .otto-bit-row-val { fill: var(--lab-text); font: 600 11.5px var(--mono); }
+#otto-bit .otto-bit-col-lbl { fill: var(--lab-text); font: 700 12px var(--mono); }
+#otto-bit .otto-bit-col-n { fill: var(--lab-text); font: 700 12px var(--mono); }
+#otto-bit .otto-bit-bar { fill: #46645a; transition: fill var(--t-fast); }
+#otto-bit .otto-bit-glow { fill: var(--sig-on); opacity: 0; pointer-events: none; }
+#otto-bit .otto-bit-rail-line { stroke: var(--lab-line); stroke-width: 1; }
+#otto-bit .otto-bit-dot { fill: #2b3b36; transition: fill var(--t-fast); }
+#otto-bit .otto-bit-dot.on { fill: #3d9b70; }
+#otto-bit .otto-bit-row.is-sel .otto-bit-bar,
+#otto-bit .otto-bit-row.is-sel .otto-bit-dot.on { fill: var(--sig-on); }
+#otto-bit .otto-bit-row.is-sel text { fill: var(--lab-ink); font-weight: 800; }
+
+/* scheda tecnica nella spiegazione */
+#otto-bit .otto-bit-sheet { margin: 10px 0 12px; border-top: 1px solid var(--lab-line); }
+#otto-bit .otto-bit-sheet > div { display: grid; grid-template-columns: 8.6em minmax(0, 1fr); gap: 2px 12px; padding: 6px 0; border-bottom: 1px solid var(--lab-line); }
+#otto-bit .otto-bit-sheet dt { font-size: .7rem; text-transform: uppercase; letter-spacing: .07em; color: var(--lab-dim); font-weight: 700; padding-top: .25em; }
+#otto-bit .otto-bit-sheet dd { margin: 0; color: var(--lab-ink); font-size: .9rem; line-height: 1.4; }
+#otto-bit .otto-bit-blurb { color: var(--lab-text); }
+#otto-bit .otto-bit-where { font-size: .88rem; color: var(--lab-text); }
+#otto-bit .otto-bit-where b { color: var(--lab-ink); }
+
+/* ---------- 2 · Registri ---------- */
+
+#otto-bit .otto-bit-v-reg { padding: 4px 8px 0; }
+#otto-bit .otto-bit-regs { margin: 0 auto; }
+#otto-bit .otto-bit-head { fill: var(--lab-dim); font-size: 11.5px; font-weight: 700; letter-spacing: .02em; }
+#otto-bit .otto-bit-bitline { stroke: rgba(238, 246, 242, .14); stroke-width: 1; }
+#otto-bit .otto-bit-levline { stroke: rgba(238, 246, 242, .16); stroke-width: 1; }
+#otto-bit .otto-bit-zpline { fill: none; stroke: rgba(238, 246, 242, .13); stroke-width: .8; }
+
+#otto-bit .otto-bit-reg { --c: #8fa59c; cursor: pointer; outline: none; }
+#otto-bit .otto-bit-reg.role-acc { --c: var(--sig-data); }
+#otto-bit .otto-bit-reg.role-flag { --c: var(--sig-ctrl); }
+#otto-bit .otto-bit-reg.role-ptr,
+#otto-bit .otto-bit-reg.role-idx,
+#otto-bit .otto-bit-reg.role-stack,
+#otto-bit .otto-bit-reg.role-ghost { --c: var(--sig-addr); }
+#otto-bit .otto-bit-reg.role-sys { --c: #b9a6ff; }
+#otto-bit .otto-bit-reg.role-zp { --c: #6fd6c4; }
+#otto-bit .otto-bit-reg .box {
+  fill: color-mix(in srgb, var(--c) 13%, var(--lab-panel)); stroke: var(--c); stroke-width: 1.5;
+  transition: fill var(--t-fast), stroke var(--t-normal), stroke-width var(--t-fast);
+}
+#otto-bit .otto-bit-reg.role-alt .box { stroke-dasharray: 5 3; fill: color-mix(in srgb, var(--c) 7%, var(--lab-panel)); }
+#otto-bit .otto-bit-reg.role-ghost .box { stroke-dasharray: 3 3; fill: var(--lab-panel); }
+#otto-bit .otto-bit-reg .pat { pointer-events: none; }
+#otto-bit .otto-bit-reg .nm { fill: var(--lab-ink); font: 800 14px var(--mono); pointer-events: none; }
+#otto-bit .otto-bit-reg .nm.long { font: 750 13px var(--font); }
+#otto-bit .otto-bit-reg .nm.fit { font-size: 10.5px; }
+#otto-bit .otto-bit-reg.role-ghost .nm { fill: var(--lab-text); }
+#otto-bit .otto-bit-reg .bt { fill: var(--lab-text); font: 700 10px var(--mono); pointer-events: none; }
+#otto-bit .otto-bit-reg .sub { fill: var(--lab-text); font: 600 11px var(--font); pointer-events: none; }
+#otto-bit .otto-bit-reg .ring { fill: none; stroke: var(--lab-gold); stroke-width: 2; opacity: 0; pointer-events: none; transition: opacity var(--t-fast); }
+#otto-bit .otto-bit-reg:hover .box { stroke-width: 2.5; }
+#otto-bit .otto-bit-reg.is-sel .box { fill: color-mix(in srgb, var(--c) 32%, var(--lab-panel)); stroke-width: 2.5; }
+#otto-bit .otto-bit-reg.is-sel .ring { opacity: 1; }
+#otto-bit .otto-bit-reg:focus-visible .ring { opacity: 1; stroke: #ffffff; stroke-dasharray: 5 3; }
+#otto-bit .otto-bit-reg.is-new .box { stroke: #ffffff; }
+#otto-bit .otto-bit-reg.is-changed .box { stroke: var(--lab-gold); stroke-width: 2.5; }
+
+#otto-bit .otto-bit-legend { margin-top: 4px; padding-left: 12px; padding-right: 12px; }
+#otto-bit .otto-bit-legend span:last-child i {
+  width: 24px; height: 10px; border-radius: 2px; border: 1px solid var(--lab-text);
+  background: repeating-linear-gradient(90deg, transparent 0 5px, var(--lab-text) 5px 6px);
+}
+
+/* differenze e scheda del registro */
+#otto-bit .otto-bit-note { color: var(--lab-text); }
+#otto-bit .otto-bit-diff { list-style: none; margin: 10px 0 14px; padding: 0; display: grid; gap: 6px; }
+#otto-bit .otto-bit-diff li { display: grid; grid-template-columns: 24px minmax(0, 1fr); gap: 8px; align-items: start; font-size: .9rem; line-height: 1.45; color: var(--lab-ink); }
+#otto-bit .otto-bit-diff li.hint { display: block; color: var(--lab-dim); font-size: .88rem; }
+#otto-bit .otto-bit-diff .sym {
+  display: grid; place-items: center; width: 22px; height: 22px; border-radius: 6px;
+  font: 800 .9rem var(--mono); line-height: 1;
+}
+#otto-bit .otto-bit-diff li.add .sym { color: #04150d; background: var(--sig-on); }
+#otto-bit .otto-bit-diff li.del .sym { color: #2a0612; background: var(--sig-ctrl); }
+#otto-bit .otto-bit-diff li.mod .sym { color: #241603; background: var(--lab-gold); }
+#otto-bit .otto-bit-regcard { padding: 12px 14px; border-radius: 10px; background: var(--lab-panel); border: 1px solid var(--lab-line); }
+#otto-bit .otto-bit-regcard p { margin: 0 0 .5em; font-size: .9rem; }
+#otto-bit .otto-bit-regcard p:last-child { margin-bottom: 0; }
+#otto-bit .otto-bit-regcard-h b { font: 800 1rem var(--mono); color: var(--lab-ink); }
+#otto-bit .otto-bit-regcard-h small { color: var(--lab-gold); font: 700 .74rem var(--mono); text-transform: uppercase; letter-spacing: .06em; }
+#otto-bit .otto-bit-flags { display: flex; flex-wrap: wrap; gap: 4px; }
+#otto-bit .otto-bit-flags span {
+  min-width: 24px; padding: 2px 6px; border-radius: 5px; text-align: center;
+  font: 700 .78rem var(--mono); color: var(--lab-ink);
+  background: color-mix(in srgb, var(--sig-ctrl) 18%, var(--lab-sunk)); border: 1px solid color-mix(in srgb, var(--sig-ctrl) 55%, transparent);
+}
+
+/* ---------- 3 · Prezzi ---------- */
+
+#otto-bit .otto-bit-subbar { border-bottom: 1px solid var(--lab-line); }
+#otto-bit .otto-bit-date { flex: 1 1 240px; min-width: 0; }
+#otto-bit .otto-bit-date input { flex: 1 1 auto; width: auto; min-width: 100px; }
+#otto-bit .otto-bit-date output { min-width: 14ch; }
+#otto-bit .otto-bit-price { padding: 8px 10px 4px; box-sizing: border-box; }
+#otto-bit .otto-bit-pgrid line { stroke: var(--lab-line); stroke-width: 1; stroke-dasharray: 2 4; }
+#otto-bit .otto-bit-pgrid text { fill: var(--lab-dim); font: 600 11px var(--mono); }
+#otto-bit .otto-bit-ref line { stroke: var(--lab-dim); stroke-width: 1.2; stroke-dasharray: 6 4; }
+#otto-bit .otto-bit-ref text { fill: var(--lab-text); font: 600 11px var(--mono); }
+#otto-bit .otto-bit-hanger { stroke: #5d7369; stroke-width: 3; stroke-linecap: round; }
+#otto-bit .otto-bit-string { stroke: #7d978d; stroke-width: 1.2; }
+#otto-bit .otto-bit-tag .shape { fill: #ece4cf; stroke: #b9ab83; stroke-width: 1; }
+#otto-bit .otto-bit-tag.t-6502 .shape { fill: var(--sig-on); stroke: #2aa56a; }
+#otto-bit .otto-bit-tag .hole { fill: var(--lab-bg); stroke: #9c8f68; stroke-width: 1; }
+#otto-bit .otto-bit-tag .nm { fill: #3a3426; font: 700 11.5px var(--mono); }
+#otto-bit .otto-bit-tag .pr { fill: #1d190f; font: 800 14px var(--mono); }
+#otto-bit .otto-bit-tag.t-6502 .nm, #otto-bit .otto-bit-tag.t-6502 .pr { fill: #04150d; }
+#otto-bit .otto-bit-ghost path { fill: none; stroke: #7d978d; stroke-width: 1.2; stroke-dasharray: 4 3; }
+#otto-bit .otto-bit-ghost .gp { fill: var(--lab-text); font: 700 12px var(--mono); text-decoration: line-through; }
+#otto-bit .otto-bit-drop { stroke: var(--lab-gold); stroke-width: 2; stroke-dasharray: 3 3; }
+#otto-bit .otto-bit-drop-head { fill: var(--lab-gold); }
+#otto-bit .otto-bit-tagnote { fill: var(--lab-ink); font: 700 11.5px var(--mono); }
+#otto-bit .otto-bit-axis .base { stroke: #5d7369; stroke-width: 2; }
+#otto-bit .otto-bit-axis .tick { stroke: #5d7369; stroke-width: 1.4; }
+#otto-bit .otto-bit-axis .tick.big { stroke: var(--lab-text); }
+#otto-bit .otto-bit-axis .yr { fill: var(--lab-text); font: 700 12px var(--mono); }
+#otto-bit .otto-bit-axis .evl { fill: var(--lab-ink); font-size: 11.5px; font-weight: 700; }
+#otto-bit .otto-bit-axis .evd { fill: var(--lab-gold); stroke: var(--lab-bg); stroke-width: 2; }
+#otto-bit .otto-bit-axis-hit { fill: transparent; cursor: pointer; }
+#otto-bit .otto-bit-cursor { pointer-events: none; }
+#otto-bit .otto-bit-cursor line { stroke: #ffffff; stroke-width: 1.5; }
+#otto-bit .otto-bit-cursor circle { fill: #ffffff; stroke: var(--lab-bg); stroke-width: 2.5; }
+
+#otto-bit .otto-bit-ev-text { min-height: 4.6em; }
+#otto-bit .otto-bit-events { list-style: none; margin: 12px 0; padding: 0; display: grid; gap: 4px; }
+#otto-bit .otto-bit-ev {
+  display: grid; grid-template-columns: 8.4em minmax(0, 1fr); gap: 10px; align-items: baseline; width: 100%;
+  min-height: 40px; padding: 8px 10px; border-radius: 9px; cursor: pointer; text-align: left;
+  border: 1px solid var(--lab-line); background: var(--lab-panel); color: var(--lab-text); font: 600 .86rem var(--font);
+  transition: border-color var(--t-fast), background var(--t-fast), color var(--t-fast);
+}
+#otto-bit .otto-bit-ev:hover { border-color: color-mix(in srgb, var(--lab-gold) 55%, var(--lab-line)); color: var(--lab-ink); }
+#otto-bit .otto-bit-ev .d { font: 700 .74rem var(--mono); color: var(--lab-gold); }
+#otto-bit .otto-bit-ev[aria-current] { background: var(--lab-raise); border-color: var(--lab-gold); color: var(--lab-ink); box-shadow: inset 3px 0 0 var(--lab-gold); }
+#otto-bit .otto-bit-ev-foot { font-size: .84rem; color: var(--lab-dim); }
+#otto-bit .otto-bit-ev-foot a { color: var(--lab-ink); text-underline-offset: 3px; }
+
+/* ---------- 4 · Sfida ---------- */
+
+#otto-bit .otto-bit-block { padding: 14px 16px; border-bottom: 1px solid var(--lab-line); }
+#otto-bit .otto-bit-block:last-child { border-bottom: 0; }
+#otto-bit .otto-bit-kicker { margin: 0 0 6px; font: 700 .74rem var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--lab-gold); }
+#otto-bit .otto-bit-task { margin: 0 0 10px; color: var(--lab-ink); font-size: .95rem; line-height: 1.5; max-width: 62ch; }
+#otto-bit .otto-bit-bet-rows { display: flex; flex-wrap: wrap; gap: 0 28px; }
+#otto-bit .otto-bit-bet-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin-bottom: 8px; }
+#otto-bit .otto-bit-bet-row .k { min-width: 5.6em; font-size: .86rem; font-weight: 700; color: var(--lab-text); }
+#otto-bit .otto-bit-bet-row .cp-seg button { min-width: 56px; font-family: var(--mono); }
+#otto-bit .otto-bit-bet-row .cp-seg button:disabled { cursor: default; opacity: .62; }
+#otto-bit .otto-bit-bet-row .cp-seg button[aria-pressed="true"]:disabled { opacity: 1; }
+#otto-bit .otto-bit-bet-msg { margin: 4px 0 0; font-size: .84rem; color: var(--lab-dim); }
+
+#otto-bit .otto-bit-tabs { margin-bottom: 12px; }
+#otto-bit .otto-bit-puz-grid {
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px 16px; align-items: start;
+  grid-template-areas: "prog mach" "pool pool";
+}
+#otto-bit .otto-bit-code { grid-area: prog; min-width: 0; }
+#otto-bit .otto-bit-poolbox { grid-area: pool; min-width: 0; }
+#otto-bit .otto-bit-mach { grid-area: mach; }
+#otto-bit .otto-bit-code-h { margin: 0 0 6px; font-size: .78rem; font-weight: 700; color: var(--lab-text); text-transform: uppercase; letter-spacing: .07em; }
+#otto-bit .otto-bit-code-h small { text-transform: none; letter-spacing: 0; font-weight: 600; color: var(--lab-dim); font-size: .78rem; }
+#otto-bit .otto-bit-prog-head,
+#otto-bit .otto-bit-ins.in-prog { display: grid; grid-template-columns: 1.5em minmax(0, 1fr) auto 2.6em; column-gap: 8px; }
+#otto-bit .otto-bit-prog-head { padding: 0 11px 3px; font: 700 .64rem var(--mono); text-transform: uppercase; letter-spacing: .06em; color: var(--lab-dim); }
+#otto-bit .otto-bit-prog-head span:last-child { text-align: right; }
+#otto-bit .otto-bit-prog { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+#otto-bit .otto-bit-line { min-height: 42px; border-radius: 9px; }
+#otto-bit .otto-bit-line.is-empty {
+  display: grid; grid-template-columns: 1.5em minmax(0, 1fr); column-gap: 8px; align-items: center; padding: 0 11px;
+  border: 1px dashed var(--lab-line); color: var(--lab-dim); font-size: .8rem;
+}
+#otto-bit .otto-bit-line.is-empty .n { font: 700 .74rem var(--mono); }
+#otto-bit .otto-bit-ins {
+  position: relative; width: 100%; padding: 7px 11px; border-radius: 9px; cursor: pointer; text-align: left;
+  border: 1px solid var(--lab-line); background: var(--lab-raise); color: var(--lab-text); font: 600 .86rem var(--font);
+  transition: border-color var(--t-fast), background var(--t-fast), box-shadow var(--t-fast);
+}
+#otto-bit .otto-bit-ins:hover:not(:disabled) { border-color: color-mix(in srgb, var(--sig-on) 60%, var(--lab-line)); }
+#otto-bit .otto-bit-ins .n { font: 700 .74rem var(--mono); color: var(--lab-dim); align-self: center; }
+#otto-bit .otto-bit-ins .asm { font: 800 .92rem var(--mono); color: var(--lab-ink); white-space: nowrap; }
+#otto-bit .otto-bit-ins .hex { font: 700 .8rem var(--mono); color: var(--sig-data); white-space: nowrap; align-self: center; }
+#otto-bit .otto-bit-ins .cy { font: 700 .8rem var(--mono); color: var(--lab-ink); text-align: right; align-self: center; }
+#otto-bit .otto-bit-ins .note { grid-column: 2 / -1; font-size: .78rem; font-weight: 500; color: var(--lab-text); line-height: 1.35; margin-top: 2px; }
+#otto-bit .otto-bit-line.is-current .otto-bit-ins { border-color: var(--sig-on); background: color-mix(in srgb, var(--sig-on) 10%, var(--lab-raise)); box-shadow: inset 3px 0 0 var(--sig-on); }
+#otto-bit .otto-bit-pool { display: flex; flex-wrap: wrap; gap: 6px; min-height: 48px; }
+#otto-bit .otto-bit-ins.in-pool {
+  display: inline-grid; width: auto; max-width: 100%; gap: 1px; padding: 7px 11px;
+  border-style: dashed; border-color: #3a5048; background: var(--lab-panel);
+}
+#otto-bit .otto-bit-ins.in-pool .note { grid-column: auto; margin: 0; }
+#otto-bit .otto-bit-pool-empty { margin: 0; align-self: center; font-size: .86rem; color: var(--lab-text); }
+
+/* la macchina: CPU, bus e memoria */
+#otto-bit .otto-bit-mach { min-width: 0; align-self: center; }
+#otto-bit .otto-bit-mach-svg { max-width: 380px; margin: 0 auto; }
+#otto-bit .otto-bit-m-title { fill: var(--lab-ink); font-size: 12.5px; font-weight: 750; }
+#otto-bit .otto-bit-m-box { fill: var(--lab-panel); stroke: var(--lab-line); stroke-width: 1.2; }
+#otto-bit .otto-bit-m-bus { stroke-width: 7; }
+#otto-bit .otto-bit-m-bl { fill: var(--lab-text); font-size: 11px; font-weight: 700; }
+#otto-bit .otto-bit-m-lbl { fill: var(--lab-ink); font: 800 14px var(--mono); }
+#otto-bit .otto-bit-m-val { fill: var(--lab-sunk); stroke: var(--lab-line); stroke-width: 1.2; transition: stroke var(--t-normal), fill var(--t-normal); }
+#otto-bit .otto-bit-m-val.cell.is-ok { stroke: var(--sig-on); stroke-width: 2; fill: color-mix(in srgb, var(--sig-on) 16%, var(--lab-sunk)); }
+#otto-bit .otto-bit-m-val.cell.is-bad { stroke: #ff7a6b; stroke-width: 2; fill: color-mix(in srgb, #ff7a6b 14%, var(--lab-sunk)); }
+#otto-bit .otto-bit-m-flash { fill: var(--sig-on); pointer-events: none; }
+#otto-bit .otto-bit-m-num { fill: var(--lab-ink); font: 800 15px var(--mono); }
+#otto-bit .otto-bit-m-addr { fill: var(--sig-addr); font: 700 12px var(--mono); }
+#otto-bit .otto-bit-m-mark { font: 800 13px var(--font); fill: var(--lab-ink); }
+#otto-bit .otto-bit-m-mark.ok { fill: var(--sig-on); }
+#otto-bit .otto-bit-m-mark.bad { fill: #ff8a7d; }
+#otto-bit .otto-bit-m-hint { fill: var(--lab-text); font-size: 11px; font-weight: 600; }
+#otto-bit .otto-bit-m-alu path { fill: #121c19; stroke: var(--lab-line); stroke-width: 1.4; }
+#otto-bit .otto-bit-m-alu text { fill: var(--lab-ink); font: 800 13px var(--mono); }
+#otto-bit .otto-bit-m-alufl { fill: var(--sig-data); pointer-events: none; }
+#otto-bit .otto-bit-token { pointer-events: none; }
+#otto-bit .otto-bit-token rect { stroke: rgba(0, 0, 0, .35); stroke-width: 1; }
+#otto-bit .otto-bit-token.addr rect { fill: var(--sig-addr); }
+#otto-bit .otto-bit-token.data rect { fill: var(--sig-data); }
+#otto-bit .otto-bit-token text { fill: #071210; font: 800 11.5px var(--mono); }
+#otto-bit .otto-bit-mach-cap { margin: 6px 0 0; font-size: .82rem; line-height: 1.4; color: var(--lab-text); min-height: 1.4em; }
+#otto-bit .otto-bit-mach-cap .k { display: block; font: 700 .72rem var(--mono); color: var(--lab-gold); text-transform: uppercase; letter-spacing: .06em; }
+#otto-bit .otto-bit-mach-cap b { display: block; font: 750 .9rem var(--mono); color: var(--lab-ink); }
+#otto-bit .otto-bit-mach-cap .long { display: none; margin-top: 2px; }
+#otto-bit .otto-bit-runbar { margin-top: 14px; padding: 12px 0 0; border-bottom: 0; border-top: 1px solid var(--lab-line); }
+
+/* confronto */
+#otto-bit .otto-bit-cmp-title { fill: var(--lab-ink); font-size: 12.5px; font-weight: 750; }
+#otto-bit .otto-bit-cmp-track { fill: var(--lab-sunk); stroke: var(--lab-line); stroke-width: 1; }
+#otto-bit .otto-bit-cmp-bar { fill: #6f8a80; transition: fill var(--t-normal); }
+#otto-bit .otto-bit-cmp-bar.is-best { fill: var(--sig-on); }
+#otto-bit .otto-bit-cmp-val { fill: var(--lab-ink); font: 700 12px var(--mono); }
+#otto-bit .otto-bit-cmp-val.is-unknown { fill: var(--lab-dim); }
+#otto-bit .otto-bit-cmp-val.is-best { fill: var(--sig-on); font-weight: 800; }
+#otto-bit .otto-bit-var { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin: 12px 0 4px; }
+#otto-bit .otto-bit-var[hidden] { display: none; }
+#otto-bit .otto-bit-var .k { font-size: .86rem; font-weight: 700; color: var(--lab-text); }
+#otto-bit .otto-bit-verdict { margin: 10px 0 0; font-size: .92rem; line-height: 1.55; color: var(--lab-text); max-width: 70ch; }
+#otto-bit .otto-bit-verdict b { color: var(--lab-ink); }
+
+/* ---------- disposizione stretta (palco sotto i 560 px, deciso da otto-bit.js) ---------- */
+
+#otto-bit .otto-bit-narrow .otto-bit-rail { gap: 5px; padding: 12px 10px 4px; }
+#otto-bit .otto-bit-narrow .otto-bit-chip { min-height: 74px; padding: 9px 2px 7px; border-radius: 10px; }
+#otto-bit .otto-bit-narrow .otto-bit-chip-pic { height: 22px; margin-bottom: 4px; }
+#otto-bit .otto-bit-narrow .otto-bit-chip-pic svg { width: calc(var(--vbw) * .26px); }
+#otto-bit .otto-bit-narrow .otto-bit-chip-nm .mk { display: none; }
+#otto-bit .otto-bit-narrow .otto-bit-chip-nm { font-family: var(--mono); font-size: .8rem; }
+#otto-bit .otto-bit-narrow .otto-bit-chip-seen { top: 4px; right: 4px; width: 15px; height: 15px; font-size: .58rem; }
+#otto-bit .otto-bit-narrow .otto-bit-v-gal { padding: 4px 8px 10px; }
+#otto-bit .otto-bit-narrow .otto-bit-v-reg { padding: 2px 4px 0; }
+#otto-bit .otto-bit-narrow .otto-bit-price { padding: 6px 4px 2px; }
+#otto-bit .otto-bit-narrow .otto-bit-block { padding: 12px; }
+#otto-bit .otto-bit-narrow .otto-bit-puz-grid { grid-template-columns: minmax(0, 1fr); grid-template-areas: "prog" "pool" "mach"; }
+#otto-bit .otto-bit-narrow .otto-bit-mach-cap .long { display: block; }
+#otto-bit .otto-bit-narrow .otto-bit-bet-row .k { min-width: 0; width: 100%; }
+
+@media (max-width: 640px) {
+  #otto-bit .otto-bit-fig .cp-art { padding: 8px; }
+  #otto-bit .otto-bit-views { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); width: 100%; }
+  #otto-bit .otto-bit-views button { padding: 0 4px; }
+  #otto-bit .otto-bit-vn { display: none; }
+  #otto-bit .cp-bar > .grow { display: none; }
+  #otto-bit .otto-bit-ro { flex: 1 1 0; }
+  #otto-bit .otto-bit-sheet > div { grid-template-columns: 7.4em minmax(0, 1fr); gap: 2px 10px; }
+  #otto-bit .otto-bit-sheet dt { font-size: .64rem; letter-spacing: .04em; }
+  #otto-bit .otto-bit-ev { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+  #otto-bit .otto-bit-date { flex-basis: 100%; }
+  #otto-bit .otto-bit-subbar .cp-btn { flex: 0 0 auto; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #otto-bit .otto-bit-chip,
+  #otto-bit .otto-bit-chip-seen,
+  #otto-bit .otto-bit-bar,
+  #otto-bit .otto-bit-dot,
+  #otto-bit .otto-bit-reg .box,
+  #otto-bit .otto-bit-reg .ring,
+  #otto-bit .otto-bit-ins,
+  #otto-bit .otto-bit-ev,
+  #otto-bit .otto-bit-m-val,
+  #otto-bit .otto-bit-cmp-bar { transition: none; }
+  #otto-bit .otto-bit-chip[aria-pressed="true"] { transform: none; }
+  #otto-bit .otto-bit-chip-seen { transform: none; }
+}

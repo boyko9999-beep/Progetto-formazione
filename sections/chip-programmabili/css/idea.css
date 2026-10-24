@@ -1,0 +1,251 @@
+/*
+ * Capitolo 1 · Un chip, mille programmi.
+ * Figure su carta (si adattano al tema con i token della pagina) e laboratorio «Stesso hardware, programmi diversi».
+ * Tutti i selettori partono da #idea; le classi del capitolo hanno il prefisso idea-.
+ */
+
+#idea {
+  /* colori dei LED del display: rosso, ambra, verde */
+  --idea-red: #ff5d4f;
+  --idea-amber: #ffb547;
+  --idea-green: var(--sig-on);
+  --idea-led-off: #18211f;
+  /* scatole dei chip sul banco scuro */
+  --idea-box: #111b18;
+  --idea-box-line: #2a3b36;
+  --idea-bit0: #1b2724;
+  /* avvisi della logica cablata */
+  --idea-warn: var(--trace-stuff);
+  /* chip su misura: oro tratteggiato */
+  --idea-custom: var(--lab-gold);
+}
+
+/* ---------- testo e figure su carta ---------- */
+
+/* cinque persone su una riga sugli schermi larghi */
+#idea .cp-people { grid-template-columns: repeat(auto-fill, minmax(196px, 1fr)); }
+#idea .cp-specimen-cap { margin-top: 16px; line-height: 1.45; }
+
+#idea .idea-duo { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 18px 36px; max-width: 900px; margin: 0 auto; }
+#idea .idea-duo svg { display: block; width: 100%; height: auto; }
+
+/* ---------- laboratorio: barra ---------- */
+
+#idea .cp-bar { column-gap: 12px; }
+#idea .cp-seg button { padding: 0 10px; }
+#idea .idea-k { font: 700 .68rem var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--lab-dim); }
+#idea .idea-run { margin-left: auto; }
+
+/* ---------- laboratorio: impaginazione ---------- */
+
+#idea .idea-grid { grid-template-columns: minmax(0, 2.15fr) minmax(0, 1fr); }
+#idea .idea-stage {
+  background:
+    radial-gradient(120% 90% at 30% 20%, rgba(92, 200, 255, .045), transparent 60%),
+    var(--lab-bg);
+  transition: background var(--t-slow) var(--ease-smooth);
+}
+#idea .idea-stage.is-wired {
+  background:
+    radial-gradient(120% 90% at 30% 20%, rgba(240, 176, 74, .05), transparent 60%),
+    var(--lab-bg);
+}
+
+/* ---------- palco: testi ---------- */
+
+#idea .idea-svg { overflow: visible; }
+#idea .idea-svg text { fill: var(--lab-text); }
+#idea .idea-svg .idea-t { fill: var(--lab-ink); font-size: 14px; font-weight: 750; letter-spacing: .01em; }
+#idea .idea-svg .idea-s { fill: var(--lab-dim); font-size: 11px; font-weight: 600; }
+#idea .idea-svg .idea-wtext { transition: fill var(--t-fast); }
+#idea .idea-svg .idea-wtext.is-locked { fill: var(--lab-gold); }
+#idea .idea-narrow .idea-t { font-size: 13px; }
+#idea .idea-narrow .idea-s { font-size: 10.5px; }
+
+/* ---------- palco: chip, bus e collegamenti ---------- */
+
+#idea .idea-box { fill: var(--idea-box); stroke: var(--idea-box-line); stroke-width: 1.5; }
+#idea .idea-bus.is-locked, #idea .idea-link.is-locked { stroke: var(--lab-gold); }
+#idea .idea-link { stroke-width: 5; }
+
+#idea .idea-prog, #idea .idea-wired {
+  transition: opacity var(--t-normal) var(--ease-smooth), visibility 0s linear 0s;
+}
+#idea .idea-prog.is-hidden, #idea .idea-wired.is-hidden {
+  opacity: 0; visibility: hidden; pointer-events: none;
+  transition: opacity var(--t-fast) var(--ease-sharp), visibility 0s linear var(--t-fast);
+}
+
+/* ROM: righe di 8 bit */
+#idea .idea-pc { fill: color-mix(in srgb, var(--sig-addr) 13%, transparent); stroke: var(--sig-addr); stroke-width: 1.5; opacity: 0; transition: opacity var(--t-fast), y 50ms linear; }
+#idea .idea-pc.is-on { opacity: 1; }
+#idea .idea-head { fill: color-mix(in srgb, var(--lab-gold) 24%, transparent); stroke: var(--lab-gold); stroke-width: 2; opacity: 0; transition: opacity var(--t-fast); }
+#idea .idea-head.is-on { opacity: 1; }
+#idea .idea-flash { fill: var(--lab-gold); opacity: 0; }
+#idea .idea-svg .idea-addr { fill: var(--lab-dim); font-size: 10.5px; font-weight: 700; }
+#idea .idea-bit { fill: var(--idea-bit0); transition: fill var(--t-fast); }
+#idea .idea-bit.is-1 { fill: var(--sig-data); }
+#idea .idea-row.is-data .idea-bit.is-1 { fill: color-mix(in srgb, var(--idea-amber) 82%, var(--lab-ink)); }
+#idea .idea-svg .idea-hex { fill: var(--lab-text); font-size: 11px; font-weight: 600; }
+#idea .idea-svg .idea-op { fill: var(--lab-ink); font-size: 11px; font-weight: 700; }
+#idea .idea-svg .idea-row.is-data .idea-op { fill: var(--idea-amber); font-weight: 600; }
+#idea .idea-svg .idea-row.is-empty .idea-op,
+#idea .idea-svg .idea-row.is-empty .idea-hex { fill: var(--lab-dim); opacity: .55; }
+#idea .idea-svg .idea-row.is-pc .idea-addr,
+#idea .idea-svg .idea-row.is-pc .idea-hex,
+#idea .idea-svg .idea-row.is-pc .idea-op { fill: var(--sig-addr); }
+#idea .idea-narrow .idea-addr { font-size: 11px; }
+#idea .idea-narrow .idea-hex, #idea .idea-narrow .idea-op { font-size: 11.5px; }
+
+/* CPU e registri */
+#idea .idea-reg { fill: var(--lab-sunk); stroke: var(--idea-box-line); stroke-width: 1.2; transition: fill var(--t-normal), stroke var(--t-normal); }
+#idea .idea-reg.is-hot { fill: color-mix(in srgb, var(--sig-addr) 14%, var(--lab-sunk)); stroke: var(--sig-addr); transition-duration: 0s; }
+#idea .idea-svg .idea-regk { fill: var(--lab-dim); font-size: 10px; font-weight: 800; letter-spacing: .06em; }
+#idea .idea-svg .idea-regv { fill: var(--lab-ink); font-size: 18px; font-weight: 700; }
+#idea .idea-svg .idea-instr { fill: var(--sig-addr); font-size: 12px; font-weight: 700; }
+#idea .idea-narrow .idea-regv { font-size: 15px; }
+
+/* RAM */
+#idea .idea-cell { fill: var(--lab-sunk); stroke: var(--idea-box-line); stroke-width: 1.2; transition: fill var(--t-slow), stroke var(--t-slow); }
+#idea .idea-cell.is-hot { fill: color-mix(in srgb, var(--sig-data) 16%, var(--lab-sunk)); stroke: var(--sig-data); transition-duration: 0s; }
+#idea .idea-svg .idea-cellv { fill: var(--lab-ink); font-size: 15px; font-weight: 700; }
+#idea .idea-narrow .idea-cellv { font-size: 14px; }
+
+/* I/O: quattro uscite e l'ingresso del tasto */
+#idea .idea-pled { fill: var(--idea-bit0); stroke: var(--idea-box-line); stroke-width: 1; transition: fill var(--t-fast); }
+#idea .idea-pled.is-on { fill: var(--sig-on); stroke: transparent; }
+#idea .idea-pled.is-key.is-on { fill: var(--lab-gold); }
+
+/* ---------- logica cablata ---------- */
+
+#idea .idea-chipbox { fill: color-mix(in srgb, var(--idea-custom) 5%, transparent); stroke: color-mix(in srgb, var(--idea-custom) 62%, var(--lab-line)); stroke-width: 1.4; stroke-dasharray: 5 4; }
+#idea .idea-chipnum { fill: var(--idea-custom); }
+#idea .idea-svg .idea-chipnum-t { fill: #241603; font-size: 10px; font-weight: 800; }
+#idea .idea-rail { fill: none; stroke: var(--sig-idle); stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
+#idea .idea-rail.is-out { stroke-width: 5; }
+#idea .idea-w { fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; transition: stroke var(--t-normal), stroke-width var(--t-normal); }
+#idea .idea-w.is-in { stroke: color-mix(in srgb, var(--sig-data) 55%, var(--lab-line)); }
+#idea .idea-w.is-link { stroke: color-mix(in srgb, var(--lab-text) 52%, var(--lab-line)); }
+#idea .idea-w.is-out { stroke: color-mix(in srgb, var(--sig-on) 55%, var(--lab-line)); }
+#idea .idea-w.is-hot { stroke: var(--sig-on); stroke-width: 2.2; transition-duration: var(--t-fast); }
+#idea .idea-w.is-cut { stroke: var(--idea-warn); stroke-width: 2; }
+#idea .idea-gate { transform-box: fill-box; transform-origin: center; }
+#idea .idea-gate rect { fill: var(--idea-box); stroke: color-mix(in srgb, var(--lab-text) 70%, var(--lab-line)); stroke-width: 1.3; }
+#idea .idea-svg .idea-gate-t { fill: var(--lab-ink); font-size: 12px; font-weight: 700; }
+#idea .idea-bubble { fill: var(--idea-box); stroke: color-mix(in srgb, var(--lab-text) 70%, var(--lab-line)); stroke-width: 1.3; }
+#idea .idea-narrow .idea-gate-t { font-size: 11px; }
+
+/* ---------- display a LED (uguale nelle due modalità) ---------- */
+
+#idea .idea-bezel { fill: #040807; stroke: var(--idea-box-line); stroke-width: 2; transition: stroke var(--t-normal); }
+#idea .idea-led { fill: var(--idea-led-off); }
+#idea .idea-led.c1 { fill: var(--idea-red); }
+#idea .idea-led.c2 { fill: var(--idea-amber); }
+#idea .idea-led.c3 { fill: var(--idea-green); }
+#idea .idea-svg .idea-cap { fill: var(--lab-text); font-size: 12.5px; font-weight: 600; }
+#idea .idea-narrow .idea-cap { font-size: 12px; }
+
+/* festa a obiettivo raggiunto */
+#idea .idea-stage.is-cheer .idea-bezel { animation: idea-cheer 1.3s var(--ease-smooth); }
+@keyframes idea-cheer {
+  0%, 100% { stroke: var(--idea-box-line); }
+  25%, 60% { stroke: var(--sig-on); }
+}
+
+/* ---------- tasto ---------- */
+
+#idea .idea-key { cursor: pointer; outline: none; -webkit-tap-highlight-color: transparent; }
+#idea .idea-key:focus-visible { outline: none; }
+#idea .idea-key-ring { fill: none; stroke: var(--lab-gold); stroke-width: 3; opacity: 0; transition: opacity var(--t-fast); }
+#idea .idea-key:focus-visible .idea-key-ring { opacity: 1; }
+#idea .idea-key-cap { transform-box: fill-box; transform-origin: center; transition: transform var(--t-instant) var(--ease-sharp); }
+#idea .idea-key.is-down .idea-key-cap { transform: scale(.92); }
+#idea .idea-key-base { fill: #3a2a0f; stroke: color-mix(in srgb, var(--lab-gold) 45%, #000); stroke-width: 1.5; }
+#idea .idea-key-top { fill: var(--lab-gold); transition: fill var(--t-fast); }
+#idea .idea-key:hover .idea-key-top { fill: #ffc56a; }
+#idea .idea-svg .idea-key-t { fill: #241603; font-size: 10px; font-weight: 800; letter-spacing: .08em; pointer-events: none; }
+#idea .idea-svg .idea-mean { fill: var(--lab-ink); font-size: 13px; font-weight: 750; }
+#idea .idea-narrow .idea-key-t { font-size: 9px; }
+#idea .idea-narrow .idea-mean { font-size: 12.5px; }
+
+/* ---------- gettoni che viaggiano sul bus ---------- */
+
+#idea .idea-tokens { pointer-events: none; }
+#idea .idea-token rect { fill: var(--sig-data); stroke: #04150d; stroke-width: 1; }
+#idea .idea-token.is-ctrl rect { fill: var(--sig-ctrl); }
+#idea .idea-token.is-key rect { fill: var(--lab-gold); }
+#idea .idea-svg .idea-token-t { fill: #04150d; font-size: 10px; font-weight: 800; }
+
+/* ---------- avviso sopra il display ---------- */
+
+#idea .idea-toast {
+  position: absolute; box-sizing: border-box; z-index: 2;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+  padding: 10px 18px; text-align: center; border-radius: 12px;
+  background: color-mix(in srgb, var(--lab-sunk) 90%, transparent);
+  border: 1px solid var(--lab-line);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .02);
+  opacity: 0; transform: translateY(6px) scale(.985); pointer-events: none;
+  transition: opacity var(--t-normal) var(--ease-smooth), transform var(--t-normal) var(--ease-smooth);
+}
+#idea .idea-toast.is-on { opacity: 1; transform: none; }
+#idea .idea-toast-t { font-size: 1rem; font-weight: 800; color: var(--lab-ink); letter-spacing: -.005em; }
+#idea .idea-toast-p { font-size: .88rem; line-height: 1.4; color: var(--lab-text); max-width: 52ch; }
+#idea .idea-toast.is-ok { border-color: color-mix(in srgb, var(--sig-on) 55%, var(--lab-line)); }
+#idea .idea-toast.is-ok .idea-toast-t { color: var(--sig-on); }
+#idea .idea-toast.is-warn { border-color: color-mix(in srgb, var(--idea-warn) 60%, var(--lab-line)); background: color-mix(in srgb, #1d1106 90%, transparent); }
+#idea .idea-toast.is-warn .idea-toast-t { color: var(--idea-warn); }
+#idea .idea-toast.is-info { border-color: color-mix(in srgb, var(--lab-gold) 50%, var(--lab-line)); }
+#idea .idea-toast.is-info .idea-toast-t { color: var(--lab-gold); }
+
+/* ---------- spiegazione ---------- */
+
+#idea .idea-explain { display: flex; flex-direction: column; }
+#idea .idea-explain .idea-now { color: var(--lab-text); }
+#idea .idea-explain .idea-do { color: var(--lab-ink); padding-left: 10px; border-left: 2px solid var(--lab-gold); }
+#idea .idea-hoff { margin: 6px 0 14px; padding: 10px 12px; border-radius: 10px; background: var(--lab-panel); border: 1px solid var(--lab-line); }
+#idea .idea-hoff-k { display: block; font: 700 .7rem var(--mono); letter-spacing: .07em; text-transform: uppercase; color: var(--lab-gold); margin-bottom: 4px; }
+#idea .idea-explain .idea-hoff p { margin: 0; font-size: .88rem; line-height: 1.5; }
+#idea .idea-score { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; margin-top: auto; }
+#idea .idea-score-col { display: grid; align-content: start; gap: 3px; padding: 8px 10px; border-radius: 10px; background: var(--lab-sunk); border: 1px solid var(--lab-line); font-size: .8rem; line-height: 1.35; }
+#idea .idea-score-k { font: 700 .66rem var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--sig-on); margin-bottom: 2px; }
+#idea .idea-score-col.is-wired .idea-score-k { color: var(--idea-warn); }
+#idea .idea-score-r { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+#idea .idea-score b { font-family: var(--mono); font-variant-numeric: tabular-nums; color: var(--lab-ink); }
+
+/* ---------- obiettivo ---------- */
+
+#idea .cp-goal { flex-wrap: wrap; row-gap: 8px; }
+#idea .idea-goal-t { flex: 1 1 280px; }
+#idea .idea-goal-list { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+#idea .idea-goal-n { font: 700 .85rem var(--mono); color: var(--lab-gold); margin-right: 2px; font-variant-numeric: tabular-nums; }
+#idea .idea-goal-i { padding: 2px 10px; border-radius: 999px; border: 1px solid var(--lab-line); background: var(--lab-sunk); color: var(--lab-dim); font-size: .8rem; font-weight: 650; transition: color var(--t-fast), border-color var(--t-fast); }
+#idea .idea-goal-i.is-done { color: var(--sig-on); border-color: color-mix(in srgb, var(--sig-on) 45%, var(--lab-line)); }
+#idea .idea-goal-i.is-done::before { content: "✓ "; }
+
+/* ---------- schermi stretti ---------- */
+
+@media (max-width: 900px) {
+  #idea .idea-grid { grid-template-columns: minmax(0, 1fr); }
+  #idea .idea-score { margin-top: 4px; }
+}
+
+@media (max-width: 640px) {
+  #idea .idea-run { margin-left: 0; }
+  #idea .cp-seg button { padding: 0 9px; }
+  #idea .idea-toast { padding: 6px 10px; gap: 2px; border-radius: 9px; }
+  #idea .idea-toast-t { font-size: .9rem; }
+  #idea .idea-toast-p { font-size: .8rem; line-height: 1.35; }
+}
+
+@media (max-width: 420px) {
+  #idea .idea-score { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #idea .idea-stage, #idea .idea-prog, #idea .idea-wired, #idea .idea-pc, #idea .idea-head, #idea .idea-bit,
+  #idea .idea-reg, #idea .idea-cell, #idea .idea-pled, #idea .idea-w, #idea .idea-bezel, #idea .idea-key-cap,
+  #idea .idea-key-top, #idea .idea-toast, #idea .idea-goal-i, #idea .idea-wtext { transition: none; }
+  #idea .idea-toast { transform: none; }
+  #idea .idea-stage.is-cheer .idea-bezel { animation: none; }
+}
