@@ -310,7 +310,8 @@ html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; -moz-osx-fo
 /* ---------- laboratorio: cornice e controlli comuni ---------- */
 
 .lab {
-  margin: 36px 0; border-radius: 16px; overflow: hidden;
+  /* clip taglia come hidden ma non crea un contenitore di scorrimento: i comandi sticky dei laboratori restano in vista */
+  margin: 36px 0; border-radius: 16px; overflow: hidden; overflow: clip;
   background: var(--scope-bg); color: var(--scope-text); border: 1px solid var(--scope-grid);
   box-shadow: 0 1px 0 rgba(255, 255, 255, .04) inset, 0 24px 48px -36px rgba(5, 15, 10, .6);
   --lab-panel: #0f1916;
@@ -361,6 +362,13 @@ html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; -moz-osx-fo
 .lab-mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
 .lab .lab-flash { animation: lab-flash var(--dur-slow) var(--ease-smooth); }
 @keyframes lab-flash { from { background-color: color-mix(in srgb, var(--trace-1) 22%, transparent); } to { background-color: transparent; } }
+
+/* [hidden] vince sui display dei componenti; le tabelle di BusLab (larghe 1050 px, bordi chiari) non valgono nei laboratori */
+.lab [hidden] { display: none !important; }
+.lab table { min-width: 0; }
+.lab th, .lab td { border-bottom-color: var(--scope-grid); }
+.lab thead th { position: static; background: var(--lab-panel); color: #7f9a90; }
+.spc-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; border: 0; }
 
 /* ---------- linea del tempo ---------- */
 
