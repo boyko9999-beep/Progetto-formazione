@@ -1,0 +1,92 @@
+/* Capitolo 1 · laboratorio "Il campo di Coulomb". */
+
+.car-banco {
+  position: relative; border-radius: 12px; overflow: hidden;
+  background: radial-gradient(110% 95% at 50% 45%, #10201b 0%, #0b1411 58%, #080e0c 100%);
+  box-shadow: inset 0 0 0 1px var(--lab-line), inset 0 0 70px rgb(0 0 0 / 45%);
+}
+.car-banco .eb-tela { touch-action: auto; }
+.car-svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; overflow: hidden; }
+
+/* cariche */
+.car-carica { cursor: grab; }
+.car-carica.in-presa { cursor: grabbing; }
+.car-banco svg g.car-carica:focus-visible { outline: none; }
+.car-presa { fill: transparent; }
+.car-anello { fill: none; stroke: #fff; stroke-width: 2; opacity: 0; transition: opacity .15s ease; }
+.car-carica:hover .car-anello { opacity: .3; }
+.car-carica:focus-visible .car-anello { opacity: 1; }
+.car-segno { font: 800 13px var(--mono); fill: #10100e; pointer-events: none; }
+
+.car-g-pos .car-g1 { stop-color: color-mix(in srgb, var(--lab-pos) 28%, #fff); }
+.car-g-pos .car-g2 { stop-color: var(--lab-pos); }
+.car-g-pos .car-g3 { stop-color: color-mix(in srgb, var(--lab-pos) 52%, #000); }
+.car-g-neg .car-g1 { stop-color: color-mix(in srgb, var(--lab-neg) 28%, #fff); }
+.car-g-neg .car-g2 { stop-color: var(--lab-neg); }
+.car-g-neg .car-g3 { stop-color: color-mix(in srgb, var(--lab-neg) 52%, #000); }
+.car-g-pos .car-a1 { stop-color: var(--lab-pos); stop-opacity: .5; }
+.car-g-pos .car-a2 { stop-color: var(--lab-pos); stop-opacity: .13; }
+.car-g-pos .car-a3 { stop-color: var(--lab-pos); stop-opacity: 0; }
+.car-g-neg .car-a1 { stop-color: var(--lab-neg); stop-opacity: .5; }
+.car-g-neg .car-a2 { stop-color: var(--lab-neg); stop-opacity: .13; }
+.car-g-neg .car-a3 { stop-color: var(--lab-neg); stop-opacity: 0; }
+
+/* forza, distanza, etichette, righello */
+.car-freccia {
+  fill: var(--lab-f); stroke: var(--lab-bg); stroke-width: 2px; paint-order: stroke; stroke-linejoin: round;
+  filter: drop-shadow(0 0 5px color-mix(in srgb, var(--lab-f) 50%, transparent));
+}
+.car-misura { stroke: var(--lab-t); stroke-opacity: .38; stroke-width: 1.2; stroke-dasharray: 4 5; }
+.car-pillola { fill: rgb(8 14 12 / 86%); stroke: #2a3b35; stroke-width: 1; }
+.car-misura-t { font: 700 12px var(--mono); fill: var(--lab-strong); }
+.car-et { paint-order: stroke; stroke: var(--lab-bg); stroke-width: 4px; stroke-linejoin: round; }
+.car-et-q { font: italic 700 14px var(--serif); fill: var(--lab-q); }
+.car-et-v { font: 700 12px var(--mono); fill: var(--lab-strong); }
+.car-righello path { fill: none; stroke: var(--lab-text); stroke-width: 1.3; opacity: .7; }
+.car-righello text { font: 600 12px var(--mono); fill: var(--lab-text); }
+
+/* legenda sotto il banco */
+.car-legenda { display: flex; flex-wrap: wrap; gap: 6px 20px; margin: 10px 4px 2px; font-size: .8rem; line-height: 1.35; color: var(--lab-dim); }
+.car-leg { display: inline-flex; align-items: center; gap: 8px; }
+.car-leg-freccia { flex: none; width: 22px; height: 10px; background: var(--lab-f); clip-path: polygon(0 36%, 60% 36%, 60% 0, 100% 50%, 60% 100%, 60% 64%, 0 64%); }
+.car-leg-campo {
+  flex: none; width: 24px; height: 6px;
+  background: radial-gradient(circle, #eef6f2 0 1.5px, transparent 2px) 2px 50% / 11px 6px repeat-x,
+    linear-gradient(rgb(205 226 218 / 45%), rgb(205 226 218 / 45%)) 0 50% / 100% 1px no-repeat;
+}
+.car-leg-quadretto { flex: none; width: 12px; height: 12px; border: 1px solid rgb(150 200 180 / 40%); border-radius: 2px; }
+
+/* letture */
+.car-tipo, .car-formula { grid-column: 1 / -1; font-size: 1rem; line-height: 1.65; }
+.car-k { grid-column: 1 / -1; margin: -6px 0 0; font: 600 .72rem var(--mono); color: var(--lab-dim); }
+.eb-lab:has(.car-banco.car-trascinando) .eb-lettura.cambia .eb-lettura-v { animation: none; }
+
+/* comandi */
+.car-comandi { display: flex; flex-wrap: wrap; gap: 12px; }
+.car-scheda { flex: 1 1 250px; min-width: 0; display: grid; gap: 6px; padding: 12px 14px 8px; border-radius: 12px; background: #0d1714; border: 1px solid var(--lab-line); }
+.car-scheda-testa { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px; min-height: 38px; }
+.car-nome { display: inline-flex; align-items: center; gap: 9px; font: italic 700 1.15rem var(--serif); color: var(--lab-q); }
+.car-nome.dist { color: var(--lab-t); }
+.car-pallino {
+  width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center;
+  font: normal 800 .8rem/1 var(--mono); color: #10100e;
+  background: radial-gradient(circle at 36% 30%, color-mix(in srgb, var(--lab-pos) 28%, #fff), var(--lab-pos) 55%, color-mix(in srgb, var(--lab-pos) 52%, #000));
+  box-shadow: 0 0 10px color-mix(in srgb, var(--lab-pos) 45%, transparent);
+}
+.car-pallino.neg {
+  background: radial-gradient(circle at 36% 30%, color-mix(in srgb, var(--lab-neg) 28%, #fff), var(--lab-neg) 55%, color-mix(in srgb, var(--lab-neg) 52%, #000));
+  box-shadow: 0 0 10px color-mix(in srgb, var(--lab-neg) 45%, transparent);
+}
+.car-pallino.dist { background: #1a2924; color: var(--lab-t); box-shadow: none; }
+.car-scheda .eb-scelta { flex-wrap: nowrap; }
+/* la legenda resta per gli screen reader: il nome della carica è già nella testata */
+.car-scheda .eb-scelta legend { position: absolute; float: none; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.car-scheda .eb-scelta span { padding: 6px 11px; }
+.car-op-pos input:checked + span { background: var(--lab-pos); color: #1d0703; }
+.car-op-neg input:checked + span { background: var(--lab-neg); color: #03141d; }
+.car-suggerimento { font-size: .8rem; color: var(--lab-dim); }
+.car-dist.eb-cursore { --qc: var(--lab-t); }
+
+@media (max-width: 640px) {
+  .car-legenda { gap: 4px 14px; font-size: .76rem; }
+}
