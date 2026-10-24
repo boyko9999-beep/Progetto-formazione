@@ -196,7 +196,7 @@
 .cp-ch-head { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 20px 48px; align-items: center; margin-bottom: 30px; }
 .cp-ch-num { display: flex; align-items: center; gap: 14px; margin: 0 0 8px; font: 700 .8rem var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--cp); }
 .cp-ch-num b { font-size: 2.4rem; letter-spacing: -0.04em; line-height: 1; font-weight: 800; }
-.cp-ch-head h2 { font-size: clamp(1.75rem, 3.6vw, 2.6rem); letter-spacing: -0.025em; margin: 0 0 12px; }
+.cp-ch-head h2 { font-size: clamp(1.75rem, 3.6vw, 2.6rem); letter-spacing: -0.025em; margin: 0 0 12px; text-wrap: balance; }
 .cp-ch-lead { font-size: 1.14rem; color: var(--muted); max-width: 62ch; margin: 0; }
 .cp-specimen { width: clamp(170px, 24vw, 260px); }
 .cp-specimen svg { display: block; width: 100%; height: auto; overflow: visible; filter: drop-shadow(0 16px 14px rgba(0, 0, 0, .22)); }
@@ -413,7 +413,8 @@
 }
 
 @media (max-width: 640px) {
-  .cp .topbar { gap: 6px 14px; }
+  /* sul telefono la barra superiore scorre via: resta appiccicato solo l'indice dei capitoli */
+  .cp .topbar { gap: 6px 14px; position: static; }
   .cp-read { margin-left: 0; }
   .cp .hide-sm { display: none; }
   .cp-chapter { padding-top: 52px; }
@@ -423,6 +424,12 @@
   .cp-lab-head { padding: 16px 14px 12px; }
   .cp-explain { padding: 14px; }
   .cp-range input { width: 96px; }
+}
+
+/* dita invece del mouse: bersagli più alti nei laboratori */
+@media (pointer: coarse) {
+  .cp-btn { min-height: 44px; }
+  .cp-seg button { min-height: 40px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -42,6 +42,11 @@ i bus in BusLab (`../../index.html#/bus/uart` e simili).
 
 ## Struttura di un capitolo
 
+Ogni capitolo vive in `index.html`, dentro il suo `<section class="cp-chapter">`, con i suoi file
+`css/<capitolo>.css`, `js/<capitolo>.js` ed eventualmente `js/<capitolo>-core.js` (caricato prima).
+Per correggere un capitolo si cambiano solo questi; gli id dei capitoli non cambiano mai, perché
+l'hub e il quiz li usano come ancore.
+
 ```html
 <section class="cp-chapter" id="intel-4004" aria-labelledby="intel-4004-titolo">
   <header class="cp-ch-head">
@@ -111,7 +116,7 @@ CP.lab('intel-4004', function (mount, ctx) {
 | `ctx.say(testo)` | annuncio per i lettori di schermo |
 | `ctx.done()` | segna il capitolo come completato (indice, hub, memoria locale) |
 | `CP.ui.button / seg / range / toggle / readout / bar / legend` | controlli coerenti in tutti i laboratori |
-| `CP.art.dip({ pins, label, top, bottom, body, lid, window, pinNames, group })` | chip in package DIP |
+| `CP.art.dip({ pins, label, top, bottom, body, lid, window, pinNames, group, legible })` | chip in package DIP (`legible`: sigle più grandi sui chip lunghi, attivo per gli elementi `data-dip`) |
 | `CP.fmt.num / hex / bin` | numeri all'italiana (2.300), esadecimale, binario |
 | `CP.store.get / set` | piccole preferenze locali (con try/catch) |
 

@@ -635,9 +635,12 @@
     const topbar = doc.querySelector('.topbar');
     const page = doc.querySelector('.cp');
     let queued = false;
+    // altezza della barra superiore, se resta appiccicata (sul telefono scorre via e resta solo l'indice)
+    function stick() {
+      if (topbar && page) page.style.setProperty('--stick', (root.getComputedStyle(topbar).position === 'sticky' ? topbar.offsetHeight : 0) + 'px');
+    }
     function measure() {
       queued = false;
-      if (topbar && page) page.style.setProperty('--stick', topbar.offsetHeight + 'px');
       if (bar) {
         const max = doc.documentElement.scrollHeight - root.innerHeight;
         const p = max > 0 ? Math.min(1, Math.max(0, root.scrollY / max)) : 0;
@@ -646,7 +649,9 @@
     }
     const queue = () => { if (!queued) { queued = true; root.requestAnimationFrame(measure); } };
     root.addEventListener('scroll', queue, { passive: true });
-    root.addEventListener('resize', queue);
+    root.addEventListener('resize', () => { stick(); queue(); });
+    if ('ResizeObserver' in root && topbar) new root.ResizeObserver(stick).observe(topbar);
+    stick();
     measure();
   }
 
