@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Architettura e storia dei PC · Enciclopedia</title>
+  <meta name="description" content="Dai giganti a valvole al chip unico: come è fatto un personal computer e come ci siamo arrivati, con laboratori animati da provare.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230b1210'/%3E%3Crect x='9' y='9' width='14' height='14' rx='2' fill='none' stroke='%23a48cff' stroke-width='2.5'/%3E%3Cpath d='M13 5v4M19 5v4M13 23v4M19 23v4M5 13h4M5 19h4M23 13h4M23 19h4' stroke='%233ee08f' stroke-width='2'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="../../css/style.css">
+  <link rel="stylesheet" href="css/storia-pc.css">
+  <link rel="stylesheet" href="css/capitoli/01-giganti.css">
+  <link rel="stylesheet" href="css/capitoli/02-von-neumann.css">
+  <link rel="stylesheet" href="css/capitoli/03-primi-pc.css">
+  <link rel="stylesheet" href="css/capitoli/04-ibm-pc.css">
+  <link rel="stylesheet" href="css/capitoli/05-scheda-madre.css">
+  <link rel="stylesheet" href="css/capitoli/06-memoria.css">
+  <link rel="stylesheet" href="css/capitoli/07-avvio.css">
+  <link rel="stylesheet" href="css/capitoli/08-grafica.css">
+  <link rel="stylesheet" href="css/capitoli/09-prestazioni.css">
+  <link rel="stylesheet" href="css/capitoli/10-oggi.css">
+</head>
+<body class="spc">
+  <a class="skip" href="#main">Vai al contenuto</a>
+  <header class="topbar">
+    <a class="brand" href="../../index.html" aria-label="BusLab, torna alla pagina principale">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7"/><path d="M4 22h6V10h6v12h6V10h6"/></svg>
+      <span>BusLab</span>
+    </a>
+    <nav class="topnav" aria-label="Enciclopedia">
+      <a href="../index.html">Enciclopedia</a>
+      <a href="./" aria-current="page">6 · Storia dei PC</a>
+      <a class="spc-solo-largo" href="../../index.html">Bus e protocolli</a>
+    </nav>
+    <div class="progress" aria-live="polite">
+      <span id="progress">0 capitoli</span>
+      <span class="progress-track"><span id="progress-bar"></span></span>
+    </div>
+  </header>
+
+  <main id="main" tabindex="-1">
+    <section class="spc-hero" aria-labelledby="spc-titolo">
+      <div class="spc-hero-testo">
+        <p class="eyebrow">Enciclopedia · Sezione 6</p>
+        <h1 id="spc-titolo">Architettura e storia dei <em>PC</em></h1>
+        <p class="lead">Dai giganti a valvole che riempivano una stanza al chip unico dentro un portatile: come è fatto un personal computer, perché è fatto così e chi lo ha inventato. Ogni capitolo ha un laboratorio da provare con le mani.</p>
+        <ul class="spc-hero-meta">
+          <li><strong id="spc-num-capitoli">10</strong> capitoli</li>
+          <li><strong>10</strong> laboratori</li>
+          <li><strong>1937</strong> → oggi</li>
+        </ul>
+        <div class="hero-actions">
+          <a class="btn primary" href="#giganti">Comincia dal capitolo 1</a>
+          <a class="btn" href="#linea-del-tempo">La linea del tempo</a>
+        </div>
+      </div>
+      <figure class="spc-mappa" id="spc-mappa" aria-label="Scheda madre interattiva: ogni componente porta al suo capitolo"></figure>
+    </section>
+
+    <div class="spc-layout">
+      <nav class="spc-rail" id="spc-rail" aria-label="Capitoli"></nav>
+      <div class="spc-capitoli" id="spc-capitoli"></div>
+    </div>
+  </main>
+
+  <footer class="foot">
+    Enciclopedia · Sezione 6, Architettura e storia dei PC. Le illustrazioni sono disegni schematici realizzati per questa enciclopedia; date e numeri sono arrotondati dove le fonti non concordano.
+  </footer>
+
+  <!-- API dell'hub dell'enciclopedia (facoltativa: serve solo a mostrare l'avanzamento nell'indice generale). -->
+  <script src="../enciclopedia.js"></script>
+  <script src="js/core.js"></script>
+  <script src="js/modelli/01-giganti.js"></script>
+  <script src="js/modelli/02-von-neumann.js"></script>
+  <script src="js/modelli/03-primi-pc.js"></script>
+  <script src="js/modelli/04-ibm-pc.js"></script>
+  <script src="js/modelli/05-scheda-madre.js"></script>
+  <script src="js/modelli/06-memoria.js"></script>
+  <script src="js/modelli/07-avvio.js"></script>
+  <script src="js/modelli/08-grafica.js"></script>
+  <script src="js/modelli/09-prestazioni.js"></script>
+  <script src="js/modelli/10-oggi.js"></script>
+  <script src="js/capitoli/01-giganti.js"></script>
+  <script src="js/capitoli/02-von-neumann.js"></script>
+  <script src="js/capitoli/03-primi-pc.js"></script>
+  <script src="js/capitoli/04-ibm-pc.js"></script>
+  <script src="js/capitoli/05-scheda-madre.js"></script>
+  <script src="js/capitoli/06-memoria.js"></script>
+  <script src="js/capitoli/07-avvio.js"></script>
+  <script src="js/capitoli/08-grafica.js"></script>
+  <script src="js/capitoli/09-prestazioni.js"></script>
+  <script src="js/capitoli/10-oggi.js"></script>
+  <script src="js/hero.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
