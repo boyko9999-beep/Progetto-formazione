@@ -2144,7 +2144,7 @@
         const corr = stato.analisi.avvisi.filter((v) => v.tipo === 'correzione').length;
         narra('**Pagina ricostruita.** Il browser ha riletto il testo (passo 3) e ha ridisegnato la pagina (passo 4). In un browser vero salveresti il file sul server e ricaricheresti la pagina: richiesta e risposta ripartirebbero da capo.',
           corr ? 'Il browser ha corretto ' + (corr === 1 ? 'un errore' : corr + ' errori') + ' senza fermarsi: leggi gli avvisi sotto il codice.' : null,
-          stato.visto5 ? 'Anche il programma è ripartito: `clic` torna a zero.' : null);
+          !stato.visto5 ? null : tastoInfo().el ? 'Anche il programma è ripartito: `clic` torna a zero.' : MOTIVI['senza-tasto']);
       } catch (err) { silenzia(err); } finally {
         if (vivo(ep)) { stato.inCorsa = false; stato.animando = false; aggiornaComandi(); }
       }
