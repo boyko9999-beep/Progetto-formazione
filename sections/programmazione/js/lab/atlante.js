@@ -137,7 +137,7 @@
     },
     {
       id: 'basic', nome: 'BASIC', anno: 1964,
-      autori: 'John G. Kemeny e Thomas E. Kurtz', paradigmi: ['imperativo'], famiglia: 'algol', influenzatoDa: ['fortran', 'algol-60'], capitolo: 'schede',
+      autori: 'John G. Kemeny e Thomas E. Kurtz', paradigmi: ['imperativo'], famiglia: 'algol', influenzatoDa: ['fortran', 'algol-60'], capitolo: 'personal',
       descrizione: 'John Kemeny e Thomas Kurtz lo crearono al Dartmouth College nel 1964 perché tutti gli studenti, non solo gli scienziati, potessero programmare da un terminale. Negli anni Ottanta era il linguaggio di quasi tutti gli home computer.',
       ciao: '10 PRINT "CIAO, MONDO"\n20 END',
     },
@@ -234,7 +234,7 @@
     },
     {
       id: 'awk', nome: 'AWK', anno: 1977,
-      autori: 'Alfred Aho, Peter Weinberger e Brian Kernighan', paradigmi: ['scripting', 'imperativo'], famiglia: 'scripting', influenzatoDa: ['c'],
+      autori: 'Alfred Aho, Peter Weinberger e Brian Kernighan', paradigmi: ['scripting', 'imperativo'], famiglia: 'scripting', influenzatoDa: ['c'], capitolo: 'unix',
       descrizione: 'Scritto ai Bell Labs nel 1977: il nome unisce le iniziali dei tre autori. Legge un testo riga per riga e compie un\'azione su quelle che corrispondono a uno schema; è uno dei capostipiti dei linguaggi di scripting.',
       ciao: 'BEGIN { print "Ciao, mondo!" }',
     },
@@ -296,7 +296,7 @@
     {
       id: 'self', nome: 'Self', anno: 1987,
       autori: 'David Ungar e Randall Smith', paradigmi: ['oggetti'], famiglia: 'oggetti', influenzatoDa: ['smalltalk'],
-      descrizione: 'David Ungar e Randall Smith lo idearono nel 1987 alla Xerox PARC: uno Smalltalk senza classi, in cui ogni oggetto nasce copiando un altro oggetto, il suo prototipo. Le tecniche dei suoi compilatori veloci finirono nella macchina virtuale di Java, e i prototipi in JavaScript.',
+      descrizione: 'David Ungar e Randall Smith lo idearono alla Xerox PARC e lo presentarono nel 1987: uno Smalltalk senza classi, in cui ogni oggetto nasce copiando un altro oggetto, il suo prototipo. Le tecniche dei suoi compilatori veloci finirono nella macchina virtuale di Java, e i prototipi in JavaScript.',
       ciao: '\'Ciao, mondo!\' printLine.',
     },
     {
@@ -351,7 +351,7 @@
     {
       id: 'php', nome: 'PHP', anno: 1995,
       autori: 'Rasmus Lerdorf', paradigmi: ['scripting', 'imperativo', 'oggetti'], famiglia: 'scripting', influenzatoDa: ['perl', 'c'], capitolo: 'web',
-      descrizione: 'Rasmus Lerdorf lo pubblicò nel 1995 come insieme di strumenti per la sua pagina personale («Personal Home Page Tools»). Il codice si mescola all\'HTML e viene eseguito dal server prima di spedire la pagina: fa girare siti come Wikipedia e WordPress.',
+      descrizione: 'Rasmus Lerdorf lo pubblicò nel 1995 come insieme di strumenti per la sua pagina personale («Personal Home Page Tools»). Il codice si mescola all\'HTML e il server lo esegue prima di spedire la pagina: in PHP sono scritti MediaWiki, il software di Wikipedia, e WordPress.',
       ciao: '<?php\necho "Ciao, mondo!\\n";',
     },
     {
@@ -745,8 +745,11 @@
 .lab-atlante-leg.trova i { border-color: var(--atl-trova); }
 .lab-atlante-conta { margin-left: auto; font: 600 .8125rem var(--mono); color: var(--lab-text); }
 
-.lab-atlante-elenco { max-height: 560px; overflow: auto; overscroll-behavior: contain; border-bottom: 1px solid var(--lab-line); }
-.lab-atlante-tab { width: 100%; border-collapse: collapse; font-size: .9rem; color: var(--lab-text); }
+.lab-atlante-elenco { max-height: 560px; overflow: auto; border-bottom: 1px solid var(--lab-line); }
+/* min-width: 0 annulla il min-width: 1050px che css/style.css dà a tutte le tabelle. */
+.lab-atlante-tab { width: 100%; min-width: 0; border-collapse: collapse; font-size: .9rem; color: var(--lab-text); }
+/* La didascalia nascosta non deve allargare la tabella (pg-sr ha white-space: nowrap). */
+.lab-atlante-tab > caption { white-space: normal; }
 .lab-atlante-tab th, .lab-atlante-tab td { padding: 6px 12px; text-align: left; border-bottom: 1px solid var(--lab-line); vertical-align: middle; background: none; color: inherit; }
 .lab-atlante-tab thead th { position: sticky; top: 0; z-index: 1; background: var(--lab-panel); padding: 4px 6px; white-space: nowrap; }
 .lab-atlante-tab thead th.lab-atlante-th-fissa { padding: 4px 12px; font: 700 .8125rem var(--mono); text-transform: uppercase; letter-spacing: .08em; }
@@ -841,6 +844,7 @@ th[aria-sort="ascending"] .lab-atlante-ord, th[aria-sort="descending"] .lab-atla
   .lab-atlante-corsia { padding: 0 6px 0 10px; }
   .lab-atlante-angolo { padding: 0 8px; letter-spacing: .04em; }
   .lab-atlante-td-fam, .lab-atlante-td-par, .lab-atlante-th-fam, .lab-atlante-th-par { display: none; }
+  .lab-atlante-elenco { max-height: none; }
   .lab-atlante-riga-sub { display: block; margin-top: -2px; padding-bottom: 6px; font: 500 .8125rem var(--font); color: var(--lab-text); }
   .lab-atlante-dati div { grid-template-columns: minmax(0, 1fr); gap: 2px; }
 }
@@ -984,7 +988,7 @@ th[aria-sort="ascending"] .lab-atlante-ord, th[aria-sort="descending"] .lab-atla
     const legenda = h('p', { class: 'lab-atlante-legenda' },
       h('span', { class: 'lab-atlante-leg sel' }, h('i'), 'scelto'),
       h('span', { class: 'lab-atlante-leg anc' }, h('i'), 'antenati: da chi ha preso idee'),
-      h('span', { class: 'lab-atlante-leg disc' }, h('i'), 'discendenti: chi ha ispirato'),
+      h('span', { class: 'lab-atlante-leg disc' }, h('i'), 'discendenti: quelli che ha ispirato'),
       h('span', { class: 'lab-atlante-leg prog' }, h('i'), 'solo progetto'),
       h('span', { class: 'lab-atlante-conta' }, LINGUAGGI.length + ' linguaggi · ' + M.archi.length + ' influenze'));
 
@@ -1018,9 +1022,9 @@ th[aria-sort="ascending"] .lab-atlante-ord, th[aria-sort="descending"] .lab-atla
       h('caption', { class: 'pg-sr' }, 'Linguaggi di programmazione con anno, famiglia e paradigmi. I pulsanti nelle intestazioni ordinano la tabella.'),
       h('thead', null, h('tr', null, intestazioni)),
       tbody);
+    const notaTab = h('p', { class: 'lab-atlante-nota-tab' }, '* Plankalkül rimase un progetto: fu realizzato su un computer solo decenni dopo.');
     const vistaElenco = h('div', { class: 'lab-atlante-vistaelenco', hidden: true },
-      h('div', { class: 'lab-atlante-elenco' }, tabella),
-      h('p', { class: 'lab-atlante-nota-tab' }, '* Plankalkül rimase un progetto: fu realizzato su un computer solo decenni dopo.'));
+      h('div', { class: 'lab-atlante-elenco' }, tabella), notaTab);
 
     /* scheda e spiegazione */
     const scheda = h('section', { class: 'lab-atlante-scheda', 'aria-label': 'Scheda del linguaggio' });
@@ -1489,6 +1493,7 @@ th[aria-sort="ascending"] .lab-atlante-ord, th[aria-sort="descending"] .lab-atla
         if (ok) visibili++;
       }
       rigaVuota.hidden = visibili > 0;
+      notaTab.hidden = !LINGUAGGI.some((l) => l.progetto && ids.has(l.id));
       if (!visibili) rigaVuota.firstChild.textContent = 'Nessun linguaggio corrisponde ai filtri: cambia la ricerca o scegli «Tutti» tra i paradigmi.';
       if (!navigabile(st.fuoco)) {
         const primo = ORDINE.find((l) => navigabile(l.id));

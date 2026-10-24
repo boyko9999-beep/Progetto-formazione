@@ -1,4 +1,4 @@
-/* Capitolo 14 · 1957–2026 · Atlante dei linguaggi (in preparazione) */
+/* Capitolo 14 · 1957–2026 · Atlante dei linguaggi */
 ProgStoria.capitolo({
   id: 'atlante',
   numero: 14,
@@ -8,8 +8,66 @@ ProgStoria.capitolo({
   anno: 2026,
   speciale: true,
   etichetta: 'Atlante',
-  intro: 'Capitolo in preparazione.',
+  intro: 'Dal FORTRAN del 1957 a oggi sono nati migliaia di linguaggi, e quasi nessuno dal nulla: ognuno prende idee da quelli venuti prima. Questa mappa ne raccoglie quasi sessanta, con le loro parentele, i loro modi di pensare e un «Ciao, mondo» per ciascuno.',
   blocchi: [
-    { tipo: 'lab', id: 'atlante' },
+    {
+      tipo: 'testo',
+      titolo: 'Come si legge la mappa',
+      paragrafi: [
+        'Ogni punto è un linguaggio, nell\'anno in cui è apparso: di solito la prima versione pubblica o il primo {{compilatore}} funzionante. Le corsie raggruppano le famiglie; le curve vanno da chi ha dato un\'idea a chi l\'ha ripresa. Fa eccezione il Plankalkül di Konrad Zuse, rimasto per decenni sulla carta: per lui conta il progetto del 1945 ([capitolo 2](#logica)).',
+        'Perché i linguaggi si somigliano tanto? Perché ognuno è un pacchetto di idee, e le idee buone passano di mano: i blocchi di ALGOL 60 sono arrivati in Pascal, C e Java, le classi di Simula in Smalltalk e C++, la {{garbage collection}} del LISP in Java e Python. A volte si copia solo l\'aspetto: JavaScript ha la sintassi di Java, ma le idee di Scheme e di Self. Le curve mostrano solo le influenze principali, e su qualcuna gli esperti discutono ancora.',
+        'I filtri dividono i linguaggi per {{paradigma di programmazione|paradigma}}, cioè per il modo di pensare un programma. Il più antico, la {{programmazione imperativa}}, ricalca l\'hardware: celle di {{memoria}} e un processore che esegue un ordine dopo l\'altro cambiandone il contenuto, come nell\'{{architettura di von Neumann}} ([capitolo 3](#cavi)). Gli altri si allontanano dalla macchina per avvicinarsi al problema. Alla fine, però, un compilatore o un {{interprete}} traduce ogni programma nel {{codice macchina}} del processore ([capitolo 4](#assembly)), che conosce soltanto bit e [porte logiche](../porte-logiche/index.html).',
+      ],
+    },
+    {
+      tipo: 'lab',
+      id: 'atlante',
+      largo: true,
+      titolo: 'Prova tu: l\'albero dei linguaggi',
+      intro: 'Tocca un linguaggio, oppure raggiungilo con Tab e le frecce e premi Invio: gli antenati si accendono in ambra, i discendenti in azzurro, e la scheda mostra autori, paradigmi e un «Ciao, mondo». Filtra per paradigma, cerca un nome o un autore (prova «Wirth») o passa alla vista elenco. Su uno schermo piccolo la mappa scorre di lato.',
+    },
+    {
+      tipo: 'tabella',
+      intestazioni: ['Paradigma', 'L\'idea in una frase', 'Linguaggi d\'esempio'],
+      righe: [
+        ['{{programmazione imperativa|Imperativo}}', 'Una sequenza di ordini che cambiano, passo dopo passo, i dati in memoria.', 'FORTRAN, BASIC, C'],
+        ['{{programmazione strutturata|Strutturato}}', 'Gli ordini si raccolgono in procedure e blocchi con un solo ingresso e una sola uscita, senza salti.', 'ALGOL 60, Pascal, C, Go'],
+        ['{{programmazione a oggetti|A oggetti}}', 'Dati e operazioni stanno insieme dentro oggetti che si scambiano messaggi.', 'Simula, Smalltalk, C++, Java'],
+        ['{{programmazione funzionale|Funzionale}}', 'Si calcola applicando e componendo funzioni, senza modificare i dati.', 'LISP, ML, Haskell, Clojure'],
+        ['{{programmazione logica|Logico}}', 'Si scrivono fatti e regole, e la macchina cerca da sola le risposte.', 'Prolog'],
+        ['{{programmazione dichiarativa|Dichiarativo}}', 'Si descrive il risultato voluto, non i passi per ottenerlo.', 'SQL, Prolog, Haskell'],
+        ['{{linguaggio di scripting|Scripting}}', 'Programmi brevi, di solito interpretati, che automatizzano compiti e collegano programmi diversi.', 'AWK, Perl, Python, JavaScript'],
+      ],
+      didascalia: 'Molti linguaggi recenti sono «multiparadigma»: Python, JavaScript e Rust mescolano istruzioni, oggetti e funzioni.',
+    },
+    {
+      tipo: 'testo',
+      titolo: 'Nessun linguaggio va bene per tutto',
+      paragrafi: [
+        'Un\'altra differenza attraversa i paradigmi: la {{tipizzazione}}. In C, Java o Rust ogni {{variabile}} ha un tipo, e il compilatore controlla prima dell\'esecuzione che nessuno metta una frase dove serve un numero; in Python o JavaScript il controllo avviene mentre il programma gira. Il primo modo scopre molti errori in anticipo, il secondo lascia scrivere più in fretta. Nel 2012 Microsoft ha aggiunto i tipi a JavaScript: è nato TypeScript.',
+        'Nel 1977 John Backus, il padre del FORTRAN, dedicò la lezione per il premio Turing a criticare i linguaggi come il suo. Li chiamò «linguaggi di von Neumann», perché imitano la macchina: una variabile è una cella di memoria, un\'assegnazione è una parola che viaggia tra memoria e processore attraverso il «collo di bottiglia di von Neumann», come lo battezzò lui. Il suo linguaggio funzionale, FP, restò un esperimento, ma la {{programmazione funzionale}} è cresciuta: con i processori a molti nuclei, i dati che non cambiano si dividono più facilmente tra calcoli in parallelo.',
+        'Qual è allora il linguaggio migliore? Dipende dal lavoro. Il C, vicino all\'hardware, regna sui microcontrollori ([chip programmabili](../chip-programmabili/index.html)); SQL interroga i database, Python domina l\'{{intelligenza artificiale}} ([capitolo 13](#ia)), JavaScript è di casa nei browser e il COBOL tiene ancora i conti di molte banche. Per questo chi programma ne impara più d\'uno. Alan Perlis, il primo premio Turing, lo disse in un epigramma del 1982: «Un linguaggio che non influisce sul tuo modo di pensare la programmazione non vale la pena di conoscerlo».',
+      ],
+    },
+    {
+      tipo: 'sapevi',
+      testo: 'Molti linguaggi portano il nome di una persona: Pascal ricorda il matematico Blaise Pascal, Ada la contessa Ada Lovelace ([capitolo 1](#telai)), Haskell il logico Haskell Curry. Python viene dal gruppo comico dei Monty Python, e Lua in portoghese significa «luna»: a Rio de Janeiro i suoi autori avevano già creato un linguaggio di nome SOL, cioè «sole».',
+    },
+  ],
+  glossario: {
+    'paradigma di programmazione': 'Un modo di impostare i programmi, con le sue idee guida e i suoi costrutti preferiti: imperativo, a oggetti, funzionale, logico e così via. Molti linguaggi ne combinano più d\'uno.',
+    'programmazione imperativa': 'Il paradigma più antico e più vicino all\'hardware: il programma è una sequenza di ordini che leggono e modificano i dati in memoria, uno dopo l\'altro. FORTRAN, BASIC e C sono linguaggi imperativi.',
+    'programmazione funzionale': 'Paradigma in cui un programma è una composizione di funzioni nel senso della matematica: con gli stessi ingressi danno sempre lo stesso risultato e, idealmente, non modificano i dati. Nasce con il LISP (1958); Haskell ne è l\'esempio più rigoroso.',
+    'tipizzazione': 'Il modo in cui un linguaggio classifica i dati in tipi (numeri interi, numeri decimali, testi, liste…) e controlla che ogni operazione riceva il tipo giusto. È statica se il controllo avviene prima dell\'esecuzione, come in C, Java e Rust; dinamica se avviene mentre il programma gira, come in Python e JavaScript.',
+  },
+  fonti: [
+    { testo: 'Éric Lévénez, «Computer Languages History», diagramma storico dei linguaggi, aggiornato periodicamente.', url: 'https://www.levenez.com/lang/' },
+    { testo: 'ACM SIGPLAN, *History of Programming Languages* (HOPL I–IV, 1978–2020): gli atti delle conferenze in cui gli autori raccontano la nascita dei loro linguaggi.', url: 'https://dl.acm.org/conference/hopl' },
+    { testo: 'John Backus, «Can Programming Be Liberated from the von Neumann Style? A Functional Style and Its Algebra of Programs», lezione per il premio Turing 1977, *Communications of the ACM* 21 (8), agosto 1978, pp. 613–641.', url: 'https://dl.acm.org/doi/10.1145/359576.359579' },
+    { testo: 'Alan J. Perlis, «Epigrams on Programming», *ACM SIGPLAN Notices* 17 (9), settembre 1982, pp. 7–13 (epigramma 19).', url: 'https://www.cs.yale.edu/homes/perlis-alan/quotes.html' },
+    { testo: 'Roberto Ierusalimschy, Luiz Henrique de Figueiredo, Waldemar Celes, «The Evolution of Lua», HOPL III, 2007; e «A Brief History of Lua», lua.org.', url: 'https://www.lua.org/history.html' },
+    { testo: 'Peter Van Roy, «Programming Paradigms for Dummies: What Every Programmer Should Know», in *New Computational Paradigms for Computer Music*, IRCAM/Delatour, 2009.', url: 'https://www.info.ucl.ac.be/~pvr/VanRoyChapter.pdf' },
+    { testo: 'Brian W. Kernighan, «A Tutorial Introduction to the Language B», Bell Laboratories, 1972 (il saluto in B del laboratorio).', url: 'https://www.bell-labs.com/usr/dmr/www/btut.html' },
+    { testo: 'Wikipedia, «Timeline of programming languages» e voci dei singoli linguaggi (date e voci «influenzato da»), usate come punto di partenza e confrontate con le pagine ufficiali dei progetti.', url: 'https://en.wikipedia.org/wiki/Timeline_of_programming_languages' },
   ],
 });

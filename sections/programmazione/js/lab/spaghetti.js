@@ -285,7 +285,7 @@
     const v = Number(t);
     if (v === 0) return { ok: false, errore: 'Con ' + n + ' = 0 le sottrazioni non finirebbero mai: scegli un numero da 1 a 99.' };
     if (v < 0) return { ok: false, errore: n + ' deve essere positivo: scegli un numero da 1 a 99.' };
-    if (v > 99) return { ok: false, errore: n + ' può arrivare al massimo a 99: con numeri più grandi i passi diventano centinaia.' };
+    if (v > 99) return { ok: false, errore: n + ' può arrivare al massimo a 99: con numeri più grandi l\'esecuzione durerebbe troppo.' };
     return { ok: true, valore: v };
   }
 
@@ -401,7 +401,7 @@
   /* ======================= stile ======================= */
 
   const css = `
-    .lab-spaghetti { container-type: inline-size; }
+    .lab-spaghetti { container: lab-spaghetti / inline-size; }
     .lab-spaghetti-dati .pg-etichetta { font-weight: 700; color: var(--lab-bright); }
     .lab-spaghetti-numero { width: 3.6em; text-align: center; font-size: 1.05rem; color: var(--trace-3); }
     .lab-spaghetti-numero[aria-invalid="true"] { border-color: #ff8a7a; color: #ffb4a8; }
@@ -412,10 +412,10 @@
     .lab-spaghetti-errore[hidden] { display: none; }
 
     .lab-spaghetti-arena { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; padding: 16px; }
-    .lab-spaghetti-pannello { min-width: 0; display: grid; gap: 12px; align-content: start; padding: 14px; background: var(--lab-panel); border: 1px solid var(--lab-line); border-radius: 12px; transition: opacity var(--pg-dur-normale) ease; }
+    .lab-spaghetti-pannello { container: lab-spaghetti-p / inline-size; min-width: 0; display: grid; gap: 12px; align-content: start; padding: 14px; background: var(--lab-panel); border: 1px solid var(--lab-line); border-radius: 12px; transition: opacity var(--pg-dur-normale) ease; }
     .lab-spaghetti-pannello.is-spento { opacity: .45; }
     .lab-spaghetti-nome { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin: 0; }
-    .lab-spaghetti-tag { font: 800 12px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; padding: 5px 8px 4px; border-radius: 999px; }
+    .lab-spaghetti-tag { font: 800 13px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; padding: 5px 9px 4px; border-radius: 999px; }
     .lab-spaghetti-pannello.is-basic .lab-spaghetti-tag { background: var(--trace-2); color: #221500; }
     .lab-spaghetti-pannello.is-pascal .lab-spaghetti-tag { background: var(--trace-4); color: #2b0716; }
     .lab-spaghetti-titolo { font-size: 1rem; font-weight: 700; color: var(--lab-bright); }
@@ -429,9 +429,10 @@
     .lab-spaghetti-barra { position: absolute; z-index: 0; left: 0; right: 0; top: 8px; height: ${LH}px; background: color-mix(in srgb, var(--trace-1) 17%, transparent); box-shadow: inset 3px 0 0 var(--trace-1); transition-property: transform, opacity; transition-timing-function: var(--pg-ease-sharp); transition-duration: var(--pg-dur-normale); will-change: transform; }
     .lab-spaghetti-barra.is-via { opacity: 0; }
 
-    .lab-spaghetti-stato { display: grid; grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)); gap: 6px; margin: 0; }
-    .lab-spaghetti-stato > div { display: grid; gap: 1px; padding: 5px 10px 6px; background: var(--lab-bg); border: 1px solid var(--lab-line); border-radius: 8px; min-width: 0; }
-    .lab-spaghetti-stato dt { font: 600 13px var(--mono); color: var(--lab-text); white-space: nowrap; }
+    .lab-spaghetti-stato { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px; margin: 0; }
+    .lab-spaghetti-stato > div { grid-column: span 2; display: grid; gap: 1px; padding: 5px 8px 6px; background: var(--lab-bg); border: 1px solid var(--lab-line); border-radius: 8px; min-width: 0; }
+    .lab-spaghetti-stato > .is-conta, .lab-spaghetti-stato > .is-salti { grid-column: span 3; }
+    .lab-spaghetti-stato dt { font: 600 13px var(--font); color: var(--lab-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .lab-spaghetti-stato dd { margin: 0; overflow: hidden; font: 700 1.2rem/1.3 var(--mono); color: var(--trace-3); font-variant-numeric: tabular-nums; }
     .lab-spaghetti-stato .is-conta dd { color: var(--lab-bright); }
     .lab-spaghetti-stato .is-salti dd { color: var(--trace-2); }
@@ -497,15 +498,18 @@
     .lab-spaghetti-esito-finale { margin: 4px 0 0 !important; padding: 10px 12px; border-radius: 10px; background: color-mix(in srgb, var(--trace-1) 9%, transparent); border: 1px solid color-mix(in srgb, var(--trace-1) 35%, transparent); }
     .lab-spaghetti-esito-finale[hidden] { display: none; }
 
-    @container (min-width: 780px) {
+    @container lab-spaghetti (min-width: 780px) {
       .lab-spaghetti-arena { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
-    @container (max-width: 480px) {
+    @container lab-spaghetti-p (min-width: 396px) {
+      .lab-spaghetti-stato { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+      .lab-spaghetti-stato > div, .lab-spaghetti-stato > .is-conta, .lab-spaghetti-stato > .is-salti { grid-column: auto; }
+    }
+    @container lab-spaghetti (max-width: 480px) {
       .lab-spaghetti-arena { padding: 10px; gap: 10px; }
       .lab-spaghetti-pannello { padding: 10px; }
     }
-    @container (max-width: 380px) {
-      .lab-spaghetti-stato { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    @container lab-spaghetti-p (max-width: 300px) {
       .lab-spaghetti-mattone small { display: none; }
     }
     @media (prefers-reduced-motion: reduce) {

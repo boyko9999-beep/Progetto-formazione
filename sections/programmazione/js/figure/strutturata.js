@@ -235,11 +235,13 @@
   const USCITE_Y = [168, 212, 256, 300];
   const GIRO_Y = [158, 172, 290, 304];
 
-  function percorsoFilo(w) {
+  // Percorso di un filo da sinistra (o dal punto "da") fino all'uscita: dritto nei fori, ad arco intorno agli anelli.
+  function percorsoFilo(w, da) {
     const y = FILI_Y[w];
-    let d = 'M92 ' + y;
+    const x0 = da == null ? 104 : da;
+    let d = 'M' + x0 + ' ' + y;
     ANELLI.forEach((cx, c) => {
-      if (TRAMA[w][c]) return;
+      if (TRAMA[w][c] || cx - 48 < x0) return;
       const gy = GIRO_Y[w];
       d += ' L' + (cx - 48) + ' ' + y + ' C' + (cx - 30) + ' ' + y + ' ' + (cx - 32) + ' ' + gy + ' ' + cx + ' ' + gy +
         ' C' + (cx + 32) + ' ' + gy + ' ' + (cx + 30) + ' ' + y + ' ' + (cx + 48) + ' ' + y;
@@ -269,21 +271,19 @@
     fili.forEach((d) => out.push('<path class="fig-memoria-a-fili-rame" d="' + d + '"/>'));
     ANELLI.forEach((cx) => out.push(anello(cx, false)));
     out.push('<ellipse class="fig-memoria-a-fili-scelto" cx="' + cxS + '" cy="' + CY + '" rx="22" ry="44"/>');
-    // l'impulso corre sui fili che attraversano l'anello selezionato
+    // l'impulso parte dall'anello selezionato e corre fino all'uscita, solo sui fili che lo attraversano
     TRAMA.forEach((riga, w) => {
       if (!riga[SCELTO]) return;
-      const y = FILI_Y[w];
-      const d = 'M' + (cxS + 12) + ' ' + y + percorsoFilo(w).split('L').slice(1).map((p) => 'L' + p).join('').replace(/^.*?(?=L\d)/, '');
-      out.push('<path class="fig-memoria-a-fili-impulso fig-memoria-a-fili-i' + w + '" d="' + d + '"/>');
+      out.push('<path class="fig-memoria-a-fili-impulso fig-memoria-a-fili-i' + w + '" pathLength="100" d="' + percorsoFilo(w, cxS) + '"/>');
     });
     // i punti di partenza e le etichette dei fili
-    FILI_Y.forEach((y, w) => {
-      out.push('<circle class="fig-memoria-a-fili-capo" cx="92" cy="' + y + '" r="3.2"/>');
+    FILI_Y.forEach((y) => {
+      out.push('<circle class="fig-memoria-a-fili-capo" cx="104" cy="' + y + '" r="3.2"/>');
     });
-    out.push('<text class="fig-memoria-a-fili-testo" x="84" y="200" text-anchor="end">4 fili</text><text class="fig-memoria-a-fili-testo" x="84" y="220" text-anchor="end">di lettura</text>');
-    out.push('<text class="fig-memoria-a-fili-testo" x="84" y="256" text-anchor="end">uno per bit</text>');
+    out.push('<text class="fig-memoria-a-fili-testo" x="96" y="200" text-anchor="end">4 fili</text><text class="fig-memoria-a-fili-testo" x="96" y="220" text-anchor="end">di lettura</text>');
+    out.push('<text class="fig-memoria-a-fili-testo" x="96" y="256" text-anchor="end">uno per bit</text>');
     // la parola letta
-    out.push('<text class="fig-memoria-a-fili-titolo" x="757" y="140" text-anchor="middle">parola</text><text class="fig-memoria-a-fili-titolo" x="757" y="158" text-anchor="middle">letta</text>');
+    out.push('<text class="fig-memoria-a-fili-titolo" x="757" y="116" text-anchor="middle">parola</text><text class="fig-memoria-a-fili-titolo" x="757" y="137" text-anchor="middle">letta</text>');
     TRAMA.forEach((riga, w) => {
       const bit = riga[SCELTO];
       out.push('<rect class="fig-memoria-a-fili-bit' + (bit ? ' is-uno' : '') + '" x="736" y="' + (USCITE_Y[w] - 17) + '" width="42" height="34" rx="6"/>' +
@@ -316,7 +316,7 @@
     .fig-memoria-a-fili-rame { fill: none; stroke: var(--fig-3); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
     .fig-memoria-a-fili-scelto { fill: none; stroke: var(--cap); stroke-width: 3.5; }
     .fig-memoria-a-fili-alone { fill: var(--cap); opacity: .16; animation: fig-memoria-a-fili-pulsa 2.4s ease-in-out infinite alternate; }
-    .fig-memoria-a-fili-impulso { fill: none; stroke: var(--fig-glow); stroke-width: 5; stroke-linecap: round; stroke-dasharray: 28 900; stroke-dashoffset: 28; animation: fig-memoria-a-fili-corre 2.4s linear infinite; }
+    .fig-memoria-a-fili-impulso { fill: none; stroke: var(--fig-glow); stroke-width: 5; stroke-linecap: round; stroke-dasharray: 8 300; stroke-dashoffset: 8; animation: fig-memoria-a-fili-corre 2.6s linear infinite; }
     .fig-memoria-a-fili-i1 { animation-delay: .12s; }
     .fig-memoria-a-fili-i3 { animation-delay: .24s; }
     .fig-memoria-a-fili-capo { fill: var(--fig-3); stroke: var(--fig-ink); stroke-width: 1.2; }
@@ -327,12 +327,12 @@
     .fig-memoria-a-fili-testo { font: 500 16px var(--font); fill: var(--fig-ink); opacity: .8; }
     .fig-memoria-a-fili-titolo { font: 800 18px var(--font); fill: var(--fig-ink); }
     .fig-memoria-a-fili-titolo.is-cap { fill: var(--cap); }
-    .fig-memoria-a-fili-forte { font-weight: 800; fill: var(--cap); }
+    .fig-memoria-a-fili-forte { font-weight: 800; fill: var(--fig-ink); }
     .fig-memoria-a-fili-filo { stroke: var(--fig-ink); stroke-width: 1.5; opacity: .7; }
     .fig-memoria-a-fili-ago { fill: var(--fig-metal); stroke: var(--fig-ink); stroke-width: 1.5; }
     .fig-memoria-a-fili-cruna { fill: var(--fig-paper); stroke: var(--fig-ink); stroke-width: 1; }
     @keyframes fig-memoria-a-fili-pulsa { from { opacity: .08; } to { opacity: .3; } }
-    @keyframes fig-memoria-a-fili-corre { from { stroke-dashoffset: 28; } to { stroke-dashoffset: -520; } }
+    @keyframes fig-memoria-a-fili-corre { 0% { stroke-dashoffset: 8; } 75%, 100% { stroke-dashoffset: -100; } }
     @media (prefers-reduced-motion: reduce) {
       .fig-memoria-a-fili-alone, .fig-memoria-a-fili-impulso { animation: none; }
       .fig-memoria-a-fili-impulso { opacity: 0; }
