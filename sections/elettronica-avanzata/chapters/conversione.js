@@ -89,21 +89,59 @@
     return y;
   }
 
-  // SNR misurato: `count` campioni di una sinusoide di ampiezza amp quantizzati a N bit.
-  function snrMeasured(f, fs, bits, amp, count, phase) {
+  // Ricostruzione ideale di una sinusoide campionata x[n] = amp·sin(2π·r·n + ph), con r = f/fs
+  // e u in periodi di campionamento. I campioni coincidono con quelli dell'alias, quindi la somma
+  // infinita di sinc dà in forma chiusa la sinusoide a frequenza apparente. A fs/2 esatta
+  // i campioni valgono amp·sin(ph)·(−1)^n e la curva ricostruita è amp·sin(ph)·cos(πu).
+  function idealTone(r, ph, amp, u) {
+    const d = aliasSigned(r, 1);
+    if (Math.abs(Math.abs(d) - 0.5) < 1e-9) return amp * Math.sin(ph) * Math.cos(Math.PI * u);
+    return amp * Math.sin(TAU * d * u + ph);
+  }
+
+  // SNR misurato: potenza dei campioni diviso potenza del loro errore di quantizzazione.
+  // Si media su `phases` sfasamenti entro un passo di campionamento: con rapporti f/fs semplici
+  // (1/8, 1/4…) l'errore si ripete sempre uguale e dipenderebbe dall'istante di partenza.
+  function snrMeasured(f, fs, bits, amp, count, phase, phases) {
     const a = amp == null ? 1 : amp;
     const n = count || 4096;
-    const ph = phase == null ? 0.4 : phase;
+    const ph0 = phase == null ? 0.4 : phase;
+    const P = phases || 1;
+    const dph = (TAU * f) / fs;
     let ps = 0;
     let pe = 0;
-    for (let i = 0; i < n; i++) {
-      const x = a * Math.sin((TAU * f * i) / fs + ph);
-      const e = quantize(x, bits) - x;
-      ps += x * x;
-      pe += e * e;
+    for (let p = 0; p < P; p++) {
+      const ph = ph0 + (dph * p) / P;
+      for (let i = 0; i < n; i++) {
+        const x = a * Math.sin(dph * i + ph);
+        const e = quantize(x, bits) - x;
+        ps += x * x;
+        pe += e * e;
+      }
     }
     if (ps === 0) return -Infinity;
     return pe > 0 ? 10 * Math.log10(ps / pe) : Infinity;
+  }
+
+  // Righe dello spettro dopo il campionamento: f e tutte le sue immagini |k·fs ± f| fino a fMax.
+  // Quella che cade tra 0 e fs/2 è la frequenza apparente (l'alias, se f supera fs/2).
+  function images(f, fs, fMax) {
+    const out = [];
+    for (let k = 0; k * fs - f <= fMax; k++) {
+      for (const v of [Math.abs(k * fs - f), k * fs + f]) {
+        if (v <= fMax && !out.some((x) => Math.abs(x - v) < 1e-9 * fs)) out.push(v);
+      }
+    }
+    return out.sort((a, b) => a - b);
+  }
+
+  // Risposta in ampiezza della ricostruzione: i gradini (tenuta di ordine zero) pesano
+  // lo spettro con |sinc(f/fs)|, l'interpolazione lineare con sinc², il filtro ideale
+  // lascia passare tutto fino a fs/2 e niente sopra.
+  function reconResponse(f, fs, mode) {
+    if (mode === 'gradini') return Math.abs(sinc(f / fs));
+    if (mode === 'lineare') return sinc(f / fs) * sinc(f / fs);
+    return f < fs / 2 ? 1 : f > fs / 2 ? 0 : 0.5;
   }
 
   // Filtro anti-aliasing di Butterworth: guadagno a frequenza f, taglio fc, ordine n.
@@ -117,9 +155,24 @@
 
   const model = {
     sinc, nyquist, aliasSigned, alias, lsb, noiseRms, snrIdeal, bitRate,
-    code, level, quantize, binary, sar, reconstruct, snrMeasured,
-    butterworth, oversampling, flashComparators,
+    code, level, quantize, binary, sar, reconstruct, idealTone, snrMeasured,
+    images, reconResponse, butterworth, oversampling, flashComparators,
   };
+
+  /* ---------- aiuti di disegno comuni ---------- */
+
+  // Spezzata tratteggiata, senza alone: riferimenti, quote e limiti.
+  function dashed(ctx, pts, color, width, dash) {
+    ctx.save();
+    ctx.setLineDash(dash || [5, 4]);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = width || 1.4;
+    ctx.lineJoin = 'round';
+    ctx.beginPath();
+    pts.forEach((p, i) => (i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1])));
+    ctx.stroke();
+    ctx.restore();
+  }
 
   /* ---------- animazione principale: dal continuo ai numeri e ritorno ---------- */
 
@@ -149,7 +202,7 @@
     const ALIAS_D = aliasSigned(HERO_FA, 1 / HERO_TS);  // −0,1·fs: fase invertita
     let stage = 0;
     let stageT = 0;
-    let tau = 9.1;   // tempo del segnale: nella fase 3 scorre al rallentatore
+    let tau = 8.1;   // tempo del segnale (nella fase 3 scorre al rallentatore); a 8,1 s il campione vale 110
     let rate = 1;
 
     const freq = () => (STAGES[stage].key === 'alias' ? HERO_FA : HERO_F);
@@ -228,19 +281,7 @@
       if (right) EA.draw.text(ctx, right, b.x + b.w - 12, b.y + 18, { color: C.dim, size: 10.5, align: 'right' });
     }
 
-    function dashed(ctx, pts, color, width, dash) {
-      ctx.save();
-      ctx.setLineDash(dash || [5, 4]);
-      ctx.strokeStyle = color;
-      ctx.lineWidth = width || 1.4;
-      ctx.lineJoin = 'round';
-      ctx.beginPath();
-      pts.forEach((p, i) => (i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1])));
-      ctx.stroke();
-      ctx.restore();
-    }
-
-    function curve(g, xa, xb, fn, step) {
+    function curve(xa, xb, fn, step) {
       const pts = [];
       const st = step || 2;
       for (let x = xa; x < xb; x += st) pts.push([x, fn(x)]);
@@ -364,9 +405,10 @@
       EA.draw.text(ctx, 'ricostruibile', X(0.5) - 6, top + 13, { color: C.green, size: 10.5, align: 'right' });
       EA.draw.text(ctx, 'aliasing', X(0.83), top + 13, { color: C.red, size: 10.5, align: 'center' });
       const xf = X(1 / 8);
-      EA.draw.line(ctx, [[xf, ay], [xf, top + 18]], TINT, 2.4);
-      EA.draw.dot(ctx, xf, top + 18, 3, TINT);
-      EA.draw.text(ctx, 'f', xf + 8, top + 21, { color: TINT, size: 11, weight: 700 });
+      const yf = Math.min(ay - 8, top + 27);
+      EA.draw.line(ctx, [[xf, ay], [xf, yf]], TINT, 2.4);
+      EA.draw.dot(ctx, xf, yf, 3, TINT);
+      EA.draw.text(ctx, 'f', xf + 8, yf + 4, { color: TINT, size: 11, weight: 700 });
     }
 
     // Fase 2: l'errore di ogni campione resta nella fascia di ±½ LSB.
@@ -398,47 +440,68 @@
       }
     }
 
-    // Fase 3: il SAR prova le soglie dal bit più significativo.
-    function boxSar(ctx, g, b, nNew, age, playing) {
+    // Stato del SAR sul campione appena preso: bit già decisi e codici ancora possibili.
+    // Ogni confronto dura un quarto del periodo di campionamento; l'ultimo quarto serve al volo del codice.
+    function sarState(nNew, age, playing) {
       const raw = sig(nNew * HERO_TS);
       const res = sar(raw + 1, HERO_BITS, 2);
-      const stepDur = HERO_TS / (HERO_BITS + 1);
-      const decided = playing ? Math.min(HERO_BITS, Math.floor(age / stepDur)) : HERO_BITS;
-      panel(ctx, b, 'SAR · 3 BIT', C.amber, decided < HERO_BITS ? 'confronto ' + (decided + 1) + ' di ' + HERO_BITS : 'codice trovato');
-      const n = 1 << HERO_BITS;
-      const sx = b.x + 16;
-      const sw = g.narrow ? 22 : 28;
-      const sy0 = b.y + 28;
-      const sy1 = b.y + b.h - 10;
-      const ch = (sy1 - sy0) / n;
+      const decided = playing ? Math.min(HERO_BITS, Math.floor(age / (HERO_TS / (HERO_BITS + 1)))) : HERO_BITS;
       let lo = 0;
       for (let k = 0; k < decided; k++) if (res.steps[k].keep) lo = res.steps[k].trial;
-      const width = 1 << (HERO_BITS - decided);
+      return { raw, res, decided, lo, width: 1 << (HERO_BITS - decided), done: decided >= HERO_BITS };
+    }
+
+    // Fase 3: il SAR cerca il codice per dimezzamenti. In alto gli otto codici in fila
+    // (la parte ancora possibile si dimezza a ogni confronto), sotto i bit già decisi.
+    function boxSar(ctx, g, b, s) {
+      const n = 1 << HERO_BITS;
+      panel(ctx, b, 'SAR · 3 BIT', C.amber, s.done ? 'codice trovato' : 'confronto ' + (s.decided + 1) + ' di ' + HERO_BITS);
+      const lx0 = b.x + 12;
+      const lx1 = b.x + b.w - 12;
+      const ly = b.y + 27;
+      const lh = g.narrow ? 16 : 18;
+      const cw = (lx1 - lx0) / n;
       for (let c = 0; c < n; c++) {
-        const y = sy1 - (c + 1) * ch;
-        if (c >= lo && c < lo + width) {
-          ctx.fillStyle = EA.alpha(C.amber, 0.2);
-          ctx.fillRect(sx, y, sw, ch);
+        const x = lx0 + c * cw;
+        const live = c >= s.lo && c < s.lo + s.width;
+        ctx.fillStyle = live ? EA.alpha(C.amber, 0.22) : '#121c19';
+        ctx.fillRect(x + 1, ly, cw - 2, lh);
+        EA.draw.text(ctx, binary(c, HERO_BITS), x + cw / 2, ly + lh / 2 + 4, { color: live ? C.ink : C.dim, size: 10.5, align: 'center' });
+      }
+      // ingresso (lavanda) e soglia in prova (ambra)
+      const xIn = lx0 + ((s.raw + 1) / 2) * (lx1 - lx0);
+      EA.draw.line(ctx, [[xIn, ly - 3], [xIn, ly + lh + 3]], TINT, 2, false);
+      if (!s.done) {
+        const xt = lx0 + s.res.steps[s.decided].trial * cw;
+        EA.draw.line(ctx, [[xt, ly - 5], [xt, ly + lh + 5]], C.amber, 2.4, false);
+      }
+      // bit decisi, dal più significativo; quello in prova è un punto interrogativo
+      const ty = ly + lh + (g.narrow ? 8 : 10);
+      const tw = 16;
+      const th = 18;
+      for (let k = 0; k < HERO_BITS; k++) {
+        const x = lx0 + k * (tw + 3);
+        if (k < s.decided) {
+          const on = s.res.steps[k].keep;
+          ctx.fillStyle = on ? TINT : '#1a2722';
+          ctx.fillRect(x, ty, tw, th);
+          EA.draw.text(ctx, on ? '1' : '0', x + tw / 2, ty + th / 2 + 4, { color: on ? '#160c2c' : C.text, size: 11, weight: 700, align: 'center' });
+        } else {
+          const cur = k === s.decided;
+          ctx.strokeStyle = cur ? C.amber : C.grid;
+          ctx.lineWidth = cur ? 1.6 : 1;
+          ctx.strokeRect(x + 0.5, ty + 0.5, tw - 1, th - 1);
+          EA.draw.text(ctx, cur ? '?' : '·', x + tw / 2, ty + th / 2 + 4, { color: cur ? C.amber : C.dim, size: 11, weight: 700, align: 'center' });
         }
-        ctx.strokeStyle = C.grid;
-        ctx.strokeRect(sx + 0.5, Math.round(y) + 0.5, sw - 1, Math.round(ch));
       }
-      const yIn = sy1 - ((raw + 1) / 2) * (sy1 - sy0);
-      EA.draw.line(ctx, [[sx - 3, yIn], [sx + sw + 3, yIn]], TINT, 2);
-      if (decided < HERO_BITS) {
-        const yt = sy1 - res.steps[decided].trial * ch;
-        EA.draw.line(ctx, [[sx - 5, yt], [sx + sw + 5, yt]], C.amber, 2);
-      }
-      const tx = sx + sw + (g.narrow ? 12 : 16);
-      const r0 = b.y + (g.narrow ? 34 : 38);
-      const rh = g.narrow ? 15 : 18;
-      res.steps.forEach((s, k) => {
-        if (k > decided) return;
-        const trial = 'prova ' + binary(s.trial, HERO_BITS);
-        if (k === decided) EA.draw.text(ctx, trial + ' → confronto…', tx, r0 + k * rh, { color: C.amber, size: 10.5 });
-        else EA.draw.text(ctx, trial + (s.keep ? ' → sopra: bit 1' : ' → sotto: bit 0'), tx, r0 + k * rh, { color: s.keep ? TINT : C.text, size: 10.5 });
-      });
-      if (decided >= HERO_BITS) EA.draw.text(ctx, 'codice ' + binary(res.code, HERO_BITS), tx, r0 + HERO_BITS * rh, { color: C.ink, size: 11, weight: 700 });
+      const tx = lx0 + HERO_BITS * (tw + 3) + 8;
+      const l1 = ty + 8;
+      const l2 = ty + (g.narrow ? 22 : 25);
+      if (s.done) EA.draw.text(ctx, 'codice ' + binary(s.res.code, HERO_BITS) + ' in ' + HERO_BITS + ' confronti', tx, l1, { color: C.ink, size: 11, weight: 700 });
+      else EA.draw.text(ctx, 'confronto con la soglia ' + binary(s.res.steps[s.decided].trial, HERO_BITS) + '…', tx, l1, { color: C.amber, size: 10.5 });
+      const last = s.decided > 0 ? s.res.steps[s.decided - 1] : null;
+      const why = last ? 'bit ' + s.decided + ': ingresso ' + (last.keep ? 'sopra, quindi 1' : 'sotto, quindi 0') : 'si parte da metà scala';
+      EA.draw.text(ctx, why, tx, l2, { color: C.text, size: 10.5 });
     }
 
     // Fase 4: legenda delle tre tracce.
@@ -548,6 +611,7 @@
       const xa = g.xg + span * (g.narrow ? 0.28 : 0.3);
       const xb = g.xg + span * (g.narrow ? 0.6 : 0.62);
       const ref = (x) => yOf(g, sig(teOf(g, x)));
+      const sarNow = key === 'codifica' ? sarState(nNew, ageNew, playing) : null;
 
       EA.draw.clear(cv);
       EA.draw.text(ctx, S.title, g.x0, g.narrow ? 19 : 28, { color: C.ink, size: g.narrow ? 11 : 12, weight: 700 });
@@ -579,8 +643,8 @@
       if (key === 'quantizza') {
         ctx.save();
         ctx.globalAlpha = enter;
-        const up = curve(g, g.xg, g.x1, (x) => ref(x) - lsbPx / 2, 3);
-        const dn = curve(g, g.xg, g.x1, (x) => ref(x) + lsbPx / 2, 3).reverse();
+        const up = curve(g.xg, g.x1, (x) => ref(x) - lsbPx / 2, 3);
+        const dn = curve(g.xg, g.x1, (x) => ref(x) + lsbPx / 2, 3).reverse();
         ctx.fillStyle = EA.alpha(C.pink, 0.11);
         ctx.beginPath();
         up.concat(dn).forEach((p, i) => (i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1])));
@@ -592,7 +656,7 @@
       // il segnale analogico: pieno prima del campionatore, tenue dopo come riferimento
       const fine = key === 'alias' ? 1 : 2;
       EA.draw.fn(ctx, g.x0, g.xg, ref, TINT, 2.2, fine);
-      if (recon) dashed(ctx, curve(g, g.xg, g.x1, ref, 3), EA.alpha(C.text, 0.5), 1.3, [4, 5]);
+      if (recon) dashed(ctx, curve(g.xg, g.x1, ref, 3), EA.alpha(C.text, 0.5), 1.3, [4, 5]);
       else EA.draw.fn(ctx, g.xg, g.x1, ref, EA.alpha(TINT, key === 'alias' ? 0.55 : 0.38), 1.4, fine, false);
 
       // fase 4: scala del DAC, poi curva dopo il filtro passa-basso
@@ -606,20 +670,24 @@
         if (enter2 > 0) {
           ctx.save();
           ctx.globalAlpha = enter2;
-          const smooth = (x) => yOf(g, reconstruct(qval, teOf(g, x) / HERO_TS, 'sinc', 12));
-          EA.draw.line(ctx, curve(g, xb, g.x1, smooth, 2), TINT, 2.4);
+          const errN = (n) => qval(n) - sig(n * HERO_TS);
+          const smooth = (x) => {
+            const u = teOf(g, x) / HERO_TS;
+            return yOf(g, idealTone(HERO_F * HERO_TS, HERO_PH, 1, u) + reconstruct(errN, u, 'sinc', 16));
+          };
+          EA.draw.line(ctx, curve(xb, g.x1, smooth, 2), TINT, 2.4);
           ctx.restore();
         }
       }
 
       // fase 5: l'onda falsa che passa per gli stessi campioni
       if (key === 'alias') {
-        const k = playing ? EA.smooth((stageT - 1.6) / 1.4) : 1;
+        const k = playing ? EA.smooth((stageT - 0.8) / 1.0) : 1;
         if (k > 0) {
           ctx.save();
           ctx.globalAlpha = k;
           ctx.setLineDash([9, 6]);
-          EA.draw.line(ctx, curve(g, g.xg, g.x1, (x) => yOf(g, Math.sin(TAU * ALIAS_D * teOf(g, x) + HERO_PH)), 2), C.amber, 2.4);
+          EA.draw.line(ctx, curve(g.xg, g.x1, (x) => yOf(g, Math.sin(TAU * ALIAS_D * teOf(g, x) + HERO_PH)), 2), C.amber, 2.4);
           ctx.restore();
         }
       }
@@ -652,21 +720,25 @@
         EA.draw.dot(ctx, x, y, recon && x >= xa ? 2.6 : 3.4, C.ink);
       }
 
-      // fase 3: il campione in conversione e la soglia che il SAR sta provando
-      if (key === 'codifica') {
+      // fase 3: sul campione in conversione, la fascia dei livelli ancora possibili e la soglia in prova
+      if (sarNow) {
         const x = xOfN(g, nNew);
-        const raw = sig(nNew * HERO_TS);
-        const res = sar(raw + 1, HERO_BITS, 2);
-        const decided = playing ? Math.min(HERO_BITS, Math.floor(ageNew / (HERO_TS / (HERO_BITS + 1)))) : HERO_BITS;
-        if (decided < HERO_BITS) {
-          const yt = yOf(g, (res.steps[decided].trial * 2) / (1 << HERO_BITS) - 1);
-          EA.draw.line(ctx, [[x - 30, yt], [x + 30, yt]], C.amber, 2);
-          if (!g.narrow) EA.draw.text(ctx, 'soglia', x + 36, yt + 4, { color: C.amber, size: 10.5 });
+        // su mobile la fascia sta tutta a destra, per non finire sotto i codici dei livelli
+        const xl = g.narrow ? x - 4 : x - 30;
+        const xr = g.narrow ? x + 40 : x + 30;
+        if (!sarNow.done) {
+          const v0 = -1 + (2 * sarNow.lo) / (1 << HERO_BITS);
+          const v1 = -1 + (2 * (sarNow.lo + sarNow.width)) / (1 << HERO_BITS);
+          ctx.fillStyle = EA.alpha(C.amber, 0.13);
+          ctx.fillRect(xl, yOf(g, v1), xr - xl, yOf(g, v0) - yOf(g, v1));
+          const yt = yOf(g, (sarNow.res.steps[sarNow.decided].trial * 2) / (1 << HERO_BITS) - 1);
+          EA.draw.line(ctx, [[xl, yt], [xr, yt]], C.amber, 2);
+          if (!g.narrow) EA.draw.text(ctx, 'soglia', xr + 6, yt + 4, { color: C.amber, size: 10.5 });
         }
         ctx.strokeStyle = C.amber;
         ctx.lineWidth = 1.6;
         ctx.beginPath();
-        ctx.arc(x, decided < HERO_BITS ? yOf(g, raw) : yOf(g, qval(nNew)), 8, 0, TAU);
+        ctx.arc(x, sarNow.done ? yOf(g, qval(nNew)) : yOf(g, sarNow.raw), 8, 0, TAU);
         ctx.stroke();
       }
 
@@ -725,7 +797,7 @@
       const b = { x: g.boxX, y: g.boxY, w: g.boxW, h: g.boxH };
       if (key === 'campiona') boxFreq(ctx, g, b);
       else if (key === 'quantizza') boxError(ctx, g, b, nNew, ageNew);
-      else if (key === 'codifica') boxSar(ctx, g, b, nNew, ageNew, playing);
+      else if (key === 'codifica') boxSar(ctx, g, b, sarNow);
       else if (recon) boxLegend(ctx, g, b);
       else boxWheels(ctx, g, b, t, playing);
 
@@ -742,6 +814,8 @@
         stage = EA.clamp(i, 0, STAGES.length - 1);
         stageT = 0;
         rate = STAGES[stage].rate;
+        // mentre scorre, il SAR riparte da un campione appena preso, dal primo confronto
+        if (api.playing && STAGES[stage].key === 'codifica') tau = (Math.floor(tau / HERO_TS + 1e-9) + 1) * HERO_TS + 1e-6;
         api.setStep(stage);
         api.invalidate();
       },
@@ -761,14 +835,35 @@
     return (m < 1.5 ? 1 : m < 3.5 ? 2 : m < 7.5 ? 5 : 10) * p;
   }
 
+  // Il più piccolo valore "tondo" (1; 2; 2,5; 5 × 10^k) non inferiore a x: fondo scala dei grafici.
+  function niceUp(x) {
+    const p = Math.pow(10, Math.floor(Math.log10(x)));
+    const m = x / p;
+    return (m <= 1.0001 ? 1 : m <= 2.0001 ? 2 : m <= 2.5001 ? 2.5 : m <= 5.0001 ? 5 : 10) * p;
+  }
+
+  const MONO = '700 10.5px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace';
+
+  function textWidth(ctx, str) {
+    ctx.save();
+    ctx.font = MONO;
+    const w = ctx.measureText(str).width;
+    ctx.restore();
+    return w;
+  }
+
   function mountLab(parts, api) {
     const C = EA.colors;
     const h = EA.h;
     const VFS = 2;   // fondo scala: da −1 V a +1 V
-    const st = { f: 1000, fs: 8000, bits: 3, mode: 'sinc', alias: true, aa: false };
+    // 1,2 kHz e non 1 kHz: con un rapporto f/fs semplice (1/8) l'errore si ripeterebbe identico
+    // a ogni periodo e non somiglierebbe al rumore descritto dalla formula
+    const st = { f: 1200, fs: 8000, bits: 3, mode: 'sinc', alias: true, aa: false };
     let phase = 0.4;
+    let eScale = 0.5;   // fondo scala del grafico dell'errore, in volt: cambia con isteresi
+    if (parts.root) parts.root.classList.add('conversione-lab');
 
-    const cv = api.canvas(parts.display, { class: 'ea-canvas conversione-lab-canvas', label: 'In alto il segnale analogico con i campioni, i livelli di quantizzazione e il segnale ricostruito; al centro l\'errore di ricostruzione; in basso l\'asse delle frequenze con il limite di Nyquist e il ripiegamento che mostra dove cade l\'alias.' });
+    const cv = api.canvas(parts.display, { class: 'ea-canvas conversione-lab-canvas', label: 'In alto il segnale analogico con i campioni, i livelli di quantizzazione e il segnale ricostruito; al centro l\'errore di ricostruzione; in basso l\'asse delle frequenze con il limite di Nyquist, le immagini create dal campionamento, la risposta della ricostruzione e il ripiegamento che mostra dove cade l\'alias.' });
 
     const fSl = EA.ui.slider({
       label: 'Frequenza del segnale', min: 50, max: 20000, log: true, value: st.f, color: TINT,
@@ -806,7 +901,7 @@
       aliasT.set(st.alias, true);
       update();
     }
-    const phone = EA.ui.button({ label: 'Telefono: 8 kHz, 8 bit', onclick: () => preset({ f: 1000, fs: 8000, bits: 8, aa: false }) });
+    const phone = EA.ui.button({ label: 'Telefono: 8 kHz, 8 bit', onclick: () => preset({ f: 3000, fs: 8000, bits: 8, aa: false }) });
     const demo = EA.ui.button({ label: 'Aliasing: 7 kHz a 10 kHz', onclick: () => preset({ f: 7000, fs: 10000, bits: 6, aa: false, alias: true }) });
     parts.controls.append(fSl.el, fsSl.el, bitsSl.el, modeSeg.el, aliasT.el, aaT.el,
       h('div', { class: 'ea-ctl' },
@@ -835,7 +930,8 @@
     function update() {
       const d = derived();
       const snrT = snrIdeal(st.bits);
-      const snrM = snrMeasured(st.f, st.fs, st.bits, d.gain, 4096, 0.4);
+      // misurato sui campioni della simulazione, mediando sulla fase che nel disegno scorre
+      const snrM = snrMeasured(st.f, st.fs, st.bits, d.gain, 1024, 0.4, 16);
       roNyq.set(EA.si(st.fs / 2, 'Hz'));
       if (!d.over) roAli.set(EA.si(d.fa, 'Hz'), 'good');
       else if (st.aa) roAli.set(EA.si(d.fa, 'Hz') + ' · ' + EA.fmt(EA.db(d.gain), 0) + ' dB', d.gain < 0.01 ? 'good' : 'warn');
@@ -860,7 +956,7 @@
         EA.draw.text(ctx, label, x, y, { color: C.text, size: 10.5 });
         x -= 20;
         if (kind === 'dot') EA.draw.dot(ctx, x + 7, y - 4, 2.6, color, false);
-        else if (kind === 'dash') { ctx.save(); ctx.setLineDash([4, 3]); EA.draw.line(ctx, [[x, y - 4], [x + 14, y - 4]], color, 2, false); ctx.restore(); }
+        else if (kind === 'dash') dashed(ctx, [[x, y - 4], [x + 14, y - 4]], color, 2, [4, 3]);
         else EA.draw.line(ctx, [[x, y - 4], [x + 14, y - 4]], color, 2, false);
         x -= 14;
       }
@@ -905,8 +1001,20 @@
       const nMax = Math.floor(win / ts + 1e-9);
       const M = 32;
       const qs = new Float64Array(nMax + 2 * M + 2);
-      for (let i = 0; i < qs.length; i++) qs[i] = quantize(sigS((i - M) * ts), st.bits);
+      const es = new Float64Array(qs.length);
+      for (let i = 0; i < qs.length; i++) {
+        const v = sigS((i - M) * ts);
+        qs[i] = quantize(v, st.bits);
+        es[i] = qs[i] - v;
+      }
       const qv = (n) => qs[EA.clamp(n + M, 0, qs.length - 1)];
+      const ev = (n) => es[EA.clamp(n + M, 0, es.length - 1)];
+      // gradini e lineare partono dai campioni; la ricostruzione ideale è la sinusoide
+      // ricostruita in forma chiusa più la somma di sinc dell'errore di quantizzazione
+      const ratio = st.f / st.fs;
+      const rebuild = (u) => (st.mode === 'sinc'
+        ? idealTone(ratio, phase, gain, u) + reconstruct(ev, u, 'sinc', M)
+        : reconstruct(qv, u, st.mode));
       const showAlias = st.alias && d.over;
 
       EA.draw.clear(cv);
@@ -941,14 +1049,8 @@
         ctx.stroke();
         ctx.restore();
       }
-      ctx.save();
-      ctx.setLineDash([3, 5]);
-      ctx.strokeStyle = EA.alpha(C.text, 0.35);
-      ctx.beginPath();
-      ctx.moveTo(px, yMid - amp); ctx.lineTo(px + pw, yMid - amp);
-      ctx.moveTo(px, yMid + amp); ctx.lineTo(px + pw, yMid + amp);
-      ctx.stroke();
-      ctx.restore();
+      dashed(ctx, [[px, yMid - amp], [px + pw, yMid - amp]], EA.alpha(C.text, 0.35), 1, [3, 5]);
+      dashed(ctx, [[px, yMid + amp], [px + pw, yMid + amp]], EA.alpha(C.text, 0.35), 1, [3, 5]);
 
       // segnale analogico (se troppo fitto per lo schermo, la fascia tra i picchi)
       const periodPx = pw / (win * st.f);
@@ -980,7 +1082,7 @@
       let se = 0;
       for (let x = px; x <= px + pw + 0.01; x += rStep) {
         const time = T(x);
-        const y = reconstruct(qv, time / ts, st.mode, M);
+        const y = rebuild(time / ts);
         const e = y - sigS(time);
         rec.push([x, yMid - amp * y]);
         err.push(e);
@@ -1025,29 +1127,53 @@
       const tick = niceStep(win / (narrow ? 3 : 5));
       for (let k = 1; k * tick < win * 0.97; k++) EA.draw.text(ctx, EA.si(k * tick, 's', 2), X(k * tick), tTop + tH - 6, { color: C.dim, size: 10.5, align: 'center' });
 
-      // errore di ricostruzione
+      // errore di ricostruzione, con fondo scala automatico: l'isteresi evita i salti a ogni fotogramma
+      const halfLsb = lsb(VFS, st.bits) / 2;
+      let eMax = 0;
+      for (let i = 0; i < err.length; i++) {
+        eMax = Math.max(eMax, periodPx < 5 ? Math.abs((yMid - rec[i][1]) / amp) + gain : Math.abs(err[i]));
+      }
+      const need = Math.max(eMax, halfLsb) * 1.1;
+      if (need > eScale || niceUp(need * 1.8) < eScale) eScale = niceUp(need);
       const eMid = eTop + eH / 2;
-      const eScale = (eH / 2 - 3) / 0.5;   // ±0,5 V a tutta altezza
+      const eK = (eH / 2 - 3) / eScale;
       const eRms = Math.sqrt(se / err.length);
-      EA.draw.text(ctx, 'ERRORE · ricostruito − analogico · efficace ' + EA.si(eRms, 'V', 2), px, eTop - 9, { color: C.pink, size: 10.5, weight: 700 });
-      if (!narrow) EA.draw.text(ctx, 'scala ±0,5 V · fascia: ±½ LSB', px + pw, eTop - 9, { color: C.dim, size: 10.5, align: 'right' });
+      const scaleTxt = 'scala ±' + EA.si(eScale, 'V');
+      let eLeft = 'ERRORE · ricostruito − analogico · efficace ' + EA.si(eRms, 'V', 2) + ' · LSB/√12 = ' + EA.si(noiseRms(2 * halfLsb), 'V', 2);
+      let eRight = scaleTxt + ' · fascia: ±½ LSB';
+      if (textWidth(ctx, eLeft) + textWidth(ctx, eRight) + 24 > pw) eLeft = 'ERRORE · ricostruito − analogico · efficace ' + EA.si(eRms, 'V', 2);
+      if (textWidth(ctx, eLeft) + textWidth(ctx, eRight) + 24 > pw) { eLeft = 'ERRORE · efficace ' + EA.si(eRms, 'V', 2) + ' · ' + scaleTxt; eRight = ''; }
+      EA.draw.text(ctx, eLeft, px, eTop - 9, { color: C.pink, size: 10.5, weight: 700 });
+      if (eRight) EA.draw.text(ctx, eRight, px + pw, eTop - 9, { color: C.dim, size: 10.5, align: 'right' });
       ctx.fillStyle = EA.alpha('#060b0a', 0.55);
       ctx.fillRect(px, eTop, pw, eH);
       EA.draw.grid(ctx, px, eTop, pw, eH, { cols: narrow ? 6 : 10, rows: 2, ticks: false });
-      const hb = (lsb(VFS, st.bits) / 2) * eScale;
-      if (hb >= 1) {
+      const hb = halfLsb * eK;
+      if (hb >= 0.75) {
         ctx.fillStyle = EA.alpha(C.pink, 0.12);
         ctx.fillRect(px, eMid - hb, pw, 2 * hb);
       }
-      EA.draw.line(ctx, err.map((e, i) => [px + i * rStep, eMid - EA.clamp(e, -0.5, 0.5) * eScale]), C.pink, 1.6);
+      if (periodPx < 5) {
+        // segnale troppo fitto per disegnarlo: l'errore oscilla tra ricostruito − picco e ricostruito + picco
+        const lo = rec.map((p) => [p[0], eMid - EA.clamp((yMid - p[1]) / amp - gain, -eScale, eScale) * eK]);
+        const hi = rec.map((p) => [p[0], eMid - EA.clamp((yMid - p[1]) / amp + gain, -eScale, eScale) * eK]);
+        ctx.fillStyle = EA.alpha(C.pink, 0.35);
+        ctx.beginPath();
+        lo.concat(hi.reverse()).forEach((p, i) => (i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1])));
+        ctx.closePath();
+        ctx.fill();
+      } else {
+        EA.draw.line(ctx, err.map((e, i) => [px + i * rStep, eMid - EA.clamp(e, -eScale, eScale) * eK]), C.pink, 1.6);
+      }
 
-      // spettro: zone di Nyquist, filtro, righe e ripiegamento
+      // spettro: zone di Nyquist, filtri, righe con le immagini e ripiegamento
       const fsH = st.fs / 2;
       const fMax = Math.min(Math.max(1.25 * st.fs, 1.12 * st.f), 4.25 * st.fs);
       const FX = (f) => px + (f / fMax) * pw;
+      const XF = (x) => ((x - px) / pw) * fMax;
       const fH = axisY - fTop;
-      EA.draw.text(ctx, d.over ? 'SPETTRO · f supera fs/2 e si ripiega' : 'SPETTRO · f sotto fs/2: nessun alias', px, fTop - 10, { color: d.over ? C.amber : C.green, size: 10.5, weight: 700 });
-      if (st.aa && !narrow) EA.draw.text(ctx, 'filtro di Butterworth, 8° ordine, taglio a 0,45 · fs', px + pw, fTop - 10, { color: C.dim, size: 10.5, align: 'right' });
+      const sTitle = d.over ? 'SPETTRO · f supera fs/2 e si ripiega' : 'SPETTRO · f sotto fs/2: nessun alias';
+      EA.draw.text(ctx, sTitle, px, fTop - 10, { color: d.over ? C.amber : C.green, size: 10.5, weight: 700 });
       for (let k = 0; k * fsH < fMax; k++) {
         const a = FX(k * fsH);
         const b = FX(Math.min(fMax, (k + 1) * fsH));
@@ -1055,9 +1181,10 @@
         ctx.fillRect(a, fTop, b - a, fH);
       }
       const barH = fH * 0.5;
+      const top = fH * 0.86;
+      const curve = (fn) => { const pts = []; for (let x = px; x <= px + pw; x += 2) pts.push([x, axisY - top * fn(XF(x))]); return pts; };
       if (st.aa) {
-        const pts = [];
-        for (let x = px; x <= px + pw; x += 2) pts.push([x, axisY - fH * 0.86 * butterworth(T2F(x), AA_CUT * st.fs, AA_ORDER)]);
+        const pts = curve((f) => butterworth(f, AA_CUT * st.fs, AA_ORDER));
         ctx.fillStyle = EA.alpha(C.green, 0.08);
         ctx.beginPath();
         ctx.moveTo(px, axisY);
@@ -1067,7 +1194,15 @@
         ctx.fill();
         EA.draw.line(ctx, pts, C.green, 1.6, false);
       }
-      function T2F(x) { return ((x - px) / pw) * fMax; }
+      // risposta della ricostruzione scelta: dice quanto delle immagini arriva all'uscita
+      EA.draw.line(ctx, curve((f) => reconResponse(f, st.fs, st.mode)), EA.alpha(C.cyan, 0.85), 1.4, false);
+      const lblY = axisY - top - 6;
+      EA.draw.text(ctx, 'ricostruzione', px + 6, lblY, { color: C.cyan, size: 10.5 });
+      if (st.aa) {
+        const xr = FX(AA_CUT * st.fs) - 6;
+        const clash = xr - textWidth(ctx, 'anti-aliasing') < px + 18 + textWidth(ctx, 'ricostruzione');
+        EA.draw.text(ctx, 'anti-aliasing', xr, lblY + (clash ? 13 : 0), { color: C.green, size: 10.5, align: 'right' });
+      }
 
       // asse con le tacche a multipli di fs/2
       ctx.strokeStyle = EA.alpha(C.text, 0.6);
@@ -1087,10 +1222,26 @@
         if (s) EA.draw.text(ctx, s, FX(k * fsH), axisY + 17, { color: k === 1 ? C.ink : C.text, size: 10.5, weight: k === 1 ? 700 : 600, align: k === 0 ? 'left' : 'center' });
       }
 
-      // righe: il segnale e, se c'è, il suo alias
+      // righe: le immagini create dal campionamento, il segnale e, se c'è, il suo alias
       const hS = Math.max(3, barH * gain);
       const inside = st.f <= fMax;
       const xF = inside ? FX(st.f) : px + pw - 4;
+      const xA = FX(d.fa);
+      let imgLabel = false;
+      images(st.f, st.fs, fMax).forEach((v) => {
+        if (Math.abs(v - st.f) < 1e-6 * st.fs || Math.abs(v - d.fa) < 1e-6 * st.fs) return;
+        const x = FX(v);
+        dashed(ctx, [[x, axisY], [x, axisY - hS]], EA.alpha(TINT, 0.7), 1.4, [3, 3]);
+        ctx.strokeStyle = EA.alpha(TINT, 0.8);
+        ctx.lineWidth = 1.2;
+        ctx.beginPath(); ctx.arc(x, axisY - hS, 2.6, 0, TAU); ctx.stroke();
+        const pass = hS * reconResponse(v, st.fs, st.mode);
+        if (pass >= 1) EA.draw.line(ctx, [[x, axisY], [x, axisY - pass]], C.cyan, 3, false);
+        if (!imgLabel && !narrow && Math.abs(x - xF) > 70 && Math.abs(x - xA) > 70 && x < px + pw - 70) {
+          EA.draw.text(ctx, 'immagine', x + 6, axisY - hS + 4, { color: EA.alpha(TINT, 0.9), size: 10.5 });
+          imgLabel = true;
+        }
+      });
       if (inside) {
         EA.draw.line(ctx, [[xF, axisY], [xF, axisY - hS]], TINT, 3);
         EA.draw.dot(ctx, xF, axisY - hS, 3, TINT);
@@ -1100,7 +1251,6 @@
         EA.draw.text(ctx, 'f = ' + EA.si(st.f, 'Hz'), px + pw - 4, axisY - barH * 0.5 - 9, { color: TINT, size: 10.5, weight: 700, align: 'right' });
       }
       if (d.over) {
-        const xA = FX(d.fa);
         EA.draw.line(ctx, [[xA, axisY], [xA, axisY - hS]], C.amber, 3);
         EA.draw.dot(ctx, xA, axisY - hS, 3, C.amber);
         EA.draw.text(ctx, 'alias', xA + 7, axisY - hS + 4, { color: C.amber, size: 11, weight: 700 });
@@ -1120,25 +1270,28 @@
         }
         const yb = axisY - hS - 8;
         const room = Math.max(10, yb - fTop - 6);
+        const arcH = (a, b, i) => Math.min(room, 12 + Math.abs(a - b) * 0.22) * (1 - i * 0.08);
         ctx.save();
         ctx.setLineDash([4, 4]);
         ctx.strokeStyle = C.amber;
         ctx.lineWidth = 1.6;
         hops.forEach(([a, b], i) => {
-          const hArc = Math.min(room, 12 + Math.abs(a - b) * 0.22) * (1 - i * 0.08);
           ctx.beginPath();
           ctx.moveTo(a, yb);
-          ctx.quadraticCurveTo((a + b) / 2, yb - hArc * 2, b, yb);
+          ctx.quadraticCurveTo((a + b) / 2, yb - arcH(a, b, i) * 2, b, yb);
           ctx.stroke();
         });
         ctx.restore();
-        const last = hops[hops.length - 1];
-        const lastH = Math.min(room, 12 + Math.abs(last[0] - last[1]) * 0.22) * (1 - (hops.length - 1) * 0.08);
-        EA.draw.arrow(ctx, (last[0] + last[1]) / 2 + (last[1] - last[0]) * 0.18, yb - lastH * 0.75, last[1], yb, C.amber, 1.6, 7);
-        if (!narrow && hops.length && Math.abs(hops[0][0] - hops[0][1]) > 120) {
-          const first = hops[0];
-          const h0 = Math.min(room, 12 + Math.abs(first[0] - first[1]) * 0.22);
-          EA.draw.text(ctx, hops.length > 1 ? 'ripiegamento: ' + hops.length + ' specchi' : 'ripiegamento', (first[0] + first[1]) / 2, yb - h0 - 6, { color: C.amber, size: 10.5, align: 'center' });
+        // punta di freccia tangente all'arco nel punto d'arrivo
+        const [la, lb] = hops[hops.length - 1];
+        const lh = arcH(la, lb, hops.length - 1);
+        const cx = (la + lb) / 2;
+        const cy = yb - lh * 2;
+        const ang = Math.atan2(yb - cy, lb - cx);
+        EA.draw.arrow(ctx, lb - Math.cos(ang) * 9, yb - Math.sin(ang) * 9, lb, yb, C.amber, 1.6, 7);
+        if (!narrow && Math.abs(hops[0][0] - hops[0][1]) > 120) {
+          const [fa0, fb0] = hops[0];
+          EA.draw.text(ctx, hops.length > 1 ? 'ripiegamento: ' + hops.length + ' specchi' : 'ripiegamento', (fa0 + fb0) / 2, yb - arcH(fa0, fb0, 0) - 6, { color: C.amber, size: 10.5, align: 'center' });
         }
       }
     }
@@ -1153,34 +1306,35 @@
     id: 'conversione',
     intro: [
       'Il mondo reale è continuo: la pressione dell\'aria che porta una voce, la temperatura di una stanza, il campo di un\'onda radio cambiano senza salti, istante per istante. Un computer invece conosce solo numeri, e ne può conservare una quantità finita. Per far entrare un segnale in un circuito digitale servono due operazioni: <strong>campionare</strong>, cioè misurarlo a intervalli regolari, e <strong>quantizzare</strong>, cioè arrotondare ogni misura a uno dei livelli disponibili, che poi viene scritto come numero binario.',
-      'La sorpresa è che campionare non significa per forza perdere qualcosa. Se il segnale non contiene frequenze sopra un certo limite e lo si misura <strong>più del doppio di volte al secondo</strong>, dai soli campioni si ricostruisce la curva originale, anche tra un punto e l\'altro. È il <em>teorema del campionamento</em>: Harry Nyquist ne pose le basi nel 1928, Vladimir Kotel\'nikov (1933) e Claude Shannon (1949) lo enunciarono. Se invece si campiona troppo lentamente, le frequenze alte si travestono da frequenze più basse: è l\'<em>aliasing</em>, e dopo non c\'è più modo di toglierlo.',
-      'Ogni bit in più dimezza l\'errore di arrotondamento e regala circa 6 dB di rapporto segnale/rumore. Il telefono digitale usa 8000 campioni al secondo da 8 bit, il CD 44.100 da 16 bit, gli oscilloscopi e i ricevitori radio più moderni miliardi di campioni al secondo. Per farlo esistono convertitori diversi: gli <abbr title="Analog-to-Digital Converter, convertitore analogico-digitale">ADC</abbr> ad approssimazioni successive trovano il numero per dimezzamenti, i <em>flash</em> usano un comparatore per ogni livello e sono velocissimi, i <em>sigma-delta</em> campionano molto più in fretta del necessario con pochi bit e poi filtrano. Sulla via del ritorno un <abbr title="Digital-to-Analog Converter, convertitore digitale-analogico">DAC</abbr> e un filtro ridanno la curva. Lo spettro è quello del capitolo 1; il clock che dà il ritmo ai campioni è la storia del capitolo 6.',
+      'La sorpresa è che campionare non significa per forza perdere qualcosa. Se il segnale non contiene frequenze sopra un certo limite e lo si misura con una frequenza di campionamento <strong>più che doppia rispetto a quel limite</strong>, dai soli campioni si ricostruisce la curva originale, anche tra un punto e l\'altro. È il <em>teorema del campionamento</em>: Harry Nyquist ne pose le basi nel 1928, Vladimir Kotel\'nikov (1933) e Claude Shannon (1949) lo enunciarono e lo dimostrarono. Se invece si campiona troppo lentamente, le frequenze alte si travestono da frequenze più basse: è l\'<em>aliasing</em>, e dopo non c\'è più modo di toglierlo.',
+      'Ogni bit in più dimezza l\'errore di arrotondamento e regala circa 6 dB di rapporto segnale/rumore. Il telefono digitale usa 8000 campioni al secondo da 8 bit, il CD 44.100 da 16 bit, gli oscilloscopi e i ricevitori radio più moderni miliardi di campioni al secondo.',
+      'Per farlo esistono convertitori diversi. Gli <abbr title="Analog-to-Digital Converter, convertitore analogico-digitale">ADC</abbr> ad approssimazioni successive (SAR) trovano il numero per dimezzamenti; i <em>flash</em> hanno un comparatore per ogni soglia tra due livelli e sono velocissimi; i <em>sigma-delta</em> campionano molto più in fretta del necessario con pochi bit, spesso uno solo, e poi filtrano. Sulla via del ritorno un <abbr title="Digital-to-Analog Converter, convertitore digitale-analogico">DAC</abbr> e un filtro ridanno la curva. Lo spettro di un segnale è spiegato nel capitolo 1; il clock che scandisce i campioni, con il suo tremolio (<em>jitter</em>), nel capitolo 6.',
     ],
     steps: [
-      { title: 'Fotografare a intervalli regolari', text: 'Un interruttore velocissimo, il campionatore, misura la tensione una volta ogni Ts = 1/fs secondi e la tiene ferma il tempo necessario a convertirla. Tra un campione e l\'altro il convertitore non vede nulla: per questo deve essere abbastanza rapido.', focus: 'campiona' },
-      { title: 'Arrotondare al gradino più vicino', text: 'Con N bit i livelli sono 2 elevato a N (con 3 bit, otto): ogni campione scatta su quello più vicino. L\'errore resta sempre entro mezzo gradino (±½ LSB) e si comporta come un piccolo rumore; ogni bit in più lo dimezza.', focus: 'quantizza' },
-      { title: 'Ogni campione diventa un numero', text: 'Il livello viene scritto in binario: è la modulazione a impulsi codificati (PCM). Un convertitore ad approssimazioni successive (SAR) trova il codice per dimezzamenti: confronta l\'ingresso con metà scala, poi con un quarto, e decide un bit a ogni confronto, dal più significativo.', focus: 'codifica' },
+      { title: 'Fotografare a intervalli regolari', text: 'Un interruttore velocissimo, il campionatore, misura la tensione una volta ogni Ts = 1/fs secondi e la tiene ferma il tempo necessario a convertirla. Tra un campione e l\'altro il convertitore non vede nulla: per questo i campioni devono essere abbastanza fitti rispetto a quanto in fretta cambia il segnale.', focus: 'campiona' },
+      { title: 'Arrotondare al gradino più vicino', text: 'Con N bit i livelli sono 2 elevato a N (con 3 bit, otto): ogni campione scatta su quello più vicino. L\'errore resta sempre entro mezzo gradino (±½ LSB, dove LSB è l\'altezza di un gradino) e si comporta come un piccolo rumore; ogni bit in più lo dimezza.', focus: 'quantizza' },
+      { title: 'Ogni campione diventa un numero', text: 'Il livello viene scritto in binario: è la modulazione a impulsi codificati (PCM). Un convertitore ad approssimazioni successive (SAR) trova il codice per dimezzamenti: confronta l\'ingresso con metà scala, poi con il centro della metà giusta (un quarto o tre quarti), e così via; ogni confronto decide un bit, dal più significativo.', focus: 'codifica' },
       { title: 'Dalla scala alla curva', text: 'Il DAC trasforma i numeri in tensioni e tiene ciascuna per un periodo Ts: esce una scala. Un filtro passa-basso ne toglie gli spigoli, cioè le frequenze sopra fs/2, e restituisce la curva originale, a parte il rumore di quantizzazione.', focus: 'ricostruisci' },
-      { title: 'Troppo lento: l\'onda falsa', text: 'Se il segnale supera fs/2, i campioni disegnano un\'onda più lenta che non esiste, l\'alias, come la ruota della diligenza che nei film sembra girare all\'indietro. Dopo il campionamento non si distingue da un segnale vero: va tolto prima, con un filtro anti-aliasing.', focus: 'alias' },
+      { title: 'Troppo lento: l\'onda falsa', text: 'Se il segnale supera fs/2, i campioni disegnano un\'onda più lenta che non esiste, l\'alias (qui 0,9·fs appare come 0,1·fs), come la ruota della diligenza che nei film sembra girare all\'indietro. Dopo il campionamento non si distingue da un segnale vero: va tolto prima, con un filtro anti-aliasing.', focus: 'alias' },
     ],
     formulas: [
       { label: 'Teorema del campionamento', eq: '<var>f</var><sub>s</sub> &gt; 2 · <var>f</var><sub>max</sub>', text: 'Per ricostruire un segnale che contiene frequenze fino a <var>f</var><sub>max</sub> bisogna campionarlo più del doppio di <var>f</var><sub>max</sub>. La metà della frequenza di campionamento, <var>f</var><sub>s</sub>/2, si chiama <em>frequenza di Nyquist</em>: è il confine oltre il quale nasce l\'aliasing. Il telefono campiona a 8 kHz una voce limitata a 3,4 kHz, il CD a 44,1 kHz una musica fino a 20 kHz: il margine serve al filtro.' },
       { label: 'Frequenza di alias', eq: '<var>f</var><sub>alias</sub> = |<var>f</var> − <var>k</var> · <var>f</var><sub>s</sub>|', text: '<var>k</var> è l\'intero più vicino a <var>f</var>/<var>f</var><sub>s</sub>, e il risultato cade sempre tra 0 e <var>f</var><sub>s</sub>/2: lo spettro si ripiega come una fisarmonica attorno ai multipli di <var>f</var><sub>s</sub>/2. Un tono da 7 kHz campionato a 10 kHz appare a 3 kHz.' },
-      { label: 'Quantizzazione', eq: 'SNR ≈ 6,02 · <var>N</var> + 1,76 dB', text: 'Con <var>N</var> bit il fondo scala <var>V</var><sub>FS</sub> è diviso in 2<sup><var>N</var></sup> gradini larghi LSB = <var>V</var><sub>FS</sub>/2<sup><var>N</var></sup>. L\'errore resta entro ±½ LSB e vale in media LSB/√12; per una sinusoide a fondo scala il rapporto segnale/rumore cresce di circa 6 dB per bit: circa 50 dB con 8 bit, 98 dB con 16.' },
+      { label: 'Quantizzazione', eq: 'SNR ≈ 6,02 · <var>N</var> + 1,76 dB', text: 'Con <var>N</var> bit il fondo scala <var>V</var><sub>FS</sub> è diviso in 2<sup><var>N</var></sup> gradini larghi LSB = <var>V</var><sub>FS</sub>/2<sup><var>N</var></sup>. L\'errore resta entro ±½ LSB e ha valore efficace LSB/√12; per una sinusoide a fondo scala il rapporto segnale/rumore cresce di circa 6 dB per bit: circa 50 dB con 8 bit, 98 dB con 16.' },
       { label: 'Bit rate', eq: '<var>R</var> = <var>f</var><sub>s</sub> · <var>N</var> · canali', text: 'I bit da trasmettere o da salvare ogni secondo. Telefono: 8000 × 8 = 64 kbit/s. CD: 44.100 × 16 × 2 = 1,41 Mbit/s. Un oscilloscopio da 256 miliardi di campioni al secondo con 10 bit produce 2,56 Tbit/s per canale.' },
     ],
     timeline: [
-      { year: 1928, title: 'Nyquist e i 2<var>B</var> impulsi', who: 'Harry Nyquist, AT&T, New York', text: 'Nell\'articolo «Certain topics in telegraph transmission theory» Nyquist dimostra che un canale di banda <var>B</var> può trasmettere al massimo 2<var>B</var> impulsi indipendenti al secondo. Non enuncia ancora il teorema del campionamento, ma ne pone le basi: per questo <var>f</var><sub>s</sub>/2 porta il suo nome.' },
+      { year: 1928, title: 'Nyquist e il limite dei 2B impulsi', who: 'Harry Nyquist, AT&T, New York', text: 'Nell\'articolo «Certain topics in telegraph transmission theory» Nyquist dimostra che un canale di banda <var>B</var> può trasmettere al massimo 2<var>B</var> impulsi indipendenti al secondo. Non enuncia ancora il teorema del campionamento, ma ne pone le basi: per questo <var>f</var><sub>s</sub>/2 porta il suo nome.' },
       { year: 1933, title: 'Kotel\'nikov enuncia il teorema', who: 'Vladimir A. Kotel\'nikov, Mosca', text: 'In un lavoro preparato per un congresso sovietico sulle comunicazioni formula il teorema del campionamento in modo esplicito, per i segnali passa-basso e anche per quelli passa-banda. In Occidente resterà quasi sconosciuto per decenni: l\'IEEE gli assegnerà la medaglia Alexander Graham Bell solo nel 2000.' },
-      { year: 1938, title: 'Reeves brevetta la PCM', who: 'Alec H. Reeves, laboratori ITT, Parigi', text: 'Nel 1937 l\'ingegnere britannico concepisce la modulazione a impulsi codificati: campionare la voce, quantizzarla e trasmettere ogni valore come gruppo di impulsi binari, quasi immuni al rumore. Il brevetto francese viene depositato nel 1938, ma con le valvole dell\'epoca il sistema è troppo complesso. Una prima forma di PCM servirà in guerra al telefono cifrato SIGSALY (1943), che campionava 50 volte al secondo i canali di un vocoder.' },
+      { year: 1938, title: 'Reeves brevetta la PCM', who: 'Alec H. Reeves, laboratori ITT, Parigi', text: 'Nel 1937 l\'ingegnere britannico concepisce la modulazione a impulsi codificati: campionare la voce, quantizzarla e trasmettere ogni valore come gruppo di impulsi binari, quasi immuni al rumore. Il brevetto francese viene depositato nel 1938, ma con le valvole dell\'epoca il sistema è troppo complesso. Una prima forma di PCM servirà in guerra al telefono cifrato SIGSALY (1943), che campionava 50 volte al secondo i canali di un vocoder e li quantizzava su 6 livelli.' },
       { year: 1949, title: 'Shannon dimostra il teorema', who: 'Claude E. Shannon, Bell Telephone Laboratories', text: 'In «Communication in the Presence of Noise» dimostra che un segnale senza frequenze sopra <var>W</var> è determinato dai valori presi ogni 1/(2<var>W</var>) secondi e si ricostruisce sommando funzioni sinc. Pochi mesi prima, con Oliver e Pierce, aveva illustrato i vantaggi della PCM.' },
       { year: 1954, title: 'DATRAC, uno dei primi ADC in vendita', who: 'Bernard M. Gordon, Epsco, Massachusetts', text: 'Un convertitore a valvole ad approssimazioni successive da 11 bit e 50.000 campioni al secondo, grande come un armadietto e da circa 8000 dollari. Viene di solito indicato come il primo ADC commerciale; il Computer History Museum, più prudente, lo definisce «uno dei primi».' },
       { year: 1962, title: 'T1: la telefonia diventa PCM', who: 'Bell System, Chicago', text: 'Entra in servizio il primo sistema commerciale a impulsi codificati: 24 telefonate campionate a 8 kHz viaggiano insieme su due doppini a 1,544 Mbit/s. I primi terminali codificavano la voce con 7 bit su scala logaritmica; grazie ai transistor l\'idea di Reeves diventa economica.' },
-      { year: 1962, title: 'Nasce il sigma-delta', who: 'Hiroshi Inose, Yasuhiko Yasuda e Jun Murakami, Università di Tokyo', text: 'Descrivono il modulatore Δ-Σ: un quantizzatore da 1 bit velocissimo, chiuso in retroazione con un integratore, spinge il rumore di quantizzazione verso le alte frequenze, dove un filtro lo elimina. L\'idea di partenza, la retroazione con sovracampionamento, veniva da un brevetto di C. Chapin Cutler dei Bell Labs, depositato nel 1954.' },
+      { year: 1962, title: 'Nasce il sigma-delta', who: 'H. Inose, Y. Yasuda e J. Murakami, Università di Tokyo', text: 'Descrivono il modulatore Δ-Σ: un quantizzatore da 1 bit velocissimo, chiuso in retroazione con un integratore, spinge il rumore di quantizzazione verso le alte frequenze, dove un filtro lo elimina. L\'idea di partenza, la retroazione con sovracampionamento, veniva da un brevetto di C. Chapin Cutler dei Bell Labs, depositato nel 1954.' },
       { year: 1982, title: 'Il Compact Disc: 44,1 kHz e 16 bit', who: 'Sony e Philips', text: 'Il 1° ottobre esce in Giappone il Sony CDP-101, il primo lettore CD; in Europa e negli Stati Uniti il CD arriva nel 1983. Il formato, fissato nel «Red Book» del 1980, usa PCM lineare a 16 bit e 44,1 kHz in stereo: 1,41 Mbit/s.' },
       { year: 2024, title: 'Decine di miliardi di campioni al secondo', who: 'AMD, serie Versal RF', text: 'Chip singoli con ADC a 14 bit fino a 32 miliardi di campioni al secondo digitalizzano direttamente segnali radio fino a 18 GHz, per radar, satelliti e strumenti di misura. Gli oscilloscopi di punta campionano già a 256 miliardi di campioni al secondo per canale (Keysight UXR, 2018).' },
     ],
-    fun: 'I 44,1 kHz del CD vengono dai videoregistratori. I primi registratori audio digitali salvavano i campioni su videocassetta, tre per ogni riga dell\'immagine, e 44.100 era il numero che andava bene sia per il PAL europeo (3 × 294 righe × 50 semiquadri al secondo) sia per l\'NTSC americano (3 × 245 × 60).',
+    fun: 'I 44,1 kHz del CD vengono dai videoregistratori. I primi registratori audio digitali salvavano i campioni su videocassetta, tre per ogni riga dell\'immagine, e 44.100 era il numero che andava bene sia per il PAL europeo (3 × 294 righe × 50 semiquadri al secondo) sia per l\'NTSC americano a 60 semiquadri al secondo (3 × 245 × 60).',
     uses: [
       'Telefonia e VoIP: voce in PCM a 64 kbit/s',
       'CD a 44,1 kHz e 16 bit, studi a 24 bit',
@@ -1196,7 +1350,7 @@
       { term: 'Campionamento', def: 'Misura di un segnale continuo a istanti regolari, uno ogni <var>T</var><sub>s</sub> = 1/<var>f</var><sub>s</sub> secondi. <var>f</var><sub>s</sub> si misura in campioni al secondo (S/s).' },
       { term: 'Frequenza di Nyquist', def: 'Metà della frequenza di campionamento, <var>f</var><sub>s</sub>/2: la frequenza più alta che si può rappresentare senza ambiguità.' },
       { term: 'Aliasing', def: 'Una componente sopra <var>f</var><sub>s</sub>/2 che dopo il campionamento si traveste da frequenza più bassa. Si evita con un filtro passa-basso anti-aliasing prima del campionatore.' },
-      { term: 'Quantizzazione e LSB', def: 'Arrotondamento di ogni campione al più vicino dei 2<sup><var>N</var></sup> livelli. L\'LSB è la distanza tra due livelli; l\'errore, entro ±½ LSB, è il rumore di quantizzazione.' },
+      { term: 'Quantizzazione e LSB', def: 'Arrotondamento di ogni campione al più vicino dei 2<sup><var>N</var></sup> livelli. LSB (<em>least significant bit</em>, il bit meno significativo) indica il valore di un gradino, cioè la distanza tra due livelli vicini: <var>V</var><sub>FS</sub>/2<sup><var>N</var></sup>. L\'errore, entro ±½ LSB, è il rumore di quantizzazione.' },
       { term: 'PCM', def: 'Modulazione a impulsi codificati: il segnale viaggia come sequenza di campioni quantizzati, ciascuno scritto in binario. È il formato del telefono digitale e del CD.' },
       { term: 'ADC SAR', def: 'Convertitore ad approssimazioni successive: un DAC interno e un comparatore provano un bit alla volta, dal più significativo, dimezzando l\'intervallo. Servono <var>N</var> confronti per <var>N</var> bit.' },
       { term: 'ADC flash', def: 'Convertitore con 2<sup><var>N</var></sup> − 1 comparatori che lavorano tutti insieme: velocissimo, ma con 8 bit ne servono già 255.' },
@@ -1212,15 +1366,17 @@
       { title: 'The SIGSALY Story (NSA, Center for Cryptologic History)', url: 'https://nsa.gov/about/cryptologic-heritage/historical-figures-publications/publications/wwii/sigsaly-story' },
       { title: 'AMD presenta i Versal RF, 10 dicembre 2024 (comunicato)', url: 'https://www.amd.com/en/newsroom/press-releases/2024-12-10-amd-introduces-versal-rf-series-adaptive-socs-offe.html' },
     ],
-    // Domande temporanee: andranno spostate in quiz.js.
+    // Domande del capitolo: la pagina mostra le prime quattro; vanno spostate in quiz.js con le altre.
     quiz: [
       { id: 'ea-conversione-01', chapter: 'conversione', level: 1, topic: 'Teorema del campionamento', q: 'Un segnale audio contiene frequenze fino a 20 kHz. Quale frequenza di campionamento permette, in linea di principio, di ricostruirlo senza perdere nulla?', options: ['Più di 40 kHz', 'Almeno 20 kHz', 'Almeno 10 kHz', 'Qualsiasi, con 16 bit'], answer: 0, why: 'Il teorema del campionamento chiede fs > 2·fmax, quindi più di 40 kHz. Il CD usa 44,1 kHz per lasciare al filtro anti-aliasing lo spazio tra 20 e 22,05 kHz. Il numero di bit non c\'entra: fissa la precisione in ampiezza, non la banda.' },
       { id: 'ea-conversione-02', chapter: 'conversione', level: 2, topic: 'Aliasing', q: 'Un tono da 7 kHz viene campionato a 10 kHz senza filtro anti-aliasing. Che frequenza si sente dopo la ricostruzione?', options: ['3 kHz', '7 kHz', '17 kHz', '5 kHz'], answer: 0, why: '7 kHz supera la frequenza di Nyquist, che qui è 5 kHz. Il multiplo di fs più vicino è 10 kHz, quindi l\'alias è |7 − 10| = 3 kHz: i campioni sono identici a quelli di un tono da 3 kHz, e il DAC ricostruisce quello.' },
       { id: 'ea-conversione-03', chapter: 'conversione', level: 2, topic: 'Bit e rapporto S/R', q: 'Un convertitore ideale passa da 8 a 10 bit. Di quanto cresce, circa, il rapporto segnale/rumore di quantizzazione?', options: ['Di circa 12 dB', 'Di circa 2 dB', 'Di circa 25 dB', 'Di circa 6 dB'], answer: 0, why: 'Con SNR ≈ 6,02·N + 1,76 dB ogni bit vale circa 6 dB: due bit in più danno circa 12 dB, perché il gradino di quantizzazione diventa quattro volte più piccolo.' },
       { id: 'ea-conversione-04', chapter: 'conversione', level: 3, topic: 'Convertitore SAR', q: 'Un ADC SAR a 4 bit con fondo scala 1,6 V riceve 1,05 V e prova in ordine le soglie 0,8 V, 1,2 V, 1,0 V e 1,1 V. Quale codice trova?', options: ['1010', '1011', '0110', '1100'], answer: 0, why: 'Ogni confronto decide un bit, dal più significativo: 1,05 ≥ 0,8 dà 1; 1,05 < 1,2 dà 0; 1,05 ≥ 1,0 dà 1; 1,05 < 1,1 dà 0. Il codice 1010 vale 10 gradini da 0,1 V, cioè 1,0 V: l\'errore resta sotto un LSB.' },
+      { id: 'ea-conversione-05', chapter: 'conversione', level: 2, topic: 'ADC flash', q: 'Un ADC flash confronta l\'ingresso con tutte le soglie nello stesso istante. Quanti comparatori servono per 8 bit?', options: ['255', '8', '16', '256'], answer: 0, why: 'Con 8 bit i livelli sono 2⁸ = 256 e le soglie tra un livello e il successivo sono 255: un comparatore per soglia. Per questo i flash sono velocissimi ma raramente superano 8 bit, mentre un SAR se la cava con un solo comparatore usato 8 volte.' },
+      { id: 'ea-conversione-06', chapter: 'conversione', level: 1, topic: 'Bit rate del CD', q: 'Quanti bit al secondo produce l\'audio di un CD, stereo a 44,1 kHz e 16 bit?', options: ['Circa 1,41 Mbit/s', 'Circa 706 kbit/s', 'Circa 64 kbit/s', 'Circa 44 Mbit/s'], answer: 0, why: 'Bit rate = fs × N × canali = 44.100 × 16 × 2 = 1.411.200 bit/s. 706 kbit/s sarebbe un solo canale, 64 kbit/s è la voce del telefono (8000 × 8).' },
     ],
     hero: {
-      caption: 'Il campionatore misura l\'onda a intervalli regolari: ogni campione scatta sul livello più vicino, diventa un numero binario, e un DAC con un filtro ricostruisce la curva.',
+      caption: 'I campioni dell\'onda viola scattano sui livelli, diventano bit e tornano curva grazie a un DAC e a un filtro. Se il segnale è troppo veloce, compare un\'onda falsa.',
       label: 'Animazione: campionamento, quantizzazione, codifica PCM, ricostruzione e aliasing',
       aspect: '16 / 7',
       aspectMobile: '1 / 1',
@@ -1228,7 +1384,7 @@
     },
     lab: {
       title: 'Campiona, quantizza, ricostruisci',
-      intro: 'Scegli la frequenza del segnale e quella di campionamento, il numero di bit e il modo di ricostruire. Porta il segnale oltre <var>f</var><sub>s</sub>/2 e guarda l\'alias comparire, sia nel tempo sia sull\'asse delle frequenze dove lo spettro si ripiega; poi accendi il filtro anti-aliasing. Il fondo scala è di 2 V.',
+      intro: 'Scegli la frequenza del segnale e quella di campionamento, il numero di bit e il modo di ricostruire. Porta il segnale oltre <var>f</var><sub>s</sub>/2 e guarda l\'alias comparire, sia nel tempo sia sull\'asse delle frequenze dove lo spettro si ripiega; poi accendi il filtro anti-aliasing. Il fondo scala è di 2 V; l\'SNR misurato confronta i campioni con il loro errore di quantizzazione.',
       mount: mountLab,
     },
     model,

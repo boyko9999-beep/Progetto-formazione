@@ -1,1 +1,21 @@
-/* Capitolo "mems": stile in preparazione. */
+/* Capitolo 8 · Macchine sul silicio */
+
+.mems-lab-canvas { aspect-ratio: 16 / 10; }
+
+/* Sei display in righe sempre complete: 6, poi 3, poi 2 per riga. */
+.ea-lab-readouts.mems-readouts { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+
+/* Etichette su due righe: i valori restano allineati in basso. */
+.mems-readouts .ea-ro { align-content: space-between; }
+
+@media (max-width: 1100px) {
+  .ea-lab-readouts.mems-readouts { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+@media (max-width: 640px) {
+  .mems-lab-canvas { aspect-ratio: 3 / 4; }
+}
+
+@media (max-width: 560px) {
+  .ea-lab-readouts.mems-readouts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

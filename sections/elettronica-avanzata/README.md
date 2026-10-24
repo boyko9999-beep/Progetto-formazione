@@ -20,7 +20,7 @@ laboratorio interattivo, formule, storia, glossario e domande di verifica.
 | `js/app.js` | pagine e navigazione della sezione |
 | `css/avanzata.css` | stile della sezione |
 | `chapters/<id>.js` e `.css` | un capitolo: contenuti, animazione, laboratorio, modello fisico |
-| `../../tests/elettronica-avanzata*.test.js` | test del contratto e dei modelli (`node --test tests/`) |
+| `../../tests/elettronica-avanzata*.test.js` | test del contratto e dei modelli (`node --test`) |
 
 ## Come è fatto un capitolo
 
@@ -90,6 +90,9 @@ il quiz dell'enciclopedia (`../quiz/index.html#elettronica-avanzata`) le usa tut
 
 ## Test
 
+Dalla cartella principale del repository:
+
 ```bash
-node --test tests/
+node --test tests/elettronica-avanzata*.test.js   # solo questa sezione
+node --test                                       # tutti i test del sito
 ```
