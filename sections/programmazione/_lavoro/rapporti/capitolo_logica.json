@@ -1,0 +1,79 @@
+{
+ "files": [
+  "/home/user/Progetto-formazione/sections/programmazione/js/capitoli/02-logica.js"
+ ],
+ "riepilogo": "Il capitolo 2 «logica» è scritto per intero: prima era uno stub. Ho lasciato invariati i campi del «Keep»: id, numero, anni, titolo, sottotitolo, epoca 'nastro'.\n\n**Blocchi** (14, nell'ordine del flusso suggerito):\n1. testo Boole (con Frege e Peano)\n2. testo Hilbert e Gödel\n3. testo sulla macchina di Turing\n4. lab 'turing'\n5. citazione di Turing (§ 6, verificata)\n6. testo «Una macchina per tutte le macchine»: macchina universale, paradosso della fermata, Church e il lambda calcolo, tesi di Church-Turing\n7. elenco «Quattro idee del 1936»\n8. figura 'rele-shannon'\n9. testo Shannon, con Stibitz e il filo verso l'hardware (relè, valvole, transistor e link a ../porte-logiche/)\n10. testo Zuse (Z1, Z3, Rojas 1998)\n11. testo Plankalkül\n12. testo Bletchley Park, che passa il testimone a Colossus nel [capitolo 3](#cavi)\n13. sapevi: le macchine «buone» di Turing non si fermano mai, e il nome «problema della fermata» arriva con Martin Davis nel 1958\n14. ciao\n\n**Dimensioni:** circa 1.980 parole nei blocchi testo, più 73 nell'elenco e 83 nel «Lo sapevi?».\n\n**Collegamenti:** ai capitoli 3 e 5 e alla sezione Porte logiche.\n\n**ciao:** anno 1936, uscita 'CIAO' e una tavola di 5 righe: un'intestazione senza frecce e 4 regole con →, così che lo schermo «nastro» accenda le righe nell'ordine giusto.\n\n**Altri campi:**\n- **Protagonisti (8):** i 7 della spec più George Stibitz.\n- **Tappe:** 14.\n- **Glossario (12 termini):** tutti i 10 assegnati al capitolo (algebra di Boole, bit, macchina di Turing, macchina universale, problema della fermata, tesi di Church-Turing, relè, lambda calcolo, Turing-completo, linguaggio di programmazione), più due termini che nessuno possiede: «Entscheidungsproblem» e «teoremi di incompletezza».\n- **Fonti:** 10.\n\n**Termini di altri capitoli usati con {{}}:** programma, ciclo, subroutine, software, programma memorizzato, memoria, valvola termoionica, variabile, linguaggio ad alto livello. Al momento della verifica sono tutti già definiti.",
+ "fatti": [
+  {
+   "affermazione": "L'articolo di Turing «On Computable Numbers…» fu ricevuto dalla London Mathematical Society il 28 maggio 1936 e letto il 12 novembre 1936; uscì in due puntate tra novembre e dicembre 1936 nei Proceedings, serie 2, vol. 42, pp. 230–265.",
+   "fonte": "Intestazione del paper nelle copie trovate; computinghistory.org.uk «Alan Turing invents the principle of the modern computer»; DOI 10.1112/plms/s2-42.1.230"
+  },
+  {
+   "affermazione": "Citazione verbatim, primo periodo del § 6: «It is possible to invent a single machine which can be used to compute any computable sequence.» Ho tradotto solo quel periodo, perché il secondo circola in due versioni («S.D» e «string of quintuples»).",
+   "fonte": "Ricerche a frase esatta con corrispondenze in arXiv quant-ph/0112105, note di Illinois CS 498, quant-ph/0511274"
+  },
+  {
+   "affermazione": "Hilbert chiuse il discorso alla Società dei naturalisti e medici tedeschi l'8 settembre 1930 a Königsberg con «Wir müssen wissen. Wir werden wissen» e ne lesse alla radio una versione di 4 minuti. Il motto rispondeva a «ignoramus et ignorabimus» ed è sulla sua tomba a Gottinga. Il 7 settembre Gödel aveva annunciato l'incompletezza a una tavola rotonda; quasi solo von Neumann la notò.",
+   "fonte": "James T. Smith, «David Hilbert's Radio Address», MAA Convergence 2014 (https://old.maa.org/node/326611); saggio di Aeon sui limiti della conoscenza"
+  },
+  {
+   "affermazione": "L'articolo di Gödel uscì nei Monatshefte für Mathematik und Physik 38 (1931), pp. 173–198, ricevuto il 17 novembre 1930. Hilbert e Ackermann, Grundzüge der theoretischen Logik (Springer, 1928), pongono l'Entscheidungsproblem.",
+   "fonte": "Record di catalogo bibliotecario; schede di librerie antiquarie sul libro del 1928"
+  },
+  {
+   "affermazione": "Boole (1815–1864): figlio di un calzolaio, autodidatta, lascia la scuola a 16 anni. Nel 1849 diventa il primo professore di matematica del Queen's College di Cork. Libri del 1847 e del 1854. Nel 1854 x² = x è la «legge fondamentale del pensiero», con soluzioni solo 0 e 1, e i simboli «admit indifferently of the values 0 and 1, and of these values alone». Esempio delle pecore bianche: x = cose bianche, y = pecore.",
+   "fonte": "Biografia MacTutor e Wikipedia come punto di partenza; articolo Springer 10.1007/s11787-018-0188-5; arXiv 1710.01542; slide di S. Edwards, Columbia"
+  },
+  {
+   "affermazione": "Peano, Arithmetices principia, 1889: introduce ε per «è», dall'iniziale di ἐστί, da cui il nostro ∈.",
+   "fonte": "Jeff Miller, «Earliest Uses of Symbols of Set Theory and Logic», MacTutor"
+  },
+  {
+   "affermazione": "Church identificò la calcolabilità effettiva con la λ-definibilità (1936). Turing, saputo del lavoro di Church, ne dimostrò l'equivalenza con la propria definizione in un'appendice. Il nome «Church-Turing thesis» fu introdotto, a quanto pare, da Kleene (1967, p. 232).",
+   "fonte": "B. J. Copeland, «The Church-Turing Thesis», Stanford Encyclopedia of Philosophy"
+  },
+  {
+   "affermazione": "Turing dimostrò l'indecidibilità del problema delle macchine «circle-free» e del «printing problem». L'espressione «halting problem» compare per la prima volta in Martin Davis, Computability and Unsolvability (1958).",
+   "fonte": "Hamkins e Nenu, arXiv 2407.00680 (2024); blog di Charles Petzold, che cita Copeland, The Essential Turing"
+  },
+  {
+   "affermazione": "Turing seguì il corso di Max Newman sui fondamenti della matematica nella primavera del 1935; il corso si chiudeva con la domanda di Hilbert. La vicenda dei prati di Grantchester non è verificata e non l'ho usata.",
+   "fonte": "King's College Cambridge, «Alan Mathison Turing (1912–54)»"
+  },
+  {
+   "affermazione": "Turing a Princeton dal 1936 al 1938 e dottorato con Church nel 1938. Arrivo a Bletchley Park il 4 settembre 1939, progetto della Bombe, guida dell'Hut 8 (Enigma navale). Grazia reale postuma firmata il 24 dicembre 2013 per la condanna del 1952.",
+   "fonte": "Blog dei manoscritti di Princeton; documento di Bletchley Park; GCHQ; Turing Scrapbook di Hodges; BBC, ITV e Al Jazeera, dicembre 2013"
+  },
+  {
+   "affermazione": "La tesi di Shannon porta sul frontespizio la data del 10 agosto 1937 (il titolo M.S. fu conferito nel 1940). Una versione ridotta uscì nei Transactions of the AIEE, vol. 57, 1938, pp. 713–723. Shannon incontrò Boole in un corso all'Università del Michigan e lavorò all'analizzatore differenziale di Bush; la tesi semplificava le reti di relè della commutazione telefonica.",
+   "fonte": "DSpace@MIT handle 1721.1/11173; scheda di recensione del Journal of Symbolic Logic su Cambridge Core; historyofinformation.com id 622; MacTutor"
+  },
+  {
+   "affermazione": "«Bit»: nota interna dei Bell Labs di J. W. Tukey del 9 gennaio 1947; primo uso a stampa in Shannon 1948, che attribuisce la parola a Tukey.",
+   "fonte": "historyofinformation.com id 673; wordorigins.org"
+  },
+  {
+   "affermazione": "Stibitz, novembre 1937: sommatore binario in cucina con relè di scarto dei Bell Labs, latta di una scatola di tabacco e lampadine da torcia; il nome «Model K» lo suggerì la moglie Dorothea. Complex Number Calculator in funzione nel 1940; dimostrazione a distanza per telescrivente a Dartmouth nel settembre 1940.",
+   "fonte": "IEEE Computer Society, Computer Pioneers, «George Robert Stibitz»"
+  },
+  {
+   "affermazione": "Z3 presentato il 12 maggio 1941 agli scienziati della DVL. Le stime sui relè vanno da 2.000 a 2.600, per cui ho scritto «oltre 2.000». Memoria di 64 parole da 22 bit, 5–10 Hz, programma su pellicola perforata. Distrutto nel 1943; replica degli anni Sessanta al Deutsches Museum. Z1 costruito tra il 1936 e il 1938, meccanico, distrutto nel 1943, ricostruito nel 1989.",
+   "fonte": "Konrad Zuse Internet Archive https://zuse.zib.de/z3; Wikipedia come punto di partenza; R. Rojas, arXiv 1406.1886"
+  },
+  {
+   "affermazione": "Rojas (1998), «How to make Zuse's Z3 a universal computer»: lo Z3, privo di salto condizionato, è universale in linea di principio, con un solo ciclo di programma.",
+   "fonte": "Record WorldCat OCLC 5872089227"
+  },
+  {
+   "affermazione": "Plankalkül: progettato tra il 1942 e il 1945, manoscritto del 1945, breve articolo del 1948, pubblicazione completa nel 1972, primo compilatore nella tesi di Hohmann del 1975, implementazione alla FU Berlin nel 2000, routine per gli scacchi. Lo Z4 fu messo in salvo a Hinterstein, nelle Alpi bavaresi.",
+   "fonte": "Knuth e Trabb Pardo, STAN-CS-76-562 (DTIC ADA032123); chessprogramming.org; Wikipedia come punto di partenza"
+  },
+  {
+   "affermazione": "Radó 1962, «On Non-Computable Functions», Bell System Technical Journal 41(3), pp. 877–884: BB(2) scrive 4 uni in 6 passi ed è il massimo.",
+   "fonte": "wiki.bbchallenge.org, voce BB(2); copia del paper su gwern.net"
+  }
+ ],
+ "verifiche": "**Test**\n- `node --test sections/programmazione/test/dati.test.js`: il subtest «capitolo 2 · logica» fallisce solo per «figura non registrata: rele-shannon», figura che un altro agente sta disegnando.\n  - Quell'asserzione scatta per prima e nasconde le altre, quindi ho ripetuto tutti gli altri controlli del test in uno script mio, saltando solo quello sulle figure: termini del glossario, ancore, niente HTML, lab registrato, nessun doppione nel glossario. Esito: nessun errore.\n  - Il test globale «nessun termine del glossario è definito in due capitoli» passa.\n  - Script: `/tmp/claude-0/-home-user-Progetto-formazione/d1b42bc3-39ef-5883-b866-91652689087a/scratchpad/qa/capitolo_logica/verifica.js`\n- `node --test sections/programmazione/test/schermi.test.js`: passa tutto, compreso «i dati ciao del capitolo 2 vanno bene per lo schermo nastro».\n- `node --check` sul file: ok.\n\n**Schermate** (scatta.js, salvate nella stessa cartella):\n- Capitolo intero (`--hash logica --sel '#logica'`) a 1440 e a 390×844: nessun errore, nessuna risorsa mancante, overflowOrizzontale false. Il 404 di `enciclopedia.js` è tra gli attesi.\n  - Il lab e lo schermo ciao si montano solo quando entrano in vista, quindi li ho fotografati a parte.\n- Schermo ciao (`figure[data-schermo=\"nastro\"]`) a 1440 e a 390: nastro con CIAO, testina in ALT, tavola allineata, legenda, messaggio, niente overflow.\n- Lab: ho letto dal DOM le etichette di bottoni e programmi; corrispondono all'intro.\n  - Bottoni: «Passo ›», «▶︎ Esegui», «↺ Da capo».\n  - Programmi: Somma 1 (ingresso predefinito 1011), Scrivi CIAO, Castoro indaffarato, Inverti i bit, Turing 1936. Turing 1936 è la prima macchina dell'articolo, stati b, c, e, f, e non si ferma: l'ho citata nell'intro del lab.\n\n**Rilettura dell'italiano**, con queste correzioni:\n- Per x² = x ora dico che Boole «mise al centro» una regola «che nell'aritmetica comune non vale» (la regola compare già nel 1847).\n- «Da qui nasce» l'algebra di Boole moderna.\n- Il paradosso della fermata è presentato nella forma moderna, coerente con il «Lo sapevi?».\n- Plankalkül «il primo linguaggio ad alto livello mai progettato».\n- Tipografia: caporali, 2.000, 0,010101…, trattino lungo negli intervalli.",
+ "limiti": "**Come ho verificato**\n- WebFetch non risolve alcun host (errore DNS) e curl è bloccato dal proxy (403). Le verifiche si basano quindi sui riassunti di WebSearch: non ho letto direttamente i testi primari (Turing 1936, Boole 1854, la tesi di Shannon).\n- Per questo la citazione di Turing si ferma al primo periodo del § 6, l'unico confermato verbatim.\n\n**Fatti con fonti incerte o da sola conoscenza**\n- Il numero di relè dello Z3 varia tra le fonti (2.000–2.600): ho scritto «oltre 2.000».\n- Il sommatore binario tra gli esempi della tesi di Shannon è confermato solo da fonti derivate da Wikipedia, che parlano di un «4-bit full adder», non dalla tesi stessa.\n- Vengono da conoscenza consolidata e non da una ricerca in questa sessione:\n  - i 23 problemi di Hilbert (Parigi, 1900);\n  - l'amicizia di Gödel con Einstein;\n  - le date di nascita e morte di Stibitz (1904–1995);\n  - la notazione lambda presa in prestito per il LISP nel 1958.\n\n**Cose che non ho usato**\n- La frase di Gardner («la tesi più importante del secolo»), che ho trovato solo in copie di Wikipedia: ho scritto «molti la considerano».\n- L'aneddoto di Grantchester, non verificato.\n\n**Figure**\n- Non ho inserito la figura facoltativa 'z3' perché non è registrata: se non venisse mai disegnata, farebbe fallire il mio subtest.",
+ "richiesteIntegratore": "1. Quando `js/figure/logica.js` registrerà 'rele-shannon', il subtest del capitolo 2 passerà senza altre modifiche.\n2. Se l'agente delle figure disegna anche la figura facoltativa 'z3', aggiungere tra il blocco «Zuse: un computer nel salotto di casa» e il blocco «Il Plankalkül…» questo blocco: `{ tipo: 'figura', id: 'z3', didascalia: 'Lo Z3 di Konrad Zuse (1941) in disegno tecnico: gli armadi di relè della memoria e dell\\'unità aritmetica, la console con tastiera e lampadine e il lettore della pellicola da 35 millimetri perforata che porta il programma.' }`. La didascalia va adattata al disegno reale.\n3. Quando il capitolo 14 «atlante» definirà 'programmazione funzionale', si può trasformare «capostipite della programmazione funzionale» nell'ultimo paragrafo di «Una macchina per tutte le macchine» in `{{programmazione funzionale}}`. L'ho lasciato senza link per non far fallire il test.\n4. Ho definito due termini che nessuno possiede, 'Entscheidungsproblem' e 'teoremi di incompletezza': nessun altro capitolo li definisca, altrimenti scatta il test sui doppioni.\n5. Nota sullo schermo «nastro»: conta come righe di regola tutte le righe che contengono → o ->, quindi un'intestazione con una freccia sfaserebbe l'evidenziazione. La mia tavola la evita. Varrebbe una riga nel README per gli altri capitoli."
+}
