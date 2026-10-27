@@ -119,7 +119,7 @@
         why: 'Nella famiglia MCS-4 (1971) il 4001 è una ROM da 256 byte, il 4002 una RAM da 320 bit, il 4003 un registro a scorrimento a 10 bit per avere più uscite, il 4004 la CPU. Con questi chip era fatta la calcolatrice Busicom.',
       },
       {
-        id: 'cp-14', level: 2, topic: 'Periodo del clock', chapter: 'intel-4004', type: 'number',
+        id: 'cp-14', level: 1, topic: 'Periodo del clock', chapter: 'intel-4004', type: 'number',
         q: 'Il clock dell\'Intel 4004 va a 740 kHz. Quanto dura un periodo di clock, in µs?',
         value: 1.351, unit: 'µs', tolerance: 0.05,
         why: 'T = 1 / f = 1 / 740 000 Hz ≈ 0,00000135 s = 1,35 µs. Un processore di oggi a 4 GHz ha un periodo di 0,25 ns, più di cinquemila volte più breve.',
