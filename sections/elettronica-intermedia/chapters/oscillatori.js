@@ -147,7 +147,7 @@
 
   const fmtR = (v) => si(v, 'Ω', { trim: true });
   const fmtC = (v) => si(v, 'F', { trim: true });
-  const fmtV = (v) => num(v, v % 1 ? 1 : 0) + ' V';
+  const fmtV = (v) => num(v, Math.abs(v - Math.round(v)) > 0.005 ? 1 : 0) + ' V';
   const fmtT = (t) => si(t, 's');
   const fmtF = (f) => (f < 1 ? num(f, 3) + ' Hz' : si(f, 'Hz'));
   const fmtPct = (x) => num(x * 100, 1) + ' %';
