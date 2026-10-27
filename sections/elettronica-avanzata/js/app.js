@@ -585,7 +585,7 @@
     if (view._mount) view._mount();
     reveal(main);
     const title = view.querySelector('h1');
-    document.title = (title && r.view !== 'home' ? title.textContent + ' · ' : '') + SEZ.titolo + ' · BusLab';
+    document.title = (title && r.view !== 'home' ? title.textContent + ' · ' : '') + SEZ.titolo + ' · Enciclopedia BusLab';
     window.scrollTo(0, 0);
     main.focus({ preventScroll: true });
   }

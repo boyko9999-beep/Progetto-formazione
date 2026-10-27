@@ -1,11 +1,11 @@
 /*
  * Elettronica avanzata. Si appoggia ai token di BusLab (../../css/style.css):
  * carta chiara per leggere, pannelli da strumento sempre scuri per animazioni e laboratori.
- * Accento della sezione: rame, come le piste dei circuiti stampati.
+ * Accento della sezione: il viola della sezione 3 nell'hub dell'enciclopedia (--sez-3).
  */
 
 :root {
-  --ea-accent: #a24d14;
+  --ea-accent: #7a3dc8;
   --ea-accent-ink: #ffffff;
   --ea-serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
   --ea-panel: #0b1210;
@@ -25,15 +25,15 @@
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --ea-accent: #f0a46b;
-    --ea-accent-ink: #2a1405;
+    --ea-accent: #b693ff;
+    --ea-accent-ink: #1c1033;
     --ea-shadow: 0 24px 48px -30px rgba(0, 0, 0, .9);
   }
 }
 
 :root[data-theme="dark"] {
-  --ea-accent: #f0a46b;
-  --ea-accent-ink: #2a1405;
+  --ea-accent: #b693ff;
+  --ea-accent-ink: #1c1033;
   --ea-shadow: 0 24px 48px -30px rgba(0, 0, 0, .9);
 }
 

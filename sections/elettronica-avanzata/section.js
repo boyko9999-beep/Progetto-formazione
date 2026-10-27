@@ -80,7 +80,7 @@
     titolo: 'Elettronica avanzata',
     sottotitolo: 'Alte frequenze, segnali veloci, conversione, potenza, luce e quanti: l\'elettronica che ha costruito il mondo connesso.',
     periodo: '1807 – oggi',
-    colore: 'var(--c-avanzata, #a24d14)',
+    colore: 'var(--sez-3, #7a3dc8)',
     capitoli: CAPITOLI.map((c, i) => Object.assign({}, c, {
       numero: i + 1,
       icona: ICONE[c.id],
