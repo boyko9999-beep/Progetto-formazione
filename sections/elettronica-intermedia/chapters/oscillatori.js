@@ -97,9 +97,9 @@
   const IMAX = 0.02;            // corrente di riferimento per la velocità delle cariche
   const LED_COLOR = '#ff3b30';
   const GHOST = '#5f746d';
-  const AUDIO = { min: 30, max: 4000, vol: 0.05 };
-  const NARROW_ON = 640;        // px dello schema sotto cui si passa alla composizione stretta
-  const NARROW_OFF = 670;       // e sopra cui si torna a quella larga
+  const AUDIO = { min: 20, max: 4000, vol: 0.05, tick: 0.2 }; // sotto min: tic; sopra max: nota tenuta a 4 kHz
+  const NARROW_ON = 600;        // px dello schema sotto cui si passa alla composizione stretta
+  const NARROW_OFF = 630;       // e sopra cui si torna a quella larga
   const ICW = 250;
   const ICH = 290;
   // posizione dei piedini sul disegno del chip (coordinate interne al rettangolo)
@@ -276,7 +276,7 @@
       vc: 0, q: 1, first: true, simT: 0, realT: 0,
       f: 1, T: 1, tH: 0, tL: 0, duty: 0.5, N: 1, W: 0,
       sweep: null, prev: null, armed: false,
-      ghost: null, lastTouch: -1e9, lastCtl: null,
+      ghost: null, lastTouch: -1e9, lastKind: null, lastCtl: null,
       vccMin: DEF.Vcc, vccMax: DEF.Vcc,
       led: 0, pulseR: 0, pulseS: 0, flash: 0,
     };
@@ -323,7 +323,8 @@
       into: g2, label: 'Ascolta', on: 'altoparlante acceso', off: 'altoparlante spento', value: false,
       onChange: (v) => {
         st.lastCtl = 'audio';
-        if (v && !audioStart()) { audioCtl.set(false, true); v = false; }
+        st.audioFail = false;
+        if (v && !audioStart()) { audioCtl.set(false, true); v = false; st.audioFail = true; }
         if (!v) audioStop(false);
         st.audio = v;
       },
@@ -348,8 +349,10 @@
     function touch(kind, apply) {
       const now = performance.now();
       const before = params();
-      if (now - st.lastTouch > 700) st.ghost = before;
+      // la traccia grigia ricorda il circuito prima dell'ultimo gesto: un trascinamento conta una volta sola
+      if (now - st.lastTouch > 700 || kind !== st.lastKind) st.ghost = before;
       st.lastTouch = now;
+      st.lastKind = kind;
       apply();
       st.lastCtl = kind;
       if (kind === 'vcc') {
@@ -363,6 +366,7 @@
     }
 
     function retime() {
+      audioRebase(); // la fase dei tic resta continua anche quando cambia la frequenza
       st.f = model.freq(st.R1, st.R2, st.C);
       st.T = 1 / st.f;
       st.tH = model.tHigh(st.R1, st.R2, st.C);
@@ -377,9 +381,9 @@
         st.armed = true;
         scope.setRange('x', 0, W);
       }
-      scopeTitle.textContent = st.N > 1
-        ? 'Oscilloscopio · tempi veri, disegno rallentato ' + fmtN(st.N) + ' volte'
-        : 'Oscilloscopio · tempo reale';
+      scopeTitle.textContent = reduced ? 'Oscilloscopio · forma d\'onda a regime, tempi veri'
+        : st.N > 1 ? 'Oscilloscopio · tempi veri, disegno rallentato ' + fmtN(st.N) + ' volte'
+          : 'Oscilloscopio · tempo reale';
       audioUpdate(false);
     }
 
@@ -390,7 +394,7 @@
       st.simT = 0;
       st.prev = null;
       st.pulseR = 0;
-      st.pulseS = 1;
+      st.pulseS = reduced ? 0 : 1; // all'accensione Vc = 0 V: il trigger mette subito Q a 1
       st.sweep = { t0: 0, pts: [] };
       st.armed = false;
       record(0, 0, 1);
@@ -426,6 +430,7 @@
         }
         record(te, ve, e.q);
         q = e.q;
+        if (st.N === 1) audioTick(e.q === 1);
         if (e.q === 0) { st.pulseR = 1; st.first = false; } else st.pulseS = 1;
         st.flash = 1;
       }
@@ -455,8 +460,10 @@
       }
       scope.hline(hi, { color: P.t3, alpha: 0.6, label: '⅔ Vcc = ' + fmtV(hi) });
       scope.hline(lo, { color: P.t3, alpha: 0.6, label: '⅓ Vcc = ' + fmtV(lo) });
+      // la traccia grigia ha senso solo se la sua scala dei tempi somiglia a quella attuale
       const g = st.ghost;
-      if (g && !same(g, p)) {
+      const Tg = g ? model.period(g.R1, g.R2, g.C) : 0;
+      if (g && !same(g, p) && Tg > st.W / 40 && Tg < 2 * st.W) {
         scope.line((t) => model.vout(model.waveform(t, g).q, g.Vcc), { color: GHOST, width: 1.4, glow: false, alpha: 0.75 });
         scope.line((t) => model.waveform(t, g).vc, { color: GHOST, width: 1.4, glow: false, alpha: 0.75, dash: [5, 4] });
       }
@@ -478,8 +485,11 @@
       }
     }
 
-    /* --- altoparlante (Web Audio): parte solo con un clic, si ferma uscendo dal capitolo --- */
+    /* --- altoparlante (Web Audio): parte solo con un clic, si ferma uscendo dal capitolo ---
+     * Sotto i 20 Hz l'orecchio non sente una nota: come un altoparlante vero sul piedino 3, si sente
+     * un "tic" a ogni fronte dell'uscita. Da 20 Hz in su suona l'onda rettangolare, con il duty cycle vero. */
     let audio = null;
+    let inView = true;
     function audioStart() {
       const AC = window.AudioContext || window.webkitAudioContext;
       if (!AC) return false;
@@ -487,13 +497,28 @@
         const ctx = new AC();
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
+        const tick = ctx.createGain();
         gain.gain.value = 0;
+        tick.gain.value = AUDIO.tick;
         osc.connect(gain);
         gain.connect(ctx.destination);
-        audio = { ctx: ctx, osc: osc, gain: gain, duty: -1, muted: null };
+        tick.connect(ctx.destination);
+        // il tic: la membrana scatta in avanti (fronte di salita) o indietro (fronte di discesa)
+        const click = (sign) => {
+          const n = Math.round(ctx.sampleRate * 0.012);
+          const b = ctx.createBuffer(1, n, ctx.sampleRate);
+          const d = b.getChannelData(0);
+          for (let i = 0; i < n; i++) {
+            const t = i / ctx.sampleRate;
+            d[i] = sign * Math.exp(-t / 0.0011) * (1 - Math.exp(-t / 0.00008));
+          }
+          return b;
+        };
+        audio = { ctx: ctx, osc: osc, gain: gain, tick: tick, up: click(1), down: click(-1), duty: -1, muted: null, tone: null, ph0: 0, t0: ctx.currentTime, done: 0, timer: 0 };
         audioUpdate(true);
         osc.start();
         if (ctx.state === 'suspended' && ctx.resume) ctx.resume();
+        audio.timer = setInterval(audioSchedule, 25);
         return true;
       } catch (e) {
         audio = null;
@@ -501,6 +526,14 @@
       }
     }
     const audioFreq = () => clamp(st.f, AUDIO.min, AUDIO.max);
+    // fase dell'uscita, in cicli, sull'orologio dell'audio: la seguono i tic e, ad audio acceso, il LED
+    const audioPhase = (t) => audio.ph0 + (t - audio.t0) * st.f;
+    function audioRebase() {
+      if (!audio) return;
+      const t = audio.ctx.currentTime;
+      audio.ph0 = audioPhase(t) % 1;
+      audio.t0 = t;
+    }
     function audioUpdate(now) {
       if (!audio) return;
       const a = audio;
@@ -508,7 +541,7 @@
       if (Math.abs(a.duty - st.duty) > 1e-4) {
         // onda rettangolare con il duty cycle vero del 555 (serie di Fourier di un impulso)
         try {
-          const n = 48;
+          const n = 64;
           const re = new Float32Array(n + 1);
           const im = new Float32Array(n + 1);
           for (let k = 1; k <= n; k++) {
@@ -524,26 +557,64 @@
       audioMute(now);
     }
     function audioMute(now) {
-      if (!audio) return;
-      const muted = lab.paused || document.hidden || st.f > 20000;
-      if (muted === audio.muted && !now) return;
-      audio.muted = muted;
-      audio.gain.gain.setTargetAtTime(muted ? 0 : AUDIO.vol, audio.ctx.currentTime, 0.03);
+      const a = audio;
+      if (!a) return;
+      const muted = lab.paused || document.hidden || !inView || st.f > 20000;
+      const tone = !muted && st.f >= AUDIO.min;
+      if (muted === a.muted && tone === a.tone && !now) return;
+      a.muted = muted;
+      a.tone = tone;
+      a.gain.gain.setTargetAtTime(tone ? AUDIO.vol : 0, a.ctx.currentTime, 0.03);
+    }
+    function audioTick(up, when) {
+      const a = audio;
+      if (!a || a.muted || st.f >= AUDIO.min) return;
+      try {
+        const src = a.ctx.createBufferSource();
+        src.buffer = up ? a.up : a.down;
+        src.connect(a.tick);
+        src.start(Math.max(a.ctx.currentTime, when || 0));
+      } catch (e) { /* niente */ }
+    }
+    // Programma i tic dei prossimi 80 ms sull'orologio dell'audio (regolare anche se i frame rallentano).
+    // Con il circuito in tempo reale (f fino a 2 Hz) i tic nascono invece dai fronti della simulazione.
+    function audioSchedule() {
+      const a = audio;
+      if (!a) return;
+      const now = a.ctx.currentTime;
+      const from = Math.max(a.done, now);
+      const to = now + 0.08;
+      a.done = to;
+      if (a.muted || st.f >= AUDIO.min || (!reduced && st.N === 1)) return;
+      const pa = audioPhase(from);
+      const pb = audioPhase(to);
+      for (let n = Math.floor(pa); n <= Math.floor(pb); n++) {
+        if (n > pa && n <= pb) audioTick(true, a.t0 + (n - a.ph0) / st.f);
+        const fall = n + st.duty;
+        if (fall > pa && fall <= pb) audioTick(false, a.t0 + (fall - a.ph0) / st.f);
+      }
     }
     function audioStop(immediate) {
       if (!audio) return;
       const a = audio;
       audio = null;
+      clearInterval(a.timer);
       const end = () => {
         try { a.osc.stop(); } catch (e) { /* già fermo */ }
         try { a.ctx.close(); } catch (e) { /* già chiuso */ }
       };
-      try { a.gain.gain.setTargetAtTime(0, a.ctx.currentTime, 0.015); } catch (e) { /* niente */ }
+      try {
+        a.gain.gain.setTargetAtTime(0, a.ctx.currentTime, 0.015);
+        a.tick.gain.setTargetAtTime(0, a.ctx.currentTime, 0.015);
+      } catch (e) { /* niente */ }
       if (immediate) end();
       else setTimeout(end, 150);
     }
     const onVis = () => audioMute(false);
     document.addEventListener('visibilitychange', onVis);
+    // il suono appartiene al laboratorio: tace quando il laboratorio esce dallo schermo
+    const io = 'IntersectionObserver' in window ? new IntersectionObserver((en) => { inView = en[en.length - 1].isIntersecting; audioMute(false); }) : null;
+    if (io) io.observe(lab.root);
 
     /* --- lo schema --- */
     let S = null;
@@ -667,6 +738,7 @@
         ledC = [pin3[0], G.led.ly + 28];
         sc.f.led = flowPath(L.flow, 'M' + pin3[0] + ' ' + pin3[1] + 'V' + G.yG);
         sc.t.real = s('text', { x: pin3[0] - 22, y: G.led.ly + 46, class: 'oscillatori-real', 'text-anchor': 'end', text: '' }, L.top);
+        sc.t.real2 = s('text', { x: pin3[0] - 22, y: G.led.ly + 60, class: 'oscillatori-real', 'text-anchor': 'end', text: '' }, L.top);
       } else {
         sc.w.out = W([pin3, [G.led.rx, pin3[1]]]);
         sc.rl = sym.resistor(L.sym, { x: G.led.rx, y: pin3[1], len: G.led.rlen, label: 'R', value: '560 Ω', side: 1 });
@@ -675,7 +747,9 @@
         sc.w.ledK = W([[G.led.x, pin3[1] + 56], [G.led.x, G.yG]]);
         ledC = [G.led.x, pin3[1] + 28];
         sc.f.led = flowPath(L.flow, 'M' + pin3[0] + ' ' + pin3[1] + 'H' + G.led.x + 'V' + G.yG);
-        sc.t.real = s('text', { x: G.led.x + 22, y: pin3[1] + 46, class: 'oscillatori-real', text: '' }, L.top);
+        // a sinistra del LED, sotto la resistenza: a destra il disegno finisce
+        sc.t.real = s('text', { x: G.led.x - 16, y: pin3[1] + 34, class: 'oscillatori-real', 'text-anchor': 'end', text: '' }, L.top);
+        sc.t.real2 = s('text', { x: G.led.x - 16, y: pin3[1] + 47, class: 'oscillatori-real', 'text-anchor': 'end', text: '' }, L.top);
       }
       sc.bloom = s('circle', { cx: ledC[0], cy: ledC[1], r: 34, class: 'oscillatori-bloom' }, L.back);
 
@@ -802,13 +876,18 @@
       let k;
       if (reduced) k = st.f < 20 ? (q ? kOn : 0) : kOn * st.duty;
       else if (st.N === 1) k = EI.approach(st.led, q ? kOn : 0, dt, 45);
-      else if (st.f < 20) k = ((st.realT * st.f) % 1) < st.duty ? kOn : 0;
+      else if (st.f < 20) {
+        // lampi veri, più veloci dello schema: con l'audio acceso seguono lo stesso orologio dei tic
+        const ph = audio ? audioPhase(audio.ctx.currentTime) : st.realT * st.f;
+        k = (ph - Math.floor(ph)) < st.duty ? kOn : 0;
+      }
       else if (st.f < 90) k = kOn * st.duty * (1 + 0.5 * ((90 - st.f) / 70) * (Math.random() - 0.5));
       else k = kOn * st.duty;
       st.led = k;
       sc.led.setGlow(k, LED_COLOR);
       sc.bloom.style.opacity = (k * 0.55).toFixed(3);
-      setText(sc.t.real, 'real', st.N > 1 && !reduced ? (st.f >= 90 ? 'tempo reale: luce fissa' : 'tempo reale') : '');
+      setText(sc.t.real, 'real', st.N > 1 && !reduced ? 'tempo reale' : '');
+      setText(sc.t.real2, 'real2', st.N > 1 && !reduced && st.f >= 90 ? 'luce fissa' : '');
 
       // dentro il 555
       const I = sc.in;
@@ -879,19 +958,21 @@
       if (f > 90) regime = 'A ' + fmtF(f) + ' il LED si accende e si spegne ' + fmtN(Math.round(f)) + ' volte al secondo: l\'occhio non separa più i lampi e vede una luce fissa, meno intensa, al ' + fmtPct(st.duty) + ' della luminosità piena. È la [[persistenza-della-visione]].' + slow;
       else if (f > 20) regime = 'A ' + fmtF(f) + ' il LED tremola: siamo vicini al limite dell\'occhio, che di solito smette di vedere lo sfarfallio tra i 50 e i 90 lampi al secondo.' + slow;
       else if (N > 1) regime = 'Il LED lampeggia davvero ' + fmtF(f) + ', troppo in fretta per seguire il ciclo. Nello schema rallentato vedi Vc salire fino a ⅔ di Vcc in ' + fmtT(st.tH) + ' e scendere fino a ⅓ in ' + fmtT(st.tL) + '.' + slow;
-      const insideMsg = 'Dentro il 555 il partitore di tre resistenze da 5 kΩ fissa ' + num(lo, 2) + ' V e ' + num(hi, 2) + ' V. Quando Vc tocca ⅔ di Vcc il [[comparatore]] di soglia azzera il [[flip-flop]]: l\'uscita va bassa e il transistor di scarica si accende. Quando Vc scende a ⅓ il comparatore di trigger rimette Q a 1. In mezzo il flip-flop ricorda lo stato: è questa memoria a creare l\'[[isteresi]].';
+      const insideMsg = 'Dentro il 555 il partitore di tre resistenze da 5 kΩ fissa le soglie a ' + fmtV(lo) + ' e ' + fmtV(hi) + '. Quando Vc tocca ⅔ di Vcc il [[comparatore]] di soglia azzera il [[flip-flop]]: l\'uscita va bassa e il transistor di scarica si accende. Quando Vc scende a ⅓ il comparatore di trigger rimette Q a 1. In mezzo il flip-flop ricorda lo stato: è questa memoria a creare l\'[[isteresi]].';
       const baseMsg = 'Uscita alta: C si carica attraverso R1 e R2 da ⅓ a ⅔ di Vcc in <b>' + fmtT(st.tH) + '</b>. Uscita bassa: il piedino 7 lo scarica attraverso la sola R2 in <b>' + fmtT(st.tL) + '</b>. Un ciclo dura ' + fmtT(st.T) + ', cioè ' + fmtF(f) + '.' + (reduced ? ' Con il movimento ridotto lo schema resta fermo: scegli la fase da guardare.' : ' Fai clic sul chip per vedere chi decide quando cambiare.');
-      if (st.first && !reduced) return 'Appena acceso il condensatore è scarico: per salire da 0 V a ⅔ di Vcc impiega ln 3 · (R1 + R2) · C = <b>' + fmtT(model.firstHigh(p.R1, p.R2, p.C)) + '</b>, più di un tempo alto normale (' + fmtT(st.tH) + '). Dal ciclo successivo oscillerà soltanto tra ⅓ e ⅔ di Vcc.';
+      const audioMsg = () => {
+        if (f > 20000) return 'A ' + fmtF(f) + ' il 555 produce ultrasuoni: nessuno li sentirebbe, per questo l\'altoparlante tace. Scegli un condensatore più grande.';
+        if (f < AUDIO.min) return 'Sotto i 20 Hz circa l\'orecchio non sente una nota: l\'altoparlante fa un <b>tic</b> a ogni fronte dell\'uscita, uno quando sale e uno quando scende' + (reduced ? '' : ', insieme ai lampi del LED') + '. Rimpicciolisci C: i tic si avvicinano finché, oltre i 20 Hz, si fondono in un suono.';
+        if (f > AUDIO.max) return 'L\'altoparlante riceve un\'onda rettangolare a ' + fmtF(f) + '; per non ferire le orecchie qui suona al massimo a 4 kHz. Più breve è il periodo, più acuta è la nota.';
+        return 'L\'altoparlante riceve l\'uscita del 555: un\'onda rettangolare a <b>' + fmtF(f) + '</b>, alta per il ' + fmtPct(st.duty) + ' del periodo. Più breve è il periodo, più acuta è la nota: prova a spostare C di un gradino.';
+      };
+      if (st.first && !reduced && !st.lastCtl) return 'Appena acceso il condensatore è scarico: per salire da 0 V a ⅔ di Vcc impiega ln 3 · (R1 + R2) · C = <b>' + fmtT(model.firstHigh(p.R1, p.R2, p.C)) + '</b>, più di un tempo alto normale (' + fmtT(st.tH) + '). Dal ciclo successivo oscillerà soltanto tra ⅓ e ⅔ di Vcc.';
       switch (st.lastCtl) {
         case 'vcc':
-          return 'Con Vcc = <b>' + fmtV(p.Vcc) + '</b> le soglie diventano ' + num(lo, 2) + ' V e ' + num(hi, 2) + ' V. Il condensatore si carica più o meno in fretta, in volt al secondo, ma la strada da fare è sempre la stessa frazione: metà della distanza da Vcc. Per questo il periodo resta <b>' + fmtT(st.T) + '</b>: i fronti coincidono con quelli della traccia grigia.';
+          return 'Con Vcc = <b>' + fmtV(p.Vcc) + '</b> le soglie diventano ' + fmtV(lo) + ' e ' + fmtV(hi) + '. Il condensatore si carica più o meno in fretta, in volt al secondo, ma la strada da fare è sempre la stessa frazione: metà della distanza da Vcc. Per questo il periodo resta <b>' + fmtT(st.T) + '</b>: i fronti coincidono con quelli della traccia grigia.';
         case 'audio':
-          if (st.audio) {
-            if (f > 20000) return 'A ' + fmtF(f) + ' il 555 produce ultrasuoni: nessuno li sentirebbe, per questo l\'altoparlante tace. Scegli un condensatore più grande.';
-            if (f < AUDIO.min) return 'Il 555 batte a ' + fmtF(f) + ': è un ritmo, non ancora una nota, perché l\'orecchio sente un tono solo oltre i 20 Hz circa. Qui l\'altoparlante suona a ' + AUDIO.min + ' Hz, il minimo: rimpicciolisci C per salire.';
-            if (f > AUDIO.max) return 'L\'altoparlante riceve un\'onda rettangolare a ' + fmtF(f) + '; per non ferire le orecchie qui suona al massimo a 4 kHz. Più breve è il periodo, più acuta è la nota.';
-            return 'L\'altoparlante riceve l\'uscita del 555: un\'onda rettangolare a <b>' + fmtF(f) + '</b>, alta per il ' + fmtPct(st.duty) + ' del periodo. Più breve è il periodo, più acuta è la nota: prova a spostare C di un gradino.';
-          }
+          if (st.audio) return audioMsg();
+          if (st.audioFail) return 'Questo browser non permette di generare suoni: l\'altoparlante resta spento, ma il LED e l\'oscilloscopio raccontano lo stesso ritmo.';
           return regime || (st.inside ? insideMsg : baseMsg);
         case 'inside':
           if (st.inside) return insideMsg;
@@ -903,6 +984,7 @@
           if (regime && f > 20) return regime;
           return 'R2 lavora in tutte e due le fasi: il condensatore si carica attraverso R1 + R2 e si scarica attraverso la sola R2. Ora il tempo alto è ' + fmtT(st.tH) + ' e quello basso ' + fmtT(st.tL) + ', con un [[duty-cycle]] del ' + fmtPct(st.duty) + '.' + (N > 1 ? slow : '');
         case 'c':
+          if (st.audio) return audioMsg();
           return regime || 'C moltiplica tutti i tempi: con ' + fmtC(p.C) + ' il periodo è ' + fmtT(st.T) + ' e il duty cycle non cambia (' + fmtPct(st.duty) + '). Ogni gradino della serie E6 vale circa ×1,5; scendendo dai µF ai nF i lampi diventano un suono.';
         default:
           return regime || (st.inside ? insideMsg : baseMsg);
@@ -943,6 +1025,7 @@
     lab.onReset(() => {
       st.ghost = null;
       st.lastCtl = null;
+      st.lastKind = null;
       st.lastTouch = -1e9;
       st.vccMin = st.Vcc;
       st.vccMax = st.Vcc;
@@ -974,6 +1057,7 @@
       dead = true;
       audioStop(true);
       document.removeEventListener('visibilitychange', onVis);
+      if (io) io.disconnect();
       if (raf) cancelAnimationFrame(raf);
       if (ro) ro.disconnect();
       else window.removeEventListener('resize', onResize);
@@ -1248,7 +1332,7 @@
       },
       {
         name: 'Frequenza dell\'astabile',
-        expr: '<var>f</var> = <span class="frac"><span>1</span><span>ln 2 · (<var>R</var><sub>1</sub> + 2<var>R</var><sub>2</sub>) · <var>C</var></span></span> ≈ <span class="frac"><span>1,44</span><span>(<var>R</var><sub>1</sub> + 2<var>R</var><sub>2</sub>) · <var>C</var></span></span>',
+        expr: '<var>f</var> = <span class="frac"><span>1</span><span>ln 2 · (<var>R</var><sub>1</sub> + 2<var>R</var><sub>2</sub>) · <var>C</var></span></span><br>≈ <span class="frac"><span>1,44</span><span>(<var>R</var><sub>1</sub> + 2<var>R</var><sub>2</sub>) · <var>C</var></span></span>',
         legend: [['f', 'frequenza, in hertz: cicli al secondo'], ['1,44', 'vale 1/ln 2: è il numero che compare nei fogli tecnici del 555']],
         note: 'Vcc non compare: il 555 batte lo stesso ritmo a 5 V e a 15 V. Esempio: 1 kΩ, 10 kΩ e 100 nF danno circa 687 Hz.',
       },
@@ -1277,15 +1361,15 @@
       text: [
         'Per far oscillare un circuito servono qualcosa che amplifichi e una strada che riporti l\'uscita all\'ingresso. Nel 1912 Edwin H. Armstrong, studente alla Columbia University di New York, scopre che rimandando alla griglia di un triodo una parte del segnale della placca l\'amplificazione cresce moltissimo: è la rigenerazione, una [[retroazione-positiva]]. Spinta oltre un certo punto, la valvola comincia a oscillare da sola e diventa un generatore di onde radio. Nel 1913 ci arriva in modo indipendente anche Alexander Meissner, alla Telefunken di Berlino, con l\'oscillatore che porta ancora il suo nome.',
         'Sulla paternità dell\'idea si apre una lunghissima battaglia di brevetti, soprattutto tra Armstrong e Lee De Forest, l\'inventore del triodo. Nel 1934 la Corte Suprema degli Stati Uniti dà ragione a De Forest, ma buona parte degli ingegneri continua a considerare Armstrong il vero scopritore.',
-        'Gli oscillatori a rilassamento nascono a Parigi durante la Prima guerra mondiale. All\'École normale supérieure, per la radiotelegrafia militare, Henri Abraham ed Eugène Bloch collegano due valvole in modo che ciascuna, accendendosi, spenga l\'altra: il circuito salta tra due stati e produce un\'onda quasi quadrata, ricca di armoniche, utile per misurare con precisione le frequenze radio. Lo chiamano multivibratore. Nel 1926 l\'olandese Balthasar van der Pol descrive con un\'equazione queste oscillazioni, lente a caricarsi e rapide a scaricarsi, e diffonde il nome di oscillazioni di rilassamento.',
-        'Il timer 555 arriva mezzo secolo dopo. Nel 1971 Hans Camenzind, un ingegnere nato a Zurigo che lavorava a contratto per la Signetics, in California, ha l\'idea mentre lavora a un anello ad aggancio di fase (PLL). Il reparto tecnico la boccia; il responsabile marketing, Art Fury, ci crede. Camenzind passa quasi un anno tra prototipi su basetta e disegni a mano; sostituendo un generatore di corrente con una semplice resistenza scende da nove a otto piedini, e il chip entra in un contenitore DIP-8. Il NE555 esce nel 1972 e diventa uno dei circuiti integrati più venduti di sempre: all\'inizio degli anni 2000 si stimava un miliardo di pezzi l\'anno.',
+        'Uno dei primi oscillatori a rilassamento nasce a Parigi durante la Prima guerra mondiale. All\'École normale supérieure, per la radiotelegrafia militare, Henri Abraham ed Eugène Bloch collegano due valvole in modo che ciascuna, accendendosi, spenga l\'altra: il circuito salta tra due stati e produce un\'onda quasi quadrata, ricca di armoniche, utile per misurare con precisione le frequenze radio. Lo chiamano multivibratore. Nel 1926 l\'olandese Balthasar van der Pol descrive con un\'equazione queste oscillazioni, lente a caricarsi e rapide a scaricarsi, e diffonde il nome di oscillazioni di rilassamento.',
+        'Il timer 555 arriva mezzo secolo dopo. Nel 1971 Hans Camenzind, un ingegnere nato a Zurigo che lavorava a contratto per la Signetics, in California, lo progetta partendo da un\'idea nata mentre studiava un anello ad aggancio di fase (PLL). Il reparto tecnico all\'inizio la boccia; il responsabile marketing, Art Fury, ci crede. Camenzind passa quasi un anno tra prototipi su basetta e disegni a mano; sostituendo un generatore di corrente con una semplice resistenza scende da nove a otto piedini, e il chip entra in un contenitore DIP-8. Il NE555 esce nel 1972 e diventa uno dei circuiti integrati più venduti di sempre: all\'inizio degli anni 2000 si stimava un miliardo di pezzi l\'anno.',
       ],
       events: [
         { year: 1912, title: 'La rigenerazione', who: 'Edwin H. Armstrong', text: 'Rimandando alla griglia di un triodo parte del segnale, l\'amplificazione cresce; con più retroazione la valvola oscilla da sola.' },
         { year: 1913, title: 'L\'oscillatore di Meissner', who: 'Alexander Meissner, Telefunken', text: 'Un oscillatore a valvola con retroazione induttiva, scoperto indipendentemente da Armstrong.' },
         { year: 1917, title: 'Il multivibratore', who: 'Henri Abraham ed Eugène Bloch', text: 'Due valvole che si spengono a vicenda: uno dei primi oscillatori a rilassamento, reso pubblico nel 1919.' },
         { year: 1926, title: 'Le oscillazioni di rilassamento', who: 'Balthasar van der Pol', text: 'Un\'equazione per gli oscillatori che si caricano lentamente e si scaricano di colpo, come il multivibratore.' },
-        { year: 1971, title: 'Il progetto del 555', who: 'Hans Camenzind, per la Signetics', text: 'Dopo quasi un anno di prove, il primo prototipo del chip è pronto nell\'ottobre del 1971.' },
+        { year: 1971, title: 'Il progetto del 555', who: 'Hans Camenzind, per la Signetics', text: 'Dopo mesi di prove su basetta, il prototipo del chip è completato nell\'ottobre del 1971.' },
         { year: 1972, title: 'Il NE555 in commercio', who: 'Signetics', text: 'Un timer completo in otto piedini. Secondo la rivista Elektor, nei primi tre mesi se ne vendettero più di mezzo milione.' },
       ],
     },
