@@ -39,10 +39,11 @@ test('quarzo da orologio: risonanza a 32 768 Hz, Q di decine di migliaia, banda 
 test('campana di risonanza: larga fs/Q, stretta per il quarzo e quasi piatta per un circuito LC', () => {
   const x = M.crystal(M.WATCH_XTAL);
   near(M.resonance(x.fs, x.fs, x.Q), 1, 1e-15, 'al centro');
-  // i due punti a metà potenza risolvono Q·(f/f0 − f0/f) = ±1
+  // i due punti a metà potenza risolvono Q·(f/f0 − f0/f) = ±1. Tolleranza 1e-9: f ≈ 32 768 Hz
+  // è arrotondata a 3,6·10⁻¹² Hz su uno scarto di 0,35 Hz, quindi 1e-12 non è raggiungibile.
   const half = (sg) => { const a = sg / (2 * x.Q); return x.fs * (a + Math.sqrt(a * a + 1)); };
-  near(M.resonance(half(1), x.fs, x.Q), Math.SQRT1_2, 1e-12, 'sopra');
-  near(M.resonance(half(-1), x.fs, x.Q), Math.SQRT1_2, 1e-12, 'sotto');
+  near(M.resonance(half(1), x.fs, x.Q), Math.SQRT1_2, 1e-9, 'sopra');
+  near(M.resonance(half(-1), x.fs, x.Q), Math.SQRT1_2, 1e-9, 'sotto');
   near(half(1) - half(-1), x.bw, 1e-9, 'larghezza = fs/Q');
   assert.ok(M.resonance(x.fs + 2, x.fs, x.Q) < 0.2, 'a 2 Hz dal centro il quarzo risponde meno del 20 %');
   assert.ok(M.resonance(x.fs + 2, x.fs, 100) > 0.999, 'un LC con Q = 100 resta quasi piatto');
@@ -157,6 +158,23 @@ test('grande salto di N: giri persi, poi aggancio sulla nuova frequenza', () => 
   const turns = sim.u[sim.n] / TAU;
   near(turns, Math.round(turns), 0.02, 'giri persi interi');
   assert.ok(Math.round(turns) > 0);
+});
+
+test('anello lento e salto enorme: il VCO scorre a velocità costante e si aggancia solo alla fine', () => {
+  // da 640 MHz a 10 MHz con fn = 10 kHz: il rivelatore saturato dà in media ±π, quindi
+  // lo scarto cala di π·ωn² al secondo e la rincorsa dura |x|/(π·ωn²) ≈ 0,32 s
+  const fref = 10e6;
+  const lp = M.loopParams(fref, 0);
+  const s = M.retune({ e: 0, x: 0, u: 0 }, { fref, N: 64 }, { fref, N: 1 });
+  const slew = Math.abs(s.x) / (Math.PI * lp.wn * lp.wn);
+  const sim = M.simulate({ fref, N: 1, wn: lp.wn, zeta: lp.zeta, e: s.e, x: s.x, u: s.u });
+  assert.ok(sim.locked, 'agganciato dentro la simulazione');
+  rel(sim.tLock, slew, 0.05, 'tempo di aggancio = durata della rincorsa');
+  assert.ok(sim.T >= sim.tLock, 'la finestra contiene l\'aggancio');
+  rel(sim.f[Math.round((sim.n * slew) / sim.T / 2)], (640e6 + 10e6) / 2, 0.02, 'a metà rincorsa il VCO è a metà strada');
+  const after = Math.ceil((sim.tLock / sim.T) * sim.n) + 1;
+  for (let k = after; k <= sim.n; k++) assert.strictEqual(sim.slip[k], 0, 'nessun giro perso dopo l\'aggancio');
+  rel(sim.f[sim.n], fref, 1e-6, 'arriva a N · fref');
 });
 
 test('banda dell\'anello: dagli estremi lento e stabile a veloce e nervoso', () => {

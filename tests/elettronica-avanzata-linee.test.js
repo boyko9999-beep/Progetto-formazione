@@ -149,6 +149,46 @@ test('regola pratica e riflettometro: distanza, lunghezza critica, verdetto', ()
   near(M.tdrDistance(2 * L.td, L.v), 30, 1e-9);
 });
 
+test('lunghezza critica v·tr/6: circa 4,8 mm in FR-4 con fronti da 200 ps, 5 cm in aria con fronti da 1 ns', () => {
+  near(M.criticalLength(4.3, 0.2), 0.482, 0.001, 'FR-4, 200 ps');
+  near(M.criticalLength(1, 1), 5.0, 0.01, 'aria, 1 ns');
+  near(M.criticalLength(4.3, 1, 2), 3 * M.criticalLength(4.3, 1), 1e-12, 'con tr/2 la soglia triplica');
+  // il verdetto coincide con il confronto tra la lunghezza e la soglia
+  for (const len of [0.3, 0.47, 0.49, 2, 30]) {
+    assert.strictEqual(M.isLong(len, 4.3, 0.2), len > M.criticalLength(4.3, 0.2), 'ℓ = ' + len + ' cm');
+  }
+});
+
+test('finestra del laboratorio: abbastanza echi da arrivare vicino al valore finale', () => {
+  // distanza dal valore finale alla fine della finestra, in frazione del primo gradino
+  const residual = (p) => {
+    const L = mk(p);
+    const span = M.timeSpan(L);
+    const vin = M.inputVoltage(L, M.bounces(L, span), span);
+    return { L, span, r: Math.abs(vin - L.vFinal) / Math.abs(L.vFinal - L.vLaunch) };
+  };
+  // generatore adattato: quattro andate e ritorno e mezzo giro per vedere l'ultimo gradino
+  const a = residual({ zl: 150 });
+  assert.strictEqual(M.roundTrips(a.L), 4);
+  near(a.span, 9 * a.L.td, 1e-12);
+  near(a.r, 0, 1e-9, 'l\'eco è già tutta arrivata');
+  // ΓS·ΓL = −2/3 · (+1): quattro giri bastano per scendere sotto il 20%
+  const b = residual({ rs: 10, zl: Infinity });
+  assert.strictEqual(M.roundTrips(b.L), 4);
+  assert.ok(b.r < 0.2, 'Rs 10 Ω, aperto: ' + b.r);
+  // ΓS·ΓL ≈ 0,79: ne servono sette
+  const c = residual({ rs: 5, zl: 1 });
+  assert.strictEqual(M.roundTrips(c.L), 7);
+  assert.ok(c.r < 0.2, 'Rs 5 Ω, ZL 1 Ω: ' + c.r);
+  // ΓS·ΓL ≈ 0,82: il limite di otto giri lascia circa il 20%
+  const d = residual({ rs: 500, zl: Infinity });
+  assert.strictEqual(M.roundTrips(d.L), 8);
+  assert.ok(d.r < 0.21, 'Rs 500 Ω, aperto: ' + d.r);
+  // filo corto con fronte lento: la finestra la decide il tempo di salita
+  const e = mk({ len: 1, tr: 5 });
+  near(M.timeSpan(e), 30, 1e-12);
+});
+
 test('domande provvisorie: formato e conti coerenti con il modello', () => {
   const quiz = Array.from(chapter.quiz);
   assert.deepStrictEqual(quiz.map((q) => q.id), ['ea-linee-01', 'ea-linee-02', 'ea-linee-03', 'ea-linee-04']);

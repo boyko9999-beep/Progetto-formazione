@@ -257,7 +257,6 @@
     prep();
     return {
       link: L,
-      get produced() { return m; },
       bit: (i) => bits[((i % RING) + RING) % RING],
       // Prossimi `count` campioni: v con il rumore casuale, c senza (serve alla stima statistica).
       next(count, v, c) {
@@ -308,16 +307,6 @@
     }
   }
 
-  function collect(v, c, bitOf, so, k0, k1, acc) {
-    const a = acc || newAcc();
-    for (let k = k0; k < k1; k++) {
-      const mk = k * SPU + so;
-      if (mk < SPU || mk + SPU >= v.length) continue;
-      measure(v, c, mk, bitOf(k), bitOf(k + 1), a);
-    }
-    return a;
-  }
-
   // Taglia un flusso in finestre di 2 UI centrate sull'istante di campionamento di ogni simbolo:
   // fn(v, c, i, k) riceve i campioni e l'indice i del campionamento del simbolo k.
   function feeder(st) {
@@ -355,7 +344,7 @@
     };
   }
 
-  // Misure dell'occhio da campioni raccolti con collect().
+  // Misure dell'occhio dai campioni raccolti con measure().
   // Altezza: dal percentile 0,1% degli 1 al 99,9% degli 0. Larghezza: 1 UI meno la dispersione
   // degli attraversamenti. BER: media delle code gaussiane del rumore casuale su ogni campione
   // senza rumore (così i disturbi limitati, come una sinusoide, non vengono trattati da gaussiani);
@@ -389,21 +378,37 @@
     };
   }
 
-  // Simulazione completa e riproducibile di nBits bit (dopo 16 bit di assestamento).
+  // Simulazione riproducibile di nBits bit, dopo 16 bit di assestamento. Il flusso si legge
+  // a blocchi, così la memoria resta piccola anche con centinaia di migliaia di bit.
   function simulate(p, nBits, seed) {
-    const st = createStream(p, seed);
-    const L = st.link;
-    const total = (nBits + 16) * SPU + L.so + 2 * SPU;
-    const { v, c } = st.next(total);
-    const acc = collect(v, c, st.bit, L.so, 16, 16 + nBits);
-    return { link: L, v, c, acc, stats: eyeStats(acc, L.sigma) };
+    const f = feeder(createStream(p, seed));
+    const acc = newAcc();
+    f.pull(16, () => {});
+    f.pull(nBits, (v, c, i, k) => measure(v, c, i, f.bit(k), f.bit(k + 1), acc));
+    return { link: f.link, acc, stats: eyeStats(acc, f.link.sigma) };
   }
 
   const model = {
     A_WIRE, SPU, prbs7, diffCm, cmrrDb, cmToDiff, imbalanceCmrr, erfc, berFromQ, qFromBer, qFactor,
     unitInterval, nyquist, tauFor, lossDb, stepResponse, pulse, cursors, bestTap, deemphasisDb,
-    pairPickup, rng, linkSetup, createStream, measure, collect, feeder, eyeStats, simulate,
+    pairPickup, rng, linkSetup, createStream, measure, feeder, eyeStats, simulate,
   };
+
+  /* ---------- aiuti di disegno ---------- */
+
+  // Etichetta con fondo scuro, leggibile anche sopra le tracce dell'occhio.
+  function tag(ctx, txt, x, y, o) {
+    const sz = o.size || 10.5;
+    const align = o.align || 'left';
+    ctx.save();
+    ctx.font = '700 ' + sz + 'px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace';
+    const tw = ctx.measureText(txt).width;
+    const x0 = align === 'center' ? x - tw / 2 : align === 'right' ? x - tw : x;
+    ctx.fillStyle = EA.alpha(EA.colors.bg, 0.82);
+    ctx.fillRect(x0 - 4, y - sz, tw + 8, sz + 5);
+    ctx.restore();
+    EA.draw.text(ctx, txt, x, y, { color: o.color, size: sz, weight: 700, align });
+  }
 
   /* ---------- persistenza da oscilloscopio (istogramma 2D con dissolvenza) ---------- */
 
@@ -549,9 +554,8 @@
     let eyeFeed = null;
     let eyeStatic = false;
 
-    function geometry() {
-      const w = cv.w;
-      const hh = cv.h;
+    // w e hh sono le misure del disegno: sul tablet in verticale quelle del telefono, poi ingrandite.
+    function geometry(w, hh) {
       const narrow = w < 560;
       const g = { w, hh, narrow, pad: narrow ? 12 : 22 };
       g.U = narrow ? 10 : Math.round(EA.clamp(hh * 0.04, 13, 20));
@@ -572,17 +576,19 @@
         g.rx1 = g.rx0 + 50;
         g.out0 = g.rx1 + 18;
         g.out1 = w - g.pad;
-        g.yTop = Math.round(Math.max(120, hh * 0.3));
+        // il filo in alto lascia spazio, nel pannello, al titolo e al nome della prima corsia
+        g.yTop = Math.round(Math.max(120, hh * 0.3, 100 + g.U * 2.6));
         g.yBot0 = Math.round(hh * 0.7);
         g.panelY0 = 62;
         g.panelY1 = hh - 20;
         g.nBits = 12;
       }
-      g.yBot = narrow ? Math.round(EA.lerp(g.yBot0, g.yTop, look.eye)) : g.yBot0;
+      g.yM = Math.round((g.yTop + g.yBot0) / 2);
+      // nell'occhio resta solo la coppia intrecciata: sale in alto sul telefono, al centro sul desktop
+      g.yBot = Math.round(EA.lerp(g.yBot0, narrow ? g.yTop : g.yM, look.eye));
       g.Lb = (g.rx0 - g.tx1) / g.nBits;
       g.xiF = g.nBits * 0.34;
       g.xF = g.tx1 + g.xiF * g.Lb;
-      g.yM = Math.round((g.yTop + g.yBot0) / 2);
       g.a = g.U * 1.2;
       g.p = g.Lb * 0.75;
       g.lens0 = Math.round((g.xF - g.tx1) / g.p) - 1;
@@ -678,16 +684,19 @@
     }
 
     function transmitter(g) {
-      const y0 = g.yTop - g.U * 2.4;
+      const y0 = EA.lerp(g.yTop, g.yBot, look.eye) - g.U * 2.4;
       const y1 = Math.max(g.yBot, g.yTop) + g.U * 2.4;
       box(g.tx0, y0, g.tx1 - g.tx0, y1 - y0, C.grid, 8);
       EA.draw.text(ctx, 'TX', (g.tx0 + g.tx1) / 2, (y0 + y1) / 2 + 4, { color: C.text, size: 11, weight: 700, align: 'center' });
     }
 
     function motor(g, t, playing) {
+      if (look.eye > 0.98) return;
       const r = g.narrow ? 9 : 14;
       const fl = lastFlash(t, g);
       const on = LOOKS[STAGES[stage].key].burst;
+      ctx.save();
+      ctx.globalAlpha = 1 - look.eye;
       // fronti d'onda che partono dal motore e investono tutti i fili
       ctx.save();
       ctx.beginPath();
@@ -729,6 +738,7 @@
       if (playing && fl.k > 0.05) EA.draw.dot(ctx, g.xF, g.yM, r * 0.5, NOISE);
       EA.draw.text(ctx, 'M', g.xF, g.yM + (g.narrow ? 4 : 4.5), { color: on ? C.ink : C.dim, size: g.narrow ? 10.5 : 12, weight: 800, align: 'center' });
       if (!g.narrow) EA.draw.text(ctx, 'motore', g.xF + r + 8, g.yM + 4, { color: on ? NOISE : C.dim, size: 10.5 });
+      ctx.restore();
     }
 
     // Traccia della tensione lungo un filo: off(ξ) è lo spostamento verticale in pixel.
@@ -969,7 +979,7 @@
       const th = g.narrow ? 22 : 34;
       [[g.yTop, Math.max(look.se, look.par)], [g.yBot, Math.max(look.pair, Math.min(1, look.twist * 1.6))]].forEach(([y, a]) => {
         ctx.save();
-        ctx.globalAlpha = Math.max(0.3, a);
+        ctx.globalAlpha = Math.max(0.3 * (1 - look.eye), a);
         if (!g.narrow) {
           ctx.strokeStyle = EA.alpha(C.text, 0.6);
           ctx.lineWidth = 1.2;
@@ -994,7 +1004,7 @@
         }
         ctx.restore();
       });
-      if (!g.narrow) EA.draw.text(ctx, 'RX', g.rx0 + tw / 2, g.yTop - th / 2 - 8, { color: C.text, size: 11, weight: 700, align: 'center' });
+      if (!g.narrow) EA.draw.text(ctx, 'RX', g.rx0 + tw / 2, EA.lerp(g.yTop, g.yBot, look.eye) - th / 2 - 8, { color: C.text, size: 11, weight: 700, align: 'center' });
     }
 
     // Una corsia del pannello: i bit decisi dal ricevitore, i più recenti a sinistra.
@@ -1056,7 +1066,7 @@
         const xc = (q.xl + q.xr) / 2;
         if (xc < x0 + 5 || xc > x1 - 5) return;
         EA.draw.text(ctx, String(q.d), xc, ly + dy, { color: q.err ? C.red : C.text, size: 11, weight: q.err ? 800 : 600, align: 'center' });
-        if (q.err && !g.narrow) EA.draw.text(ctx, 'errore', xc, ly - ampA - 10, { color: C.red, size: 10.5, weight: 700, align: 'center' });
+        if (q.err && !g.narrow) EA.draw.text(ctx, 'errore', xc, ly + dy + 15, { color: C.red, size: 10.5, weight: 700, align: 'center' });
       });
       ctx.restore();
     }
@@ -1111,8 +1121,8 @@
       EA.draw.arrow(ctx, X(0), Y(0), X(0), yB - 1, C.cyan, 1.5, 7);
       EA.draw.arrow(ctx, X(0), Y(0), xl + 1, Y(0), C.cyan, 1.5, 7);
       EA.draw.arrow(ctx, X(0), Y(0), xr - 1, Y(0), C.cyan, 1.5, 7);
-      EA.draw.text(ctx, g.narrow ? 'verticale' : 'apertura verticale', X(0) + 7, (Y(0) + yT) / 2 + 4, { color: C.cyan, size: 10.5 });
-      EA.draw.text(ctx, g.narrow ? 'orizzontale' : 'apertura orizzontale', X(0), Y(0) + 17, { color: C.cyan, size: 10.5, align: 'center' });
+      tag(ctx, g.narrow ? 'verticale' : 'apertura verticale', X(0) + 8, (Y(0) + yT) / 2 + 4, { color: C.cyan });
+      tag(ctx, g.narrow ? 'orizzontale' : 'apertura orizzontale', X(0), Y(0) + 18, { color: C.cyan, align: 'center' });
       const by = bot + (g.narrow ? 15 : 18);
       EA.draw.text(ctx, '−1 UI', x0, by, { color: C.dim, size: 10.5 });
       EA.draw.text(ctx, '+1 UI', x1, by, { color: C.dim, size: 10.5, align: 'right' });
@@ -1137,13 +1147,17 @@
       const target = LOOKS[STAGES[stage].key];
       const kk = playing ? 1 - Math.exp(-dt * 3.2) : 1;
       LOOK_KEYS.forEach((k) => { look[k] += (target[k] - look[k]) * kk; });
-      const g = geometry();
+      // riquadro largo ma quasi quadrato (tablet in verticale): il disegno in colonna del telefono, ingrandito
+      const zoom = cv.w >= 560 && cv.h > cv.w * 0.75 ? cv.w / 520 : 1;
+      const g = geometry(cv.w / zoom, cv.h / zoom);
       if (!playing) {
         t = canonical(g);
         if (loopCtl) loopCtl.time = t;
       } else updateBursts(t, g);
       const u0 = t / HERO_TB;
       EA.draw.clear(cv);
+      ctx.save();
+      ctx.scale(zoom, zoom);
       header(g);
       if (look.par > 0.01) field(g, t, playing);
       motor(g, t, playing);
@@ -1156,6 +1170,7 @@
       box(g.out0, g.panelY0, g.out1 - g.out0, g.panelY1 - g.panelY0, look.eye > 0.5 ? EA.alpha(C.pink, 0.7) : C.grid);
       if (look.eye < 0.99) lanes(g, u0);
       if (look.eye > 0.01) eye(g, playing, dt);
+      ctx.restore();
     }
 
     loopCtl = api.loop(draw);
@@ -1197,6 +1212,7 @@
     const C = EA.colors;
     const h = EA.h;
     const st = { mode: 'diff', rate: 5e9, f3: 2.5e9, sigma: 0.006, rj: 0.015, cm: 0.12, imb: 0.02, eq: false };
+    parts.root.classList.add('diff-lab');
     parts.display.classList.add('diff-lab-display');
     const cv = api.canvas(parts.display, { class: 'ea-canvas diff-lab-canvas', label: 'Diagramma a occhio con persistenza: le finestre di due intervalli unitari del segnale ricevuto si sovrappongono. Frecce azzurre misurano altezza e larghezza dell\'apertura; a destra l\'istogramma dei campioni al centro dell\'occhio; in basso la risposta del canale a un bit isolato.' });
     const ctx = cv.ctx;
@@ -1241,7 +1257,7 @@
     });
     const jit = EA.ui.slider({
       label: 'Jitter casuale', min: 0, max: 8, step: 0.5, value: st.rj * 100, color: C.violet,
-      format: (v) => EA.fmt(v, 1) + ' % UI · ' + EA.si(v / 100 / st.rate, 's', 2),
+      format: (v) => EA.fmt(v, 1) + ' % UI · ' + EA.si((v / 100) * unitInterval(st.rate), 's', 2),
       oninput: (v) => { st.rj = v / 100; update(); },
     });
     const cm = EA.ui.slider({
@@ -1252,10 +1268,11 @@
     });
     const imb = EA.ui.slider({
       label: 'Sbilanciamento', min: 0, max: 20, step: 0.5, value: st.imb * 100, color: C.orange,
-      hint: 'Conta solo nel differenziale: è la parte del modo comune che diventa segnale.',
+      hint: ' ',
       format: (v) => EA.fmt(v, 1) + ' % · ' + cmrrText(v / 100),
       oninput: (v) => { st.imb = v / 100; update(); },
     });
+    const imbHint = imb.el.querySelector('.ea-ctl-hint');
     const eq = EA.ui.toggle({ label: 'Equalizzazione in trasmissione', checked: st.eq, color: C.cyan, onchange: (v) => { st.eq = v; update(true); } });
     const eqHint = h('small', { class: 'ea-ctl-hint' });
     parts.controls.append(mode.el, rate.el, band.el, noise.el, jit.el, cm.el, imb.el, h('div', { class: 'ea-ctl diff-eq' }, eq.el, eqHint));
@@ -1306,7 +1323,7 @@
       roW.set(open ? EA.fmt(s.width * 100, 0) + ' % UI' : 'chiuso', open ? (s.width > 0.6 ? 'good' : 'warn') : 'bad');
       const tone = s.ber <= 1e-12 ? 'good' : s.ber <= 1e-6 ? 'warn' : 'bad';
       roQ.set(s.q > 30 ? '> 30' : EA.fmt(s.q, s.q < 10 ? 1 : 0), tone);
-      roB.set(s.ber < 1e-18 ? '< 10⁻¹⁸' : sci(s.ber), tone);
+      roB.set(s.ber < 1e-18 ? '< 10⁻¹⁸' : s.ber >= 0.01 ? EA.fmt(s.ber, 2) : sci(s.ber), tone);
       roE.set(EA.fmt(acc.errors, 0) + ' su ' + EA.fmt(acc.n, 0), acc.errors ? 'bad' : 'good');
       announceStats();
     }
@@ -1352,7 +1369,13 @@
       staticDirty = true;
       statT = 0.2;
       imb.el.classList.toggle('diff-off', st.mode === 'se');
-      const loss = lossDb(st.rate / 2, st.f3);
+      // quanta parte del modo comune diventa segnale differenziale, con il CMRR dato dallo sbilanciamento
+      const leak = cmToDiff(st.cm, imbalanceCmrr(st.imb));
+      if (st.mode === 'se') imbHint.textContent = 'Conta solo nel differenziale: sul filo singolo il disturbo comune passa tutto.';
+      else if (!st.cm) imbHint.textContent = 'Conta solo quando c\'è un disturbo di modo comune da respingere.';
+      else if (!leak) imbHint.textContent = 'Fili perfettamente bilanciati: il modo comune si cancella del tutto.';
+      else imbHint.textContent = 'Dei ' + EA.fmt(st.cm * 1000, 0) + ' mV di modo comune, ' + EA.si(leak, 'V', 2) + ' diventano segnale differenziale.';
+      const loss = lossDb(nyquist(st.rate), st.f3);
       roL.set(EA.fmt(loss, loss < 10 ? 1 : 0) + ' dB', loss > 12 ? 'warn' : null);
       if (!st.eq) eqHint.textContent = 'Spenta: i bit ripetuti partono con la stessa ampiezza delle transizioni.';
       else if (link.c1 === 0) eqHint.textContent = 'Presa c₁ = 0: con questo canale la de-enfasi non serve.';
@@ -1382,7 +1405,7 @@
       L.hx1 = w - L.pad;
       L.hx0 = L.hx1 - (narrow ? 40 : 70);
       L.ex1 = L.hx0 - (narrow ? 8 : 14);
-      L.ey0 = narrow ? 32 : 40;
+      L.ey0 = narrow ? 32 : 48;
       L.pulseH = narrow ? 112 : EA.clamp(hh * 0.24, 130, 175);
       L.py1 = hh - L.pad;
       L.py0 = L.py1 - L.pulseH;
@@ -1441,7 +1464,7 @@
       // intestazione
       const ty = narrow ? 20 : 24;
       EA.draw.text(ctx, narrow ? 'OCCHIO · 2 UI' : 'DIAGRAMMA A OCCHIO · 2 UI', L.pad, ty, { color: C.ink, size: narrow ? 11 : 12, weight: 700 });
-      const desc = (st.mode === 'diff' ? 'differenziale' : 'filo singolo') + (narrow ? '' : ' · ' + EA.fmt(st.rate / 1e9, 1) + ' Gbit/s') + ' · 1 UI = ' + EA.si(1 / st.rate, 's', 3);
+      const desc = (st.mode === 'diff' ? 'differenziale' : 'filo singolo') + (narrow ? '' : ' · ' + EA.fmt(st.rate / 1e9, 1) + ' Gbit/s') + ' · 1 UI = ' + EA.si(unitInterval(st.rate), 's', 3);
       EA.draw.text(ctx, desc, L.w - L.pad, ty, { color: C.text, size: narrow ? 10.5 : 11, align: 'right' });
 
       // occhio con persistenza
@@ -1489,10 +1512,10 @@
           const lh = (narrow ? '' : 'altezza ') + EA.fmt(s.height * 1000, 0) + ' mV';
           const lw = (narrow ? '' : 'larghezza ') + EA.fmt(s.width * 100, 0) + ' % UI';
           const midUp = (Y(0) + yT) / 2;
-          tag(lh, X(0) + 8, midUp + 4, 'left');
-          if (s.width > 0.02) tag(lw, X(0), Y(0) + 18, 'center');
+          tag(ctx, lh, X(0) + 8, midUp + 4, { color: C.cyan });
+          if (s.width > 0.02) tag(ctx, lw, X(0), Y(0) + 18, { color: C.cyan, align: 'center' });
         } else {
-          tag('OCCHIO CHIUSO', X(0), Y(0) - 10, 'center', C.red, narrow ? 11 : 13);
+          tag(ctx, 'OCCHIO CHIUSO', X(0), Y(0) - 10, { color: C.red, align: 'center', size: narrow ? 11 : 13 });
         }
       }
 
@@ -1519,19 +1542,6 @@
 
       // risposta a un bit isolato
       pulsePanel(L);
-    }
-
-    // Etichetta con fondo scuro, leggibile sopra le tracce.
-    function tag(txt, x, y, align, color, size) {
-      const sz = size || 10.5;
-      ctx.save();
-      ctx.font = '700 ' + sz + 'px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace';
-      const tw = ctx.measureText(txt).width;
-      const x0 = align === 'center' ? x - tw / 2 : align === 'right' ? x - tw : x;
-      ctx.fillStyle = EA.alpha(C.bg, 0.78);
-      ctx.fillRect(x0 - 4, y - sz, tw + 8, sz + 5);
-      ctx.restore();
-      EA.draw.text(ctx, txt, x, y, { color: color || C.cyan, size: sz, weight: 700, align });
     }
 
     function pulsePanel(L) {
@@ -1609,15 +1619,15 @@
     intro: [
       'Per portare un segnale elettrico servono due conduttori: uno con la tensione, l\'altro come riferimento. Nel collegamento più semplice, detto <em>single-ended</em> o a filo singolo, il riferimento è la massa comune a tutto il circuito. Funziona finché i fili sono corti e l\'ambiente è tranquillo; ma ogni disturbo che si somma al filo, o che fa oscillare la massa, arriva al ricevitore come se fosse segnale.',
       'La trasmissione <strong>differenziale</strong> usa due fili che portano copie opposte dello stesso segnale: quando D+ sale, D− scende. Il ricevitore non guarda nessuno dei due rispetto alla massa, ma solo la loro <strong>differenza</strong>. Un disturbo che colpisce i due fili allo stesso modo, il <em>modo comune</em>, sparisce nella sottrazione, mentre il segnale raddoppia. Se poi i fili sono intrecciati, anche i campi magnetici fanno molti meno danni.',
-      'L\'idea risale ai tempi del telefono, ed è la stessa che oggi porta miliardi di bit al secondo nei cavi di rete, nelle porte USB e dentro i computer. A quelle velocità la qualità di un collegamento si misura con il <strong>diagramma a occhio</strong>, che sovrappone migliaia di bit e mostra a colpo d\'occhio rumore, jitter e interferenza tra un bit e l\'altro. Intorno a tutto questo c\'è la <em>compatibilità elettromagnetica</em> (EMC): ogni apparecchio deve sopportare i disturbi dell\'ambiente senza disturbare a sua volta, grazie a schermature, filtri e norme precise.',
+      'L\'idea risale ai tempi del telefono, ed è la stessa che oggi porta miliardi di bit al secondo nei cavi di rete, nelle porte USB e dentro i computer. A quelle velocità la qualità di un collegamento si misura con il <strong>diagramma a occhio</strong>, che sovrappone migliaia di bit e mostra a colpo d\'occhio il rumore, il <em>jitter</em> (le piccole incertezze sugli istanti in cui i bit cambiano) e l\'interferenza tra un bit e l\'altro. Intorno a tutto questo c\'è la <em>compatibilità elettromagnetica</em> (EMC): ogni apparecchio deve sopportare i disturbi dell\'ambiente senza disturbare a sua volta. Ci si arriva con schermature e filtri, e lo si verifica con prove fissate da norme precise.',
     ],
     steps: [
       { title: 'Un filo e la massa', text: 'Nel collegamento a filo singolo il ricevitore confronta la tensione del filo con una soglia riferita alla massa. Un impulso di disturbo raccolto per strada si somma al segnale: se porta uno 0 sopra la soglia, il ricevitore legge un 1.', focus: 'se' },
       { title: 'Due copie opposte', text: 'La coppia differenziale porta lo stesso segnale due volte, con segno opposto: D+ è alto quando D− è basso. L\'informazione non sta nella tensione di un filo, ma nella differenza tra i due.', focus: 'diff' },
       { title: 'Il disturbo è di modo comune', text: 'I due fili corrono vicini, quindi un disturbo li colpisce quasi allo stesso modo e le due tracce si spostano insieme. Cambia la loro media, la tensione di modo comune, non la distanza tra loro.', focus: 'cm' },
-      { title: 'Il ricevitore sottrae', text: 'Il ricevitore calcola <var>V</var><sub>d</sub> = <var>V</var><sub>+</sub> − <var>V</var><sub>−</sub>: il disturbo comune si cancella e il segnale raddoppia. Quanto bene ci riesce lo dice il CMRR, che dipende dalla simmetria dei due percorsi.', focus: 'sub' },
+      { title: 'Il ricevitore sottrae', text: 'Il ricevitore calcola la differenza D+ − D−: il disturbo comune si cancella e il segnale raddoppia, perché i due fili si muovono in versi opposti. Quanto bene ci riesce lo dice il CMRR, il rapporto di reiezione del modo comune, che dipende dalla simmetria dei due percorsi.', focus: 'sub' },
       { title: 'L\'intreccio', text: 'Un campo magnetico che attraversa lo spazio tra due fili paralleli induce una tensione nell\'anello che formano, e questa volta è differenziale. Intrecciando i fili l\'anello si divide in tanti anelli piccoli girati alternativamente: le tensioni indotte si annullano a due a due.', focus: 'twist' },
-      { title: 'Il diagramma a occhio', text: 'Sovrapponendo migliaia di bit, due intervalli unitari (UI) alla volta, si forma un occhio. L\'apertura verticale è il margine contro rumore e interferenza tra i bit, quella orizzontale il margine contro il jitter.', focus: 'eye' },
+      { title: 'Il diagramma a occhio', text: 'Sovrapponendo migliaia di bit, due intervalli unitari (UI, la durata di un bit) alla volta, si forma un occhio. L\'apertura verticale è il margine contro rumore e interferenza tra i bit, quella orizzontale il margine contro il jitter.', focus: 'eye' },
     ],
     formulas: [
       { label: 'Differenza e modo comune', eq: '<var>V</var><sub>d</sub> = <var>V</var><sub>+</sub> − <var>V</var><sub>−</sub><br><var>V</var><sub>cm</sub> = (<var>V</var><sub>+</sub> + <var>V</var><sub>−</sub>) ⁄ 2', text: 'La differenza è il segnale utile; la media dice quanto la coppia «galleggia» rispetto alla massa. Con i livelli tipici di LVDS, 1,375 V e 1,025 V, si ottengono <var>V</var><sub>d</sub> = 350 mV e <var>V</var><sub>cm</sub> = 1,2 V. Un disturbo uguale sui due fili cambia solo <var>V</var><sub>cm</sub>.' },
@@ -1628,13 +1638,13 @@
     timeline: [
       { year: 1836, title: 'La stanza schermata di Faraday', who: 'Michael Faraday · Royal Institution, Londra', text: 'Faraday fa costruire un cubo di circa 3,7 m di lato: un telaio di legno rivestito di fili di rame, carta e stagnola. Lo isola e lo carica con una grande macchina elettrostatica, ma all\'interno l\'elettroscopio non rivela alcuna carica, che resta tutta sulla superficie esterna. Il resoconto esce nel 1838: è l\'antenato di ogni schermatura.' },
       { year: 1881, title: 'Il primo brevetto del doppino intrecciato', who: 'Alexander Graham Bell · brevetto US 244,426; John J. Carty · linea Boston–Providence', text: 'Il brevetto «Telephone-Circuit», concesso il 19 luglio, chiede che i due fili di ogni circuito stiano alla stessa distanza da tutti gli altri conduttori del cavo, così che le induzioni dei circuiti vicini si compensino; come forma preferita indica i fili attorcigliati tra loro. Nello stesso anno Carty dimostra che un circuito a due fili elimina i disturbi del ritorno via terra.' },
-      { year: 1885, title: 'Le trasposizioni sulle linee aeree', who: 'John J. Carty e AT&T · Stati Uniti', text: 'Per annullare la diafonia tra le linee appese agli stessi pali, i due fili di ogni circuito si scambiano di posto a intervalli regolari: un intreccio su scala gigante. Secondo le fonti AT&T lo prova intorno al 1885 sulla linea New York–Filadelfia e lo generalizza dopo il 1891. Tra il 1890 e il 1910 i circuiti a due fili sostituiscono quasi tutte le linee a filo singolo.' },
-      { year: 1936, title: 'L\'amplificatore differenziale', who: 'Alan Blumlein · Regno Unito', text: 'Tra i primi a brevettarla è Blumlein: la «coppia a coda lunga» è uno stadio a valvole che amplifica la differenza tra due ingressi e respinge ciò che hanno in comune, l\'antenato di ogni ricevitore differenziale. La paternità è discussa, perché circuiti simili compaiono tra il 1934 e il 1938 negli strumenti per registrare segnali fisiologici.' },
+      { year: 1885, title: 'Le trasposizioni sulle linee aeree', who: 'John J. Carty e AT&T · Stati Uniti', text: 'Per annullare la diafonia tra le linee appese agli stessi pali, i due fili di ogni circuito si scambiano di posto a intervalli regolari: un intreccio su scala gigante. AT&T lo prova intorno al 1885 sulla linea New York–Filadelfia e lo generalizza dopo il 1891, quando Carty ne formula la teoria; le fonti non concordano su queste date. Tra il 1890 e il 1910 i circuiti a due fili sostituiscono quasi tutte le linee a filo singolo.' },
+      { year: 1936, title: 'L\'amplificatore differenziale', who: 'Alan Blumlein · Regno Unito', text: 'Blumlein deposita uno dei primi brevetti della «coppia a coda lunga», uno stadio a valvole che amplifica la differenza tra due ingressi e respinge ciò che hanno in comune: è l\'antenato di ogni ricevitore differenziale. La paternità è discussa, perché circuiti simili compaiono tra il 1934 e il 1938 negli strumenti per registrare segnali fisiologici.' },
       { year: 1965, title: 'L\'equalizzatore che si regola da solo', who: 'Robert W. Lucky · Bell Telephone Laboratories', text: 'Nell\'articolo «Automatic Equalization for Digital Communication» Lucky descrive un filtro a linea di ritardo con prese i cui guadagni si regolano da soli fino ad azzerare l\'interferenza intersimbolica. L\'idea porta i modem telefonici oltre i 2400 bit/s ed è l\'antenata dell\'equalizzazione FFE dei collegamenti seriali di oggi.' },
-      { year: 1989, title: 'La direttiva europea sulla compatibilità elettromagnetica', who: 'Consiglio delle Comunità europee · direttiva 89/336/CEE', text: 'Dal 3 maggio 1989 ogni apparecchio venduto in Europa deve contenere i disturbi che emette e tollerare quelli dell\'ambiente. Dopo una proroga l\'obbligo, con la marcatura CE, scatta il 1° gennaio 1996. Le norme tecniche discendono in gran parte dal CISPR, il comitato internazionale riunito per la prima volta nel 1934; oggi vale la direttiva 2014/30/UE.' },
+      { year: 1989, title: 'La direttiva europea sulla compatibilità elettromagnetica', who: 'Consiglio delle Comunità europee · direttiva 89/336/CEE', text: 'La direttiva del 3 maggio 1989 chiede che ogni apparecchio venduto in Europa contenga i disturbi che emette e tolleri quelli dell\'ambiente. Doveva valere dal 1992; dopo una proroga l\'obbligo, con la marcatura CE, scatta il 1° gennaio 1996. Le norme tecniche discendono in gran parte dal CISPR, il comitato internazionale riunito per la prima volta nel 1934; oggi vale la direttiva 2014/30/UE.' },
       { year: 1995, title: 'LVDS diventa una norma', who: 'National Semiconductor e comitato TIA · Stati Uniti', text: 'Introdotta da National Semiconductor nel 1994, la segnalazione differenziale a bassa tensione diventa la norma TIA/EIA-644 tra la fine del 1995 e il 1996 (le fonti non concordano). Una corrente di circa 3,5 mA produce circa 350 mV su 100 Ω e il ricevitore decide con una soglia di appena ±100 mV: consumi bassi, poche emissioni e centinaia di Mbit/s.' },
-      { year: 2002, title: 'PCI Express: il bus diventa seriale', who: 'PCI-SIG · Stati Uniti', text: 'Nel luglio 2002 esce la specifica PCI Express 1.0: al posto del vecchio bus parallelo, corsie fatte di coppie differenziali a 2,5 GT/s. La codifica 8b/10b permette di ricavare il clock dai dati e una de-enfasi fissa di −3,5 dB compensa le perdite delle piste. È l\'esempio da manuale di SerDes.' },
-      { year: 2022, title: 'Quattro livelli per simbolo', who: 'PCI-SIG · PCIe 6.0 e 7.0', text: 'Con PCIe 6.0, pubblicata l\'11 gennaio 2022, ogni simbolo porta due bit grazie alla modulazione PAM4: quattro livelli e tre occhi sovrapposti, ciascuno alto un terzo. Si arriva a 64 GT/s per corsia, con una correzione d\'errore leggera che compensa il BER più alto. Nel giugno 2025 PCIe 7.0 raddoppia a 128 GT/s: ogni simbolo dura circa 15,6 ps.' },
+      { year: 2002, title: 'PCI Express: il bus diventa seriale', who: 'PCI-SIG · Stati Uniti', text: 'Nel luglio 2002 esce la specifica PCI Express 1.0: al posto del vecchio bus parallelo, corsie fatte di coppie differenziali a 2,5 GT/s, cioè 2,5 miliardi di simboli al secondo. La codifica 8b/10b, che trasmette ogni gruppo di 8 bit come 10 bit ricchi di transizioni, permette di ricavare il clock dai dati; una de-enfasi fissa di −3,5 dB compensa le perdite delle piste. È l\'esempio da manuale di SerDes.' },
+      { year: 2022, title: 'Quattro livelli per simbolo', who: 'PCI-SIG · PCIe 6.0 e 7.0', text: 'Con PCIe 6.0, pubblicata l\'11 gennaio 2022, ogni simbolo porta due bit grazie alla modulazione PAM4: quattro livelli e tre occhi uno sopra l\'altro, ciascuno alto un terzo. Si arriva a 64 GT/s per corsia, con una correzione d\'errore leggera che compensa il BER più alto. Nel giugno 2025 PCIe 7.0 raddoppia a 128 GT/s: ogni simbolo dura circa 15,6 ps.' },
     ],
     fun: 'La porta del forno a microonde è una gabbia di Faraday bucata. A 2,45 GHz le microonde hanno una lunghezza d\'onda di circa 12 cm, mentre i fori della griglia misurano circa un millimetro: troppo piccoli per lasciarle uscire, enormi per la luce visibile, che ha lunghezze d\'onda di circa mezzo micrometro. Per questo il cibo si vede, ma le microonde restano dentro.',
     uses: [
@@ -1651,10 +1661,10 @@
       { term: 'Modo differenziale e modo comune', def: 'Una coppia con tensioni <var>V</var><sub>+</sub> e <var>V</var><sub>−</sub> si descrive con la differenza <var>V</var><sub>d</sub>, il segnale utile, e con la media <var>V</var><sub>cm</sub>, che dice quanto la coppia «galleggia» rispetto alla massa. Un disturbo uguale sui due fili cambia solo la media.' },
       { term: 'CMRR', def: 'Rapporto di reiezione del modo comune: quanto un ricevitore amplifica la differenza rispetto al modo comune, di solito in decibel. 80 dB significano un rapporto di 10 000, non di 80.' },
       { term: 'EMI ed EMC', def: 'L\'EMI (interferenza elettromagnetica) è il disturbo che un apparecchio emette o subisce, lungo i cavi o per irradiazione. L\'EMC (compatibilità elettromagnetica) è la capacità di funzionare nel proprio ambiente senza disturbare gli altri, verificata con prove di emissione e di immunità.' },
-      { term: 'Gabbia di Faraday', def: 'Involucro conduttore che blocca i campi elettrici e le onde con lunghezza d\'onda molto maggiore delle sue aperture. Non ferma i campi magnetici lenti: a 50 Hz attraversano un sottile schermo di rame, perché lo spessore pelle del rame è di circa 9 mm.' },
+      { term: 'Gabbia di Faraday', def: 'Involucro conduttore che blocca i campi elettrici e le onde con lunghezza d\'onda molto maggiore delle sue aperture. Non ferma i campi magnetici lenti: a 50 Hz un campo variabile penetra nel rame per circa 9 mm (lo <em>spessore pelle</em>), quindi attraversa uno schermo sottile.' },
       { term: 'SerDes', def: 'Serializzatore e deserializzatore: trasforma dati paralleli in un unico flusso velocissimo su una coppia differenziale, e viceversa. Il ricevitore ricava il clock dalle transizioni dei dati e compensa le perdite del canale con l\'equalizzazione.' },
       { term: 'Diagramma a occhio e jitter', def: 'Sovrapposizione di molti tratti del segnale ricevuto, lunghi uno o due UI (l\'intervallo unitario, cioè la durata di un simbolo). Il jitter è lo spostamento degli istanti in cui il segnale attraversa la soglia: restringe l\'occhio in orizzontale.' },
-      { term: 'ISI ed equalizzazione', def: 'Un canale passa-basso allarga ogni bit, che «sbava» sui successivi: è l\'interferenza intersimbolica (ISI). La pre-enfasi in trasmissione attenua i bit ripetuti rispetto alle transizioni, così che dopo il canale arrivino tutti con ampiezza simile.' },
+      { term: 'ISI ed equalizzazione', def: 'Un canale passa-basso allarga ogni bit, che «sbava» sui successivi: è l\'interferenza intersimbolica (ISI). L\'equalizzazione in trasmissione (pre-enfasi o de-enfasi) attenua i bit ripetuti rispetto alle transizioni, così che dopo il canale arrivino tutti con ampiezza simile.' },
     ],
     sources: [
       { title: 'A. G. Bell, brevetto US 244,426 «Telephone-circuit» (1881)', url: 'https://patents.google.com/patent/US244426' },
@@ -1680,7 +1690,7 @@
     },
     lab: {
       title: 'Diagramma a occhio',
-      intro: 'Una sequenza di prova PRBS7 attraversa un canale passa-basso e arriva al ricevitore con rumore, jitter e un disturbo di modo comune. Passa dal differenziale al filo singolo e guarda l\'occhio chiudersi; poi sali a 10 Gbit/s, restringi la banda e accendi l\'equalizzazione. Il BER stimato vale ½·erfc(<var>Q</var>/√2).',
+      intro: 'Una sequenza di prova PRBS7 (127 bit pseudo-casuali che si ripetono) attraversa un canale passa-basso e arriva al ricevitore con rumore, jitter e un disturbo di modo comune. Passa dal differenziale al filo singolo e guarda l\'occhio chiudersi; poi sali a 10 Gbit/s, restringi la banda e accendi l\'equalizzazione. Il BER stimato vale ½·erfc(<var>Q</var>/√2).',
       mount: mountLab,
     },
     model,

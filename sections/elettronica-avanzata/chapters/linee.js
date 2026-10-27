@@ -89,8 +89,18 @@
   const inputVoltage = (L, list, t) => voltage(L, list, 0, t).v;
   const loadVoltage = (L, list, t) => voltage(L, list, 1, t).v;
 
-  // Finestra di osservazione: quattro andate e ritorno, oppure sei tempi di salita se il filo è corto.
-  const timeSpan = (L) => Math.max(8 * L.td, 6 * L.tr);
+  // Echi da mostrare all'ingresso: almeno quattro, e abbastanza perché la distanza dal valore
+  // finale scenda sotto il 20% del primo gradino (ogni giro la moltiplica per ΓS·ΓL), ma non più di otto.
+  function roundTrips(L) {
+    const loop = Math.abs(L.gS * L.gL);
+    if (loop >= 0.999) return 8;
+    const need = loop > 1e-3 ? Math.ceil(Math.log(0.2) / Math.log(loop) - 1e-9) : 0;
+    return EA.clamp(need, 4, 8);
+  }
+
+  // Finestra di osservazione: quegli echi più mezzo giro per vedere l'ultimo gradino,
+  // oppure sei tempi di salita se il filo è corto.
+  const timeSpan = (L) => Math.max((2 * roundTrips(L) + 1) * L.td, 6 * L.tr);
 
   // Estremi raggiunti da totale, andata e ritorno: sono somme parziali delle onde.
   function ranges(list) {
@@ -111,7 +121,7 @@
   const model = {
     C_CM_NS, RISE_FRAC, gamma, impedanceFromGamma, velocity, delay, z0FromLC, speedFromLC,
     launch, finalValue, tdrDistance, criticalLength, isLong, edge, line, bounces,
-    voltage, inputVoltage, loadVoltage, timeSpan, ranges,
+    voltage, inputVoltage, loadVoltage, roundTrips, timeSpan, ranges,
   };
 
   /* ---------- disegno comune ---------- */
@@ -128,6 +138,9 @@
   const fixed = (x, d) => (x < 0 ? '−' : '') + Math.abs(x).toFixed(d).replace('.', ',');
 
   const lengthText = (cm) => (cm < 100 ? EA.fmt(cm, cm < 10 ? 1 : 0) + ' cm' : EA.fmt(cm / 100, 2) + ' m');
+
+  // Lunghezze piccole, come la soglia della regola pratica: da decimi di millimetro a decine di centimetri.
+  const smallLength = (cm) => (cm < 1 ? EA.fmt(cm * 10, cm < 0.1 ? 2 : 1) + ' mm' : lengthText(cm));
 
   function textWidth(ctx, str, size, weight) {
     ctx.save();
@@ -458,7 +471,7 @@
     const C = EA.colors;
     const cv = api.canvas(view, { label: 'Una pista di circuito stampato vista di lato, tra due piani di massa. Un gradino di tensione parte dal generatore a sinistra, corre lungo la linea e si riflette sul carico a destra. Sopra la linea il profilo della tensione; in basso la tensione all\'ingresso nel tempo, come la registra un riflettometro.' });
     const PH = [
-      { key: 'viaggio', zl: HERO.z0, load: 'none', dur: 5, t: 1.2, vmin: -0.16 },
+      { key: 'viaggio', zl: HERO.z0, load: 'none', dur: 4.2, t: 1.2, vmin: -0.16 },
       { key: 'aperto', zl: Infinity, load: 'open', dur: 8, t: 3, vmin: -0.16 },
       { key: 'corto', zl: 0, load: 'short', dur: 8, t: 3, vmin: -0.62 },
       { key: 'adattato', zl: HERO.z0, load: 'res', dur: 6, t: 3, vmin: -0.16 },
@@ -492,13 +505,13 @@
         subN: 'circa ' + vTxt + ' nella vetroresina FR-4',
         card: ['Vlancio = Vs · Z0/(Rs + Z0) = 1 V · 50/100 = 0,5 V', 'all\'inizio il generatore non vede il carico: vede solo Z0, come un resistore da 50 Ω'],
         note: 'vede solo Z0 = 50 Ω',
-        say: 'Il fronte viaggia a circa ' + EA.fmt(vel, 1) + ' centimetri ogni nanosecondo nella vetroresina FR-4, metà della velocità della luce. All\'inizio il generatore vede solo i 50 ohm della linea e lancia 0,5 volt.',
+        say: 'Il fronte viaggia a circa ' + EA.fmt(vel, 1) + ' centimetri ogni nanosecondo nella vetroresina FR-4, circa metà della velocità della luce. All\'inizio il generatore vede solo i 50 ohm della linea e lancia 0,5 volt.',
       },
       aperto: {
         title: 'FINE APERTA · Γ = +1',
         sub: 'l\'onda torna indietro con lo stesso segno: al carico 2 × 0,5 V = 1 V',
         subN: 'torna uguale: al carico 2 × 0,5 V = 1 V',
-        card: ['Γ = (ZL − Z0)/(ZL + Z0) = (∞ − 50)/(∞ + 50) = +1', 'Vcarico = (1 + Γ) · Vinc = 2 × 0,5 V = 1 V: raddoppia l\'onda, non il generatore'],
+        card: ['Γ = (ZL − Z0)/(ZL + Z0) → +1 quando ZL → ∞', 'Vcarico = (1 + Γ) · Vinc = 2 × 0,5 V = 1 V: raddoppia l\'onda, non il generatore'],
         note: 'eco: 0,5 → 1 V',
         say: 'Fine aperta: l\'onda torna indietro con lo stesso segno e al carico la tensione arriva a 1 volt, il doppio dell\'onda incidente.',
       },
@@ -837,7 +850,7 @@
       lines.forEach((txt, i) => {
         const size = i ? 11.5 : 12.5;
         const weight = i ? 600 : 700;
-        if (i === 1) y += 6;
+        if (i) y += i === 1 ? 6 : 4;
         wrap(ctx, txt, maxW, size, weight).forEach((ln) => {
           if (y < b.y + b.h - 4) EA.draw.text(ctx, ln, x, y, { color: i ? C.text : C.ink, size, weight });
           y += i ? 16 : 17;
@@ -867,7 +880,7 @@
     fr4: { er: 4.3, name: 'FR-4' },
   };
   const TRACE_N = 600; // campioni della traccia TDR
-  const SWEEP = 7;     // secondi per percorrere la finestra di tempo
+  const SWEEP = 7;     // secondi per percorrere quattro andate e ritorno (fino al doppio se ne servono di più)
   const HOLD = 1.5;    // pausa alla fine, prima di ripartire
 
   function mountLab(parts, api) {
@@ -882,7 +895,8 @@
     let rng = { lo: 0, hi: 1 };
     let tLo = 0;
     let tHi = 1;
-    let clock = st.phi * SWEEP;
+    let sweep = SWEEP;
+    let clock = st.phi * sweep;
     let uiT = 0;
     let ver = 0;       // cresce a ogni ricalcolo
     let tdrKey = '';   // etichette del TDR già sistemate per questa versione e misura
@@ -899,6 +913,9 @@
       L = line({ vs: 1, rs: st.rs, z0: st.z0, zl: zlValue(), len: st.len, er: MEDIA[st.med].er, tr: st.tr });
       ver++;
       span = timeSpan(L);
+      // più andate e ritorno da seguire, scansione un po' più lenta; con un fronte lento basta la durata base
+      sweep = span > 6 * L.tr ? EA.clamp(1.75 * roundTrips(L), SWEEP, 2 * SWEEP) : SWEEP;
+      clock = st.phi * sweep;
       list = bounces(L, span);
       rng = ranges(list);
       tLo = 0;
@@ -966,12 +983,12 @@
       label: 'Istante', min: 0, max: 1000, step: 1, value: Math.round(st.phi * 1000), color: C.ink,
       format: (v) => 't = ' + timeText((v / 1000) * span),
       hint: 'Muovilo per fermare il tempo e seguire i rimbalzi; il pulsante in alto fa ripartire l\'animazione.',
-      oninput: (v) => { st.phi = v / 1000; clock = st.phi * SWEEP; api.pause(); api.invalidate(); },
+      oninput: (v) => { st.phi = v / 1000; clock = st.phi * sweep; api.pause(); api.invalidate(); },
     });
     parts.controls.append(
       h('div', { class: 'ea-ctl linee-zl' }, zl.el, quick),
       z0.el, rs.el, len.el,
-      h('div', { class: 'ea-ctl' }, med.el, h('small', { class: 'ea-ctl-hint' }, 'εr ≈ 1, 2,1 e 4,3. Linea immersa nell\'isolante (coassiale o pista interna); in una microstrip parte del campo è in aria e l\'onda va un po\' più veloce.')),
+      h('div', { class: 'ea-ctl' }, med.el, h('small', { class: 'ea-ctl-hint' }, 'Costante dielettrica relativa εr: aria ≈ 1; PTFE ≈ 2,1; FR\u20114 ≈ 4,3. La linea è immersa nell\'isolante (coassiale o pista interna); in una microstrip parte del campo è in aria e l\'onda va un po\' più veloce.')),
       tr.el, time.el);
 
     // display numerici
@@ -980,18 +997,21 @@
     const roV = EA.ui.readout({ label: 'Velocità' });
     const roT = EA.ui.readout({ label: 'Ritardo di andata' });
     const roF = EA.ui.readout({ label: 'Valore finale' });
+    const roC = EA.ui.readout({ label: 'Lunghezza critica' });
     const roL = EA.ui.readout({ label: 'Verdetto' });
-    roL.el.classList.add('linee-ro-wrap');
-    parts.readouts.append(roG.el, roR.el, roV.el, roT.el, roF.el, roL.el);
+    roL.el.classList.add('linee-ro-wrap', 'linee-ro-verdict');
+    parts.readouts.append(roG.el, roR.el, roV.el, roT.el, roF.el, roC.el, roL.el);
 
     function update() {
       recompute();
-      const long = L.td > L.tr / 6;
+      const long = isLong(L.len, L.er, L.tr);
+      const crit = criticalLength(L.er, L.tr);
       roG.set(signed(L.gL, 2), Math.abs(L.gL) < 0.05 ? 'good' : 'warn');
       roR.set(signed(L.gL * 100, 0) + ' %');
       roV.set(EA.fmt(L.v, 1) + ' cm/ns');
       roT.set(EA.si(L.td * 1e-9, 's'));
       roF.set(EA.fmt(L.vFinal, 2) + ' V');
+      roC.set(smallLength(crit));
       roL.set(long ? 'linea lunga' : 'collegamento corto', long ? 'warn' : 'good');
       quickBtns.forEach(({ key, b }) => {
         const on = key === st.zMode || (key === 'adattato' && st.zMode === 'r' && Math.abs(st.zl - st.z0) < 0.5);
@@ -1002,7 +1022,8 @@
       const zName = st.zMode === 'corto' ? 'un cortocircuito' : st.zMode === 'aperto' ? 'un circuito aperto' : 'un carico da ' + EA.fmt(st.zl, 0) + ' ohm';
       api.announce('Linea da ' + st.z0 + ' ohm chiusa su ' + zName + ': coefficiente di riflessione ' + signed(L.gL, 2) +
         (L.gL < -0.005 ? ', l\'eco torna capovolta' : '') + '. Ritardo di andata ' + EA.fmt(L.td, 2) + ' nanosecondi, valore finale ' +
-        EA.fmt(L.vFinal, 2) + ' volt: ' + (long ? 'linea lunga.' : 'collegamento corto.'));
+        EA.fmt(L.vFinal, 2) + ' volt. ' + (long ? 'Linea lunga: supera' : 'Collegamento corto: resta sotto') +
+        ' la soglia di ' + smallLength(crit).replace('mm', 'millimetri').replace('cm', 'centimetri') + ' della regola pratica.');
     }
 
     function geometry() {
@@ -1034,8 +1055,8 @@
       if (!cv.w) return;
       if (dt > 0) {
         clock += dt;
-        if (clock > SWEEP + HOLD) clock = 0;
-        st.phi = Math.min(1, clock / SWEEP);
+        if (clock > sweep + HOLD) clock = 0;
+        st.phi = Math.min(1, clock / sweep);
         uiT += dt;
         if (uiT > 0.15) { uiT = 0; time.set(Math.round(st.phi * 1000), true); }
       }
@@ -1153,8 +1174,9 @@
       const px1 = b.x + b.w - 4;
       const py0 = b.y + 26;
       const py1 = b.y + b.h - 20;
-      const lo = Math.min(0, tLo);
-      const hi = Math.max(0.25, tHi);
+      // la scala comprende sempre il valore finale, anche quando la traccia non ci arriva in tempo
+      const lo = Math.min(0, tLo, L.vFinal);
+      const hi = Math.max(0.25, tHi, L.vFinal);
       const m = (hi - lo) * 0.08;
       const vLo = lo - m;
       const vHi = hi + m;
@@ -1277,7 +1299,7 @@
           tags.push(...pick(along('finale ' + EA.fmt(L.vFinal, 2) + ' V', yF, C.ink, true), yF));
         }
         // regola pratica: TD contro tr/6, in un angolo libero
-        const long = L.td > L.tr / 6;
+        const long = isLong(L.len, L.er, L.tr);
         const rule = 'TD ' + EA.si(L.td * 1e-9, 's') + (long ? ' > ' : ' < ') + 'tr/6 = ' + EA.si((L.tr / 6) * 1e-9, 's');
         const verdict = long ? 'linea lunga: servono terminazioni' : 'collegamento corto: basta un filo';
         const col = long ? C.amber : C.green;
@@ -1348,8 +1370,9 @@
         ctx.globalAlpha = 0.3 + 0.7 * r;
         EA.draw.line(ctx, [[xa, T(w.t0)], [xe, T(w.t0 + L.td * f)]], col, 1.8, r > 0.3);
         ctx.restore();
+        // ampiezza scritta sulle prime otto onde, solo sulle prime quattro se il diagramma è fitto
         const segH = T(w.t0 + L.td) - T(w.t0);
-        if (w.k < 8 && segH >= 18 && f === 1 && Math.abs(w.a) >= 0.01) labels.push({ w, x: (xa + xb) / 2, y: T(w.t0 + L.td / 2), col });
+        if (w.k < (segH >= 18 ? 8 : 4) && segH >= 11 && f === 1 && Math.abs(w.a) >= 0.01) labels.push({ w, x: (xa + xb) / 2, y: T(w.t0 + L.td / 2), col });
       });
       labels.forEach((lb) => {
         const txt = signed(lb.w.a, 2) + ' V';
@@ -1389,9 +1412,10 @@
 
   /* ---------- contenuti ---------- */
 
-  // Spazio non separabile tra un numero e la sua unità: il browser non va a capo tra "0,5" e "V".
+  // Spazio non separabile tra un numero e la sua unità, trattino non separabile in "FR-4":
+  // il browser non va a capo tra "0,5" e "V" né dentro il nome del materiale.
   function nbsp(v) {
-    if (typeof v === 'string') return v.replace(/(\d) (?=(?:cm|ns|ps|GT\/s|GHz|MHz|nH|pF|V|Ω|m)(?!\w))/g, '$1\u00a0');
+    if (typeof v === 'string') return v.replace(/(\d) (?=(?:cm|ns|ps|GT\/s|GHz|MHz|nH|pF|V|Ω|m)(?!\w))/g, '$1\u00a0').replace(/FR-4/g, 'FR\u20114');
     if (Array.isArray(v)) return v.map(nbsp);
     if (v && Object.getPrototypeOf(v) === Object.prototype) {
       const o = {};
@@ -1406,34 +1430,35 @@
     intro: [
       'Finché i segnali sono lenti, un filo è solo un collegamento: la tensione che metti da una parte compare, praticamente nello stesso istante, dall\'altra. In realtà il segnale viaggia come un\'<strong>onda elettromagnetica</strong> guidata dai conduttori, dentro il materiale isolante che li circonda: in un circuito stampato va a circa metà della velocità della luce, una quindicina di centimetri ogni nanosecondo.',
       'Quando la durata del fronte di un segnale diventa paragonabile al tempo che l\'onda impiega a percorrere il collegamento, il filo diventa una <strong>linea di trasmissione</strong>. All\'inizio il generatore non sa che cosa c\'è in fondo: vede solo l\'<em>impedenza caratteristica</em> <var>Z</var><sub>0</sub> della linea, fissata da geometria e isolante. Se il carico non vale proprio <var>Z</var><sub>0</sub>, una parte dell\'onda rimbalza indietro, come un\'onda lungo una corda che arriva a un muro.',
-      'Per questo le piste dei computer hanno larghezze calcolate al centesimo di millimetro, i cavi d\'antenna sono da 50 o 75 Ω e i bus veloci hanno resistenze di <em>terminazione</em>. È la stessa fisica dei cavi telegrafici posati sotto l\'Atlantico nell\'Ottocento, e oggi decide se un collegamento PCI Express da 128 GT/s funziona oppure no.',
+      'Per questo le piste dei computer hanno larghezze calcolate al centesimo di millimetro, i cavi d\'antenna sono da 50 o 75 Ω e i bus veloci hanno resistenze di <em>terminazione</em>. È la stessa fisica dei cavi telegrafici posati sotto l\'Atlantico nell\'Ottocento, e oggi decide se un collegamento PCI Express da 128 GT/s (128 miliardi di trasferimenti al secondo per corsia) funziona oppure no.',
     ],
     steps: [
-      { title: 'Il fronte viaggia', text: 'Quando il generatore scatta, la tensione non compare subito ovunque: un fronte percorre la linea a v = c/√εr, circa 14,5 cm/ns nella vetroresina FR-4. All\'inizio il generatore vede solo Z0, quindi con Rs = Z0 lancia metà della sua tensione.', focus: 'viaggio' },
+      { title: 'Il fronte viaggia', text: 'Quando il generatore scatta, la tensione non compare subito ovunque: un fronte percorre la linea alla velocità v = c/√εr (εr è la costante dielettrica relativa dell\'isolante), circa 14,5 cm/ns nella vetroresina FR-4. All\'inizio il generatore vede solo Z0, quindi con Rs = Z0 lancia metà della sua tensione.', focus: 'viaggio' },
       { title: 'Fine aperta: torna uguale', text: 'In fondo non c\'è niente che assorba l\'onda, che torna indietro con lo stesso segno (Γ = +1). Dove si somma a quella in arrivo la tensione raddoppia: al carico 2 × 0,5 V = 1 V, la tensione piena del generatore.', focus: 'aperto' },
       { title: 'Cortocircuito: torna capovolta', text: 'Un corto impone tensione zero: l\'onda riflessa è capovolta (Γ = −1) e cancella quella in arrivo. Al carico la tensione resta a zero, mentre la corrente raddoppia.', focus: 'corto' },
       { title: 'Carico adattato: nessuna eco', text: 'Se il carico vale proprio Z0, tensione e corrente dell\'onda sono già nel rapporto giusto: tutta l\'energia finisce nel resistore e non torna niente (Γ = 0). Per il generatore è come una linea infinita.', focus: 'adattato' },
-      { title: 'Carico qualsiasi: torna una frazione', text: 'Torna la frazione Γ = (ZL − Z0)/(ZL + Z0). Con 150 Ω su una linea da 50 Ω torna metà della tensione, e al carico si arriva a 1,5 × 0,5 V = 0,75 V.', focus: 'disadattato' },
-      { title: 'Il riflettometro legge l\'eco', text: 'Un riflettometro (TDR) lancia un gradino e guarda solo l\'ingresso. Il ritardo dell\'eco dice dove sta la discontinuità (d = v·t/2, perché il tempo è di andata e ritorno), l\'altezza dice Γ e quindi l\'impedenza.', focus: 'tdr' },
+      { title: 'Carico disadattato: torna una frazione', text: 'Torna la frazione Γ = (ZL − Z0)/(ZL + Z0). Con 150 Ω su una linea da 50 Ω torna metà della tensione, e al carico si arriva a 1,5 × 0,5 V = 0,75 V.', focus: 'disadattato' },
+      { title: 'Il riflettometro legge l\'eco', text: 'Un riflettometro (TDR, dall\'inglese Time Domain Reflectometer) lancia un gradino e guarda solo l\'ingresso. Il ritardo dell\'eco dice dove sta la discontinuità (d = v·t/2, perché il tempo è di andata e ritorno), l\'altezza dice Γ e quindi l\'impedenza.', focus: 'tdr' },
     ],
     formulas: [
-      { label: 'Impedenza caratteristica', eq: '<var>Z</var><sub>0</sub> = √(<var>L</var> ⁄ <var>C</var>)', text: 'Rapporto tra tensione e corrente di un\'onda che viaggia in un solo verso. <var>L</var> e <var>C</var> sono induttanza e capacità per metro: conta la geometria con l\'isolante, non la lunghezza. Una pista da 50 Ω in FR-4 ha circa 3,5 nH e 1,4 pF per centimetro.' },
-      { label: 'Velocità e ritardo', eq: '<var>v</var> = <var>c</var> ⁄ √<var>ε</var><sub>r</sub>', text: 'L\'onda viaggia nell\'isolante: circa 30 cm/ns in aria, 20 nel PTFE, 14,5 nel FR-4 (<var>ε</var><sub>r</sub> ≈ 4,3). Una linea lunga ℓ ritarda di <var>T</var><sub>D</sub> = ℓ/<var>v</var>. In una microstrip parte del campo è in aria e si usa una <var>ε</var><sub>r</sub> efficace, circa 3–3,3.' },
-      { label: 'Coefficiente di riflessione', eq: 'Γ = (<var>Z</var><sub>L</sub> − <var>Z</var><sub>0</sub>) ⁄ (<var>Z</var><sub>L</sub> + <var>Z</var><sub>0</sub>)', text: 'Va da −1 (corto) a +1 (aperto) e vale 0 se <var>Z</var><sub>L</sub> = <var>Z</var><sub>0</sub>. Torna Γ della tensione ma solo Γ<sup>2</sup> della potenza. Il generatore lancia <var>V</var><sub>s</sub>·<var>Z</var><sub>0</sub>/(<var>R</var><sub>s</sub> + <var>Z</var><sub>0</sub>); dopo tutti i rimbalzi si arriva al partitore <var>V</var><sub>s</sub>·<var>Z</var><sub>L</sub>/(<var>R</var><sub>s</sub> + <var>Z</var><sub>L</sub>).' },
-      { label: 'Linea lunga o collegamento corto', eq: '<var>T</var><sub>D</sub> &gt; <var>t</var><sub>r</sub> ⁄ 6', text: 'Regola pratica: se il ritardo di sola andata supera circa un sesto del tempo di salita, le riflessioni deformano il fronte e servono terminazioni. Conta il fronte, non la frequenza del clock: in FR-4, con fronti da 1 ns, la soglia è circa 2,4 cm. Alcuni testi usano <var>t</var><sub>r</sub>/4 o <var>t</var><sub>r</sub>/2.' },
+      { label: 'Impedenza caratteristica', eq: '<var>Z</var><sub>0</sub> = √(<var>L</var> ⁄ <var>C</var>)', text: 'Rapporto tra tensione e corrente di un\'onda che viaggia in un solo verso. <var>L</var> e <var>C</var> sono induttanza e capacità per unità di lunghezza, fissate da geometria e isolante: <var>Z</var><sub>0</sub> non dipende da quanto è lunga la linea. Una pista interna da 50 Ω in FR-4 ha circa 3,5 nH e 1,4 pF per centimetro. Non è una resistenza che scalda: una linea ideale non dissipa energia, la trasporta.' },
+      { label: 'Velocità e ritardo', eq: '<var>v</var> = <var>c</var> ⁄ √<var>ε</var><sub>r</sub>', text: 'L\'onda viaggia nell\'isolante, più lenta quanto più è alta la sua costante dielettrica relativa <var>ε</var><sub>r</sub>: circa 30 cm/ns in aria, 20 nel PTFE, 14,5 nell\'FR-4 (<var>ε</var><sub>r</sub> ≈ 4,3). Una linea lunga ℓ ritarda di <var>T</var><sub>D</sub> = ℓ/<var>v</var>. In una microstrip parte del campo è in aria e si usa una <var>ε</var><sub>r</sub> efficace, circa 3–3,3.' },
+      { label: 'Coefficiente di riflessione', eq: 'Γ = (<var>Z</var><sub>L</sub> − <var>Z</var><sub>0</sub>) ⁄ (<var>Z</var><sub>L</sub> + <var>Z</var><sub>0</sub>)', text: 'Va da −1 (corto) a +1 (aperto) e vale 0 se <var>Z</var><sub>L</sub> = <var>Z</var><sub>0</sub>. Torna una frazione Γ della tensione, ma solo Γ<sup>2</sup> della potenza. Il generatore lancia <var>V</var><sub>s</sub>·<var>Z</var><sub>0</sub>/(<var>R</var><sub>s</sub> + <var>Z</var><sub>0</sub>); dopo tutti i rimbalzi si arriva al partitore <var>V</var><sub>s</sub>·<var>Z</var><sub>L</sub>/(<var>R</var><sub>s</sub> + <var>Z</var><sub>L</sub>).' },
+      { label: 'Riflettometro', eq: '<var>d</var> = <var>v</var> · <var>t</var> ⁄ 2', text: 'Il tempo dell\'eco comprende andata e ritorno, quindi la discontinuità si trova a metà della distanza percorsa dall\'onda. L\'altezza dell\'eco dà Γ e da Γ si risale al carico: <var>Z</var><sub>L</sub> = <var>Z</var><sub>0</sub>·(1 + Γ)/(1 − Γ). Se all\'ingresso la tensione scende da 0,5 a 0,33 V, Γ = −1/3 e su una linea da 50 Ω il carico vale 25 Ω.' },
+      { label: 'Linea lunga o collegamento corto', eq: '<var>T</var><sub>D</sub> &gt; <var>t</var><sub>r</sub> ⁄ 6', text: 'Regola pratica: se il ritardo di sola andata supera circa un sesto del tempo di salita, le riflessioni deformano il fronte e servono terminazioni. Conta il fronte, non la frequenza del clock: in FR-4, con fronti da 1 ns, la soglia è circa 2,4 cm. Alcuni testi usano <var>t</var><sub>r</sub>/4 o <var>t</var><sub>r</sub>/2, e la regola vale se il generatore non ha una resistenza molto più bassa di <var>Z</var><sub>0</sub>.' },
     ],
     timeline: [
       { year: 1855, title: 'La legge dei quadrati', who: 'William Thomson, poi Lord Kelvin, Università di Glasgow', text: 'Nelle lettere a George Stokes della fine del 1854, pubblicate nel 1855, Thomson tratta il cavo sottomarino come una catena continua di resistenze e capacità. Ne ricava che il ritardo cresce con il quadrato della lunghezza: un cavo lungo il doppio è quattro volte più lento. È un modello di pura diffusione, ancora senza onde.' },
-      { year: 1858, title: 'Il primo cavo transatlantico', who: 'Atlantic Telegraph Company, elettricista Wildman Whitehouse', text: 'Completato il 5 agosto tra l\'Irlanda e Terranova, il 16 agosto trasmette il saluto della regina Vittoria al presidente Buchanan: 98 parole in circa 16 ore. Già difettoso, si guasta dopo circa tre settimane, anche per le tensioni molto alte applicate da Whitehouse (secondo alcune stime fino a circa 2000 V). Un cavo davvero affidabile arriva solo nel 1866, posato dalla nave <em>Great Eastern</em>: circa 6-8 parole al minuto.' },
+      { year: 1858, title: 'Il primo cavo transatlantico', who: 'Atlantic Telegraph Company, elettricista Wildman Whitehouse', text: 'Completato il 5 agosto tra l\'Irlanda e Terranova, il 16 agosto trasmette il saluto della regina Vittoria al presidente Buchanan: 98 parole in circa 16 ore. Già difettoso, si guasta dopo circa tre settimane, anche per le tensioni molto alte applicate da Whitehouse (secondo alcune stime fino a circa 2000 V). Un cavo davvero affidabile arriva solo nel 1866, posato dalla nave <em>Great Eastern</em>: circa 6–8 parole al minuto.' },
       { year: 1876, title: 'Heaviside: il filo diventa un\'onda', who: 'Oliver Heaviside, Londra', text: 'Nell\'articolo <em>On the Extra Current</em> aggiunge al modello di Thomson l\'autoinduttanza: le equazioni non descrivono più una diffusione lenta, ma onde che viaggiano lungo la linea. Negli anni Ottanta le completa nelle <em>equazioni dei telegrafisti</em>, da cui discendono <var>Z</var><sub>0</sub> = √(<var>L</var>/<var>C</var>) e <var>v</var> = 1/√(<var>LC</var>).' },
-      { year: 1887, title: 'Linee senza distorsione', who: 'Oliver Heaviside; poi George A. Campbell e Michael Pupin', text: 'Heaviside dimostra che una linea con <var>R</var>/<var>L</var> = <var>G</var>/<var>C</var> non deforma i segnali e propone di aumentarne l\'induttanza con delle bobine. Non brevetta l\'idea: nel 1899-1900 la realizzano Campbell, alla AT&amp;T, e Pupin, alla Columbia University, che vince la disputa sul brevetto.' },
-      { year: 1929, title: 'Il cavo coassiale a banda larga', who: 'Lloyd Espenschied e Herman A. Affel, AT&T', text: 'Depositano il brevetto di un sistema a conduttori concentrici, concesso nel 1931, capace di portare molti canali telefonici o un segnale televisivo. La struttura coassiale in sé l\'aveva già brevettata Heaviside nel 1880. Nel 1936 la prima linea sperimentale, tra New York e Filadelfia, porta 240 conversazioni oppure un canale TV.' },
+      { year: 1887, title: 'Linee senza distorsione', who: 'Oliver Heaviside; poi George A. Campbell e Michael Pupin', text: 'Heaviside dimostra che una linea con <var>R</var>/<var>L</var> = <var>G</var>/<var>C</var> non deforma i segnali e propone di aumentarne l\'induttanza con delle bobine. Non brevetta l\'idea: nel 1899–1900 la realizzano Campbell, alla AT&amp;T, e Pupin, alla Columbia University, che vince la disputa sul brevetto.' },
+      { year: 1929, title: 'Il cavo coassiale a banda larga', who: 'Lloyd Espenschied e Herman A. Affel, AT&T', text: 'Depositano il brevetto, concesso nel 1931, di un sistema a conduttori concentrici capace di portare molti canali telefonici o un segnale televisivo. La struttura coassiale in sé l\'aveva già brevettata Heaviside nel 1880. Nel 1936 la prima linea sperimentale, tra New York e Filadelfia, porta 240 conversazioni oppure un canale TV.' },
       { year: 1939, title: 'La carta di Smith', who: 'Phillip H. Smith, Bell Telephone Laboratories', text: 'Sulla rivista <em>Electronics</em> pubblica un diagramma circolare che trasforma le impedenze in coefficienti di riflessione e permette di progettare gli adattamenti con riga e compasso. Un diagramma equivalente era uscito in Giappone nel 1937, opera di Tōsaku Mizuhashi.' },
       { year: 1952, title: 'Nasce la microstrip', who: 'D. D. Grieg e H. F. Engelmann, Federal Telecommunication Laboratories (ITT)', text: 'Propongono una striscia conduttrice su un isolante sopra un piano di massa, fabbricabile con le tecniche dei circuiti stampati. Negli stessi anni Robert M. Barrett introduce la <em>stripline</em>, una striscia racchiusa tra due piani di massa.' },
       { year: 1964, title: 'Il riflettometro da banco', who: 'Hewlett-Packard', text: 'Il cassetto HP 1415A per oscilloscopio, descritto sull\'<em>HP Journal</em> nel febbraio 1964 (alcune fonti ne datano la presentazione al 1963), è tra i primi riflettometri commerciali: un generatore di gradini veloci e un campionatore, con un tempo di salita di circa 150 ps e una risoluzione di circa 2,5 cm.' },
-      { year: 2025, title: 'PCIe 7.0 su piste di rame', who: 'PCI-SIG', text: 'L\'11 giugno 2025 esce la specifica PCI Express 7.0: 128 GT/s per corsia, con segnali che arrivano a circa 32 GHz. A queste velocità ogni pista, ogni foro di collegamento tra gli strati e ogni connettore si progetta come una linea di trasmissione a impedenza controllata.' },
+      { year: 2025, title: 'PCIe 7.0 su piste di rame', who: 'PCI-SIG', text: 'L\'11 giugno 2025 esce la specifica PCI Express 7.0: 128 GT/s per corsia, con una frequenza fondamentale del segnale di circa 32 GHz. A queste velocità ogni pista, ogni foro di collegamento tra gli strati e ogni connettore si progetta come una linea di trasmissione a impedenza controllata.' },
     ],
-    fun: 'Il saluto di 98 parole della regina Vittoria, nell\'agosto 1858, impiegò circa 16 ore ad attraversare l\'Atlantico: una decina di minuti a parola, perché il cavo si comportava come un enorme circuito RC. Dopo il guasto Tiffany &amp; Co. comprò il cavo avanzato e lo rivendette a pezzetti come souvenir. E la parola <em>impedenza</em> l\'ha inventata Oliver Heaviside, nel 1886.',
+    fun: 'Il saluto di 98 parole della regina Vittoria, nell\'agosto 1858, richiese circa 16 ore di trasmissione: una decina di minuti a parola, perché il cavo si comportava come un enorme circuito RC e ogni impulso arrivava lento e sbavato. Il cavo avanzato lo comprò Tiffany &amp; Co., che lo rivendette a pezzetti come souvenir. E la parola <em>impedenza</em> l\'ha inventata Oliver Heaviside, nel 1886.',
     uses: [
       'Piste a impedenza controllata di PCIe e memorie',
       'Prove al TDR dei circuiti stampati in produzione',
@@ -1446,10 +1471,11 @@
     glossary: [
       { term: 'Impedenza caratteristica', def: 'Rapporto tra tensione e corrente di un\'onda che viaggia in un solo verso, <var>Z</var><sub>0</sub> = √(<var>L</var>/<var>C</var>). Valori tipici: 50 Ω per radio, strumenti e piste singole, 75 Ω per TV e video, 85–100 Ω per le coppie differenziali.' },
       { term: 'Coefficiente di riflessione', def: 'Frazione Γ della tensione incidente che torna indietro in una discontinuità: +1 per un circuito aperto, −1 per un corto, 0 per un carico adattato.' },
-      { term: 'Terminazione', def: 'Resistenza pari a <var>Z</var><sub>0</sub> che assorbe l\'onda. In parallelo al carico la assorbe subito ma consuma corrente; in serie al generatore la assorbe quando l\'eco torna indietro.' },
-      { term: 'Riflettometro (TDR)', def: 'Strumento che lancia nella linea un gradino molto ripido e registra gli echi all\'ingresso: il ritardo dà la posizione della discontinuità (<var>d</var> = <var>v</var>·<var>t</var>/2), l\'ampiezza dà Γ e quindi l\'impedenza.' },
+      { term: 'Terminazione', def: 'Resistenza che rende un estremo della linea uguale a <var>Z</var><sub>0</sub>, così l\'onda viene assorbita. In parallelo al carico (pari a <var>Z</var><sub>0</sub>) assorbe subito l\'onda ma consuma corrente; in serie al generatore (che, sommata alla sua resistenza interna, dà <var>Z</var><sub>0</sub>) assorbe l\'eco quando torna indietro.' },
+      { term: 'Riflettometro (TDR)', def: 'Strumento che lancia nella linea un gradino molto ripido e registra gli echi all\'ingresso: il ritardo dà la posizione della discontinuità (<var>d</var> = <var>v</var>·<var>t</var>/2), l\'ampiezza dà Γ e quindi l\'impedenza. La sigla viene dall\'inglese <em>Time Domain Reflectometry</em>, riflettometria nel dominio del tempo.' },
       { term: 'Diagramma a rimbalzi', def: 'Grafico spazio-tempo a zig-zag che segue le onde avanti e indietro tra generatore e carico. A ogni estremo l\'onda viene moltiplicata per il Γ di quell\'estremo.' },
       { term: 'Tempo di salita', def: 'Tempo che il fronte impiega a passare dal 10 al 90% del valore finale. Confrontato con il ritardo della linea dice se un collegamento va trattato come linea di trasmissione.' },
+      { term: 'Costante dielettrica relativa', def: 'Il numero <var>ε</var><sub>r</sub> che dice quanto un isolante, rispetto al vuoto, aumenta la capacità tra due conduttori e rallenta le onde: 1 per l\'aria, circa 2,1 per il PTFE (il teflon), circa 4,3 per l\'FR-4 dei circuiti stampati. L\'onda viaggia a <var>c</var>/√<var>ε</var><sub>r</sub>.' },
       { term: 'Microstrip e stripline', def: 'Linee dei circuiti stampati. La microstrip è una pista esterna sopra un piano di massa, con parte del campo in aria; la stripline è una pista interna tra due piani di massa, tutta nell\'isolante.' },
     ],
     sources: [
@@ -1470,7 +1496,7 @@
       { id: 'ea-linee-04', chapter: 'linee', level: 3, topic: 'Terminazione serie', q: 'Un driver con resistenza d\'uscita di 10 Ω pilota una pista da 50 Ω aperta in fondo, e sui fronti compaiono oscillazioni (ringing). Quale resistenza in serie all\'uscita le elimina?', options: ['40 Ω, così la sorgente vale in tutto 50 Ω', '50 Ω, uguale all\'impedenza della linea', '10 Ω, uguale alla resistenza del driver', 'Nessuna: una resistenza in serie non cambia le riflessioni'], answer: 0, why: 'Con 10 + 40 = 50 Ω la sorgente è adattata: lancia metà della tensione, l\'onda raddoppia al carico aperto arrivando alla tensione piena e l\'eco viene assorbita quando torna al generatore.' },
     ],
     hero: {
-      caption: 'Ciano l\'onda che va verso il carico, ambra quella che torna, in chiaro la tensione totale. Il tempo è rallentato di oltre un miliardo di volte.',
+      caption: 'In ciano l\'onda che va verso il carico, in ambra quella che torna, in chiaro la tensione totale. Il tempo è rallentato di oltre un miliardo di volte.',
       label: 'Animazione: un gradino di tensione che viaggia lungo una linea di trasmissione e si riflette sul carico',
       aspect: '16 / 7',
       aspectMobile: '1 / 1',
@@ -1478,7 +1504,7 @@
     },
     lab: {
       title: 'Riflettometro e diagramma a rimbalzi',
-      intro: 'Cambia carico, linea e generatore e guarda l\'onda correre e rimbalzare. Sotto c\'è la traccia di un riflettometro collegato all\'ingresso e, sugli schermi larghi, il diagramma a rimbalzi. Prova un fronte lento su una linea corta: gli echi si fondono e il filo torna un semplice collegamento.',
+      intro: 'Cambia carico, linea e generatore e guarda l\'onda correre e rimbalzare. Sotto c\'è la traccia di un riflettometro collegato all\'ingresso e, sugli schermi larghi, il diagramma a rimbalzi. Prova un fronte lento su una linea corta: gli echi si fondono e il filo torna un semplice collegamento. La <em>lunghezza critica</em> è il tratto che l\'onda percorre in un sesto del tempo di salita: oltre quella, servono le terminazioni.',
       layout: 'stack',
       mount: mountLab,
     },

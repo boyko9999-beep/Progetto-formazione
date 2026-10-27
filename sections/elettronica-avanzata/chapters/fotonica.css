@@ -17,13 +17,9 @@
 .fotonica-lab .ea-toggle input:disabled { opacity: .4; cursor: not-allowed; }
 .fotonica-lab .ea-toggle input:disabled + label { opacity: .55; cursor: not-allowed; }
 
-/* Sei display in righe sempre complete: 6, poi 3, poi 2 per riga. */
-.fotonica-lab .ea-lab-readouts { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+/* Otto display in righe sempre complete: la fibra sopra, il collegamento sotto; 2 per riga sul telefono. */
+.fotonica-lab .ea-lab-readouts { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .fotonica-lab .ea-ro { align-content: space-between; }
-
-@media (max-width: 1100px) {
-  .fotonica-lab .ea-lab-readouts { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-}
 
 /* Comandi sopra e disegno sotto: il disegno prende la sua proporzione. */
 @media (max-width: 900px) {

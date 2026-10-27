@@ -27,6 +27,9 @@
   const decayTime = (q, f) => q / (Math.PI * f);                // l'ampiezza scende al 37%
   const coriolis = (m, v, w) => 2 * m * v * w;                  // modulo, con v perpendicolare all'asse
   const driveSpeed = (f, amp) => TAU * f * amp;                 // velocità di picco di un moto sinusoidale
+  // Giroscopio: la forza di Coriolis oscilla alla frequenza di pilotaggio fd e spinge il modo di
+  // misura, che risuona a fs > fd. Senza smorzamento l'ampiezza è F/(m·(ωs² − ωd²)): circa F/k se fs ≫ fd.
+  const senseDisp = (F, m, fd, fs) => F / (m * (Math.pow(TAU * fs, 2) - Math.pow(TAU * fd, 2)));
   const siliconMass = (lx, ly, t) => RHO_SI * lx * ly * t;
   const measured = (u, k, m) => (k / m) * u;                    // accelerazione letta dallo spostamento
   const dcLinear = (c0, d, u) => (2 * c0 * u) / d;              // ΔC per u molto minore di d
@@ -90,7 +93,7 @@
 
   const model = {
     EPS0, G, RHO_SI, omega0, resonance, staticDisp, dispPerG, plateCap, combCap, quality, decayTime,
-    coriolis, driveSpeed, siliconMass, measured, dcLinear, differential, free, respond, settle, bounce, pulse,
+    coriolis, driveSpeed, senseDisp, siliconMass, measured, dcLinear, differential, free, respond, settle, bounce, pulse,
   };
 
   /* ---------- disegno comune ---------- */
@@ -172,6 +175,17 @@
 
   // Numero con il segno sempre scritto: +1,2, −0,5, 0.
   const signed = (x, d) => (Math.abs(x) < 0.5 * Math.pow(10, -d) ? '0' : (x > 0 ? '+' : '') + EA.fmt(x, d));
+
+  // Valore con prefisso SI, ma zero sotto la soglia: quando la massa si ferma niente «0,000001 fm».
+  const si0 = (x, unit, floor) => (Math.abs(x) < floor ? '0 n' + unit : EA.si(x, unit));
+
+  // Capacità: sotto il femtofarad si passa agli attofarad (10⁻¹⁸ F), sotto 0,1 aF è zero.
+  function farad(c) {
+    const a = Math.abs(c);
+    if (a < 1e-19) return '0 fF';
+    if (a < 0.9995e-15) return EA.fmt(c * 1e18, a < 1e-17 ? 1 : 0) + ' aF';
+    return EA.si(c, 'F');
+  }
 
   // Valore tondo della serie 1-2-5, per eccesso (up) o per difetto.
   function nice(x, up) {
@@ -280,6 +294,10 @@
     const dv = (c) => EA.clamp((c - c0) / fs, -1, 1);
     const bw = b.w - 112;
     const mid = b.y + b.h / 2;
+    const zero = 'C₀ ' + EA.si(c0, 'F');
+    // colonne verticali: passo e larghezza si stringono quando a destra resta poco spazio
+    const pitch = EA.clamp((b.w - textWidth(ctx, zero, 10.5) - 22) / 2, 56, 70);
+    const cw = Math.round(pitch * 0.58);
     [[c1, E1, 'C₁'], [c2, E2, 'C₂']].forEach(([c, col, nm], i) => {
       ctx.fillStyle = EA.alpha(col, 0.12);
       if (flat) {
@@ -291,19 +309,20 @@
         EA.draw.text(ctx, EA.si(c, 'F', 4), b.x + b.w, y + 4, { color: C.ink, size: 10.5, align: 'right' });
         return;
       }
-      const x = b.x + 6 + i * 70;
+      const x = b.x + 6 + i * pitch;
       const d = dv(c) * (b.h / 2);
-      ctx.fillRect(x, b.y, 40, b.h);
-      block(ctx, x, mid - Math.max(0, d), 40, Math.max(2, Math.abs(d)), col, 0.55);
-      EA.draw.text(ctx, nm, x + 20, b.y + b.h + 18, { color: col, size: 12, weight: 700, align: 'center' });
-      EA.draw.text(ctx, EA.si(c, 'F', 4), x + 20, b.y + b.h + 34, { color: C.ink, size: 10.5, align: 'center' });
+      ctx.fillRect(x, b.y, cw, b.h);
+      block(ctx, x, mid - Math.max(0, d), cw, Math.max(2, Math.abs(d)), col, 0.55);
+      EA.draw.text(ctx, nm, x + cw / 2, b.y + b.h + 18, { color: col, size: 12, weight: 700, align: 'center' });
+      EA.draw.text(ctx, EA.si(c, 'F', 4), x + cw / 2, b.y + b.h + 34, { color: C.ink, size: 10.5, align: 'center' });
     });
     ctx.fillStyle = EA.alpha(C.ink, 0.7);
     if (flat) { ctx.fillRect(b.x + 26 + bw / 2, b.y - 10, 1, 38); return; }
-    ctx.fillRect(b.x, mid, 152, 1);
-    EA.draw.text(ctx, '+' + EA.si(fs, 'F'), b.x + 160, b.y + 9, { color: C.dim, size: 10.5 });
-    EA.draw.text(ctx, 'C₀ ' + EA.si(c0, 'F'), b.x + 160, mid + 4, { color: C.text, size: 10.5 });
-    EA.draw.text(ctx, '−' + EA.si(fs, 'F'), b.x + 160, b.y + b.h, { color: C.dim, size: 10.5 });
+    const lx = b.x + 6 + pitch + cw + 12;
+    ctx.fillRect(b.x, mid, lx - b.x - 6, 1);
+    EA.draw.text(ctx, '+' + EA.si(fs, 'F'), lx, b.y + 9, { color: C.dim, size: 10.5 });
+    EA.draw.text(ctx, zero, lx, mid + 4, { color: C.text, size: 10.5 });
+    EA.draw.text(ctx, '−' + EA.si(fs, 'F'), lx, b.y + b.h, { color: C.dim, size: 10.5 });
   }
 
   // Smartphone stilizzato: centro (x, y), altezza ph, rotazione rot (oraria, in radianti).
@@ -444,7 +463,7 @@
     EA.draw.dot(ctx, mcx, mcy, 3, C.ink);
     if (!labels) return;
     tag(ctx, 'pilotaggio', b.x + b.w * 0.03, cy + mh * 0.45 + 20, { color: C.text, size: 10.5 });
-    tag(ctx, 'elettrodi di misura', cx + ew / 2 + 10, ey + eh / 2 + 4, { color: C.pink, size: 10.5 });
+    tag(ctx, 'elettrodi di misura', cx, ey - 8, { color: C.pink, size: 10.5, align: 'center' });
     tag(ctx, 'v', mcx + vl + (vx > 0 ? 8 : -16), mcy + 4, { color: TINT, size: 11, weight: 700 });
     if (Math.abs(ys) > 0.25) tag(ctx, 'F', mcx + 8, mcy + fl + 4, { color: C.pink, size: 11, weight: 700 });
   }
@@ -554,9 +573,10 @@
 
   /* ---------- animazione principale ---------- */
 
-  // Sensori dell'animazione: accelerometro da 5 kHz, giroscopio pilotato a 20 kHz.
+  // Sensori dell'animazione: accelerometro da 5 kHz; giroscopio pilotato a 20 kHz,
+  // con il modo di misura accordato poco sopra, a 22 kHz.
   const ACC = { k: 2, m: 2e-9, d: 2e-6, c0: combCap(50, 100e-6, 20e-6, 2e-6) };
-  const GYRO = { m: 1e-9, f: 20e3, amp: 5e-6, ks: 5 };
+  const GYRO = { m: 1e-9, f: 20e3, fs: 22e3, amp: 5e-6 };
   const MAG = 100; // ingrandimento degli spostamenti nel disegno
   const LEGEND = [
     { part: 'massa', c: TINT, t: 'massa di prova, circa 2 µg', s: 'massa' },
@@ -582,6 +602,12 @@
     let stageT = api.reduced ? STAGES[0].still : 0;
     const wrapped = {};
 
+    // Righe del sottotitolo della fase i (al massimo tre), calcolate una volta per larghezza.
+    function subLines(i, w, size) {
+      const key = i + '|' + w + '|' + size;
+      return wrapped[key] || (wrapped[key] = wrap(cv.ctx, STAGES[i].sub, w - 32, size).slice(0, 3));
+    }
+
     function geometry() {
       const w = cv.w;
       const hh = cv.h;
@@ -595,16 +621,18 @@
           info: { x: w * 0.775, y: by, w: w * 0.225 - 18, h: bw / 1.5 },
         };
       }
+      // sugli schermi stretti tutto scende se un sottotitolo va su tre righe
+      const top = 36 + 14 * Math.max(...STAGES.map((S, i) => subLines(i, w, 10.5).length));
       const k = EA.clamp(w / 358, 1, 1.6);
       const band = 112 * k;
-      const by = 64 + band + 18;
+      const by = top + band + 18;
       const bw = Math.min(w - 40, (hh - by - 34) * 1.6);
       const bh = Math.min(hh - by - 34, bw / 1.3);
       return {
         w, hh, narrow: true, sc: bw / 520,
         box: { x: (w - bw) / 2, y: by + (hh - by - 34 - bh) / 2, w: bw, h: bh },
-        phone: { x: 56 * k, y: 64 + band / 2, h: 92 * k },
-        info: { x: 116 * k, y: 68, w: w - 116 * k - 14, h: band - 8 },
+        phone: { x: 56 * k, y: top + band / 2, h: 92 * k },
+        info: { x: 116 * k, y: top + 4, w: w - 116 * k - 14, h: band - 8 },
       };
     }
 
@@ -612,19 +640,21 @@
       const S = STAGES[stage];
       const size = g.narrow ? 10.5 : 11;
       EA.draw.text(ctx, (stage + 1) + ' · ' + S.title, 16, g.narrow ? 20 : 26, { color: C.ink, size: g.narrow ? 11 : 12, weight: 700 });
-      const key = stage + '|' + g.w;
-      const lines = wrapped[key] || (wrapped[key] = wrap(ctx, S.sub, g.w - 32, size));
-      lines.slice(0, 2).forEach((ln, k) => EA.draw.text(ctx, ln, 16, (g.narrow ? 36 : 44) + k * 14, { color: C.dim, size }));
+      subLines(stage, g.w, size).forEach((ln, k) => EA.draw.text(ctx, ln, 16, (g.narrow ? 36 : 44) + k * 14, { color: C.dim, size }));
     }
 
-    // Numeri a destra (in alto, accanto al telefono, sugli schermi stretti): { k, v, c, big }.
+    // Numeri a destra (in alto, accanto al telefono, sugli schermi stretti): { k, v, c, big },
+    // con chiave e valore brevi (s, sv) per quando la riga non ci sta.
     function rows(ctx, g, list, y0) {
       const I = g.info;
       let y = y0 || I.y + 12;
+      const fits = (k, v) => textWidth(ctx, k, 10.5) + textWidth(ctx, v, 11.5, 700) + 10 <= I.w;
       list.forEach((r) => {
         if (g.narrow) {
-          EA.draw.text(ctx, r.k, I.x, y, { color: C.dim, size: 10.5 });
-          EA.draw.text(ctx, r.v, I.x + I.w, y, { color: r.c || C.ink, size: 11.5, weight: 700, align: 'right' });
+          const key = fits(r.k, r.v) || !r.s ? r.k : r.s;
+          const val = fits(key, r.v) || !r.sv ? r.v : r.sv;
+          EA.draw.text(ctx, key, I.x, y, { color: C.dim, size: 10.5 });
+          EA.draw.text(ctx, val, I.x + I.w, y, { color: r.c || C.ink, size: 11.5, weight: 700, align: 'right' });
           y += 20;
           return;
         }
@@ -634,9 +664,10 @@
       });
     }
 
-    function note(ctx, g, str) {
+    function note(ctx, g, str, short) {
       const b = g.box;
-      EA.draw.text(ctx, str, b.x + b.w / 2, Math.min(g.hh - 8, b.y + b.h + 28), { color: C.dim, size: 10.5, align: 'center' });
+      const s = short && textWidth(ctx, str, 10.5) > g.w - 16 ? short : str;
+      EA.draw.text(ctx, s, b.x + b.w / 2, Math.min(g.hh - 8, b.y + b.h + 28), { color: C.dim, size: 10.5, align: 'center' });
     }
 
     function frameOf(b) {
@@ -675,7 +706,7 @@
 
       if (key === 'massa') {
         if (show > 0.5) tag(ctx, 'massa di prova', mcx, geo.cy + 4, { color: TINT, size: 11, align: 'center' });
-        note(ctx, g, 'dita e spazi tra le dita ingranditi per chiarezza');
+        note(ctx, g, 'dita e spazi tra le dita ingranditi per chiarezza', 'dita e spazi ingranditi per chiarezza');
         EA.draw.text(ctx, 'f₀ = √(k/m)/2π ≈ ' + EA.si(F0, 'Hz', 2), I.x, I.y + (n ? 10 : 144), { color: TINT, size: n ? 11 : 12, weight: 700 });
         if (!n) {
           EA.draw.text(ctx, 'COM\'È FATTO', I.x, I.y + 8, { color: C.dim, size: 10.5, weight: 700 });
@@ -689,10 +720,18 @@
         });
         // la scala: un capello e 100 µm, alla stessa scala della struttura
         const r = 35 * g.sc;
-        const hy = n ? I.y + 74 + r * 0.4 : I.y + 196 + r;
+        const hy = (n ? I.y + 58 : I.y + 196) + r;
         const hx = I.x + 2 * r + (n ? 8 : 12);
         hair(ctx, I.x + r, hy, r);
-        if (n) { EA.draw.text(ctx, 'un capello: circa 70 µm', hx, hy + 4, { color: C.orange, size: 10.5 }); return; }
+        if (n) {
+          // su una riga se ci sta, altrimenti su due
+          if (hx + textWidth(ctx, 'un capello: circa 70 µm', 10.5) <= g.w - 8) EA.draw.text(ctx, 'un capello: circa 70 µm', hx, hy + 4, { color: C.orange, size: 10.5 });
+          else {
+            EA.draw.text(ctx, 'un capello:', hx, hy - 3, { color: C.orange, size: 10.5 });
+            EA.draw.text(ctx, 'circa 70 µm', hx, hy + 11, { color: C.orange, size: 10.5 });
+          }
+          return;
+        }
         EA.draw.text(ctx, 'un capello:', hx, hy - 3, { color: C.orange, size: 11 });
         EA.draw.text(ctx, 'circa 70 µm', hx, hy + 13, { color: C.orange, size: 11 });
         const sy = hy + r + 26;
@@ -719,9 +758,9 @@
         else EA.draw.text(ctx, 'a', px, ay - 8, { color: TINT, size: 11, weight: 700, align: 'center' });
         tag(ctx, 'la massa resta indietro', mcx, geo.my + 18, { color: C.ink, size: 10.5, align: 'center' });
         rows(ctx, g, [
-          { k: 'ACCELERAZIONE DEL CHIP', v: signed(ag, 2) + ' g', c: TINT, big: true },
-          { k: 'SPOSTAMENTO x = m·a/k', v: EA.si(u, 'm') },
-          { k: 'FORZA DELLE MOLLE k·x', v: EA.si(ACC.k * u, 'N') },
+          { k: 'ACCELERAZIONE DEL CHIP', s: 'ACCELERAZIONE', v: signed(ag, 2) + ' g', c: TINT, big: true },
+          { k: 'SPOSTAMENTO x = m·a/k', s: 'SPOSTAMENTO', v: si0(u, 'm', 1e-12) },
+          { k: 'FORZA DELLE MOLLE k·x', s: 'FORZA k·x', v: si0(ACC.k * u, 'N', 1e-12) },
         ]);
         return;
       }
@@ -730,7 +769,7 @@
       const cc = differential(ACC.c0, ACC.d, u);
       if (n) {
         capBars(ctx, { x: I.x, y: I.y + 12, w: I.w }, cc.c1, cc.c2, ACC.c0, CFS, true);
-        rows(ctx, g, [{ k: 'ΔC = C₁ − C₂', v: signed(cc.dc * 1e15, 2) + ' fF', c: TINT }, { k: 'inclinazione', v: signed(-rot / DEG, 0) + '°' }], I.y + 64);
+        rows(ctx, g, [{ k: 'ΔC = C₁ − C₂', s: 'ΔC', v: signed(cc.dc * 1e15, 2) + ' fF', c: TINT }, { k: 'INCLINAZIONE', v: signed(-rot / DEG, 0) + '°' }], I.y + 64);
         return;
       }
       EA.draw.text(ctx, 'CAPACITÀ DEI PETTINI', I.x, I.y + 8, { color: C.dim, size: 10.5, weight: 700 });
@@ -777,9 +816,9 @@
       const f = coriolis(GYRO.m, VD, Math.abs(om));
       rows(ctx, g, [
         { k: 'ROTAZIONE Ω', v: EA.fmt(Math.abs(om) / DEG, 0) + ' °/s', c: C.violet, big: true },
-        { k: g.narrow ? 'CORIOLIS 2·m·v·Ω' : 'FORZA DI CORIOLIS 2·m·v·Ω', v: EA.fmt(f * 1e9, 2) + ' nN', c: C.pink },
-        { k: g.narrow ? 'SPOSTAMENTO' : 'SPOSTAMENTO DI LATO', v: EA.fmt((f / GYRO.ks) * 1e9, 2) + ' nm' },
-        { k: g.narrow ? 'PILOTAGGIO' : 'VIBRAZIONE DI PILOTAGGIO', v: '20 kHz, ' + EA.fmt(VD, 2) + ' m/s' },
+        { k: g.narrow ? 'CORIOLIS 2·m·v·Ω' : 'FORZA DI CORIOLIS 2·m·v·Ω', s: 'CORIOLIS', v: EA.fmt(f * 1e9, 2) + ' nN', c: C.pink },
+        { k: g.narrow ? 'SPOSTAMENTO' : 'SPOSTAMENTO DI LATO', v: EA.fmt(senseDisp(f, GYRO.m, GYRO.f, GYRO.fs) * 1e9, 2) + ' nm' },
+        { k: g.narrow ? 'PILOTAGGIO' : 'VIBRAZIONE DI PILOTAGGIO', v: '20 kHz, ' + EA.fmt(VD, 2) + ' m/s', sv: '20 kHz' },
       ]);
     }
 
@@ -804,10 +843,10 @@
         drawMic(ctx, { x: b.x, y: b.y + h1 + 30, w: b.w, h: b.h - h1 - 30 }, tt, true);
         ctx.restore();
         rows(ctx, g, [
-          { k: 'specchio DLP', v: '±12°', c: TINT },
-          { k: 'specchi', v: '5–14 µm' },
-          { k: 'membrana', v: '≈ 1 µm', c: TINT },
-          { k: 'banda audio', v: '20 Hz – 20 kHz' },
+          { k: 'SPECCHI DLP', s: 'SPECCHI', v: '±12°', c: TINT },
+          { k: 'LATO SPECCHIO', s: 'LATO', v: '5–14 µm' },
+          { k: 'SPESSORE MEMBRANA', s: 'MEMBRANA', v: '≈ 1 µm', c: TINT },
+          { k: 'BANDA AUDIO', s: 'AUDIO', v: '20 Hz – 20 kHz' },
         ]);
         return;
       }
@@ -861,11 +900,14 @@
   const SLOW = 2000;                           // tempo rallentato 2000 volte
   const NS = 800;                              // campioni nel grafico
   const TS = WINDOW / NS;                      // un campione ogni 2,5 µs
-  const KICK = { peak: 3 * G, dur: 1e-4 };     // il colpo: 3 g per un decimo di millisecondo
+  const KICK = { peak: 2 * G, dur: 1e-4 };     // il colpo: 2 g per un decimo di millisecondo
   const MEDIA = { aria: 9e-5, gas: 1.26e-5, vuoto: 3e-8 }; // smorzamento b in N·s/m
 
-  // Cifre decimali fisse con il segno: i display che cambiano a ogni fotogramma non ballano.
-  const fixed = (x, d) => (x < 0 ? '−' : x > 0 ? '+' : '') + Math.abs(x).toFixed(d).replace('.', ',');
+  // Cifre decimali fisse con il segno (niente «−0,00»): i display che cambiano a ogni fotogramma non ballano.
+  function fixed(x, d) {
+    const s = Math.abs(x).toFixed(d);
+    return (+s === 0 ? '' : x < 0 ? '−' : '+') + s.replace('.', ',');
+  }
 
   function mountLab(parts, api) {
     const h = EA.h;
@@ -906,7 +948,7 @@
     });
     med.el.append(h('small', { class: 'ea-ctl-hint' }, 'Il gas frena la massa come un ammortizzatore: Q = √(k·m)/b. Nel vuoto quasi niente la frena.'));
     parts.controls.append(accel.el,
-      h('div', { class: 'ea-ctl' }, shakeBtn, h('small', { class: 'ea-ctl-hint' }, 'Un colpo di 3 g che dura un decimo di millisecondo.')),
+      h('div', { class: 'ea-ctl' }, shakeBtn, h('small', { class: 'ea-ctl-hint' }, 'Un colpo secco di 2 g che dura un decimo di millisecondo: abbastanza breve da far vibrare la massa.')),
       kSl.el, mSl.el, med.el);
 
     const roX = EA.ui.readout({ label: 'Spostamento' });
@@ -970,16 +1012,23 @@
       const { f, q } = statics();
       settleNow();
       api.invalidate();
-      const x = staticDisp(st.a * G, st.k, st.m);
-      if (fromAccel) api.announce('Accelerazione ' + signed(st.a, 1) + ' g: la massa si sposta di ' + EA.si(Math.min(Math.abs(x), STOP), 'm') + '.');
-      else api.announce('Risonanza ' + EA.si(f, 'Hz') + ', fattore di qualità ' + EA.fmt(q, q < 10 ? 1 : 0) + ', ' + EA.si(dispPerG(f), 'm') + ' per g.');
+      const x = Math.abs(staticDisp(st.a * G, st.k, st.m));
+      if (fromAccel) {
+        api.announce('Accelerazione ' + signed(st.a, 1) + ' g: ' + (x > STOP
+          ? 'la massa arriva ai fermi meccanici, a ' + EA.si(STOP, 'm') + ' dal centro.'
+          : 'la massa si sposta di ' + si0(x, 'm', 1e-12) + '.'));
+      } else api.announce('Risonanza ' + EA.si(f, 'Hz') + ', fattore di qualità ' + EA.fmt(q, q < 10 ? 1 : 0) + ', ' + EA.si(dispPerG(f), 'm') + ' per g.');
     }
 
     function shake() {
       kick = 0;
       settleNow();
       api.invalidate();
-      api.announce('Colpo: la massa oscilla intorno a ' + EA.si(resonance(st.k, st.m), 'Hz') + ' e si ferma in circa ' + EA.si(settle(st.k, st.m, MEDIA[st.medium]), 's') + '.');
+      const q = quality(st.k, st.m, MEDIA[st.medium]);
+      const tau = EA.si(settle(st.k, st.m, MEDIA[st.medium]), 's', 2);
+      api.announce(q > 0.5
+        ? 'Colpo: la massa vibra e l\'ampiezza cala al 37 per cento in circa ' + tau + '.'
+        : 'Colpo: la massa torna a riposo senza oscillare, con una costante di tempo di circa ' + tau + '.');
     }
 
     function draw(t, dt) {
@@ -1018,12 +1067,12 @@
       const status = hitting ? ['la massa batte sui fermi', C.red] : nonlin ? ['oltre il 10% del gap: non lineare', C.amber] : ['risposta lineare', TINT];
       if (n) {
         capBars(ctx, cb, cc.c1, cc.c2, C0, sc.cfs, true);
-        EA.draw.text(ctx, 'ΔC = ' + EA.si(cc.dc, 'F'), cb.x, cb.y + 52, { color: TINT, size: 11, weight: 700 });
+        EA.draw.text(ctx, 'ΔC = ' + farad(cc.dc), cb.x, cb.y + 52, { color: TINT, size: 11, weight: 700 });
         EA.draw.text(ctx, status[0], cb.x + cb.w, cb.y + 52, { color: status[1], size: 10.5, align: 'right' });
       } else {
         EA.draw.text(ctx, 'CAPACITÀ DEI PETTINI', cb.x, cb.y, { color: C.text, size: 10.5, weight: 700 });
         capBars(ctx, { x: cb.x, y: cb.y + 22, w: cb.w, h: Math.max(60, cb.h - 132) }, cc.c1, cc.c2, C0, sc.cfs, false);
-        EA.draw.text(ctx, 'ΔC = C₁ − C₂ = ' + EA.si(cc.dc, 'F'), cb.x, cb.y + cb.h - 30, { color: TINT, size: 12, weight: 700 });
+        EA.draw.text(ctx, 'ΔC = C₁ − C₂ = ' + farad(cc.dc), cb.x, cb.y + cb.h - 30, { color: TINT, size: 12, weight: 700 });
         EA.draw.text(ctx, status[0], cb.x, cb.y + cb.h - 10, { color: status[1], size: 10.5, weight: 700 });
       }
 
@@ -1049,11 +1098,11 @@
       [['−2 ms', 'left', 0], ['−1 ms', 'center', 0.5], ['adesso', 'right', 1]].forEach(([txt, al, f]) => {
         EA.draw.text(ctx, txt, gb.x + f * gb.w, gb.y + gb.h + 15, { color: C.dim, size: 10.5, align: al });
       });
-      tag(ctx, 'si ferma in τ ≈ ' + EA.si(settle(st.k, st.m, MEDIA[st.medium]), 's', 2), gb.x + gb.w - 8, gb.y + 18, { color: C.text, size: 10.5, align: 'right' });
+      tag(ctx, 'costante di tempo τ ≈ ' + EA.si(settle(st.k, st.m, MEDIA[st.medium]), 's', 2), gb.x + gb.w - 8, gb.y + 18, { color: C.text, size: 10.5, align: 'right' });
       if (!n) EA.draw.text(ctx, 'equilibrio m·a/k', gb.x + 8, EA.clamp(Y(ueq) + (ueq >= 0 ? -7 : 15), gb.y + 14, gb.y + gb.h - 6), { color: C.text, size: 10.5 });
 
-      roX.set(EA.si(s.u, 'm'));
-      roC.set(EA.si(cc.dc, 'F'), nonlin ? 'warn' : null);
+      roX.set(si0(s.u, 'm', 1e-12));
+      roC.set(farad(cc.dc), nonlin ? 'warn' : null);
       roA.set(fixed(measured(s.u, st.k, st.m) / G, 2) + ' g', hitting ? 'bad' : null);
     }
 
@@ -1068,20 +1117,22 @@
   EA.register({
     id: 'mems',
     intro: [
-      'Dentro ogni smartphone ci sono delle <strong>macchine</strong>: masse che oscillano, molle che si piegano, specchi e membrane che vibrano. Sono i <abbr title="Micro-Electro-Mechanical Systems">MEMS</abbr>, sistemi micro-elettro-meccanici: strutture mobili più sottili di un capello, scolpite nel silicio con le stesse tecniche dei chip e unite all\'elettronica che le muove o le legge.',
+      'Dentro ogni smartphone ci sono delle <strong>macchine</strong>: masse che oscillano, molle che si piegano, membrane che vibrano con la voce. Sono i <abbr title="Micro-Electro-Mechanical Systems">MEMS</abbr>, sistemi micro-elettro-meccanici: strutture mobili più sottili di un capello, scolpite nel silicio con le stesse tecniche dei chip e unite all\'elettronica che le muove o le legge.',
       'Il più diffuso è l\'<em>accelerometro</em>. Una piastrina di silicio di pochi microgrammi, la <em>massa di prova</em>, è appesa a molle microscopiche: quando il telefono accelera o si inclina, resta indietro per inerzia di pochi <strong>nanometri</strong>. Dita sottili attaccate alla massa, affacciate a dita fisse, formano condensatori la cui capacità cambia di qualche <strong>femtofarad</strong>, cioè milionesimi di miliardesimo di farad: abbastanza per capire dov\'è il basso, contare i passi o far scattare un airbag.',
-      'Funziona perché il silicio monocristallino è un ottimo materiale meccanico: rigido quasi come l\'acciaio, più leggero dell\'alluminio, senza isteresi e senza usura per miliardi di oscillazioni. Le parti mobili si liberano con attacchi chimici, sciogliendo uno <em>strato sacrificale</em> sotto la struttura (come si fabbricano i chip lo racconta la sezione 4). A queste dimensioni il peso conta poco: dominano le forze elettrostatiche, l\'adesione tra le superfici e l\'attrito dell\'aria.',
+      'Con le stesse idee si costruiscono altri sensi. Il <em>giroscopio</em> tiene una massa in vibrazione e sente la rotazione dalla spinta laterale che riceve; il <em>microfono</em> è una membrana sottilissima davanti a una piastra forata; il <em>barometro</em> di solito è una membrana sopra una cavità sigillata, con resistori che cambiano valore quando si flette (è la <em>piezoresistività</em>). Sente differenze di pochi pascal: salire di un piano, circa 3 metri, abbassa la pressione di circa 36 Pa. Nei proiettori, invece, milioni di micro-specchi si inclinano per accendere e spegnere i pixel.',
+      'Tutto questo funziona perché il silicio monocristallino è un ottimo materiale meccanico: rigido quasi come l\'acciaio, più leggero dell\'alluminio, senza isteresi (dopo ogni deformazione torna esattamente com\'era) e senza usura per miliardi di oscillazioni. Le parti mobili si liberano con attacchi chimici, sciogliendo uno <em>strato sacrificale</em> sotto la struttura (come si fabbricano i chip lo racconta la sezione 4). A queste dimensioni il peso conta poco: dominano le forze elettrostatiche, l\'adesione tra le superfici e la resistenza dell\'aria.',
     ],
     steps: [
-      { title: 'Una massa appesa a molle', text: 'Nel chip c\'è una piastrina di silicio larga meno di mezzo millimetro, la massa di prova, sospesa su molle ripiegate e ancorata al substrato solo alle estremità. Può muoversi lungo un solo asse e oscilla volentieri a una frequenza, quella di risonanza f₀ = √(k/m)/2π: con molle da 2 N/m e 2 microgrammi di massa, circa 5 kHz.', focus: 'massa' },
+      { title: 'Una massa appesa a molle', text: 'Nel chip c\'è una piastrina di silicio larga meno di mezzo millimetro, la massa di prova, sospesa su molle ripiegate: solo le estremità delle molle sono fissate al substrato, la base del chip. Può muoversi lungo un solo asse e oscilla volentieri a una frequenza, quella di risonanza f₀ = √(k/m)/2π: con molle da 2 N/m e 2 microgrammi di massa, circa 5 kHz.', focus: 'massa' },
       { title: 'Il chip accelera, la massa resta indietro', text: 'Quando il telefono accelera, il telaio del chip parte subito ma la massa, per inerzia, resta indietro: le molle si piegano finché la loro forza k·x eguaglia m·a. Lo spostamento x = m·a/k è di circa 10 nanometri per ogni g, una quarantina di distanze tra atomi di silicio.', focus: 'accelera' },
-      { title: 'I pettini misurano lo spostamento', text: 'Alla massa sono attaccate file di dita intercalate a dita fisse: ogni coppia è un minuscolo condensatore. Se la massa si sposta, da un lato i gap si stringono e C₁ sale, dall\'altro si allargano e C₂ scende. La differenza vale pochi femtofarad per g e, quando il telefono si inclina, rivela dov\'è il basso.', focus: 'pettini' },
+      { title: 'I pettini misurano lo spostamento', text: 'Alla massa sono attaccate file di dita intercalate a dita fisse: ogni coppia è un minuscolo condensatore. Se la massa si sposta, da un lato le distanze tra le dita (i gap) si stringono e C₁ sale, dall\'altro si allargano e C₂ scende. La differenza vale pochi femtofarad per g e, quando il telefono si inclina, rivela dov\'è il basso.', focus: 'pettini' },
       { title: 'Il giroscopio sente la rotazione', text: 'Nel giroscopio la massa è tenuta in vibrazione, decine di migliaia di volte al secondo. Se il telefono ruota, la forza di Coriolis F = 2·m·v·Ω la spinge di lato, perpendicolarmente al moto: il percorso si apre in un\'ellisse, e lo spostamento laterale, di frazioni di nanometro, misura la velocità di rotazione.', focus: 'giroscopio' },
       { title: 'Specchi e microfoni', text: 'Con le stesse tecniche si fanno micro-specchi che si inclinano di ±12° per accendere o spegnere un pixel di un proiettore, e membrane spesse circa un micrometro che vibrano con il suono davanti a una piastra forata: cambia la distanza, cambia la capacità. I microfoni MEMS entrano nei telefoni nei primi anni Duemila.', focus: 'specchi' },
     ],
     formulas: [
       { label: 'Frequenza di risonanza', eq: '<var>f</var><sub>0</sub> = <sup>1</sup>⁄<sub>2π</sub> √(<var>k</var> ⁄ <var>m</var>)', text: 'Una massa <var>m</var> appesa a molle di rigidezza <var>k</var> oscilla da sola a <var>f</var><sub>0</sub>. Con <var>m</var> = 2 µg e <var>k</var> = 2 N/m si ottengono circa 5 kHz: molle più rigide o massa più leggera alzano la frequenza.' },
       { label: 'Spostamento statico', eq: '<var>x</var> = <var>m</var>·<var>a</var> ⁄ <var>k</var> = <var>a</var> ⁄ (2π<var>f</var><sub>0</sub>)<sup>2</sup>', text: 'Vale per accelerazioni lente rispetto a <var>f</var><sub>0</sub>. È il compromesso del sensore: alzando <var>f</var><sub>0</sub> si guadagnano banda e robustezza, ma lo spostamento per g cala con il quadrato. A 5 kHz, 1 g sposta la massa di circa 10 nm.' },
+      { label: 'Smorzamento e fattore di qualità', eq: '<var>Q</var> = √(<var>k</var>·<var>m</var>) ⁄ <var>b</var><br><var>τ</var> = <var>Q</var> ⁄ (π<var>f</var><sub>0</sub>)', text: 'Il gas intorno alla massa la frena con una forza <var>b</var>·<var>v</var>, come un ammortizzatore. Con <var>Q</var> vicino a 0,7, tipico degli accelerometri chiusi in un gas, la massa si assesta in fretta quasi senza oscillare. Nel vuoto <var>Q</var> arriva a migliaia e le vibrazioni durano a lungo: l\'ampiezza cala al 37% solo dopo il tempo <var>τ</var>.' },
       { label: 'Misura differenziale', eq: 'Δ<var>C</var> = <var>C</var><sub>1</sub> − <var>C</var><sub>2</sub> ≈ 2<var>C</var><sub>0</sub>·<var>x</var> ⁄ <var>d</var>', text: 'Ogni coppia di dita è un condensatore <var>C</var> = ε<sub>0</sub><var>A</var>/<var>d</var>. Se la massa si sposta di <var>x</var>, un gap diventa <var>d</var> − <var>x</var> e l\'altro <var>d</var> + <var>x</var>: la differenza raddoppia il segnale e cancella i disturbi comuni. Con <var>C</var><sub>0</sub> = 0,44 pF, <var>d</var> = 2 µm e <var>x</var> = 10 nm, Δ<var>C</var> ≈ 4,4 fF.' },
       { label: 'Forza di Coriolis', eq: '<var>F</var> = 2·<var>m</var>·<var>v</var>·Ω', text: 'Una massa che vibra con velocità <var>v</var>, in un chip che ruota con velocità angolare Ω (in rad/s), riceve una spinta perpendicolare al moto. Con <var>m</var> = 1 µg, <var>v</var> = 1 m/s e Ω = 1 rad/s la forza è di appena 2 nN.' },
     ],
@@ -1089,10 +1140,11 @@
       { year: 1954, title: 'Il silicio sente lo sforzo', who: 'Charles S. Smith, Bell Telephone Laboratories (Murray Hill)', text: 'Che la resistenza di un filo metallico cambi quando lo si tende lo aveva già notato Lord Kelvin nel 1856. Smith misura che nel silicio e nel germanio l\'effetto, la <em>piezoresistività</em>, è decine di volte più forte, perché cambia la resistività stessa del cristallo. È il principio dei sensori di pressione e dei primi accelerometri in silicio.' },
       { year: 1959, title: '«C\'è tanto spazio là in fondo»', who: 'Richard P. Feynman, Caltech (Pasadena)', text: 'Il 29 dicembre, al congresso dell\'American Physical Society, Feynman immagina l\'Enciclopedia Britannica scritta sulla capocchia di uno spillo e macchine minuscole, e offre due premi da 1000 dollari. È il manifesto della miniaturizzazione più citato, anche se per vent\'anni fu poco ripreso.' },
       { year: 1967, title: 'Il transistor a gate risonante', who: 'Harvey C. Nathanson e colleghi, Westinghouse Research Laboratories (Pittsburgh)', text: 'Una trave di metallo sospesa sopra un transistor ne fa da gate: attratta elettrostaticamente, vibra forte solo alla sua frequenza di risonanza e diventa un filtro meccanico integrato. Annunciato nel 1965 e descritto per esteso nel 1967, è tra i primi dispositivi liberati con uno strato sacrificale.' },
-      { year: 1979, title: 'Il primo accelerometro in silicio', who: 'Lynn M. Roylance e James B. Angell, Stanford University', text: 'Una massa di silicio appesa a una trave sottile, ricavate dal wafer con un attacco chimico: quando il chip accelera la trave si flette e un resistore piezoresistivo cambia valore. È considerato il primo accelerometro fabbricato in serie con le tecniche dei circuiti integrati.' },
+      { year: 1979, title: 'Il primo accelerometro in silicio', who: 'Lynn M. Roylance e James B. Angell, Stanford University', text: 'Una massa di silicio appesa a una trave sottile, ricavate con un attacco chimico dalla fetta di silicio (il <em>wafer</em>): quando il chip accelera la trave si flette e un resistore piezoresistivo cambia valore. È considerato il primo accelerometro fabbricato in serie con le tecniche dei circuiti integrati.' },
       { year: 1982, title: 'Il silicio come materiale meccanico', who: 'Kurt E. Petersen, IBM Research Laboratory (San Jose)', text: 'Nell\'articolo <em>Silicon as a Mechanical Material</em> Petersen mostra che il silicio monocristallino è perfetto per travi, molle e membrane: quasi rigido come l\'acciaio, più leggero dell\'alluminio e praticamente privo di isteresi meccanica. Diventa il testo fondativo della disciplina.' },
-      { year: 1987, title: 'Il chip degli specchi', who: 'Larry J. Hornbeck, Texas Instruments (Dallas)', text: 'Hornbeck inventa il Digital Micromirror Device: una matrice di micro-specchi di alluminio, uno per pixel, che si inclinano tra «acceso» e «spento». Diventa la tecnologia DLP dei proiettori (dal 1996) e del cinema digitale (dal 1999).' },
-      { year: 1993, title: 'L\'accelerometro per l\'airbag', who: 'Analog Devices', text: 'L\'ADXL50, annunciato nel 1991 ed entrato in produzione di serie per gli airbag intorno al 1993, è il primo accelerometro MEMS commerciale con meccanica ed elettronica di lettura sullo stesso chip: una massa di polisilicio con pettini differenziali e fondo scala di ±50 g.' },
+      { year: 1987, title: 'Il chip degli specchi', who: 'Larry J. Hornbeck, Texas Instruments (Dallas)', text: 'Hornbeck inventa il Digital Micromirror Device: una matrice di micro-specchi di alluminio, uno per pixel, che si inclinano tra «acceso» e «spento». Diventa la tecnologia <abbr title="Digital Light Processing">DLP</abbr> dei proiettori (dal 1996) e del cinema digitale (dal 1999).' },
+      { year: 1993, title: 'L\'accelerometro per l\'airbag', who: 'Analog Devices', text: 'L\'ADXL50, annunciato nel 1991 ed entrato in produzione di serie per gli airbag intorno al 1993, è il primo accelerometro MEMS commerciale con meccanica ed elettronica di lettura sullo stesso chip: una massa di polisilicio (silicio policristallino) con pettini differenziali e fondo scala di ±50 g.' },
+      { year: 2003, title: 'Il microfono di silicio', who: 'Knowles (Itasca, Illinois)', text: 'Knowles porta in produzione di massa i microfoni MEMS SiSonic (le fonti indicano il 2002-2003): una membrana di silicio di meno di un millimetro, davanti a una piastra forata, forma un condensatore che cambia con la pressione del suono. Nei telefoni cominciano a sostituire i microfoni a elettrete, che usano una pellicola di plastica carica di elettricità.' },
       { year: 2007, title: 'I sensori di movimento in tasca', who: 'Nintendo Wii (2006), Apple iPhone (2007) e iPhone 4 (2010)', text: 'Dopo il telecomando della Wii, con l\'accelerometro a tre assi ADXL330, il primo iPhone ruota lo schermo grazie a un accelerometro MEMS; nel 2010 l\'iPhone 4 aggiunge un giroscopio MEMS. Non erano i primi, ma da allora questi sensori sono di serie in quasi ogni smartphone.' },
       { year: 2022, title: 'Il telefono riconosce l\'incidente', who: 'Apple, iPhone 14', text: 'Per riconoscere gli incidenti stradali l\'iPhone 14 adotta un accelerometro capace di misurare fino a 256 g, insieme a un giroscopio ad alta dinamica: se rileva un urto grave chiama i soccorsi. Lo stesso tipo di sensore che negli anni Novanta serviva all\'airbag ora sta in tasca.' },
     ],
@@ -1126,7 +1178,7 @@
     quiz: [
       { id: 'ea-mems-01', chapter: 'mems', level: 1, topic: 'Accelerometro a riposo', q: 'Uno smartphone è appoggiato sul tavolo con lo schermo verso l\'alto. Che cosa legge l\'asse dell\'accelerometro perpendicolare allo schermo?', options: ['Circa 1 g: sente la spinta del tavolo che contrasta la gravità', 'Zero: il telefono è fermo, quindi non accelera', 'Circa 9,8 g: è il valore della gravità terrestre'], answer: 0, why: 'Fermo sul tavolo, la massa di prova si sposta come se il chip accelerasse verso l\'alto di 1 g: il tavolo lo spinge contro la gravità. In caduta libera, invece, l\'accelerometro segna zero. È così che il telefono capisce dov\'è il basso.' },
       { id: 'ea-mems-02', chapter: 'mems', level: 2, topic: 'Massa e frequenza', q: 'In un accelerometro MEMS si raddoppia la massa di prova lasciando uguali le molle. Che cosa succede?', options: ['f₀ si divide per √2 e lo spostamento per 1 g raddoppia', 'f₀ raddoppia e lo spostamento per 1 g si dimezza', 'f₀ resta uguale e lo spostamento per 1 g raddoppia', 'f₀ si dimezza e lo spostamento per 1 g resta uguale'], answer: 0, why: 'Con f₀ = √(k/m)/2π, raddoppiare m divide la frequenza per √2, circa 1,41. Lo spostamento statico x = m·a/k invece raddoppia: il sensore diventa più sensibile ma meno veloce. È il compromesso tra sensibilità e banda.' },
-      { id: 'ea-mems-03', chapter: 'mems', level: 2, topic: 'Misura differenziale', q: 'Perché l\'accelerometro misura due capacità, C₁ e C₂, e ne usa la differenza invece di misurarne una sola?', options: ['Il segnale raddoppia e i disturbi comuni, come la temperatura, si cancellano', 'Una sola capacità non cambierebbe quando la massa si sposta', 'Due condensatori in serie dimezzano la massa di prova', 'La differenza misura anche la velocità, oltre all\'accelerazione'], answer: 0, why: 'Quando la massa si sposta di x, un gap diventa d − x e l\'altro d + x: C₁ sale mentre C₂ scende. La differenza ΔC ≈ 2·C₀·x/d è doppia rispetto a una sola variazione e quasi lineare, e ciò che cambia allo stesso modo in entrambe, come le derive termiche, si annulla.' },
+      { id: 'ea-mems-03', chapter: 'mems', level: 2, topic: 'Misura differenziale', q: 'Perché l\'accelerometro misura due capacità, C₁ e C₂, e ne usa la differenza invece di misurarne una sola?', options: ['Il segnale raddoppia e i disturbi comuni, come la temperatura, si cancellano', 'Così lo stesso pettine misura l\'accelerazione lungo due assi diversi', 'La differenza misura anche la velocità, oltre all\'accelerazione', 'Una sola capacità non cambierebbe quando la massa si sposta'], answer: 0, why: 'Quando la massa si sposta di x, un gap diventa d − x e l\'altro d + x: C₁ sale mentre C₂ scende. La differenza ΔC ≈ 2·C₀·x/d è doppia rispetto a una sola variazione e quasi lineare, e ciò che cambia allo stesso modo in entrambe, come le derive termiche, si annulla.' },
       { id: 'ea-mems-04', chapter: 'mems', level: 3, topic: 'Giroscopio e Coriolis', q: 'Nel giroscopio MEMS una massa viene tenuta in vibrazione continua, decine di migliaia di volte al secondo. Perché è indispensabile?', options: ['Senza velocità la forza di Coriolis è nulla e non c\'è niente da misurare', 'La vibrazione impedisce alla massa di incollarsi agli elettrodi', 'Vibrando la massa ruota davvero e indica l\'angolo come una trottola', 'Serve a scaldare il silicio e a renderlo più sensibile alla rotazione'], answer: 0, why: 'La forza di Coriolis vale F = 2·m·v·Ω: è proporzionale alla velocità v della massa. Se la massa fosse ferma, la rotazione non la spingerebbe di lato. Con m = 1 µg, v = 1 m/s e Ω = 1 rad/s la forza è di appena 2 nN e lo spostamento laterale è di frazioni di nanometro.' },
     ],
     hero: {
@@ -1138,7 +1190,7 @@
     },
     lab: {
       title: 'Accelerometro capacitivo',
-      intro: 'Accelera il chip con il primo cursore, oppure premi <strong>Scuoti</strong> per dargli un colpo, e guarda la massa di prova spostarsi di pochi nanometri. Cambia molle, massa e gas: scoprirai il compromesso tra sensibilità e banda, e perché nel vuoto la massa non smette più di vibrare.',
+      intro: 'Accelera il chip con il primo cursore, oppure premi <strong>Scuoti</strong> per dargli un colpo, e guarda la massa di prova spostarsi di pochi nanometri. Cambia molle, massa e gas: scoprirai il compromesso tra sensibilità e banda, e perché nel vuoto la massa continua a vibrare così a lungo.',
       mount: mountLab,
     },
     model,

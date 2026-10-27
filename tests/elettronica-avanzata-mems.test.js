@@ -89,12 +89,17 @@ test('nel vuoto la massa vibra a lungo: l\'ampiezza cala come e^(−π·n/Q), e 
   assert.ok(Number.isFinite(over.u) && Math.abs(over.u) < 1e-9, 'sovrasmorzato: ' + over.u);
 });
 
-test('giroscopio: F = 2·m·v·Ω vale 2 nN per 1 µg, 1 m/s e 1 rad/s', () => {
+test('giroscopio: F = 2·m·v·Ω vale 2 nN per 1 µg, 1 m/s e 1 rad/s, e sposta la massa di pochi picometri', () => {
   rel(M.coriolis(1e-9, 1, 1), 2e-9, 1e-12, 'forza');
-  rel(M.driveSpeed(20e3, 5e-6), 0.6283, 1e-4, 'velocità di pilotaggio');
-  rel(M.coriolis(1e-9, 1, 1) / 5, 0.4e-9, 1e-12, 'spostamento con molle da 5 N/m');
-  // 1 °/s produce uno spostamento di circa 7 pm
-  rel(M.coriolis(1e-9, 1, Math.PI / 180) / 5, 6.98e-12, 1e-3, 'un grado al secondo');
+  const v = M.driveSpeed(20e3, 5e-6);
+  rel(v, 0.6283, 1e-4, 'velocità di pilotaggio: 5 µm a 20 kHz');
+  // modo di misura a 22 kHz, poco sopra il pilotaggio: circa 7 pm per ogni grado al secondo
+  rel(M.senseDisp(M.coriolis(1e-9, v, Math.PI / 180), 1e-9, 20e3, 22e3), 6.614e-12, 1e-3, 'un grado al secondo');
+  // con il modo di misura molto più in alto si torna a F/k, amplificato di 1/(1 − (fd/fs)²)
+  const ks = 1e-9 * Math.pow(TAU * 200e3, 2);
+  rel(M.senseDisp(1e-9, 1e-9, 20e3, 200e3), 1e-9 / ks / (1 - 0.01), 1e-9, 'fs = 10·fd');
+  // la risposta cresce avvicinando le due frequenze: per questo i giroscopi le accordano vicine
+  assert.ok(M.senseDisp(1e-9, 1e-9, 20e3, 20.5e3) > 4 * M.senseDisp(1e-9, 1e-9, 20e3, 22e3), 'modi vicini');
 });
 
 test('colpo e fermi meccanici: impulso a mezza sinusoide e rimbalzo sui fermi', () => {

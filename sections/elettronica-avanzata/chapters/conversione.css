@@ -3,6 +3,13 @@
 /* Laboratorio: segnale, errore e asse delle frequenze uno sotto l'altro. */
 .conversione-lab-canvas { aspect-ratio: 16 / 11; }
 
+/* Con i comandi a fianco il disegno occupa tutta l'altezza della colonna dei comandi:
+   un segnaposto in proporzione 16:11 dà l'altezza minima, il canvas copre l'intera area. */
+@media (min-width: 901px) {
+  .conversione-lab .ea-lab-display::before { content: ""; aspect-ratio: 16 / 11; }
+  .conversione-lab .ea-lab-display > .conversione-lab-canvas { position: absolute; inset: 0; height: 100%; }
+}
+
 /* Esempi pronti affiancati, nella tinta lavanda del capitolo. */
 .conversione-presets { display: flex; flex-wrap: wrap; gap: 6px; }
 .conversione-presets .ea-btn { flex: 1 1 auto; min-height: 32px; padding: 0 10px; font-size: .8rem; }

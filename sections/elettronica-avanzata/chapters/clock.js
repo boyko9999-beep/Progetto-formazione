@@ -175,7 +175,8 @@
     const init = { e: o.e || 0, x: o.x || 0, u: o.u || 0, t: 0 };
     const slow = decayRate(o.zeta, o.wn);
     const hold = (2 * TAU) / o.wn + 1 / slow;
-    const maxT = o.maxT || 0.2;
+    // limite di sicurezza: la rincorsa a velocità limitata (|x|/(π·ωn²)) con ampio margine
+    const maxT = o.maxT || (2 * Math.abs(o.x || 0)) / (Math.PI * o.wn * o.wn) + 100 / slow + 4 * hold;
     const a = Object.assign({}, init);
     let bad = Math.abs(a.e) >= LOCK_RAD ? 0 : -1;
     let pe = Math.abs(a.e);
@@ -297,6 +298,20 @@
     }
     if (cur) lines.push(cur);
     return lines;
+  }
+
+  // «÷ n» centrato in x con il segno disegnato a mano: a 10-11 px il carattere ÷ sembra un +.
+  function divLabel(ctx, x, y, n, color, size) {
+    const sz = size || 10.5;
+    const s = sz * 0.36;
+    const x0 = x - (2 * s + 3 + textW(ctx, String(n), sz, 700)) / 2;
+    const yc = y - sz * 0.36;
+    ctx.save();
+    ctx.fillStyle = color;
+    ctx.fillRect(x0, yc - 0.7, 2 * s, 1.4);
+    [-1, 1].forEach((k) => { ctx.beginPath(); ctx.arc(x0 + s, yc + k * s * 0.85, 1.25, 0, TAU); ctx.fill(); });
+    ctx.restore();
+    txt(ctx, String(n), x0 + 2 * s + 3, y, { color, size: sz, weight: 700 });
   }
 
   function rr(ctx, x, y, w, h, r) {
@@ -539,7 +554,7 @@
     const compact = o.compact;
     const yM = D.y + D.h * (compact ? 0.3 : 0.32);
     const yF = D.y + D.h * (compact ? 0.8 : 0.76);
-    const bw = compact ? Math.min(62, D.w * 0.19) : Math.min(98, D.w * 0.16);
+    const bw = compact ? Math.min(62, D.w * 0.19) : Math.min(98, D.w * 0.145);
     const bh = compact ? 30 : 46;
     const xS = D.x + (compact ? 9 : 16);
     const xP = D.x + D.w * 0.27;
@@ -603,7 +618,8 @@
     block(xP, yM, compact ? ['PFD'] : ['rivelatore', 'di fase'], hotPll ? EA.alpha(C.amber, 0.45 + 0.55 * errK) : C.grid, hotPll && errK > 0.2);
     block(xL, yM, compact ? ['filtro'] : ['filtro', 'd\'anello'], hotPll ? EA.alpha(C.amber, 0.6) : C.grid, false);
     block(xV, yM, ['VCO'], hotMult ? TINT : EA.alpha(TINT, 0.6), hotMult);
-    block(xL, yF, ['÷' + NB + o.N], hotMult ? TINT : EA.alpha(TINT, 0.6), hotMult);
+    block(xL, yF, [], hotMult ? TINT : EA.alpha(TINT, 0.6), hotMult);
+    divLabel(ctx, xL, yF + 4, o.N, C.ink, compact ? 10.5 : 11);
     // sorgente: il quarzo di riferimento
     crystalSym(ctx, xS, yM, C.cyan);
     const lab = { size: 10.5, align: 'center' };
@@ -613,11 +629,13 @@
     if (o.fref) txt(ctx, EA.si(o.fref, 'Hz'), sx, yM + (compact ? 38 : 40), Object.assign({ color: C.dim }, sl));
     if (o.fout) txt(ctx, EA.si(o.fout, 'Hz', 4), xV, yM + bh / 2 + 15, Object.assign({ color: TINT, weight: 700 }, lab));
     if (!compact) {
-      txt(ctx, 'errore', (xP + xL) / 2, yM - 9, Object.assign({ color: C.amber }, lab));
-      txt(ctx, 'tensione', (xL + xV) / 2, yM - 9, Object.assign({ color: C.amber }, lab));
-      txt(ctx, 'fref', (xS + xP - bw / 2) / 2 + 6, yM - 9, Object.assign({ color: C.cyan }, lab));
-      txt(ctx, 'fout', (xT + xO) / 2 + 2, yM - 9, Object.assign({ color: TINT }, lab));
-      txt(ctx, 'fout' + NB + '/' + NB + 'N', (xP + xL - bw / 2) / 2, yF - 9, Object.assign({ color: TINT }, lab));
+      // etichette dei fili, solo se stanno tra i due blocchi
+      const wire = (s, xa, xb, y, color) => { if (textW(ctx, s, 10.5) + 4 <= xb - xa) txt(ctx, s, (xa + xb) / 2, y, Object.assign({ color }, lab)); };
+      wire('errore', xP + bw / 2, xL - bw / 2, yM - 9, C.amber);
+      wire('tensione', xL + bw / 2, xV - bw / 2, yM - 9, C.amber);
+      wire('fref', xS + 12, xP - bw / 2, yM - 9, C.cyan);
+      wire('fout', xT + 4, xO, yM - 9, TINT);
+      wire('fout' + NB + '/' + NB + 'N', xP, xL - bw / 2, yF - 9, TINT);
     }
     return { yM, yF, bh };
   }
@@ -654,6 +672,7 @@
   const SWEND = SW0 + 15 * SWD;
 
   function mountHero(view, api) {
+    view.classList.add('clock-stage');
     const cv = api.canvas(view, { label: 'Animazione in due atti. Un diapason di quarzo vibra e si carica sulle facce; un invertitore lo tiene in vibrazione; quindici divisori per due portano 32 768 hertz a un impulso al secondo che muove la lancetta. Poi i fasori del riferimento e del VCO diviso per N si allineano mentre un anello ad aggancio di fase si aggancia e moltiplica la frequenza.' });
     const XT = crystal(WATCH_XTAL);
     const FREQ = chain(WATCH_HZ, 15);
@@ -844,16 +863,17 @@
         const yb = F.yH + (k < 0 ? 12 : 6);
         poly(ctx, [[x, F.yH], [x, yb], [xw + k * 4, yb], [xw + k * 4, ym + k * 4], [scope.x, ym + k * 4]], EA.alpha(C.text, 0.55), 1.4);
       });
-      // oscilloscopio: la tensione segue la flessione, il punto nuovo nasce a sinistra
+      // oscilloscopio: la tensione segue la flessione; il tempo scorre verso destra, l'ultimo punto è a destra
       panel(ctx, scope);
       txt(ctx, 'TENSIONE SUGLI ELETTRODI', scope.x + 12, scope.y + 18, { color: C.text, size: 10.5, weight: 700 });
       const x0 = scope.x + 16;
-      const x1 = scope.x + scope.w - 12;
+      const x1 = scope.x + scope.w - 16;
       const amp = scope.h * 0.27;
       const v = (x1 - x0) / 3;
+      if (!g.small) txt(ctx, 'tempo →', x1, scope.y + 18, { color: C.dim, size: 10.5, align: 'right' });
       EA.draw.grid(ctx, x0, ym - amp * 1.3, x1 - x0, amp * 2.6, { cols: g.small ? 4 : 6, rows: 4, ticks: false });
-      EA.draw.fn(ctx, x0, x1, (x) => ym - amp * Math.sin(TAU * (tt - (x - x0) / v)), TINT, 2.2, 2);
-      EA.draw.dot(ctx, x0, ym - amp * s, 3.5, C.ink);
+      EA.draw.fn(ctx, x0, x1, (x) => ym - amp * Math.sin(TAU * (tt - (x1 - x) / v)), TINT, 2.2, 2);
+      EA.draw.dot(ctx, x1, ym - amp * s, 3.5, C.ink);
       if (!g.small) txt(ctx, 'una vibrazione = ' + EA.si(1 / WATCH_HZ, 's'), x1, scope.y + scope.h - 9, { color: C.dim, size: 10.5, align: 'right' });
       // il numero del capitolo
       ctx.save();
@@ -898,6 +918,7 @@
     function scenePierce(ctx, g, R, tt, sT, playing) {
       const t = playing ? sT : 9;
       const on = pierceOn(t);
+      const roomy = !g.small; // schermo largo o tablet: etichette complete
       const sch = g.wide ? { x: R.x, y: R.y, w: R.w * 0.5, h: R.h } : { x: R.x, y: R.y, w: R.w, h: R.h * 0.5 };
       const sc = g.wide ? { x: R.x + R.w * 0.54, y: R.y + 2, w: R.w * 0.46, h: R.h - 4 } : { x: R.x, y: R.y + R.h * 0.53, w: R.w, h: R.h * 0.47 };
       const xA = sch.x + sch.w * 0.17;
@@ -905,7 +926,7 @@
       const xm = (xA + xB) / 2;
       const yI = sch.y + sch.h * (g.wide ? 0.34 : 0.3);
       const yR = sch.y + sch.h * (g.wide ? 0.12 : 0.08);
-      const yX = sch.y + sch.h * (g.wide ? 0.6 : 0.6);
+      const yX = sch.y + sch.h * 0.6;
       const yC = yX + sch.h * (g.wide ? 0.15 : 0.17);
       const ts = g.wide ? 30 : 22;
       const col = EA.alpha(C.ink, 0.8);
@@ -943,7 +964,7 @@
       txt(ctx, 'CB', xB + 18, yC + 4, Object.assign({ color: C.text }, lab));
       txt(ctx, 'A', xA - 9, yI - 7, Object.assign({ color: C.dim }, lab));
       txt(ctx, 'B', xB + 9, yI - 7, Object.assign({ color: C.dim }, lab));
-      if (g.wide) {
+      if (roomy) {
         txt(ctx, '180°', xo + 18, yI - 12, Object.assign({ color: C.amber }, lab));
         txt(ctx, '180°', xm + 30, yX - 12, Object.assign({ color: C.amber }, lab));
         txt(ctx, 'invertitore 180° + quarzo e condensatori 180° = un giro in fase', sch.x + sch.w / 2, sch.y + sch.h - 22, Object.assign({ color: C.dim }, lab));
@@ -958,23 +979,27 @@
       // oscilloscopio: ingresso sinusoidale, uscita squadrata e invertita
       panel(ctx, sc);
       const x0 = sc.x + 14;
-      const x1 = sc.x + sc.w - 12;
+      const x1 = sc.x + sc.w - 16;
       const v = (x1 - x0) / 4;
       // due righe uguali tra le etichette, con il messaggio in fondo
       const top = sc.y + 26;
-      const avail = sc.y + sc.h - (g.wide ? 46 : 30) - top - 20;
+      const avail = sc.y + sc.h - (roomy ? 46 : 30) - top - 20;
       const a1 = avail * 0.17;
       const m1 = top + avail / 4;
       const m2 = top + avail * 0.75 + 20;
       txt(ctx, 'A · INGRESSO: SINUSOIDE', x0, sc.y + 18, { color: C.text, size: 10.5, weight: 700 });
+      txt(ctx, 'tempo →', x1, sc.y + 18, { color: C.dim, size: 10.5, align: 'right' });
       txt(ctx, 'B · USCITA: ONDA QUADRA', x0, top + avail / 2 + 14, { color: C.text, size: 10.5, weight: 700 });
-      const ampAt = (x) => (playing ? pierceAmp(t - (x - x0) / v) : 1);
-      const onAt = (x) => (playing ? pierceOn(t - (x - x0) / v) : true);
-      EA.draw.fn(ctx, x0, x1, (x) => m1 - a1 * ampAt(x) * Math.sin(TAU * (tt - (x - x0) / v)), EA.alpha(TINT, 0.85), 1.8, 2);
-      EA.draw.fn(ctx, x0, x1, (x) => m2 + (onAt(x) ? a1 * Math.sign(Math.sin(TAU * (tt - (x - x0) / v))) : 0), TINT, 2.2, 1);
-      const msg = on ? ['a ogni ciclo l\'invertitore restituisce', 'l\'energia che il quarzo perde in R1'] : ['spento: la vibrazione si spegne da sola', '(nella realtà in circa ' + grp(Math.round(XT.Q / Math.PI / 1000) * 1000) + ' oscillazioni)'];
-      const yMsg = sc.y + sc.h - (g.wide ? 26 : 22);
-      if (g.wide) msg.forEach((l, i) => txt(ctx, l, x0, yMsg + i * 15, { color: i ? C.dim : (on ? C.text : C.amber), size: 10.5 }));
+      // il presente è a destra: leggendo da sinistra si vede la vibrazione spegnersi e ripartire
+      const ago = (x) => t - (x1 - x) / v;
+      const ampAt = (x) => (playing ? pierceAmp(ago(x)) : 1);
+      const onAt = (x) => (playing ? pierceOn(ago(x)) : true);
+      EA.draw.fn(ctx, x0, x1, (x) => m1 - a1 * ampAt(x) * Math.sin(TAU * (tt - (x1 - x) / v)), EA.alpha(TINT, 0.85), 1.8, 2);
+      EA.draw.fn(ctx, x0, x1, (x) => m2 + (onAt(x) ? a1 * Math.sign(Math.sin(TAU * (tt - (x1 - x) / v))) : 0), TINT, 2.2, 1);
+      EA.draw.dot(ctx, x1, m1 - a1 * ampAt(x1) * Math.sin(TAU * tt), 3.2, C.ink);
+      const msg = on ? ['a ogni ciclo l\'invertitore restituisce', 'l\'energia che il quarzo perde in R1'] : ['spento: la vibrazione si spegne da sola', '(dal vero cala a un terzo in circa ' + grp(Math.round(XT.Q / Math.PI / 1000) * 1000) + ' oscillazioni, ' + EA.fmt(XT.tau, 2) + ' s)'];
+      const yMsg = sc.y + sc.h - (roomy ? 26 : 22);
+      if (roomy) msg.forEach((l, i) => txt(ctx, l, x0, yMsg + i * 15, { color: i ? C.dim : (on ? C.text : C.amber), size: 10.5 }));
       else txt(ctx, on ? 'l\'invertitore reintegra l\'energia persa' : 'spento: la vibrazione si spegne', x0, yMsg + 12, { color: on ? C.text : C.amber, size: 10.5 });
     }
 
@@ -984,9 +1009,11 @@
       const t = playing ? sT : 7.4;
       const active = EA.clamp(Math.floor((t - SW0) / SWD) + 1, 0, 15);
       const kShow = Math.max(1, active);
-      const watchW = g.wide ? 230 : 104;
+      // in verticale l'orologio cresce con il riquadro (44 px sul telefono, di più sul tablet)
+      const wrTall = Math.max(44, Math.min(R.h * 0.15 - 6, R.w * 0.13));
+      const watchW = g.wide ? 230 : 2 * wrTall + 16;
       const strip = g.wide ? { x: R.x, y: R.y + 2, w: R.w - watchW - 24, h: R.h * 0.44 } : { x: R.x, y: R.y, w: R.w - watchW - 8, h: R.h * 0.3 };
-      const wr = g.wide ? Math.min(watchW / 2 - 18, R.h * 0.3) : 44;
+      const wr = g.wide ? Math.min(watchW / 2 - 18, R.h * 0.3) : wrTall;
       const wcx = R.x + R.w - watchW / 2 + (g.wide ? 0 : 4);
       const wcy = g.wide ? R.y + R.h * 0.4 : strip.y + strip.h / 2 + 2;
       // contatore in tempo reale: lo stadio k vale il bit k−1 dei cicli del quarzo
@@ -1035,7 +1062,7 @@
       const cw = ((g.wide ? strip.x + strip.w : R.x + R.w) - left) / per;
       const bwid = Math.min(cw - 12, 52);
       const rowGap = g.wide ? 0 : (R.y + R.h - 26 - chainY) / 3;
-      txt(ctx, g.wide ? '32' + NB + '768 Hz' : 'dal quarzo: 32' + NB + '768 Hz', g.wide ? R.x : R.x, chainY - (g.wide ? 6 : 12), { color: C.text, size: 10.5, weight: 700 });
+      txt(ctx, g.wide ? '32' + NB + '768 Hz' : 'dal quarzo: 32' + NB + '768 Hz', R.x, chainY - (g.wide ? 6 : 12), { color: C.text, size: 10.5, weight: 700 });
       if (g.wide) EA.draw.arrow(ctx, R.x, chainY + bh / 2, left + (cw - bwid) / 2, chainY + bh / 2, TINT, 1.6, 7);
       for (let k = 1; k <= 15; k++) {
         const row = Math.floor((k - 1) / per);
@@ -1058,12 +1085,17 @@
         ctx.lineWidth = cur ? 2 : 1.3;
         ctx.stroke();
         ctx.restore();
-        txt(ctx, '÷2', bx + bwid / 2 - 4, by + bh / 2 + 4, { color: on ? C.ink : C.dim, size: 10.5, weight: 700, align: 'center' });
+        // nei blocchi stretti la spia sale nell'angolo, per non coprire la scritta
+        const tight = bwid < 38;
+        divLabel(ctx, bx + bwid / 2 - (tight ? 0 : 4), by + bh / 2 + 4, 2, on ? C.ink : C.dim);
+        const lx = bx + bwid - (tight ? 5 : 8);
+        const ly = tight ? by + 6 : by + bh / 2;
+        const lr = tight ? 2.4 : 3.2;
         // spia: sopra i 10 Hz lampeggia troppo in fretta e sembra accesa a metà
         const f = FREQ[k];
         const lvl = !on ? 0 : f > 10 ? 0.5 : bit(k);
-        if (lvl > 0.9) EA.draw.dot(ctx, bx + bwid - 8, by + bh / 2, 6, EA.alpha(TINT, 0.25), false);
-        EA.draw.dot(ctx, bx + bwid - 8, by + bh / 2, 3.2, lvl ? EA.alpha(TINT, 0.35 + 0.65 * lvl) : '#2a3833', false);
+        if (lvl > 0.9) EA.draw.dot(ctx, lx, ly, lr * 1.9, EA.alpha(TINT, 0.25), false);
+        EA.draw.dot(ctx, lx, ly, lr, lvl ? EA.alpha(TINT, 0.35 + 0.65 * lvl) : '#2a3833', false);
         const label = k === 15 ? '1 Hz' : grp(f);
         txt(ctx, on ? label : '…', bx + bwid / 2, by + bh + 14, { color: k === 15 && on ? TINT : on ? C.text : C.dim, size: 10.5, weight: k === 15 ? 700 : 600, align: 'center' });
       }
@@ -1082,7 +1114,7 @@
       // la formula, stadio per stadio
       const k = Math.max(1, active);
       const yF = g.wide ? chainY + bh + 56 : R.y + R.h - 2;
-      txt(ctx, '32' + NB + '768 Hz ÷ 2' + sup(k) + ' = ' + (k === 15 ? '1' : grp(FREQ[k])) + ' Hz', R.x, yF, { color: k === 15 ? TINT : C.ink, size: g.small ? 12 : 14, weight: 700 });
+      txt(ctx, '32' + NB + '768 Hz / 2' + sup(k) + ' = ' + (k === 15 ? '1' : grp(FREQ[k])) + ' Hz', R.x, yF, { color: k === 15 ? TINT : C.ink, size: g.small ? 12 : 14, weight: 700 });
     }
 
     /* fasi 4 e 5: il PLL */
@@ -1096,10 +1128,10 @@
       const tau = playing ? sT - VIS.start : VIS.span;
       const e = visErr(tau);
       const { D, P } = splitAct2(g, R);
-      loopDiagram(ctx, D, { compact: !g.wide, hot: 'pll', err: e, tt: playing ? tt : null, N: 8 });
-      if (!g.wide) txt(ctx, 'PFD: rivelatore di fase e frequenza', D.x, D.y + D.h + 4, { color: C.dim, size: 10.5 });
+      loopDiagram(ctx, D, { compact: g.small, hot: 'pll', err: e, tt: playing ? tt : null, N: 8 });
+      if (g.small) txt(ctx, 'PFD: rivelatore di fase e frequenza', D.x, D.y + D.h + 4, { color: C.dim, size: 10.5 });
       // fasori e legenda
-      const r = g.wide ? Math.min(P.h * 0.27, P.w * 0.24) : Math.min(50, P.h * 0.24);
+      const r = g.wide ? Math.min(P.h * 0.27, P.w * 0.24) : Math.min(g.small ? 50 : 90, P.h * 0.24);
       const cx = P.x + r + 8;
       const cy = P.y + r + (g.wide ? 14 : 8);
       const ang = TAU * VIS.rev * tt + 0.9;
@@ -1107,8 +1139,8 @@
       const locked = tau >= tLockVis && Math.abs(e) < LOCK_RAD;
       const lx = cx + r + (g.wide ? 24 : 16);
       const dl = g.wide ? 17 : 16;
-      const ly = g.wide ? cy - r * 0.5 : P.y + 16;
-      const leg = [[C.cyan, 'riferimento'], [TINT, 'VCO ÷ N'], [C.amber, 'errore ' + deg(e)]];
+      const ly = g.small ? P.y + 16 : cy - r * 0.5;
+      const leg = [[C.cyan, 'riferimento'], [TINT, 'VCO / N'], [C.amber, 'errore ' + deg(e)]];
       if (!playing) leg.push([null, 'VCO all\'inizio']);
       leg.forEach(([col, l], i) => {
         const y = ly + i * dl;
@@ -1131,6 +1163,7 @@
       ctx.fillStyle = EA.alpha(C.green, 0.12);
       ctx.fillRect(x0, Y(LOCK_RAD), x1 - x0, Y(-LOCK_RAD) - Y(LOCK_RAD));
       poly(ctx, [[x0, Y(0)], [x1, Y(0)]], EA.alpha(C.text, 0.35), 1, [3, 4]);
+      txt(ctx, 'fascia ±5°', x1, Y(LOCK_RAD) - 5, { color: EA.alpha(C.green, 0.9), size: 10.5, align: 'right' });
       const pts = [];
       const now = [];
       for (let i = 0; i <= 160; i++) {
@@ -1150,15 +1183,16 @@
 
     function sceneMoltiplica(ctx, g, R, tt, sT, playing) {
       const N = 8;
+      const roomy = !g.small; // schermo largo o tablet: etichette lunghe
       const { D, P } = splitAct2(g, R);
-      loopDiagram(ctx, D, { compact: !g.wide, hot: 'mult', err: 0, tt: playing ? tt : null, N, fref: 100e6, fout: N * 100e6 });
+      loopDiagram(ctx, D, { compact: g.small, hot: 'mult', err: 0, tt: playing ? tt : null, N, fref: 100e6, fout: N * 100e6 });
       // onde allineate: il divisore restituisce un fronte ogni N fronti del VCO
       panel(ctx, P);
-      const labW = g.wide ? 112 : 70;
+      const labW = roomy ? 112 : 70;
       const x0 = P.x + labW;
       const x1 = P.x + P.w - 12;
       const Pr = (x1 - x0) / 2;
-      const rowH = (P.h - (g.wide ? 88 : 80)) / 3;
+      const rowH = (P.h - (roomy ? 88 : 80)) / 3;
       const ys = [0, 1, 2].map((i) => P.y + 30 + rowH * (i + 0.5) + i * 4);
       const hh = rowH * 0.28;
       const cur = playing ? ((sT * 0.22) % 1) * 2 : 1.02;
@@ -1166,7 +1200,7 @@
       EA.draw.line(ctx, squarePts(x0, x1, Pr, 0, ys[0] - hh, ys[0] + hh), C.cyan, 2);
       EA.draw.line(ctx, squarePts(x0, x1, Pr / N, 0, ys[1] - hh, ys[1] + hh), TINT, 1.8);
       EA.draw.line(ctx, squarePts(x0, x1, Pr, 0, ys[2] - hh, ys[2] + hh), EA.alpha(TINT, 0.75), 2);
-      const lab = g.wide ? [['riferimento', '100 MHz'], ['VCO = N · fref', '800 MHz'], ['VCO ÷ N', '100 MHz']] : [['rif.', '100 MHz'], ['VCO', '800 MHz'], ['VCO ÷ 8', '100 MHz']];
+      const lab = roomy ? [['riferimento', '100 MHz'], ['VCO = N · fref', '800 MHz'], ['VCO / N', '100 MHz']] : [['rif.', '100 MHz'], ['VCO', '800 MHz'], ['VCO / 8', '100 MHz']];
       lab.forEach(([a, b], i) => {
         txt(ctx, a, P.x + 10, ys[i] - 2, { color: i === 0 ? C.cyan : TINT, size: 10.5, weight: 700 });
         txt(ctx, b, P.x + 10, ys[i] + 12, { color: C.dim, size: 10.5 });
@@ -1180,14 +1214,14 @@
       }
       poly(ctx, [[xc, P.y + 22], [xc, ys[2] + hh + 4]], EA.alpha(C.ink, 0.55), 1.2);
       // jitter: l'istante del fronte non è mai esattamente quello ideale
-      if (g.wide) {
+      if (roomy) {
         const xe = x0 + Pr + 5 * (Pr / N);
         for (let i = -2; i <= 2; i++) poly(ctx, [[xe + i * 1.6, ys[1] - hh], [xe + i * 1.6, ys[1] + hh]], EA.alpha(TINT, i ? 0.25 : 0.9), 1);
         txt(ctx, 'jitter', xe, ys[1] + hh + 14, { color: TINT, size: 10.5, align: 'center' });
       }
-      const yT = P.y + P.h - (g.wide ? 30 : 24);
-      txt(ctx, 'fout = N · fref = 8 × 100 MHz = 800 MHz', P.x + 10, yT, { color: TINT, size: g.wide ? 12 : 10.5, weight: 700 });
-      txt(ctx, g.wide ? 'in una CPU: 100 MHz × 62 = 6,2 GHz, un fronte ogni ' + EA.si(1 / pllOut(100e6, 62), 's') : 'CPU: 100 MHz × 62 = 6,2 GHz', P.x + 10, yT + 16, { color: C.dim, size: 10.5 });
+      const yT = P.y + P.h - (roomy ? 30 : 24);
+      txt(ctx, 'fout = N · fref = 8 × 100 MHz = 800 MHz', P.x + 10, yT, { color: TINT, size: roomy ? 12 : 10.5, weight: 700 });
+      txt(ctx, roomy ? 'in una CPU: 100 MHz × 62 = 6,2 GHz, un ciclo ogni ' + EA.si(1 / pllOut(100e6, 62), 's') : 'CPU: 100 MHz × 62 = 6,2 GHz', P.x + 10, yT + 16, { color: C.dim, size: 10.5 });
     }
 
     function draw(t, dt) {
@@ -1281,8 +1315,8 @@
     const roE = EA.ui.readout({ label: 'Errore di fase' });
     const roS = EA.ui.readout({ label: 'Stato' });
     const roT = EA.ui.readout({ label: 'Tempo di aggancio' });
-    const roM = EA.ui.readout({ label: 'Sovraelongazione' });
-    const roN = EA.ui.readout({ label: 'Rumore di fase' });
+    const roM = EA.ui.readout({ label: 'Sovraelongazione (colpo al VCO)' });
+    const roN = EA.ui.readout({ label: 'Rumore di fase in più' });
     parts.readouts.append(roF.el, roE.el, roS.el, roT.el, roM.el, roN.el);
 
     const params = () => { const lp = loopParams(st.fref, st.u); return { fref: st.fref, N: st.N, wn: lp.wn, zeta: lp.zeta, fn: lp.fn }; };
@@ -1313,7 +1347,7 @@
       const p = params();
       roF.set(EA.si(pllOut(p.fref, p.N), 'Hz'));
       roM.set(EA.fmt(overshoot(p.zeta) * 100, 0) + ' %', p.zeta < 0.6 ? 'warn' : null);
-      roN.set('+' + EA.fmt(noisePenalty(p.N), 1) + ' dB');
+      roN.set(p.N === 1 ? '0 dB' : '+' + EA.fmt(noisePenalty(p.N), 1) + ' dB');
       bandHint.textContent = 'fn = ' + EA.si(p.fn, 'Hz') + ' · ζ = ' + EA.fmt(p.zeta, 2) + ' · aggancio ≈ 4/(ζωn) = ' + EA.si(lockEstimate(p.zeta, p.wn), 's');
     }
 
@@ -1355,11 +1389,13 @@
       if (dt > 0) {
         const du = uNow - lastU;
         vis += Math.abs(du) > 0.3 ? Math.sign(du) * 0.3 : du;
-        if (Math.abs(du) < 0.15) vis += wrapAngle(uNow - vis) * Math.min(1, dt * 5);
+        if (Math.abs(du) < 0.15) vis += wrapAngle(uNow - vis) * Math.min(1, dt * 12);
       } else vis = wrapAngle(uNow);
       lastU = uNow;
       const err = wrapAngle(vis);
       const locked = sim.locked && tNow >= sim.tLock && !slipNow;
+      // i numeri: ad anello agganciato l'errore vero, sempre sotto 5°; prima quello dei fasori
+      const shown = locked ? wrapAngle(uNow) : err;
 
       const ctx = cv.ctx;
       const w = cv.w;
@@ -1378,7 +1414,7 @@
       const lx = dcx + r + (narrow ? 16 : 26);
       const vx = lx + (narrow ? 108 : 118);
       const ly = dcy - (narrow ? 26 : 30);
-      const rows = [[C.cyan, 'riferimento', EA.si(sim.fref, 'Hz', 3)], [TINT, 'VCO ÷ N', EA.si(fNow / sim.N, 'Hz', 4)], [C.amber, 'errore di fase', deg(err)]];
+      const rows = [[C.cyan, 'riferimento', EA.si(sim.fref, 'Hz', 3)], [TINT, 'VCO / N', EA.si(fNow / sim.N, 'Hz', 4)], [C.amber, 'errore di fase', deg(shown)]];
       rows.forEach(([col, name, val], i) => {
         const y = ly + i * (narrow ? 16 : 18);
         EA.draw.dot(ctx, lx + 4, y - 4, 3.2, col, false);
@@ -1442,7 +1478,8 @@
       }
       txt(ctx, '0', pl.x, pl.y + pl.h + 14, { color: C.dim, size: 10.5 });
       txt(ctx, EA.si(sim.T, 's'), pl.x + pl.w, pl.y + pl.h + 14, { color: C.dim, size: 10.5, align: 'right' });
-      txt(ctx, narrow ? 'tempo, rallentato' : 'tempo reale, mostrato al rallentatore in ' + PLAY + ' s', pl.x + pl.w / 2, pl.y + pl.h + 14, { color: C.dim, size: 10.5, align: 'center' });
+      const slowMo = sim.T < PLAY;
+      txt(ctx, narrow ? (slowMo ? 'tempo, rallentato' : 'tempo') : 'tempo reale, mostrato ' + (slowMo ? 'al rallentatore ' : '') + 'in ' + PLAY + ' s', pl.x + pl.w / 2, pl.y + pl.h + 14, { color: C.dim, size: 10.5, align: 'center' });
 
       // in basso: i fronti, con l'oscilloscopio sincronizzato sul riferimento
       const by = hh - botH + 6;
@@ -1466,13 +1503,13 @@
       EA.draw.line(ctx, squarePts(wx0, wx1, P, 0, y1 - a, y1 + a), C.cyan, 1.8);
       EA.draw.line(ctx, squarePts(wx0, wx1, P / rho, ((wx0 - trig) * rho) / P - err / TAU, y2 - a, y2 + a), TINT, 1.8);
       txt(ctx, narrow ? 'rif.' : 'riferimento', px, y1 + 4, { color: C.cyan, size: 10.5, weight: 700 });
-      txt(ctx, narrow ? 'VCO÷N' : 'VCO ÷ N', px, y2 + 4, { color: TINT, size: 10.5, weight: 700 });
-      const dtEdge = err / (TAU * sim.fref);
-      const edgeMsg = slipNow ? 'il VCO perde giri: frequenze diverse' : Math.abs(xd - trig) <= 2.5 ? 'fronti allineati' : 'VCO ÷ N in ' + (dtEdge > 0 ? 'ritardo' : 'anticipo') + ' di ' + EA.si(Math.abs(dtEdge), 's');
+      txt(ctx, narrow ? 'VCO/N' : 'VCO / N', px, y2 + 4, { color: TINT, size: 10.5, weight: 700 });
+      const dtEdge = shown / (TAU * sim.fref);
+      const edgeMsg = slipNow ? 'il VCO perde giri: frequenze diverse' : Math.abs(xd - trig) <= 2.5 ? 'fronti allineati' : 'VCO / N in ' + (dtEdge > 0 ? 'ritardo' : 'anticipo') + ' di ' + EA.si(Math.abs(dtEdge), 's');
       txt(ctx, edgeMsg, w - px, by + 8, { color: slipNow ? C.red : Math.abs(xd - trig) <= 2.5 ? C.green : C.amber, size: 10.5, align: 'right' });
 
       // display numerici
-      roE.set(deg(err), Math.abs(err) < LOCK_RAD ? 'good' : 'warn');
+      roE.set(deg(shown), Math.abs(shown) < LOCK_RAD ? 'good' : 'warn');
       roS.set(slipNow ? 'giri persi' : locked ? 'agganciato' : 'in aggancio', slipNow ? 'bad' : locked ? 'good' : 'warn');
       roT.set(sim.tLock === 0 ? 'mai sganciato' : tNow >= sim.tLock || play >= PLAY ? EA.si(sim.tLock, 's') : 'in corso…', sim.tLock && tNow < sim.tLock ? null : 'good');
       if (!announced && (play >= PLAY || tNow >= sim.tLock)) {
@@ -1492,13 +1529,13 @@
   EA.register({
     id: 'clock',
     intro: [
-      'Ogni circuito digitale, dall\'orologio da polso al processore, ha bisogno di un <strong>battito regolare</strong> che gli dica quando agire. Quasi sempre quel battito nasce da un sassolino: un cristallo di <strong>quarzo</strong>. Nel 1880 i fratelli Pierre e Jacques Curie scoprirono che il quarzo, se compresso, si carica elettricamente sulle facce (<em>effetto piezoelettrico</em>); l\'anno dopo confermarono anche l\'effetto inverso: sotto tensione il cristallo si deforma. È il ponte tra una vibrazione meccanica e un circuito.',
+      'Ogni circuito digitale, dall\'orologio da polso al processore, ha bisogno di un <strong>battito regolare</strong> che gli dica quando agire. Quasi sempre quel battito nasce da un minuscolo pezzo di cristallo di <strong>quarzo</strong>. Nel 1880 i fratelli Pierre e Jacques Curie scoprirono che il quarzo, se compresso, si carica elettricamente sulle facce (<em>effetto piezoelettrico</em>); l\'anno dopo confermarono anche l\'effetto inverso: sotto tensione il cristallo si deforma. È il ponte tra una vibrazione meccanica e un circuito.',
       'Un pezzetto di quarzo tagliato a forma di diapason vibra a una frequenza fissata dalla sua forma e perde pochissima energia a ogni oscillazione: il suo <em>fattore di qualità</em> Q arriva a decine di migliaia, contro il centinaio di un circuito LC. Negli orologi vibra <strong>32&nbsp;768 volte al secondo</strong>, cioè 2<sup>15</sup>. Un piccolo amplificatore lo tiene in movimento, con la stessa retroazione positiva degli oscillatori RC della sezione intermedia, e quindici divisori per 2 riducono quel ritmo a un impulso al secondo: quello che muove la lancetta.',
-      'I processori però lavorano a miliardi di cicli al secondo, e nessun quarzo vibra così in fretta. Il trucco è l\'<strong>anello ad aggancio di fase</strong> (<abbr title="Phase-Locked Loop">PLL</abbr>): un oscillatore regolabile insegue la fase di un quarzo di riferimento e ne moltiplica la frequenza per <var>N</var>, da 100&nbsp;MHz fino a oltre 6&nbsp;GHz. E quando serve ancora più precisione si chiede aiuto agli atomi: dal 1967 il secondo è la durata di 9&nbsp;192&nbsp;631&nbsp;770 oscillazioni della radiazione emessa dall\'atomo di cesio-133.',
+      'I processori però lavorano a miliardi di cicli al secondo, e nessun quarzo vibra così in fretta. Il trucco è l\'<strong>anello ad aggancio di fase</strong> (<abbr title="Phase-Locked Loop">PLL</abbr>): un oscillatore regolabile insegue la fase di un quarzo di riferimento e ne moltiplica la frequenza per <var>N</var>, da 100&nbsp;MHz fino a oltre 6&nbsp;GHz. E quando serve ancora più precisione si chiede aiuto agli atomi: dal 1967 il secondo è la durata di 9&nbsp;192&nbsp;631&nbsp;770 oscillazioni della radiazione che corrisponde a una precisa transizione dell\'atomo di cesio-133.',
     ],
     steps: [
       { title: 'Il quarzo vibra', text: 'Un diapason di quarzo lungo pochi millimetri vibra 32 768 volte al secondo. Quando i rebbi si piegano, sulle facce compaiono cariche di segno opposto che si scambiano a ogni mezza vibrazione: è l\'effetto piezoelettrico, che trasforma la vibrazione in una tensione.', focus: 'quarzo' },
-      { title: 'L\'oscillatore lo tiene in vibrazione', text: 'Da solo il quarzo si fermerebbe, perché a ogni ciclo perde un po\' di energia. Nel circuito di Pierce un invertitore CMOS e due condensatori gliela restituiscono a ogni oscillazione, e la sinusoide del quarzo esce squadrata.', focus: 'pierce' },
+      { title: 'L\'oscillatore lo tiene in vibrazione', text: 'Da solo il quarzo si fermerebbe, perché a ogni ciclo perde un po\' di energia. Nel circuito di Pierce un invertitore CMOS gliela restituisce a ogni oscillazione, mentre due piccoli condensatori sistemano la fase del segnale riportato indietro. All\'uscita la sinusoide del quarzo diventa un\'onda quadra.', focus: 'pierce' },
       { title: 'Quindici volte diviso due', text: 'Ogni flip-flop cambia stato a un fronte su due, quindi dimezza la frequenza: 32 768, 16 384, 8192 Hz… Dopo 15 stadi resta 1 Hz, un impulso al secondo che fa scattare la lancetta.', focus: 'divisori' },
       { title: 'Il PLL insegue la fase', text: 'Per arrivare ai GHz serve un anello ad aggancio di fase. Il rivelatore confronta i fronti del riferimento con quelli del VCO diviso per N; il filtro trasforma l\'errore in una tensione che accelera o rallenta il VCO, finché le fasi coincidono.', focus: 'pll' },
       { title: 'Moltiplica per N', text: 'Ad anello agganciato il VCO diviso per N va al passo del riferimento, quindi il VCO è esattamente N volte più veloce: 100 MHz × 62 = 6,2 GHz. Il quarzo resta il metronomo: senza di lui il PLL perderebbe il passo.', focus: 'moltiplica' },
@@ -1515,8 +1552,9 @@
       { year: 1923, title: 'Il circuito di Pierce', who: 'George Washington Pierce · Harvard University', text: 'Pierce semplifica l\'oscillatore a quarzo: gli basta una sola valvola, con il cristallo nell\'anello di retroazione. Lo stesso schema, con un invertitore CMOS e due piccoli condensatori al posto della valvola, fa oscillare oggi il quarzo di quasi ogni orologio e microcontrollore.' },
       { year: 1927, title: 'Il primo orologio al quarzo', who: 'Warren A. Marrison e J. W. Horton · Bell Telephone Laboratories, New York', text: 'Per misurare con precisione le frequenze della telefonia, dividono per via elettronica l\'oscillazione di un quarzo a 50&nbsp;kHz fino a pilotare un motore sincrono collegato a un quadrante. Lo mostrano nel 1927 e lo descrivono in un articolo del 1928. Negli anni \'30 orologi di questo tipo cominciano a sostituire i pendoli di precisione negli osservatori.' },
       { year: 1932, title: 'L\'idea dell\'aggancio di fase', who: 'Henri de Bellescize · Francia', text: 'Nell\'articolo «La réception synchrone», sulla rivista L\'Onde Électrique, de Bellescize descrive un ricevitore radio che confronta di continuo la fase di un oscillatore locale con quella del segnale e la corregge. È considerata la prima descrizione di un PLL, anche se la sincronizzazione tra oscillatori era già nota.' },
-      { year: 1967, title: 'Il secondo diventa atomico', who: '13ª Conferenza generale dei pesi e delle misure · Parigi', text: 'Il secondo diventa la durata di 9&nbsp;192&nbsp;631&nbsp;770 periodi della radiazione emessa da una transizione dell\'atomo di cesio-133. Il valore viene dal confronto con il tempo astronomico del primo orologio al cesio accurato, costruito nel 1955 da Louis Essen e Jack Parry al National Physical Laboratory, in Inghilterra. Nello stesso anno, al concorso cronometrico dell\'Osservatorio di Neuchâtel, i prototipi da polso al quarzo Beta 1 e Beta 2 del Centre Électronique Horloger conquistano i primi posti.' },
+      { year: 1967, title: 'Il secondo diventa atomico', who: '13ª Conferenza generale dei pesi e delle misure · Parigi', text: 'Il secondo diventa la durata di 9&nbsp;192&nbsp;631&nbsp;770 periodi della radiazione che corrisponde a una transizione dell\'atomo di cesio-133. Il valore viene dal confronto con il tempo astronomico del primo orologio al cesio accurato, costruito nel 1955 da Louis Essen e Jack Parry al National Physical Laboratory, in Inghilterra. Nello stesso anno, al concorso cronometrico dell\'Osservatorio di Neuchâtel, i prototipi da polso al quarzo Beta 1 e Beta 2 del Centre Électronique Horloger conquistano i primi posti.' },
       { year: 1969, title: 'Il quarzo arriva al polso', who: 'Seiko · Tokyo, 25 dicembre 1969', text: 'Esce il Seiko Quartz Astron, primo orologio da polso al quarzo in commercio: un diapason a 8192&nbsp;Hz (2<sup>13</sup>, quindi 13 divisioni per 2), circa ±5 secondi al mese, 450&nbsp;000 yen, all\'incirca il prezzo di un\'automobile. I 32&nbsp;768&nbsp;Hz (2<sup>15</sup>) diventano lo standard nel corso degli anni \'70.' },
+      { year: 1970, title: 'Il PLL diventa un circuito integrato', who: 'Signetics (Alan Grebene, Hans Camenzind) e RCA · Stati Uniti', text: 'Tra il 1969 e i primi anni \'70 l\'anello ad aggancio di fase entra in un solo chip. La Signetics propone la serie NE560, da cui derivano il PLL NE565 e il decodificatore di toni NE567; la RCA propone il CD4046 in tecnologia CMOS. Il PLL passa da sistema costoso a componente da pochi dollari, usato in radio FM, modem e decodificatori di toni.' },
       { year: 1992, title: 'Il clock raddoppiato nella CPU', who: 'Intel · Santa Clara (California, USA)', text: 'Nell\'i486DX2 il nucleo lavora al doppio della frequenza del bus della scheda madre (25 → 50&nbsp;MHz, 33 → 66&nbsp;MHz) grazie a un PLL integrato sul chip. È tra i primi microprocessori diffusi con la frequenza interna moltiplicata da un PLL: da allora la CPU va a un multiplo dell\'oscillatore della scheda.' },
       { year: 2024, title: 'Sei gigahertz di serie', who: 'Intel Core i9-14900KS · smartphone in tutto il mondo', text: 'Un processore desktop raggiunge di serie 6,2&nbsp;GHz: un riferimento di 100&nbsp;MHz moltiplicato per 62 dai PLL integrati (la soglia dei 6&nbsp;GHz era stata toccata nel 2023). Negli smartphone sintetizzatori frazionari-N ricavano da un quarzo di 19,2-38,4&nbsp;MHz tutte le portanti radio, fino a oltre 6&nbsp;GHz.' },
     ],
@@ -1524,7 +1562,7 @@
     uses: [
       'Orologi da polso e orologi in tempo reale (RTC) di PC e telefoni',
       'Microcontrollori: quarzo da 8 MHz × 9 = 72 MHz',
-      'CPU e GPU: 100 MHz moltiplicati fino a 5-6 GHz',
+      'CPU dei PC: 100 MHz moltiplicati fino a 5-6 GHz',
       'Telefoni, Wi-Fi e Bluetooth: sintetizzatori frazionari-N',
       'Audio digitale: 12,288 MHz = 256 × 48 kHz',
       'Reti 5G, reti elettriche e borse sincronizzate col GPS',

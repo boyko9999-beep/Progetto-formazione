@@ -87,7 +87,7 @@ test('decibel e attenuazione: l\'1% dopo 100 km a 0,2 dB/km', () => {
   near(M.distanceForFraction(1000, 0.01), 0.02, 1e-12, 'vetro del 1965: 20 m');
   near(M.dbmToMw(0), 1, 1e-12, '0 dBm');
   near(M.dbmToMw(-30), 1e-3, 1e-15, '−30 dBm = 1 µW');
-  near(M.mwToDbm(100), 20, 1e-12, '100 mW');
+  near(M.dbmToMw(20), 100, 1e-9, '+20 dBm = 100 mW');
   const GL = Array.from(M.GLASSES);
   assert.deepStrictEqual(GL.map((g) => g.key), ['finestra', '1965', '1970', 'oggi']);
   GL.forEach((g, i) => { if (i) assert.ok(g.alpha < GL[i - 1].alpha, 'vetri in ordine di purezza'); });
@@ -150,7 +150,13 @@ test('fotodiodo in ricezione: responsività, corrente alla soglia e gap del sili
   near(M.photocurrent(-28, 1) * 1e6, 1.585, 1e-3, 'corrente alla soglia');
   near(M.photocurrent(0, 0.9) * 1e3, 0.9, 1e-9, '1 mW su 0,9 A/W');
   // i fotoni a 1550 nm hanno meno energia del gap del silicio (1,12 eV): il silicio non li vede
-  assert.ok(M.photonEnergy(1550) < 1.12 && M.photonEnergy(850) > 1.12);
+  assert.ok(M.photonEnergy(1550) < M.SI_GAP && M.photonEnergy(850) > M.SI_GAP);
+  near(M.photonEnergy(1310), 0.946, 2e-3, 'energia a 1310 nm');
+  // quindi il laboratorio sceglie il silicio a 850 nm e l'InGaAs nelle finestre infrarosse lunghe
+  assert.deepStrictEqual([850, 1310, 1550].map((nm) => M.detector(nm).name), ['silicio', 'InGaAs', 'InGaAs']);
+  // con il collegamento di base a 1550 nm (300 km, −13 dBm) il fotodiodo dà circa 47 µA
+  const rx = M.budget(1550, 300).rx;
+  near(M.photocurrent(rx, M.responsivity(1550, M.detector(1550).eta)) * 1e6, 47.0, 0.1, 'corrente del laboratorio');
   // e nella fibra la luce impiega circa 4,9 µs per ogni chilometro
   near(M.latency(1) * 1e6, 4.9, 0.01, 'ritardo per km');
 });

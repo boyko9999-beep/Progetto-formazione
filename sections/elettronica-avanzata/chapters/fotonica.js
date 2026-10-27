@@ -165,7 +165,6 @@
   const modalLimited = (win, L) => WINDOWS[win].modalKm != null && L > WINDOWS[win].modalKm;
 
   const dbmToMw = (p) => Math.pow(10, p / 10);
-  const mwToDbm = (mw) => 10 * Math.log10(mw);
 
   // Frazione di potenza rimasta dopo km chilometri e, al contrario, distanza per una frazione.
   const fractionLeft = (alpha, km) => Math.pow(10, (-alpha * km) / 10);
@@ -179,6 +178,11 @@
   // Fotodiodo: responsività R = η·λ/1,24 (A/W, λ in µm) e corrente I = R·P.
   const responsivity = (nm, eta) => ((eta == null ? 1 : eta) * nm) / HC;
   const photocurrent = (dbm, R) => R * dbmToMw(dbm) * 1e-3;
+
+  // Materiale del fotodiodo: il silicio assorbe solo fotoni con almeno 1,12 eV (fino a circa
+  // 1,1 µm); a 1310 e 1550 nm serve l'arseniuro di indio e gallio. eta: efficienza quantica tipica.
+  const SI_GAP = 1.12;
+  const detector = (nm) => (photonEnergy(nm) > SI_GAP ? { name: 'silicio', eta: 0.8 } : { name: 'InGaAs', eta: 0.75 });
 
   // Ritardo di propagazione nella fibra: L·ng/c, in secondi.
   const latency = (km, ng) => (km * 1000 * (ng || NG)) / C0;
@@ -220,17 +224,23 @@
     C0, NG, WINDOWS, LINK, GLASSES,
     snell, criticalAngle, numericalAperture, acceptanceAngle, reflectance, launch, trace,
     reachKm, amplifiers, budget, budgetProfile, modalLimited,
-    dbmToMw, mwToDbm, fractionLeft, distanceForFraction,
-    frequency, wavelength, photonEnergy, responsivity, photocurrent, latency,
+    dbmToMw, fractionLeft, distanceForFraction,
+    frequency, wavelength, photonEnergy, responsivity, photocurrent, SI_GAP, detector, latency,
     channelPlan, capacity,
   };
 
-  /* ---------- aiuti di disegno ---------- */
+  /* ---------- aiuti di disegno e formati ---------- */
 
   const TINT = '#dfe7ff';   // luce guidata
   const PUMP = '#ff7aa8';   // luce di pompa (falso colore)
   const MONO = 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace';
   const SPECTRUM = ['#ff6b6b', '#ff9f43', '#ffc04d', '#9be15d', '#3ee08f', '#5cc8ff', '#7aa2ff', '#b49cff'];
+
+  // Numeri all'italiana con decimali fissi, angoli in gradi, percentuali con l'articolo giusto.
+  const fixed = (v, d) => v.toFixed(d).replace('.', ',');
+  const degs = (rad, d) => EA.fmt(rad / DEG, d == null ? 1 : d) + '°';
+  const pct = (x) => EA.fmt(x * 100, x < 0.1 || x > 0.9 ? 1 : 0) + '%';
+  const thePct = (x) => { const s = pct(x); return (/^(8|11|1(,|%))/.test(s) ? 'l\'' : 'il ') + s; };
 
   function mixHex(a, b, t) {
     const pa = parseInt(a.slice(1), 16);
@@ -270,6 +280,12 @@
     return w;
   }
 
+  // Prima stringa della lista (dalla più lunga alla più corta) che sta nella larghezza data.
+  function fit(ctx, list, maxW, size, weight) {
+    for (const s of list) if (textWidth(ctx, s, size, weight) <= maxW) return s;
+    return list[list.length - 1];
+  }
+
   // Etichetta con un fondo scuro: resta leggibile anche sopra le tracce.
   function tag(ctx, str, x, y, o) {
     const opt = Object.assign({ size: 11 }, o);
@@ -280,6 +296,36 @@
     ctx.fillRect(x0 - 4, y - opt.size, w + 8, opt.size + 5);
     ctx.restore();
     EA.draw.text(ctx, str, x, y, opt);
+  }
+
+  // Spezzata sottile senza alone, continua o tratteggiata.
+  function stroke(ctx, pts, color, width, dash) {
+    ctx.save();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = width || 1;
+    if (dash) ctx.setLineDash(dash);
+    ctx.beginPath();
+    pts.forEach((q, i) => (i ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1])));
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  // Disegno con un'opacità in più (impulsi che si spengono, scritte che compaiono).
+  function faded(ctx, a, fn) {
+    ctx.save();
+    ctx.globalAlpha *= a;
+    fn();
+    ctx.restore();
+  }
+
+  // Anello che si allarga attorno a un atomo o a uno ione che emette.
+  function ring(ctx, x, y, r, color, al) {
+    if (al <= 0) return;
+    faded(ctx, Math.min(1, al), () => {
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 1.4;
+      ctx.beginPath(); ctx.arc(x, y, r, 0, TAU); ctx.stroke();
+    });
   }
 
   // Fibra vista in sezione longitudinale: mantello sopra e sotto, nucleo al centro.
@@ -305,6 +351,15 @@
     if (opt.face) { ctx.moveTo(x0 + 0.5, cy - a - cl); ctx.lineTo(x0 + 0.5, cy + a + cl); }
     ctx.stroke();
     ctx.restore();
+  }
+
+  // Cono di accettazione in aria: vertice al centro della faccia, semiapertura hw a distanza len.
+  function cone(ctx, x, cy, len, hw, fill, line) {
+    ctx.beginPath();
+    ctx.moveTo(x, cy); ctx.lineTo(x - len, cy - hw); ctx.lineTo(x - len, cy + hw); ctx.closePath();
+    ctx.fillStyle = EA.alpha(TINT, fill);
+    ctx.fill();
+    stroke(ctx, [[x - len, cy - hw], [x, cy], [x - len, cy + hw]], EA.alpha(TINT, line), 1, [3, 4]);
   }
 
   // Lunghezze cumulate di una spezzata e punto a distanza d lungo di essa.
@@ -344,16 +399,6 @@
   const snapLen = (km) => (km < 1 ? Math.round(km * 1000) / 1000 : km < 10 ? Math.round(km * 10) / 10 : Math.round(km));
 
   /* ---------- animazione principale: dal laser all'oceano ---------- */
-
-  function ring(ctx, x, y, r, color, al) {
-    if (al <= 0) return;
-    ctx.save();
-    ctx.globalAlpha *= Math.min(1, al);
-    ctx.strokeStyle = color;
-    ctx.lineWidth = 1.4;
-    ctx.beginPath(); ctx.arc(x, y, r, 0, TAU); ctx.stroke();
-    ctx.restore();
-  }
 
   // Pacchetto d'onda: sinusoide con inviluppo gaussiano. Pacchetti impilati con lo
   // stesso xc hanno le creste allineate, cioè la stessa fase.
@@ -452,10 +497,7 @@
         if (s < 0.5) ring(ctx, x, cy, r + 2 + s * 26, TINT, (1 - s / 0.5) * 0.8 * p);
         if (s >= TP && s < TP + 0.6) {
           const k = (s - TP) / 0.6;
-          ctx.save();
-          ctx.globalAlpha *= 1 - k;
-          EA.draw.arrow(ctx, x, cy + r + 22 - k * 6, x, cy + r + 5, C.amber, 1.4, 6);
-          ctx.restore();
+          faded(ctx, 1 - k, () => EA.draw.arrow(ctx, x, cy + r + 22 - k * 6, x, cy + r + 5, C.amber, 1.4, 6));
         }
       }
 
@@ -476,16 +518,15 @@
         const fade = (1 - EA.smooth((xc - (fx1 - len)) / len)) * p;
         const count = Math.ceil(n - 1e-6);
         for (let i = 0; i < count; i++) {
-          ctx.save();
-          ctx.globalAlpha *= (i === count - 1 ? n - (count - 1) : 1) * fade;
-          packet(ctx, xc, cy + (i - (n - 1) / 2) * spc, len, lam, amp, TINT);
-          ctx.restore();
+          faded(ctx, (i === count - 1 ? n - (count - 1) : 1) * fade, () => packet(ctx, xc, cy + (i - (n - 1) / 2) * spc, len, lam, amp, TINT));
         }
       }
 
       // didascalie e legenda
       const lx = nar ? w / 2 : (mx0 + mx1) / 2;
-      EA.draw.text(ctx, nar ? 'un fotone ne stimola un altro, identico' : 'un fotone stimola un atomo eccitato: ne nasce un secondo identico', lx, bot + 20, { color: C.ink, size: nar ? 10.5 : 11.5, align: 'center' });
+      const capS = nar ? 10.5 : 11.5;
+      const cap = fit(ctx, ['un fotone stimola un atomo eccitato: ne nasce un secondo identico', 'un fotone ne stimola un altro, identico'], 2 * (lx - g.pad), capS);
+      EA.draw.text(ctx, cap, lx, bot + 20, { color: C.ink, size: capS, align: 'center' });
       const items = [['dot', nar ? 'eccitato' : 'atomo eccitato'], ['ring', 'a riposo'], ['arrow', 'pompa']];
       const gap = nar ? 12 : 18;
       const widths = items.map((it) => 14 + textWidth(ctx, it[1], ls));
@@ -530,8 +571,7 @@
       ctx.strokeStyle = EA.alpha(C.amber, 0.7);
       ctx.lineWidth = 1.2;
       ctx.stroke();
-      ctx.strokeStyle = C.grid;
-      ctx.beginPath(); ctx.moveTo(x0, base + 0.5); ctx.lineTo(x1, base + 0.5); ctx.stroke();
+      stroke(ctx, [[x0, base + 0.5], [x1, base + 0.5]], C.grid, 1.2);
       EA.draw.line(ctx, [[mid, base], [mid, peakY]], TINT, 1.6);
       EA.draw.text(ctx, 'lunghezza d\'onda →', x1, base + 14, { color: C.dim, size: 10.5, align: 'right' });
     }
@@ -555,19 +595,7 @@
       const air = fx0 - (nar ? 8 : 16);
       fiberBand(ctx, fx0, fx1, cy, a, cl, { face: true });
 
-      // cono di accettazione, in aria
-      const hw = air * Math.tan(tmax);
-      ctx.save();
-      ctx.beginPath();
-      ctx.moveTo(fx0, cy); ctx.lineTo(fx0 - air, cy - hw); ctx.lineTo(fx0 - air, cy + hw); ctx.closePath();
-      ctx.fillStyle = EA.alpha(TINT, 0.07);
-      ctx.fill();
-      ctx.setLineDash([3, 4]);
-      ctx.strokeStyle = EA.alpha(TINT, 0.45);
-      ctx.beginPath();
-      ctx.moveTo(fx0 - air, cy - hw); ctx.lineTo(fx0, cy); ctx.lineTo(fx0 - air, cy + hw);
-      ctx.stroke();
-      ctx.restore();
+      cone(ctx, fx0, cy, air, air * Math.tan(tmax), 0.07, 0.45);
 
       // raggio guidato: 24° dall'asse, dentro il cono di ±30,7°
       const thG = 24 * DEG;
@@ -593,18 +621,10 @@
         const ge = ctx.createLinearGradient(hit[0], hit[1], escEnd[0], escEnd[1]);
         ge.addColorStop(0, EA.alpha(C.orange, 0.95));
         ge.addColorStop(1, EA.alpha(C.orange, 0));
-        const e = pointAt(lPts, lL, dL);
-        ctx.save();
-        ctx.strokeStyle = ge;
-        ctx.lineWidth = 2;
-        ctx.beginPath(); ctx.moveTo(hit[0], hit[1]); ctx.lineTo(e[0], e[1]); ctx.stroke();
+        stroke(ctx, [hit, pointAt(lPts, lL, dL)], ge, 2);
         // la piccola parte riflessa (Fresnel: circa il 2%)
-        ctx.setLineDash([2, 4]);
-        ctx.strokeStyle = EA.alpha(C.orange, 0.35);
-        ctx.lineWidth = 1;
         const r2 = lMap(lost.pts[2]);
-        ctx.beginPath(); ctx.moveTo(hit[0], hit[1]); ctx.lineTo(EA.lerp(hit[0], r2[0], 0.3), EA.lerp(hit[1], r2[1], 0.3)); ctx.stroke();
-        ctx.restore();
+        stroke(ctx, [hit, [EA.lerp(hit[0], r2[0], 0.3), EA.lerp(hit[1], r2[1], 0.3)]], EA.alpha(C.orange, 0.35), 1, [2, 4]);
       }
       EA.draw.line(ctx, subPath(gPts, gL, 0, dG), TINT, 2);
 
@@ -620,10 +640,7 @@
       for (let d = ph; d < lL[lL.length - 1]; d += spP) {
         if (d > dL) break;
         const q = pointAt(lPts, lL, d);
-        ctx.save();
-        ctx.globalAlpha *= d > dHit ? 1 - (d - dHit) / (lL[3] - dHit) : 1;
-        EA.draw.dot(ctx, q[0], q[1], nar ? 2 : 2.4, C.orange);
-        ctx.restore();
+        faded(ctx, d > dHit ? 1 - (d - dHit) / (lL[3] - dHit) : 1, () => EA.draw.dot(ctx, q[0], q[1], nar ? 2 : 2.4, C.orange));
       }
 
       // angoli: incidenza dalla normale e direzione critica (tratteggio ambra)
@@ -633,22 +650,13 @@
       const H1 = gPts[2];
       const thI = good.launch.inside;
       const rA = nar ? 22 : 34;
-      ctx.setLineDash([3, 3]);
-      ctx.lineWidth = 1;
-      ctx.strokeStyle = EA.alpha(C.text, 0.6);
-      ctx.beginPath();
-      ctx.moveTo(H1[0], H1[1] - (nar ? 12 : 18)); ctx.lineTo(H1[0], H1[1] + rA + 10);
-      ctx.moveTo(hit[0], hit[1] + (nar ? 10 : 14)); ctx.lineTo(hit[0], hit[1] - rA * 0.75 - 8);
-      ctx.stroke();
-      ctx.strokeStyle = EA.alpha(C.amber, 0.85);
+      const nrm = EA.alpha(C.text, 0.6);
+      stroke(ctx, [[H1[0], H1[1] - (nar ? 12 : 18)], [H1[0], H1[1] + rA + 10]], nrm, 1, [3, 3]);
+      stroke(ctx, [[hit[0], hit[1] + (nar ? 10 : 14)], [hit[0], hit[1] - rA * 0.75 - 8]], nrm, 1, [3, 3]);
       const rC = nar ? rA + 12 : rA + 30;
-      const cEnd = [H1[0] + Math.cos(Math.PI / 2 + tc) * rC, H1[1] + Math.sin(Math.PI / 2 + tc) * rC];
-      ctx.beginPath();
-      ctx.moveTo(H1[0], H1[1]);
-      ctx.lineTo(cEnd[0], cEnd[1]);
-      ctx.stroke();
+      const cEnd = [H1[0] - Math.sin(tc) * rC, H1[1] + Math.cos(tc) * rC];
+      stroke(ctx, [H1, cEnd], EA.alpha(C.amber, 0.85), 1, [3, 3]);
       if (!nar) EA.draw.text(ctx, 'θc', cEnd[0] + 2, cEnd[1] + 14, { color: C.amber, size: 11, align: 'right' });
-      ctx.setLineDash([]);
       ctx.lineWidth = 1.3;
       ctx.strokeStyle = TINT;
       ctx.beginPath(); ctx.arc(H1[0], H1[1], rA, Math.PI / 2, Math.PI - thI); ctx.stroke();
@@ -674,7 +682,10 @@
         EA.draw.text(ctx, 'mantello', fx1 - 6, cy - a - cl / 2 + 4, { color: C.dim, size: 10.5, align: 'right' });
         EA.draw.text(ctx, 'nucleo', fx1 - 6, cy - a + 14, { color: C.dim, size: 10.5, align: 'right' });
       } else {
-        EA.draw.text(ctx, 'angoli veri per una fibra plastica · nel vetro θc ≈ 80°', fx1, yBot, { color: C.dim, size: 11, align: 'right' });
+        // a destra della scritta arancione, oppure una riga sotto se non c'è posto
+        const note = 'angoli veri per una fibra plastica · nel vetro θc ≈ 80°';
+        const room = fx1 - g.pad - textWidth(ctx, 'fuori dal cono: θ < θc, in parte esce nel mantello', 11) - 24;
+        EA.draw.text(ctx, note, fx1, textWidth(ctx, note, 11) <= room ? yBot : yBot + 18, { color: C.dim, size: 11, align: 'right' });
         EA.draw.text(ctx, 'nucleo', fx1 - 8, cy + a - 9, { color: C.dim, size: 11, align: 'right' });
         EA.draw.text(ctx, 'mantello', fx1 - 8, cy + a + cl / 2 + 4, { color: C.dim, size: 11, align: 'right' });
       }
@@ -708,11 +719,7 @@
       ctx.stroke();
       // soglia di Kao e Hockham: 20 dB/km, cioè l'1% dopo 1 km
       const xk = Math.round(X(1)) + 0.5;
-      ctx.save();
-      ctx.setLineDash([4, 4]);
-      ctx.strokeStyle = EA.alpha(C.amber, 0.55);
-      ctx.beginPath(); ctx.moveTo(xk, rowY(0) - 22); ctx.lineTo(xk, axisY); ctx.stroke();
-      ctx.restore();
+      stroke(ctx, [[xk, rowY(0) - 22], [xk, axisY]], EA.alpha(C.amber, 0.55), 1, [4, 4]);
       if (!nar) EA.draw.text(ctx, 'soglia di Kao e Hockham (1966): 20 dB/km', xk, rowY(0) - 28, { color: C.amber, size: 11, align: 'center' });
 
       GLASSES.forEach((gl, i) => {
@@ -735,16 +742,16 @@
         box(ctx, x0 + 1, y - rh / 2 + 2, x1 - x0 - 2, rh - 4, (rh - 4) / 2, gr, null);
         ctx.restore();
         const k1 = EA.clamp((front - xm) / 40, 0, 1);
-        if (k1 > 0) {
-          ctx.save();
-          ctx.globalAlpha *= k1;
-          ctx.strokeStyle = C.amber;
-          ctx.lineWidth = 1.5;
-          ctx.beginPath(); ctx.moveTo(xm, y - rh / 2 - 5); ctx.lineTo(xm, y + rh / 2 + 5); ctx.stroke();
+        if (k1 > 0) faded(ctx, k1, () => {
+          stroke(ctx, [[xm, y - rh / 2 - 5], [xm, y + rh / 2 + 5]], C.amber, 1.5);
           if (nar) EA.draw.text(ctx, '1%: ' + fmtLen(d1), x1, y - rh / 2 - 6, { color: C.amber, size: 10.5, align: 'right' });
-          else EA.draw.text(ctx, '1% dopo ' + fmtLen(d1), xm + 6, y - rh / 2 - 6, { color: C.amber, size: 11 });
-          ctx.restore();
-        }
+          else {
+            // a destra del segno, o a sinistra se vicino al bordo
+            const txt = '1% dopo ' + fmtLen(d1);
+            const left = xm + 6 + textWidth(ctx, txt, 11) > x1;
+            EA.draw.text(ctx, txt, left ? xm - 6 : xm + 6, y - rh / 2 - 6, { color: C.amber, size: 11, align: left ? 'right' : 'left' });
+          }
+        });
       });
 
       ctx.strokeStyle = C.grid;
@@ -758,15 +765,12 @@
         EA.draw.text(ctx, nm, x, axisY + 18, { color: C.text, size: 10.5, align: k === names.length - 1 ? 'right' : 'center' });
       });
       if (nar) {
-        ctx.save();
-        ctx.setLineDash([4, 4]);
-        ctx.strokeStyle = EA.alpha(C.amber, 0.7);
-        ctx.beginPath(); ctx.moveTo(g.pad, axisY + 37.5); ctx.lineTo(g.pad + 16, axisY + 37.5); ctx.stroke();
-        ctx.restore();
+        stroke(ctx, [[g.pad, axisY + 37.5], [g.pad + 16, axisY + 37.5]], EA.alpha(C.amber, 0.7), 1, [4, 4]);
         EA.draw.text(ctx, 'soglia di Kao e Hockham: 20 dB/km', g.pad + 22, axisY + 41, { color: C.amber, size: 10.5 });
         EA.draw.text(ctx, '20 dB = un centesimo della potenza', g.pad, axisY + 59, { color: C.dim, size: 10.5 });
       } else {
-        EA.draw.text(ctx, 'distanza (scala logaritmica) →', g.pad, axisY + 18, { color: C.dim, size: 10.5 });
+        // il titolo dell'asse non deve toccare la prima tacca ("10 cm")
+        EA.draw.text(ctx, fit(ctx, ['distanza (scala logaritmica) →', 'distanza →'], x0 - g.pad - 30, 10.5), g.pad, axisY + 18, { color: C.dim, size: 10.5 });
         EA.draw.text(ctx, 'in decibel: 10 dB = un decimo della potenza, 20 dB = un centesimo, 30 dB = un millesimo', g.pad, hh - 18, { color: C.dim, size: 11 });
       }
     }
@@ -864,7 +868,8 @@
       EA.draw.text(ctx, nar ? 'prisma' : 'reticolo o prisma', px, cy - ph * 0.6 - 10, { color: C.text, size: ls, align: 'center' });
       if (nar) EA.draw.text(ctx, n + ' × 10 Gbit/s = ' + EA.si(capacity(n), 'bit/s'), g.pad, hh - 14, { color: C.ink, size: 10.5 });
       else {
-        EA.draw.text(ctx, 'canali ogni 100 GHz (circa 0,8 nm) attorno a 193,1 THz', (mx + fx1) / 2, cy + a + cl + 22, { color: C.dim, size: 11, align: 'center' });
+        const grid = fit(ctx, ['canali ogni 100 GHz (circa 0,8 nm) attorno a 193,1 THz', 'canali ogni 100 GHz (circa 0,8 nm)'], fx1 - mx - 12, 11);
+        EA.draw.text(ctx, grid, (mx + fx1) / 2, cy + a + cl + 22, { color: C.dim, size: 11, align: 'center' });
         EA.draw.text(ctx, n + ' canali × 10 Gbit/s = ' + EA.si(capacity(n), 'bit/s') + ' · nella banda C ne entrano circa 40 a 100 GHz', g.pad, hh - 18, { color: C.ink, size: 11 });
       }
     }
@@ -883,7 +888,8 @@
       const xe = (fx0 + fx1) / 2;
       const ea = xe - half;
       const eb = xe + half;
-      const G = 16;   // dB: 80 km × 0,2 dB/km
+      const A = WINDOWS[1550].alpha;
+      const G = A * LINK.span;   // dB persi in una campata, e restituiti dall'EDFA
       const P = (x) => (x <= ea ? (-G * (x - fx0)) / (ea - fx0) : x <= eb ? -G + (G * (x - ea)) / (eb - ea) : (-G * (x - eb)) / (fx1 - eb));
       const p = live ? EA.smooth(tau / 1.4) : 1;
       const v = nar ? 70 : 110;
@@ -949,10 +955,7 @@
         for (let c = 0; c < NC; c++) {
           if (!bitOn(c, i)) continue;
           const y = cy + (c - (NC - 1) / 2) * ((2 * a - 8) / (NC - 1));
-          ctx.save();
-          ctx.globalAlpha *= al;
-          EA.draw.line(ctx, [[x - Lb * 0.28, y], [x + Lb * 0.28, y]], falseColor(c / (NC - 1)), 2.4);
-          ctx.restore();
+          faded(ctx, al, () => EA.draw.line(ctx, [[x - Lb * 0.28, y], [x + Lb * 0.28, y]], falseColor(c / (NC - 1)), 2.4));
         }
       }
       ctx.restore();
@@ -977,15 +980,17 @@
       });
       EA.draw.line(ctx, prof, TINT, 1.8);
       if (xEnd > ea) EA.draw.line(ctx, [[ea, Y(-G)], [Math.min(eb, xEnd), Y(P(Math.min(eb, xEnd)))]], C.green, 2);
-      const lb = EA.smooth((p - 0.5) / 0.4);
-      ctx.save();
-      ctx.globalAlpha *= lb;
-      EA.draw.text(ctx, nar ? '−16 dB in 80 km' : '80 km × 0,2 dB/km = −16 dB', fx0 + 6, Y(-17), { color: C.text, size: ls });
-      EA.draw.text(ctx, '+16 dB', eb + (nar ? 5 : 8), Y(-8), { color: C.green, size: ls, weight: 700 });
-      ctx.restore();
+      // la perdita della campata, con quanta luce resta, e il guadagno che la compensa
+      faded(ctx, EA.smooth((p - 0.5) / 0.4), () => {
+        const dB = '−' + EA.fmt(G, 0) + ' dB';
+        const loss = LINK.span + ' km × ' + EA.fmt(A, 1) + ' dB/km = ' + dB;
+        const left = fit(ctx, [loss + ': resta il ' + pct(fractionLeft(A, LINK.span)), loss, dB + ' in ' + LINK.span + ' km'], ea - fx0 - 12, ls);
+        EA.draw.text(ctx, left, fx0 + 6, Y(-17), { color: C.text, size: ls });
+        EA.draw.text(ctx, '+' + EA.fmt(G, 0) + ' dB', eb + (nar ? 5 : 8), Y(-8), { color: C.green, size: ls, weight: 700 });
+      });
       EA.draw.text(ctx, '0 km', fx0, gy1 + 20, { color: C.text, size: 10.5 });
-      EA.draw.text(ctx, '80 km', xe, gy1 + 20, { color: C.text, size: 10.5, align: 'center' });
-      EA.draw.text(ctx, '160 km', fx1, gy1 + 20, { color: C.text, size: 10.5, align: 'right' });
+      EA.draw.text(ctx, fmtLen(LINK.span), xe, gy1 + 20, { color: C.text, size: 10.5, align: 'center' });
+      EA.draw.text(ctx, fmtLen(2 * LINK.span), fx1, gy1 + 20, { color: C.text, size: 10.5, align: 'right' });
 
       // scritte sul disegno
       const yUp = cy - a - cl - (nar ? 12 : 14);
@@ -1060,9 +1065,8 @@
       EA.draw.line(ctx, cable, EA.alpha(C.text, 0.7), 1.6, false);
       [cable[0], cable[cable.length - 1]].forEach((q) => box(ctx, q[0] - 6, q[1] - 10, 12, 10, 2, '#22332e', EA.alpha(C.text, 0.5)));
 
-      // impulso: attraversa in 6 s, poi resta un attimo all'arrivo
-      const tt = live ? t : 3.3;
-      const uu = EA.clamp((tt % 7.5) / 6, 0, 1);
+      // impulso: parte con la fase dall'America, attraversa in 6 s e poi resta all'arrivo
+      const uu = live ? EA.clamp((tau - 0.6) / 6, 0, 1) : 0.55;
       const d = uu * Lc;
       const rs = nar ? 10 : 14;
       for (let dr = cL[2] + rs / 2; dr < cL[cL.length - 3]; dr += rs) {
@@ -1084,13 +1088,18 @@
       }
       const tms = latency(6000 * uu) * 1000;
       EA.draw.text(ctx, (uu >= 1 ? 'arrivo: ' : 'tempo: ') + EA.fmt(tms, 1) + ' ms', w - g.pad, g.top, { color: uu >= 1 ? C.green : TINT, size: nar ? 11 : 12, weight: 700, align: 'right' });
-      if (!nar) EA.draw.text(ctx, '6000 km · luce nel vetro a circa 204 000 km/s', w - g.pad, g.top + 16, { color: C.dim, size: 11, align: 'right' });
+      if (!nar) {
+        // accanto al sottotitolo della fase, o una riga sotto se si toccherebbero
+        const info = '6000 km · luce nel vetro a circa 204 000 km/s';
+        const busy = 2 * g.pad + textWidth(ctx, STAGES[5].sub[0], 11) + textWidth(ctx, info, 11) + 24 > w;
+        EA.draw.text(ctx, info, w - g.pad, g.top + (busy ? 32 : 16), { color: C.dim, size: 11, align: 'right' });
+      }
 
       // scritte
       const ls = nar ? 10.5 : 11;
       // sopra le stazioni di approdo, senza toccarle
-      EA.draw.text(ctx, 'AMERICA', g.pad, ys - 20, { color: C.text, size: ls, weight: 700 });
-      EA.draw.text(ctx, 'EUROPA', w - g.pad, ys - 20, { color: C.text, size: ls, weight: 700, align: 'right' });
+      EA.draw.text(ctx, 'AMERICA', g.pad, ys - 24, { color: C.text, size: ls, weight: 700 });
+      EA.draw.text(ctx, 'EUROPA', w - g.pad, ys - 24, { color: C.text, size: ls, weight: 700, align: 'right' });
       if (!nar) {
         EA.draw.text(ctx, '≈ 6000 km di Atlantico', w / 2, ys - 18, { color: C.dim, size: 11, align: 'center' });
         EA.draw.text(ctx, 'amplificatori EDFA ogni 50-100 km circa, alimentati dal rame del cavo', w / 2, deep - 34, { color: C.green, size: 11, align: 'center' });
@@ -1187,21 +1196,10 @@
 
   // Che cosa cambia con la finestra: testi dei comandi e banda dei canali (nm).
   const WIN_INFO = {
-    850: { hint: 'α ≈ 3 dB/km su fibra multimodale, con laser VCSEL: tratte brevi, come nei data center.', ch: 'Fibra multimodale: un solo canale.', band: [830, 870], wdm: '' },
-    1310: { hint: 'α ≈ 0,35 dB/km su fibra monomodale: qui la dispersione è quasi nulla.', ch: 'CWDM nella banda O: canali ogni 20 nm, al massimo 5.', band: [1260, 1360], wdm: 'CWDM' },
+    850: { hint: 'α ≈ 3 dB/km su fibra multimodale, con piccoli laser economici (VCSEL): tratte brevi, come nei data center.', ch: 'Fibra multimodale: un solo canale.', band: [830, 870], wdm: '' },
+    1310: { hint: 'α ≈ 0,35 dB/km su fibra monomodale; qui la dispersione, che allarga gli impulsi, è quasi nulla.', ch: 'CWDM nella banda O: canali ogni 20 nm, al massimo 5.', band: [1260, 1360], wdm: 'CWDM' },
     1550: { hint: 'α ≈ 0,2 dB/km: la perdita più bassa, e qui funzionano gli amplificatori all\'erbio.', ch: 'DWDM nella banda C: canali ogni 100 GHz (circa 0,8 nm), fino a 40.', band: [1530, 1565], wdm: 'DWDM' },
   };
-
-  const fixed = (v, d) => v.toFixed(d).replace('.', ',');
-  const degs = (rad, d) => EA.fmt(rad / DEG, d == null ? 1 : d) + '°';
-  const pct = (x) => EA.fmt(x * 100, x < 0.1 || x > 0.9 ? 1 : 0) + '%';
-  const thePct = (x) => { const s = pct(x); return (/^(8|11|1(,|%))/.test(s) ? 'l\'' : 'il ') + s; };
-
-  // Prima stringa che sta nella larghezza data (testi lunghi e corti).
-  function fit(ctx, list, maxW, size, weight) {
-    for (const s of list) if (textWidth(ctx, s, size, weight) <= maxW) return s;
-    return list[list.length - 1];
-  }
 
   // Potenza (dBm) a distanza km lungo il profilo del bilancio.
   function profileAt(prof, km) {
@@ -1313,10 +1311,12 @@
     const roC = EA.ui.readout({ label: 'Angolo critico' });
     const roNA = EA.ui.readout({ label: 'Apertura numerica' });
     const roA = EA.ui.readout({ label: 'Cono di accettazione' });
+    const roF = EA.ui.readout({ label: 'Frequenza della luce' });
     const roP = EA.ui.readout({ label: 'Potenza ricevuta' });
+    const roI = EA.ui.readout({ label: 'Corrente del fotodiodo' });
     const roB = EA.ui.readout({ label: 'Capacità totale' });
     const roT = EA.ui.readout({ label: 'Ritardo' });
-    parts.readouts.append(roC.el, roNA.el, roA.el, roP.el, roB.el, roT.el);
+    parts.readouts.append(roC.el, roNA.el, roA.el, roF.el, roP.el, roI.el, roB.el, roT.el);
 
     // Il numero di canali dipende dalla finestra: il cursore si adatta.
     function syncChannels() {
@@ -1330,7 +1330,11 @@
       ampHint.textContent = WINDOWS[st.win].edfa
         ? 'Si accendono solo se servono, uno ogni 80 km: ognuno restituisce 16 dB.'
         : 'L\'erbio amplifica solo attorno a 1550 nm (banda C): qui non si possono usare.';
-      winHint.textContent = WIN_INFO[st.win].hint;
+      // energia dei fotoni (E = h·f) e materiale del fotodiodo che li riceve
+      const E = photonEnergy(st.win);
+      winHint.textContent = WIN_INFO[st.win].hint + ' Fotoni da ' + EA.fmt(E, 2) + ' eV: ' + (detector(st.win).name === 'silicio'
+        ? 'li riceve un fotodiodo al silicio.'
+        : 'il silicio non li assorbe (servono ' + EA.fmt(SI_GAP, 2) + ' eV), quindi il fotodiodo è in InGaAs.');
     }
 
     function update() {
@@ -1339,8 +1343,10 @@
       const opts = { edfa: st.edfa };
       const b = budget(st.win, st.L, opts);
       const plan = channelPlan(st.win, st.n);
+      const det = detector(st.win);
       S = {
         Lr, b, plan,
+        amp: photocurrent(b.rx, responsivity(st.win, det.eta)),
         na: numericalAperture(st.n1, st.n2),
         tmax: acceptanceAngle(st.n1, st.n2),
         tc: criticalAngle(st.n1, st.n2),
@@ -1356,7 +1362,9 @@
       roC.set(guide ? degs(S.tc) : 'non esiste', guide ? null : 'bad');
       roNA.set(guide ? fixed(S.na, 3) : '0', guide ? null : 'bad');
       roA.set(guide ? '±' + degs(S.tmax) : 'nessuno', guide ? null : 'bad');
+      roF.set(EA.si(frequency(st.win), 'Hz'));
       roP.set(EA.fmt(b.rx, 1) + ' dBm', b.status === 'sotto' ? 'bad' : b.status === 'margine' || S.modal ? 'warn' : 'good');
+      roI.set(EA.si(S.amp, 'A'), b.status === 'sotto' ? 'bad' : null);
       roB.set(EA.si(S.cap, 'bit/s'));
       roT.set(EA.si(S.lat, 's'));
       ang.el.querySelector('.ea-ctl-hint').textContent = guide
@@ -1377,7 +1385,8 @@
     function layout() {
       const w = cv.w;
       const hh = cv.h;
-      const nar = w < 640;
+      // pannelli uno sotto l'altro se il disegno è stretto o molto più alto che largo
+      const nar = w < 640 || hh > w * 1.5;
       const pad = nar ? 10 : 16;
       const g = { w, hh, nar, pad };
       if (nar) {
@@ -1464,24 +1473,8 @@
       const bot = g.cy + g.a + g.cl + 4;
       ctx.save();
       ctx.beginPath(); ctx.rect(g.pad, top, g.fx0 - g.pad, bot - top); ctx.clip();
-      if (guide) {
-        const far = 2000;
-        const hw = S.tmax > 1.56 ? far * 40 : far * Math.tan(S.tmax);
-        ctx.beginPath();
-        ctx.moveTo(g.fx0, g.cy); ctx.lineTo(g.fx0 - far, g.cy - hw); ctx.lineTo(g.fx0 - far, g.cy + hw); ctx.closePath();
-        ctx.fillStyle = EA.alpha(TINT, 0.08);
-        ctx.fill();
-        ctx.setLineDash([3, 4]);
-        ctx.strokeStyle = EA.alpha(TINT, 0.5);
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.moveTo(g.fx0 - far, g.cy - hw); ctx.lineTo(g.fx0, g.cy); ctx.lineTo(g.fx0 - far, g.cy + hw);
-        ctx.stroke();
-      }
-      ctx.setLineDash([2, 5]);
-      ctx.strokeStyle = EA.alpha(C.text, 0.35);
-      ctx.lineWidth = 1;
-      ctx.beginPath(); ctx.moveTo(g.pad, g.cy + 0.5); ctx.lineTo(g.fx0, g.cy + 0.5); ctx.stroke();
+      if (guide) cone(ctx, g.fx0, g.cy, 2000, S.tmax > 1.56 ? 80000 : 2000 * Math.tan(S.tmax), 0.08, 0.5);
+      stroke(ctx, [[g.pad, g.cy + 0.5], [g.fx0, g.cy + 0.5]], EA.alpha(C.text, 0.35), 1, [2, 5]);
       ctx.restore();
       EA.draw.text(ctx, guide ? (nar ? 'cono ±' : 'cono di accettazione ±') + degs(S.tmax) : 'nessun cono', g.pad, top - 8, { color: guide ? TINT : ESC, size: ls });
 
@@ -1491,21 +1484,14 @@
       for (let i = 0; i < g.main.length - 1; i++) {
         const p = g.power[i];
         if (p < 1e-3) break;
-        ctx.save();
-        ctx.globalAlpha *= Math.max(0.16, Math.min(1, p));
-        EA.draw.line(ctx, [g.main[i], g.main[i + 1]], col, 2);
-        ctx.restore();
+        faded(ctx, Math.max(0.16, Math.min(1, p)), () => EA.draw.line(ctx, [g.main[i], g.main[i + 1]], col, 2));
       }
       g.esc.forEach((e) => {
         if (e.power < 0.004 || e.len < 2) return;
         const gr = ctx.createLinearGradient(e.p0[0], e.p0[1], e.p1[0], e.p1[1]);
         gr.addColorStop(0, EA.alpha(ESC, Math.min(1, 0.3 + e.power)));
         gr.addColorStop(1, EA.alpha(ESC, 0));
-        ctx.save();
-        ctx.strokeStyle = gr;
-        ctx.lineWidth = 2;
-        ctx.beginPath(); ctx.moveTo(e.p0[0], e.p0[1]); ctx.lineTo(e.p1[0], e.p1[1]); ctx.stroke();
-        ctx.restore();
+        stroke(ctx, [e.p0, e.p1], gr, 2);
       });
       if (g.hit) ring(ctx, g.hit[0], g.hit[1], 7, C.amber, 0.9);
 
@@ -1520,20 +1506,12 @@
         if (d < total) {
           const q = pointAt(g.main, g.Lm, d);
           const p = g.power[q[2]];
-          if (p > 0.01) {
-            ctx.save();
-            ctx.globalAlpha *= Math.max(0.25, Math.min(1, p));
-            EA.draw.dot(ctx, q[0], q[1], nar ? 2.2 : 2.6, col);
-            ctx.restore();
-          }
+          if (p > 0.01) faded(ctx, Math.max(0.25, Math.min(1, p)), () => EA.draw.dot(ctx, q[0], q[1], nar ? 2.2 : 2.6, col));
         }
         g.esc.forEach((e) => {
           const u = (d - e.d0) / (e.len || 1);
           if (u <= 0 || u >= 1 || e.power < 0.02) return;
-          ctx.save();
-          ctx.globalAlpha *= e.power * (1 - u);
-          EA.draw.dot(ctx, EA.lerp(e.p0[0], e.p1[0], u), EA.lerp(e.p0[1], e.p1[1], u), nar ? 2 : 2.4, ESC);
-          ctx.restore();
+          faded(ctx, e.power * (1 - u), () => EA.draw.dot(ctx, EA.lerp(e.p0[0], e.p1[0], u), EA.lerp(e.p0[1], e.p1[1], u), nar ? 2 : 2.4, ESC));
         });
       }
 
@@ -1548,7 +1526,7 @@
 
       // esito
       const inc = degs(Lr.incidence);
-      const maxW = (nar ? g.w : g.fx1) - g.pad;
+      const maxW = (nar ? g.w - g.pad : g.fx1) - g.pad;
       let l1;
       let l2;
       if (!guide) {
@@ -1596,46 +1574,33 @@
       ctx.beginPath(); ctx.moveTo(dx, oy + 0.5); ctx.lineTo(dx + dw, oy + 0.5); ctx.stroke();
       EA.draw.text(ctx, 'n₂', dx + 6, dy + 14, { color: EA.alpha(C.blue, 0.95), size: 10.5 });
       EA.draw.text(ctx, 'n₁', dx + 6, dy + dh - 6, { color: C.text, size: 10.5 });
-      ctx.save();
-      ctx.setLineDash([3, 3]);
-      ctx.strokeStyle = EA.alpha(C.text, 0.5);
-      ctx.beginPath(); ctx.moveTo(ox, dy + 4); ctx.lineTo(ox, dy + dh - 4); ctx.stroke();
-      ctx.restore();
+      stroke(ctx, [[ox, dy + 4], [ox, dy + dh - 4]], EA.alpha(C.text, 0.5), 1, [3, 3]);
 
       const t1 = Lr.incidence;
       const dir = (an) => [Math.sin(an), Math.cos(an)];
       // direzione critica, dal lato del raggio che arriva
       if (st.n1 > st.n2) {
         const dc = dir(S.tc);
-        ctx.save();
-        ctx.setLineDash([4, 3]);
-        ctx.strokeStyle = EA.alpha(C.amber, 0.9);
-        ctx.beginPath(); ctx.moveTo(ox, oy); ctx.lineTo(ox - dc[0] * r, oy + dc[1] * r); ctx.stroke();
-        ctx.restore();
+        stroke(ctx, [[ox, oy], [ox - dc[0] * r, oy + dc[1] * r]], EA.alpha(C.amber, 0.9), 1, [4, 3]);
         if (!nar) EA.draw.text(ctx, 'θc', ox - dc[0] * r - 2, oy + dc[1] * r + 14, { color: C.amber, size: 10.5, align: 'left' });
       }
+      // raggio che arriva, riflesso (tenue se in gran parte esce) e rifratto
       const di = dir(t1);
-      const refl = Lr.guided ? 1 : Lr.R;
-      ctx.save();
-      ctx.globalAlpha *= Math.max(0.18, refl);
-      EA.draw.line(ctx, [[ox, oy], [ox + di[0] * r, oy + di[1] * r]], Lr.guided ? TINT : ESC, 1.8);
-      ctx.restore();
-      EA.draw.line(ctx, [[ox - di[0] * r, oy + di[1] * r], [ox, oy]], Lr.guided ? TINT : ESC, 2);
-      EA.draw.arrow(ctx, ox - di[0] * r * 0.55, oy + di[1] * r * 0.55, ox - di[0] * r * 0.4, oy + di[1] * r * 0.4, Lr.guided ? TINT : ESC, 1.6, 7);
+      const col = Lr.guided ? TINT : ESC;
+      faded(ctx, Math.max(0.18, Lr.guided ? 1 : Lr.R), () => EA.draw.line(ctx, [[ox, oy], [ox + di[0] * r, oy + di[1] * r]], col, 1.8));
+      EA.draw.line(ctx, [[ox - di[0] * r, oy + di[1] * r], [ox, oy]], col, 2);
+      EA.draw.arrow(ctx, ox - di[0] * r * 0.55, oy + di[1] * r * 0.55, ox - di[0] * r * 0.4, oy + di[1] * r * 0.4, col, 1.6, 7);
       const t2 = Lr.refracted;
       if (!Lr.guided && !Number.isNaN(t2)) {
-        ctx.save();
-        ctx.globalAlpha *= Math.min(1, 0.3 + (1 - Lr.R));
-        EA.draw.line(ctx, [[ox, oy], [ox + Math.sin(t2) * r, oy - Math.cos(t2) * r]], ESC, 2);
-        ctx.restore();
+        faded(ctx, Math.min(1, 0.3 + (1 - Lr.R)), () => EA.draw.line(ctx, [[ox, oy], [ox + Math.sin(t2) * r, oy - Math.cos(t2) * r]], ESC, 2));
       }
       // archi degli angoli, misurati dalla normale
       const r1 = r * 0.38;
       ctx.lineWidth = 1.3;
-      ctx.strokeStyle = Lr.guided ? TINT : ESC;
+      ctx.strokeStyle = col;
       ctx.beginPath(); ctx.arc(ox, oy, r1, Math.PI / 2, Math.PI / 2 + t1); ctx.stroke();
       const m1 = Math.PI / 2 + t1 / 2;
-      tag(ctx, 'θ₁', ox + Math.cos(m1) * (r1 + 11), oy + Math.sin(m1) * (r1 + 11) + 4, { color: Lr.guided ? TINT : ESC, size: 10.5, align: 'center' });
+      tag(ctx, 'θ₁', ox + Math.cos(m1) * (r1 + 11), oy + Math.sin(m1) * (r1 + 11) + 4, { color: col, size: 10.5, align: 'center' });
       if (!Lr.guided && !Number.isNaN(t2)) {
         const r2 = r * 0.3;
         ctx.strokeStyle = ESC;
@@ -1644,35 +1609,23 @@
         tag(ctx, 'θ₂', ox + Math.cos(m2) * (r2 + 11), oy + Math.sin(m2) * (r2 + 11) + 4, { color: ESC, size: 10.5, align: 'center' });
       }
 
-      // la legge di Snell con i numeri: n₁·sin θ₁ deve valere n₂·sin θ₂, e un seno non supera 1
+      // la legge di Snell con i numeri: n₁·sin θ₁ deve valere n₂·sin θ₂, e un seno non supera 1;
+      // righe lunghe se c'è posto nel riquadro, altrimenti quelle corte
       const lhs = st.n1 * Math.sin(t1);
-      const lines = [['n₁ sin θ₁ = n₂ sin θ₂', C.dim, 600]];
-      if (nar) {
-        lines.push([fixed(st.n1, 3) + ' · sin ' + degs(t1), C.text, 600]);
-        if (Lr.guided) {
-          lines.push(['= ' + fixed(lhs, 3) + ' > n₂ = ' + fixed(st.n2, 3), C.text, 600]);
-          lines.push(['nessun θ₂ possibile:', C.text, 600]);
-          lines.push(['riflessione totale', TINT, 700]);
-        } else {
-          lines.push(['= ' + fixed(lhs, 3) + ' = n₂ sin θ₂', C.text, 600]);
-          lines.push(['θ₂ = ' + degs(t2) + ': esce', ESC, 700]);
-          lines.push(['riflesso solo ' + pct(Lr.R), C.dim, 600]);
-        }
-      } else {
-        lines.push([fixed(st.n1, 3) + ' · sin ' + degs(t1) + ' = ' + fixed(lhs, 3), C.text, 600]);
-        if (Lr.guided) {
-          lines.push([fixed(lhs, 3) + ' > n₂ = ' + fixed(st.n2, 3) + ': per avere', C.text, 600]);
-          lines.push(['θ₂ servirebbe un seno oltre 1', C.text, 600]);
-          lines.push(['riflessione totale: torna il 100%', TINT, 700]);
-        } else {
-          lines.push(['θ₂ = arcsin(' + fixed(lhs, 3) + ' / ' + fixed(st.n2, 3) + ')', C.text, 600]);
-          lines.push(['θ₂ = ' + degs(t2) + ': il raggio esce', ESC, 700]);
-          lines.push(['riflesso ' + pct(Lr.R) + ', esce ' + pct(1 - Lr.R), C.dim, 600]);
-        }
-      }
+      const n1s = fixed(st.n1, 3) + ' · sin ' + degs(t1);
+      const wide = Lr.guided
+        ? [[n1s + ' = ' + fixed(lhs, 3), C.text, 600], [fixed(lhs, 3) + ' > n₂ = ' + fixed(st.n2, 3) + ': per avere', C.text, 600],
+          ['θ₂ servirebbe un seno oltre 1', C.text, 600], ['riflessione totale: torna il 100%', TINT, 700]]
+        : [[n1s + ' = ' + fixed(lhs, 3), C.text, 600], ['θ₂ = arcsin(' + fixed(lhs, 3) + ' / ' + fixed(st.n2, 3) + ')', C.text, 600],
+          ['θ₂ = ' + degs(t2) + ': il raggio esce', ESC, 700], ['riflesso ' + pct(Lr.R) + ', esce ' + pct(1 - Lr.R), C.dim, 600]];
+      const short = Lr.guided
+        ? [[n1s, C.text, 600], ['= ' + fixed(lhs, 3) + ' > n₂ = ' + fixed(st.n2, 3), C.text, 600], ['nessun θ₂ possibile:', C.text, 600], ['riflessione totale', TINT, 700]]
+        : [[n1s, C.text, 600], ['= ' + fixed(lhs, 3) + ' = n₂ sin θ₂', C.text, 600], ['θ₂ = ' + degs(t2) + ': esce', ESC, 700], ['riflesso solo ' + pct(Lr.R), C.dim, 600]];
+      const roomy = !nar && wide.every(([str, , wt]) => textWidth(ctx, str, ls, wt) <= R.w - 24);
       const tx = nar ? dx + dw + 12 : R.x + 12;
       const ty = nar ? R.y + 42 : dy + dh + 20;
-      lines.forEach(([s, c, wt], k) => EA.draw.text(ctx, s, tx, ty + k * 18, { color: c, size: ls, weight: wt }));
+      [['n₁ sin θ₁ = n₂ sin θ₂', C.dim, 600]].concat(roomy ? wide : short)
+        .forEach(([str, c, wt], k) => EA.draw.text(ctx, str, tx, ty + k * 18, { color: c, size: ls, weight: wt }));
     }
 
     /* 2 · potenza lungo il collegamento */
@@ -1745,11 +1698,8 @@
       // soglia del ricevitore e margine
       ctx.fillStyle = EA.alpha(C.amber, 0.1);
       ctx.fillRect(P.x0, Y(k.sens + k.margin), P.x1 - P.x0, Y(k.sens) - Y(k.sens + k.margin));
-      ctx.save();
-      ctx.setLineDash([6, 4]);
-      ctx.strokeStyle = EA.alpha(C.red, 0.9);
-      ctx.beginPath(); ctx.moveTo(P.x0, Math.round(Y(k.sens)) + 0.5); ctx.lineTo(P.x1, Math.round(Y(k.sens)) + 0.5); ctx.stroke();
-      ctx.restore();
+      const ys = Math.round(Y(k.sens)) + 0.5;
+      stroke(ctx, [[P.x0, ys], [P.x1, ys]], EA.alpha(C.red, 0.9), 1, [6, 4]);
       const sensTxt = fit(ctx, ['soglia del ricevitore ' + EA.fmt(k.sens, 0) + ' dBm (fotodiodo a valanga, 10 Gbit/s)', 'soglia del ricevitore ' + EA.fmt(k.sens, 0) + ' dBm', 'soglia ' + EA.fmt(k.sens, 0) + ' dBm'], (P.x1 - P.x0) * 0.62, 10.5);
       EA.draw.text(ctx, sensTxt, P.x0 + 6, Y(k.sens) + 14, { color: C.red, size: 10.5 });
       if (!nar) EA.draw.text(ctx, 'margine di ' + EA.fmt(k.margin, 0) + ' dB', P.x0 + 6, Y(k.sens + k.margin) - 4, { color: EA.alpha(C.amber, 0.9), size: 10.5 });
@@ -1765,15 +1715,14 @@
         for (let x = xm - (P.y1 - P.y0); x < P.x1; x += 18) { ctx.moveTo(x, P.y1); ctx.lineTo(x + (P.y1 - P.y0), P.y0); }
         ctx.stroke();
         ctx.restore();
-        ctx.strokeStyle = EA.alpha(C.amber, 0.7);
-        ctx.lineWidth = 1;
-        ctx.beginPath(); ctx.moveTo(Math.round(xm) + 0.5, P.y0); ctx.lineTo(Math.round(xm) + 0.5, P.y1); ctx.stroke();
+        stroke(ctx, [[Math.round(xm) + 0.5, P.y0], [Math.round(xm) + 0.5, P.y1]], EA.alpha(C.amber, 0.7));
         const mt = fit(ctx, ['oltre circa 300 m a 10 Gbit/s: dispersione modale', 'oltre 300 m: dispersione modale', 'dispersione modale', 'dispersione'], P.x1 - xm - 12, 10.5, 700);
         tag(ctx, mt, P.x1 - 6, Y(-20) + 4, { color: C.amber, size: 10.5, weight: 700, align: 'right' });
       }
 
-      // profilo della potenza: chiaro sopra la soglia con margine, ambra nel margine, rosso sotto
-      const pts = S.prof.map(([km, p]) => [X(km), Y(Math.max(BOT - 8, p))]);
+      // profilo della potenza: chiaro sopra la soglia con margine, ambra nel margine, rosso sotto;
+      // quello che scende sotto il grafico lo taglia il ritaglio, così la pendenza resta quella vera
+      const pts = S.prof.map(([km, p]) => [X(km), Y(p)]);
       ctx.save();
       ctx.beginPath(); ctx.rect(P.x0 - 4, P.y0 - 6, P.x1 - P.x0 + 8, P.y1 - P.y0 + 6); ctx.clip();
       [[P.y0 - 6, Y(k.sens + k.margin), TINT], [Y(k.sens + k.margin), Y(k.sens), C.amber], [Y(k.sens), P.y1 + 20, C.red]].forEach(([ya, yb, c]) => {
@@ -1822,12 +1771,7 @@
         if (u <= 1) {
           const km = u * st.L;
           const p = profileAt(S.prof, km);
-          if (p > BOT) {
-            ctx.save();
-            ctx.globalAlpha *= 0.3 + 0.7 * EA.clamp((p + 30) / 30, 0, 1);
-            EA.draw.dot(ctx, X(km), Y(p), 3.6, TINT);
-            ctx.restore();
-          }
+          if (p > BOT) faded(ctx, 0.3 + 0.7 * EA.clamp((p + 30) / 30, 0, 1), () => EA.draw.dot(ctx, X(km), Y(p), 3.6, TINT));
         }
       }
 
@@ -1875,16 +1819,16 @@
     id: 'fotonica',
     intro: [
       'Quando apri una pagina web, i dati fanno quasi sempre gran parte del viaggio dentro un filo di vetro spesso un ottavo di millimetro. Non sono elettroni in un cavo di rame ma <strong>impulsi di luce infrarossa</strong>, accesi e spenti miliardi di volte al secondo da un laser e guidati da una <em>fibra ottica</em> per decine, centinaia o migliaia di chilometri; all\'arrivo un fotodiodo li ritrasforma in corrente elettrica.',
-      'Per tenere la luce dentro il vetro basta un\'idea dell\'Ottocento, la <strong>riflessione totale interna</strong>: il nucleo della fibra ha un indice di rifrazione appena più alto del mantello che lo avvolge, e la luce che arriva abbastanza di striscio sulla superficie di separazione viene riflessa tutta, senza perdite. Il resto lo fa la purezza del vetro: a 1550 nm una fibra di oggi perde circa 0,2 dB per chilometro, così dopo 100 km arriva ancora l\'1% della luce.',
+      'Per tenere la luce dentro il vetro basta la <strong>riflessione totale interna</strong>, che Colladon mostrò già nel 1841 con un getto d\'acqua: il nucleo della fibra ha un indice di rifrazione appena più alto del mantello che lo avvolge, e la luce che arriva abbastanza di striscio sulla superficie di separazione viene riflessa tutta, senza perdite. Il resto lo fa la purezza del vetro: a 1550 nm una fibra di oggi perde circa 0,2 dB per chilometro, così dopo 100 km arriva ancora l\'1% della luce.',
       'Poi entrano in gioco due idee che hanno moltiplicato la capacità. Decine di laser con lunghezze d\'onda diverse, cioè di «colori» diversi, condividono la stessa fibra senza mescolarsi (<abbr title="Wavelength Division Multiplexing, multiplazione a divisione di lunghezza d\'onda">WDM</abbr>), e amplificatori fatti di fibra drogata con erbio ridanno forza a tutti i canali insieme, senza trasformare la luce in elettricità. È così che i cavi posati sul fondo degli oceani portano quasi tutto il traffico dati tra i continenti.',
     ],
     steps: [
       { title: 'Il laser: fotoni gemelli', text: 'La pompa porta molti atomi del mezzo attivo in uno stato eccitato. Un fotone che ne incontra uno gli fa emettere un fotone identico: stessa frequenza, stessa fase, stessa direzione. Tra due specchi la valanga cresce e dallo specchio semiriflettente esce un fascio coerente e quasi monocromatico.', focus: 'laser' },
       { title: 'Intrappolata nel nucleo', text: 'Il nucleo ha un indice di rifrazione n₁ un po\' più alto di quello del mantello, n₂. Se il raggio colpisce la parete con un angolo dalla normale maggiore dell\'angolo critico, viene riflesso tutto. Restano guidati solo i raggi che entrano nel cono di accettazione: gli altri a ogni rimbalzo escono in parte nel mantello e presto si perdono.', focus: 'tir' },
-      { title: 'Vetro purissimo', text: 'In un vetro da finestra la luce scende all\'1% in circa un metro (è una stima), nei migliori vetri del 1965 in circa 20 m. Nel 1966 Kao e Hockham indicarono il traguardo: sotto 20 dB/km, cioè con l\'1% ancora presente dopo un chilometro. Nel 1970 Corning ci riuscì; oggi a 1550 nm si perdono circa 0,2 dB/km e l\'1% arriva dopo 100 km.', focus: 'vetro' },
+      { title: 'Vetro purissimo', text: 'In un vetro da finestra la luce scende all\'1% in circa un metro (è una stima), nei migliori vetri del 1965 in circa 20 m. Nel 1966 Kao e Hockham indicarono il traguardo: sotto 20 dB/km, cioè con l\'1% ancora presente dopo un chilometro. Nel 1970 Corning ci riuscì; oggi a 1550 nm si perdono circa 0,2 dB/km e l\'1% della luce resta ancora dopo 100 km.', focus: 'vetro' },
       { title: 'Tanti colori nella stessa fibra', text: 'Ogni canale ha il suo laser, con la sua lunghezza d\'onda. Un multiplatore li mette nella stessa fibra, dove non si mescolano; all\'arrivo un reticolo o un filtro li separa e li manda ai fotodiodi dei ricevitori. Nella DWDM i canali distano per esempio 100 GHz, circa 0,8 nm. I colori del disegno sono finti: è tutta luce infrarossa.', focus: 'wdm' },
       { title: 'L\'amplificatore all\'erbio', text: 'Dopo 80 km a 0,2 dB/km la potenza è scesa di 16 dB, a circa un quarantesimo. Un EDFA, alcuni metri di fibra con ioni di erbio eccitati da un laser di pompa, restituisce quei 16 dB per emissione stimolata: a tutti i canali insieme e senza trasformare la luce in elettricità.', focus: 'edfa' },
-      { title: 'Attraverso gli oceani', text: 'Il cavo posato sul fondo porta più coppie di fibre e, ogni 50-100 km circa, un ripetitore con gli amplificatori, alimentato dal conduttore di rame del cavo. Nel vetro la luce corre a circa 204 000 km/s: per 6000 km di Atlantico servono circa 30 ms. TAT-8, nel 1988, portava 280 Mbit/s per coppia di fibre; oggi una coppia arriva a circa 20-25 Tbit/s.', focus: 'oceani' },
+      { title: 'Attraverso gli oceani', text: 'Il cavo posato sul fondo porta più coppie di fibre e, ogni 50-100 km circa, un ripetitore con gli amplificatori, alimentato dal conduttore di rame del cavo. Nel vetro la luce corre a circa 204 000 km/s: per 6000 km di Atlantico servono circa 30 ms. TAT\u20118, nel 1988, portava 280 Mbit/s per coppia di fibre; oggi una coppia arriva a circa 20-25 Tbit/s.', focus: 'oceani' },
     ],
     formulas: [
       { label: 'Legge di Snell', eq: '<var>n</var><sub>1</sub> · sin <var>θ</var><sub>1</sub> = <var>n</var><sub>2</sub> · sin <var>θ</var><sub>2</sub>', text: 'Passando da un mezzo con indice <var>n</var><sub>1</sub> a uno con indice <var>n</var><sub>2</sub> la luce cambia direzione; gli angoli si misurano dalla normale alla superficie di separazione. Se <var>n</var><sub>2</sub> &lt; <var>n</var><sub>1</sub> il raggio rifratto si allontana dalla normale: da qui nasce la riflessione totale.' },
@@ -1902,19 +1846,19 @@
       { year: 1970, title: 'Vetro ultrapuro e laser a temperatura ambiente', who: 'Robert Maurer, Donald Keck e Peter Schultz, Corning Glass Works (Stati Uniti)', text: 'Con silice fusa purissima e un nucleo drogato al titanio, il gruppo Corning ottiene la prima fibra sotto la soglia di Kao: circa 17 dB/km, misurati alla luce rossa di un laser elio-neon (633 nm). Nello stesso anno il gruppo di Žores Alfërov all\'Istituto Ioffe di Leningrado e Izuo Hayashi e Morton Panish ai Bell Labs fanno funzionare i laser a semiconduttore in continua a temperatura ambiente: ora ci sono la sorgente e il mezzo.' },
       { year: 1977, title: 'Le prime telefonate in fibra', who: 'GTE a Long Beach (California); AT&T e Illinois Bell a Chicago', text: 'Nella primavera del 1977 GTE, a Long Beach, fa passare traffico telefonico reale su fibra ottica a 6 Mbit/s; poche settimane dopo AT&T fa lo stesso sotto il centro di Chicago, a circa 45 Mbit/s. Sono tra i primi collegamenti commerciali: sistemi di prima generazione a circa 850 nm su fibra multimodale, la finestra che oggi serve per le tratte brevi dei data center.' },
       { year: 1987, title: 'L\'amplificatore tutto ottico', who: 'David Payne e colleghi, Università di Southampton; Emmanuel Desurvire e colleghi, AT&T Bell Laboratories', text: 'Due gruppi dimostrano l\'amplificatore a fibra drogata con erbio: alcuni metri di fibra con ioni di erbio, eccitati da un laser di pompa, amplificano per emissione stimolata la luce attorno a 1550 nm senza convertirla in elettricità. Poiché amplifica tutti i canali insieme, l\'EDFA rende conveniente la WDM: i sistemi DWDM commerciali arrivano a metà degli anni \'90.' },
-      { year: 1988, title: 'TAT-8: l\'Atlantico in fibra', who: 'Consorzio guidato da AT&T, British Telecom e France Télécom', text: 'Il 14 dicembre 1988 entra in servizio TAT-8, il primo cavo telefonico transatlantico in fibra ottica, tra Stati Uniti, Regno Unito e Francia. Lavora a 1310 nm con circa 280 Mbit/s per coppia di fibre, l\'equivalente di circa 40 000 telefonate contemporanee. I ripetitori sono ancora elettronici: la luce diventa elettricità e poi di nuovo luce. I transatlantici con EDFA arrivano a metà degli anni \'90, con TAT-12/13.' },
+      { year: 1988, title: 'TAT\u20118: l\'Atlantico in fibra', who: 'Consorzio guidato da AT&T, British Telecom e France Télécom', text: 'Il 14 dicembre 1988 entra in servizio TAT\u20118, il primo cavo telefonico transatlantico in fibra ottica, tra Stati Uniti, Regno Unito e Francia. Lavora a 1310 nm con circa 280 Mbit/s per coppia di fibre e in tutto porta circa 40 000 telefonate contemporanee. I ripetitori sono ancora elettronici: la luce diventa elettricità e poi di nuovo luce. I transatlantici con EDFA arrivano a metà degli anni \'90, con TAT\u201112/13.' },
       { year: 2025, title: 'La luce arriva accanto al chip', who: 'NVIDIA, Broadcom e altri produttori di chip di rete', text: 'Nei data center per l\'intelligenza artificiale i motori ottici, realizzati con la fotonica integrata (l\'«ottica integrata» proposta da Stewart Miller ai Bell Labs nel 1969, oggi spesso su silicio), vengono montati nello stesso package del chip di commutazione invece che in moduli separati. Il segnale elettrico percorre pochi millimetri e il consumo per bit diminuisce. Nel marzo 2025 NVIDIA ha annunciato i suoi primi switch con ottica co-packaged.' },
     ],
-    fun: 'In un comune vetro da finestra la luce perde metà della sua potenza in una decina di centimetri (è una stima). In una fibra di oggi, alla lunghezza d\'onda di 1550 nm, per lo stesso dimezzamento servono circa 15 km: una «finestra» fatta di quel vetro potrebbe essere spessa quanto una città e lasciar passare ancora metà della luce infrarossa.',
+    fun: 'In un comune vetro da finestra la luce perde metà della sua potenza in una quindicina di centimetri (è una stima). In una fibra di oggi, alla lunghezza d\'onda di 1550 nm, per lo stesso dimezzamento servono circa 15 km: una «finestra» fatta di quel vetro potrebbe essere spessa quanto una città e lasciar passare ancora metà della luce infrarossa.',
     uses: [
-      'Dorsali di Internet e reti metropolitane: sistemi DWDM con decine di canali sulla stessa fibra, ciascuno da 100 a 800 Gbit/s.',
-      'Cavi sottomarini intercontinentali, con amplificatori EDFA ogni 50-100 km circa: portano quasi tutto il traffico dati tra i continenti.',
-      'Fibra fino a casa (FTTH): nelle reti GPON una fibra viene divisa tra decine di utenti con splitter passivi; il segnale verso casa usa 1490 nm, quello di ritorno 1310 nm.',
-      'Data center e cluster per l\'intelligenza artificiale: transceiver da 400-800 Gbit/s, laser VCSEL a 850 nm su fibra multimodale per tratte fino a qualche centinaio di metri, fotonica al silicio e ottica co-packaged.',
-      'Reti mobili 4G e 5G: le antenne sono collegate alla rete con la fibra, mentre la radio copre solo l\'ultimo tratto fino al telefono.',
-      'Medicina: endoscopi con fasci ordinati di fibre per vedere dentro il corpo, laser chirurgici guidati in fibra e tomografia a coerenza ottica (OCT) in oculistica.',
-      'Sensori in fibra: con i reticoli di Bragg e il rilevamento acustico distribuito, chilometri di fibra misurano vibrazioni, temperatura e deformazioni di ponti, pozzi e binari.',
-      'Auto, aerei e audio di casa: fibre plastiche a luce rossa per collegamenti brevi immuni ai disturbi elettromagnetici, come l\'uscita audio ottica TOSLINK.',
+      'Dorsali di Internet: DWDM con canali da 100 a 800 Gbit/s',
+      'Cavi sottomarini con EDFA ogni 50-100 km',
+      'Fibra fino a casa (GPON a 1490 e 1310 nm)',
+      'Data center: VCSEL a 850 nm e fotonica al silicio',
+      'Antenne 4G e 5G collegate alla rete in fibra',
+      'Endoscopi, laser chirurgici e OCT in oculistica',
+      'Sensori: reticoli di Bragg e rilevamento acustico distribuito',
+      'Fibre plastiche in auto e uscita audio ottica TOSLINK',
     ],
     glossary: [
       { term: 'Emissione stimolata', def: 'Un fotone di energia adatta incontra un atomo o uno ione eccitato e gli fa emettere un secondo fotone identico: stessa frequenza, fase, direzione e polarizzazione. Se gli atomi eccitati sono più di quelli a riposo (<em>inversione di popolazione</em>) la luce viene amplificata. È il cuore di laser ed EDFA.' },
@@ -1935,7 +1879,7 @@
       { title: 'The Nobel Prize in Physics 2009 (NobelPrize.org)', url: 'https://www.nobelprize.org/prizes/physics/2009/summary/' },
     ],
     hero: {
-      caption: 'La luce resta nel nucleo per riflessione totale, più canali viaggiano insieme e un amplificatore all\'erbio la ricarica. Lo zig-zag descrive le fibre multimodali; i colori dei canali sono finti, perché nelle telecomunicazioni la luce è infrarossa.',
+      caption: 'Dal laser al cavo oceanico: la riflessione totale tiene la luce nel nucleo, più canali condividono la fibra e l\'erbio li ricarica. Lo zig-zag vale per le fibre multimodali; i colori dei canali sono finti, la luce è infrarossa.',
       label: 'Animazione: il laser, la riflessione totale nella fibra, il vetro ultrapuro, i canali WDM, l\'amplificatore all\'erbio e i cavi sottomarini',
       aspect: '16 / 7',
       aspectMobile: '1 / 1',
@@ -1943,7 +1887,7 @@
     },
     lab: {
       title: 'Laboratorio della fibra',
-      intro: 'Scegli la fibra o regola gli indici del nucleo e del mantello, poi cambia l\'angolo di lancio: guarda quando il raggio resta intrappolato e quando esce nel mantello. Sotto c\'è il bilancio di potenza: scegli finestra, lunghezza e numero di canali e controlla se la luce arriva sopra la soglia del ricevitore, con gli amplificatori all\'erbio quando servono.',
+      intro: 'Scegli la fibra o regola gli indici del nucleo e del mantello, poi cambia l\'angolo di lancio: guarda quando il raggio resta intrappolato e quando esce nel mantello. Sotto c\'è il bilancio di potenza: scegli finestra, lunghezza e numero di canali e controlla se la luce arriva sopra la soglia del ricevitore, con gli amplificatori all\'erbio quando servono. I display danno anche la frequenza della luce, la corrente del fotodiodo e il ritardo del viaggio.',
       mount: mountLab,
     },
     quiz: [
@@ -1988,7 +1932,7 @@
           'Elimina l\'attenuazione della fibra, così la potenza resta costante per tutto il percorso',
         ],
         answer: 0,
-        why: 'Un ripetitore elettronico, come quelli di TAT-8, deve rivelare, rigenerare e ritrasmettere ogni canale con la sua elettronica: con 40 canali servirebbero 40 ripetitori in ogni punto. L\'EDFA amplifica per emissione stimolata tutta la banda attorno a 1550 nm in un colpo solo, rumore compreso, quindi un solo apparato basta per tutti i canali. Non elimina l\'attenuazione: la compensa a tratti.',
+        why: 'Un ripetitore elettronico, come quelli di TAT\u20118, deve rivelare, rigenerare e ritrasmettere ogni canale con la sua elettronica: con 40 canali servirebbero 40 ripetitori in ogni punto. L\'EDFA amplifica per emissione stimolata tutta la banda attorno a 1550 nm in un colpo solo, rumore compreso, quindi un solo apparato basta per tutti i canali. Non elimina l\'attenuazione: la compensa a tratti.',
       },
     ],
     model,

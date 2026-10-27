@@ -5,8 +5,8 @@
 /* comandi in colonne, allineati in alto anche quando una colonna è più alta */
 .linee-controls { align-items: start; }
 
-/* sei display su una riga negli schermi larghi */
-.linee-readouts { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+/* sette display su una riga negli schermi larghi */
+.linee-readouts { grid-template-columns: repeat(7, minmax(0, 1fr)); }
 .linee-ro-wrap .ea-ro-val { white-space: normal; line-height: 1.25; }
 
 /* scelte rapide del carico, nello stesso ambra del cursore ZL */
@@ -18,7 +18,9 @@
 
 @media (max-width: 1100px) {
   .linee-lab-canvas { aspect-ratio: 2 / 1; }
-  .linee-readouts { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  /* quattro più tre: il verdetto occupa due caselle e chiude la seconda riga */
+  .linee-readouts { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .linee-ro-verdict { grid-column: span 2; }
 }
 
 @media (max-width: 900px) {

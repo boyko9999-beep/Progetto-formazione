@@ -21,6 +21,11 @@
   .clock-lab-canvas { aspect-ratio: 4 / 3; }
 }
 
+/* Tablet: l'animazione usa il disegno verticale del telefono, ma quadrata invece che 4:5. */
+@media (min-width: 641px) and (max-width: 900px) {
+  .ea-stage-view.clock-stage { aspect-ratio: 1 / 1; }
+}
+
 /* Sugli schermi stretti i tre strumenti stanno uno sotto l'altro. */
 @media (max-width: 640px) {
   .clock-lab-canvas { aspect-ratio: 3 / 4; }

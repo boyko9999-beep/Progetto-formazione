@@ -388,7 +388,7 @@
     ];
     const TEXT = [
       ['1 · LE CARICHE OSCILLANO', '1 · LE CARICHE', 'il generatore spinge gli elettroni su e giù: a 100 MHz, cento milioni di volte al secondo', 'elettroni su e giù lungo l\'antenna'],
-      ['2 · IL CAMPO SI STACCA E VIAGGIA', '2 · IL CAMPO VIAGGIA', 'le linee del campo si chiudono ad anello e corrono via alla velocità della luce', 'gli anelli si staccano e corrono a velocità c'],
+      ['2 · IL CAMPO SI STACCA E VIAGGIA', '2 · IL CAMPO VIAGGIA', 'gli anelli si staccano e corrono alla velocità della luce, anche quando l\'antenna si spegne', 'gli anelli si staccano e corrono a velocità c'],
       ['3 · LA PORTANTE', '3 · LA PORTANTE', 'ampiezza e frequenza sempre uguali: l\'onda arriva, ma non porta informazione', 'onda sempre uguale: nessuna informazione'],
       ['4 · AM: L\'AMPIEZZA SEGUE LA VOCE', '4 · AM', 'gli anelli si rafforzano e si indeboliscono seguendo il messaggio', 'l\'ampiezza segue il messaggio'],
       ['5 · FM: LA FREQUENZA SEGUE LA VOCE', '5 · FM', 'ampiezza costante: le onde si infittiscono e si diradano col messaggio', 'la frequenza segue il messaggio'],
@@ -487,14 +487,16 @@
     function cutFuture(t) {
       while (events.length > 1 && events[events.length - 1].t > t) events.pop();
     }
+    // Nel passo 2 l'antenna si spegne per un istante: gli ultimi anelli continuano la corsa
+    // da soli, poi parte un fronte nuovo e il ricevitore si riaccende solo quando lo raggiunge.
     function enterLive(i, t) {
       cutFuture(t);
-      const mode = STAGES[i].mode;
-      if (i <= 1) {
+      if (STAGES[i].key === 'onda') {
         events.push({ t, mode: 'off' }, { t: t + T_OFF, mode: 'carrier' });
         frontT = t + T_OFF;
         return;
       }
+      const mode = STAGES[i].mode;
       if (events[events.length - 1].mode === 'off') frontT = t;
       const ev = { t, mode };
       if (mode === 'qam') ev.t0 = t;
@@ -507,8 +509,9 @@
       off = -((((WM * now - PH0) % TAU) + TAU) % TAU) / WM;
       const t = now + off;
       const mode = STAGES[i].mode;
-      if (i === 0) {
-        const age = (cv.w && cv.w < 560 ? 1.7 : 2.5) * T_C;
+      if (STAGES[i].key === 'onda') {
+        // il fronte è a metà strada: il ricevitore non ha ancora sentito niente
+        const age = (cv.w && cv.w < 560 ? 1.9 : 2.7) * T_C;
         events = [{ t: -1e9, mode: 'off' }, { t: t - age, mode: 'carrier' }];
         frontT = t - age;
         return;
@@ -559,10 +562,13 @@
         }
       }
       const J = Math.ceil(rmax) + 3;
+      const ne = 2 * nx * ny; // lati della griglia: 2k orizzontale, 2k + 1 verticale dal nodo k
       G = {
         w, hh, narrow, fTop, fBot, cy, xTx, xRx, lambda, arm, stripY, stripH,
         ix: w - iw - (narrow ? 8 : 16), iy: narrow ? 8 : 14, iw, ih,
         cs, gy0, nx, ny, R1, R2, psi: new Float32Array(nx * ny), J, S: new Float32Array(J + 2),
+        linkA: new Int32Array(ne), linkB: new Int32Array(ne), mark: new Int32Array(ne),
+        seen: new Int32Array(ne), touched: new Int32Array(ne),
       };
       return G;
     }
@@ -594,55 +600,105 @@
       }
     }
 
-    function seg(p, x1, y1, x2, y2) { p.moveTo(x1, y1); p.lineTo(x2, y2); }
+    // Quadrati che marciano, con i pezzi uniti in curve. Ogni lato della griglia che il
+    // livello L attraversa diventa un vertice; ogni cella collega due lati (quattro nelle
+    // selle). Seguendo i collegamenti si ottengono poche curve lunghe, e il canvas traccia
+    // una curva continua molto più in fretta di migliaia di trattini separati.
+    let stamp = 0;
+    const PX = new Float64Array(32);
+    const PY = new Float64Array(32);
+    const TOL = 0.3; // px: scarto massimo quando si saltano i vertici quasi allineati
 
-    // Quadrati che marciano: un pezzetto di curva per ogni cella attraversata dal livello L.
-    function cell(p, a, b, c, d, L, x, y, s) {
-      const idx = (a > L ? 8 : 0) | (b > L ? 4 : 0) | (c > L ? 2 : 0) | (d > L ? 1 : 0);
-      switch (idx) {
-        case 1: case 14: seg(p, x, y + (s * (L - a)) / (d - a), x + (s * (L - d)) / (c - d), y + s); break;
-        case 2: case 13: seg(p, x + (s * (L - d)) / (c - d), y + s, x + s, y + (s * (L - b)) / (c - b)); break;
-        case 3: case 12: seg(p, x, y + (s * (L - a)) / (d - a), x + s, y + (s * (L - b)) / (c - b)); break;
-        case 4: case 11: seg(p, x + (s * (L - a)) / (b - a), y, x + s, y + (s * (L - b)) / (c - b)); break;
-        case 6: case 9: seg(p, x + (s * (L - a)) / (b - a), y, x + (s * (L - d)) / (c - d), y + s); break;
-        case 7: case 8: seg(p, x + (s * (L - a)) / (b - a), y, x, y + (s * (L - a)) / (d - a)); break;
-        case 5: case 10: {
-          const tx = x + (s * (L - a)) / (b - a);
-          const ry = y + (s * (L - b)) / (c - b);
-          const bx = x + (s * (L - d)) / (c - d);
-          const ly = y + (s * (L - a)) / (d - a);
-          if ((idx === 5) === ((a + b + c + d) / 4 > L)) { seg(p, tx, y, x, ly); seg(p, x + s, ry, bx, y + s); } else { seg(p, tx, y, x + s, ry); seg(p, x, ly, bx, y + s); }
-          break;
-        }
-        default: break;
-      }
+    function edgePoint(g, e, L) {
+      const k = e >> 1;
+      const i = k % g.nx;
+      const j = (k - i) / g.nx;
+      const a = g.psi[k];
+      if (e & 1) { PX[31] = i * g.cs; PY[31] = g.gy0 + (j + (L - a) / (g.psi[k + g.nx] - a)) * g.cs; }
+      else { PX[31] = (i + (L - a) / (g.psi[k + 1] - a)) * g.cs; PY[31] = g.gy0 + j * g.cs; }
     }
 
-    function traceField(g) {
-      const { nx, ny, psi, cs, gy0 } = g;
-      const pos = new Path2D();
-      const neg = new Path2D();
-      const L0 = LEVELS[0];
-      const L1 = LEVELS[LEVELS.length - 1];
+    function traceLevel(g, L, p) {
+      const { nx, ny, psi, linkA, linkB, mark, seen, touched } = g;
+      const cur = ++stamp;
+      let nt = 0;
+      const join = (e, f) => {
+        if (mark[e] !== cur) { mark[e] = cur; linkA[e] = f; linkB[e] = -1; touched[nt++] = e; } else linkB[e] = f;
+        if (mark[f] !== cur) { mark[f] = cur; linkA[f] = e; linkB[f] = -1; touched[nt++] = f; } else linkB[f] = e;
+      };
       for (let j = 0; j < ny - 1; j++) {
-        const y = gy0 + j * cs;
         let k = j * nx;
         for (let i = 0; i < nx - 1; i++, k++) {
           const a = psi[k];
           const b = psi[k + 1];
           const c = psi[k + nx + 1];
           const d = psi[k + nx];
-          const lo = Math.min(a, b, c, d);
-          const hi = Math.max(a, b, c, d);
-          if (hi <= L0 || lo >= L1) continue;
-          for (let n = 0; n < LEVELS.length; n++) {
-            const L = LEVELS[n];
-            if (L <= lo) continue;
-            if (L >= hi) break;
-            cell(L > 0 ? pos : neg, a, b, c, d, L, i * cs, y, cs);
+          const idx = (a > L ? 8 : 0) | (b > L ? 4 : 0) | (c > L ? 2 : 0) | (d > L ? 1 : 0);
+          if (idx === 0 || idx === 15) continue;
+          const top = 2 * k;
+          const bottom = 2 * (k + nx);
+          const left = top + 1;
+          const right = top + 3;
+          switch (idx) {
+            case 1: case 14: join(left, bottom); break;
+            case 2: case 13: join(bottom, right); break;
+            case 3: case 12: join(left, right); break;
+            case 4: case 11: join(top, right); break;
+            case 6: case 9: join(top, bottom); break;
+            case 7: case 8: join(top, left); break;
+            default: // sella: decide il valore medio della cella
+              if ((idx === 5) === ((a + b + c + d) / 4 > L)) { join(top, left); join(right, bottom); } else { join(top, right); join(left, bottom); }
           }
         }
       }
+      // Percorre una curva; tiene un vertice solo se la corda dall'ultimo vertice tracciato
+      // passerebbe a più di TOL pixel da uno dei punti saltati.
+      function walk(e0, closed) {
+        let prev = -1;
+        let e = e0;
+        seen[e] = cur;
+        edgePoint(g, e, L);
+        let x0 = PX[31];
+        let y0 = PY[31];
+        p.moveTo(x0, y0);
+        let np = 0;
+        for (;;) {
+          const next = linkA[e] !== prev ? linkA[e] : linkB[e];
+          if (next < 0 || seen[next] === cur) break;
+          prev = e;
+          e = next;
+          seen[e] = cur;
+          edgePoint(g, e, L);
+          PX[np] = PX[31];
+          PY[np] = PY[31];
+          np++;
+          if (np < 2) continue;
+          const dx = PX[np - 1] - x0;
+          const dy = PY[np - 1] - y0;
+          const lim = TOL * Math.hypot(dx, dy);
+          let ok = np < 24;
+          for (let m = 0; ok && m < np - 1; m++) if (Math.abs((PX[m] - x0) * dy - (PY[m] - y0) * dx) > lim) ok = false;
+          if (!ok) {
+            x0 = PX[np - 2];
+            y0 = PY[np - 2];
+            p.lineTo(x0, y0);
+            PX[0] = PX[np - 1];
+            PY[0] = PY[np - 1];
+            np = 1;
+          }
+        }
+        if (np) p.lineTo(PX[np - 1], PY[np - 1]);
+        if (closed) p.closePath();
+      }
+      // prima le curve aperte, che finiscono sul bordo, poi gli anelli chiusi
+      for (let m = 0; m < nt; m++) { const e = touched[m]; if (seen[e] !== cur && linkB[e] < 0) walk(e, false); }
+      for (let m = 0; m < nt; m++) { const e = touched[m]; if (seen[e] !== cur) walk(e, true); }
+    }
+
+    function traceField(g) {
+      const pos = new Path2D();
+      const neg = new Path2D();
+      LEVELS.forEach((L) => traceLevel(g, L, L > 0 ? pos : neg));
       return { pos, neg };
     }
 
@@ -832,23 +888,27 @@
       const env = [];
       const neg = [];
       let e = events.length - 1;
+      const showEnv = key === 'am' || key === 'fm' || key === 'qam';
       for (let x = xTx; x <= xRx; x += 1.5) {
         const r = Math.hypot(x - xTx, arm);
         pts.push([x, mid - unit * sampleS(S, r)]);
-        if (key === 'am' || key === 'fm') {
+        if (showEnv) {
           const tp = t - r / v;
           while (e > 0 && events[e].t > tp) e--;
-          if (events[e].mode === key) {
-            if (key === 'am') { const a = envAt(e, tp)[0]; env.push([x, mid - unit * a]); neg.push([x, mid + unit * a]); }
-            else env.push([x, mid - unit * 0.9 * Math.sin(WM * tp)]);
-          } else { env.push(null); neg.push(null); }
+          if (events[e].mode !== key) { env.push(null); neg.push(null); continue; }
+          if (key === 'fm') { env.push([x, mid - unit * 0.9 * Math.sin(WM * tp)]); continue; }
+          // AM: l'inviluppo segue il messaggio; QAM: l'ampiezza resta fissa per tutto un simbolo
+          const en = envAt(e, tp);
+          const a = key === 'am' ? en[0] : Math.hypot(en[0], en[1]);
+          env.push([x, mid - unit * a]);
+          neg.push([x, mid + unit * a]);
         }
       }
       EA.draw.line(ctx, pts, TINT, narrow ? 1.6 : 1.9);
       if (env.length) {
         dash(ctx, env, C.cyan, 1.3);
         if (neg.length) dash(ctx, neg, C.cyan, 1.3);
-        const word = key === 'am' ? 'inviluppo' : 'messaggio';
+        const word = key === 'am' ? 'inviluppo' : key === 'qam' ? 'ampiezza' : 'messaggio';
         if (narrow) EA.draw.text(ctx, word, x0 + pw - 10, stripY + 16, { color: C.cyan, size: 10.5, align: 'right' });
         else {
           const last = env[env.length - 1];
@@ -861,7 +921,7 @@
         const ev = events[events.length - 1];
         if (ev.mode !== 'qam') return;
         const kNow = Math.floor((t - ev.t0) / T_S);
-        const tag0 = narrow ? stripY + stripH - 7 : stripY + stripH - 8;
+        const tag0 = stripY + stripH - (narrow ? 5 : 6);
         for (let k = kNow; k > kNow - 12; k--) {
           const ta = ev.t0 + k * T_S;
           if (ta + T_S <= ev.t && ev.t > -1e8) break;
@@ -910,12 +970,16 @@
         ctx.restore();
         const cur = symAt(kNow);
         const sc = (side / 2 - 7) / (3 / Math.sqrt(10));
+        // il simbolo come vettore: la lunghezza è l'ampiezza, l'angolo è la fase;
+        // la punta finisce sul punto, anche per i quattro simboli interni
+        const ring = narrow ? 5.5 : 7;
+        EA.draw.arrow(ctx, sx + side / 2, sy + side / 2, sx + side / 2 + QAM[cur].i * sc, sy + side / 2 - QAM[cur].q * sc, EA.alpha(C.ink, 0.85), 1.4, narrow ? 5 : 6);
         QAM.forEach((p, n) => {
           const px = sx + side / 2 + p.i * sc;
           const py = sy + side / 2 - p.q * sc;
           if (n === cur) {
             EA.draw.dot(ctx, px, py, narrow ? 3 : 3.6, TINT);
-            ctx.save(); ctx.strokeStyle = C.ink; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.arc(px, py, narrow ? 5.5 : 7, 0, TAU); ctx.stroke(); ctx.restore();
+            ctx.save(); ctx.strokeStyle = C.ink; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.arc(px, py, ring, 0, TAU); ctx.stroke(); ctx.restore();
           } else if (on.has(n)) {
             EA.draw.dot(ctx, px, py, narrow ? 2 : 2.6, EA.alpha(TINT, 0.7), false);
           } else {
@@ -991,7 +1055,7 @@
           stageT = 0;
           stage = (stage + 1) % STAGES.length;
           api.setStep(stage);
-          if (stage !== 1) enterLive(stage, t);
+          enterLive(stage, t);
         }
       }
       const g = layout();
@@ -1198,7 +1262,8 @@
         d.sim = simulate(st.mode, st.snr, NSIM, 7);
         d.serTh = serTheory(st.mode, snr);
         d.pg = 1;
-        d.cap = shannon(snr / (1 + ALPHA));
+        d.cap = shannon(snr / (1 + ALPHA)); // SNR nella banda occupata: Es/N0 diviso (1 + α)
+        d.eff = d.k / (1 + ALPHA);          // bit al secondo per hertz di banda
         setLabel(ro2, 'Bit per simbolo');
         ro2.set(d.k + ' (' + EA.si(st.rs * d.k, 'bit/s') + ')', null);
         setLabel(ro3, 'SNR per bit');
@@ -1242,7 +1307,8 @@
         const tH = Math.round(hh * 0.33);
         const sTop = tTop + tH + 44;
         const bottom = hh - 34;
-        const iqS = Math.min(bottom - sTop - 30, Math.round(w * 0.34));
+        // sotto il piano I/Q restano quattro righe di commento
+        const iqS = Math.max(60, Math.min(bottom - sTop - 48, Math.round(w * 0.34)));
         const qx = w - px - iqS;
         return { w, hh, narrow, px, tTop, tH, tW: w - 2 * px, sx: px, sTop, sW: qx - px - 36, sH: bottom - sTop, qx, qy: sTop, iqS, infoX: qx, infoY: sTop + iqS + 17 };
       }
@@ -1251,7 +1317,7 @@
       const sTop = tTop + tH + 42;
       const sH = Math.round(hh * 0.25);
       const qy = sTop + sH + 46;
-      const iqS = Math.min(Math.round(w * 0.5), hh - qy - 10);
+      const iqS = Math.max(60, Math.min(Math.round(w * 0.5), hh - qy - 10));
       return { w, hh, narrow, px, tTop, tH, tW: w - 2 * px, sx: px, sTop, sW: w - 2 * px, sH, qx: px, qy, iqS, infoX: px + iqS + 14, infoY: qy + 12 };
     }
 
@@ -1277,6 +1343,8 @@
       const clampY = (y) => EA.clamp(y, tTop + 1, tTop + tH - 1);
       const pts = [];
       let base = '';
+      // passo di campionamento: almeno 12 punti per ciclo della portante, al massimo 2 px
+      const samples = (pxPerCycle) => Math.ceil(tW / EA.clamp(pxPerCycle / 12, 1, 2));
       if (!d.dig) {
         const P = 2;
         const spp = tW / P;
@@ -1285,7 +1353,10 @@
         const tauNow = t * 0.2;
         const env = [];
         const neg = [];
-        for (let x = px; x <= px + tW; x += 1) {
+        const pxc = spp / (ncy + bv); // pixel per ciclo, alla frequenza istantanea più alta
+        const n = samples(pxc);
+        for (let j = 0; j <= n; j++) {
+          const x = px + (tW * j) / n;
           const tau = tauNow - (px + tW - x) / spp;
           let s;
           if (st.mode === 'am') {
@@ -1300,7 +1371,8 @@
           s += d.sigma * hashGauss(Math.round(tau * spp));
           pts.push([x, clampY(mid - amp * s)]);
         }
-        EA.draw.line(ctx, pts, C.amber, 1.5, d.sigma < 0.2);
+        // alone solo se la traccia è pulita e rada: su una traccia fitta sarebbe solo una macchia
+        EA.draw.line(ctx, pts, C.amber, 1.5, d.sigma < 0.2 && pxc >= 20);
         dash(ctx, env, C.cyan, 1.4);
         if (neg.length) dash(ctx, neg, C.cyan, 1.4);
         const word = st.mode === 'am' ? (st.m > 1 ? 'sovramodulazione: l\'inviluppo si ribalta' : 'inviluppo = messaggio') : 'messaggio (la frequenza lo segue)';
@@ -1308,7 +1380,7 @@
         const ww = textWidth(ctx, word, 10.5, 600);
         ctx.save();
         ctx.fillStyle = EA.alpha(C.bg, 0.85);
-        ctx.fillRect(px + tW - ww - 12, tTop + 4, ww + 8, 16);
+        ctx.fillRect(px + tW - ww - 12, tTop + 4, ww + 12, 16);
         ctx.restore();
         EA.draw.text(ctx, word, px + tW - 8, tTop + 16, { color: wcol, size: 10.5, align: 'right' });
         base = '2 periodi = ' + EA.si(2 / st.fm, 's');
@@ -1316,7 +1388,9 @@
         const NS = narrow ? 5 : 8;
         const spp = tW / NS;
         const sNow = t * 0.8;
-        for (let x = px; x <= px + tW; x += 1) {
+        const n = samples(spp / 2);
+        for (let j = 0; j <= n; j++) {
+          const x = px + (tW * j) / n;
           const u = sNow - (px + tW - x) / spp;
           const k = Math.floor(u);
           const iq = symIQ(k, u - k);
@@ -1350,7 +1424,7 @@
       const lw = textWidth(ctx, label, 10.5, 600);
       ctx.save();
       ctx.fillStyle = EA.alpha(C.bg, 0.85);
-      ctx.fillRect(px + tW - lw - 12, tTop + tH - 18, lw + 8, 15);
+      ctx.fillRect(px + tW - lw - 12, tTop + tH - 18, lw + 12, 15);
       ctx.restore();
       EA.draw.text(ctx, label, px + tW - 8, tTop + tH - 7, { color: C.dim, size: 10.5, align: 'right' });
     }
@@ -1423,21 +1497,30 @@
         EA.draw.line(ctx, pts, C.amber, 1.5, true);
         if (!narrow) {
           const lx = sx + sW - 4;
-          EA.draw.text(ctx, 'coseno rialzato α = 0,25', lx, pT + 12, { color: C.amber, size: 10.5, align: 'right' });
-          EA.draw.text(ctx, '- - impulsi rettangolari', lx, pT + 27, { color: C.text, size: 10.5, align: 'right' });
+          tag(ctx, 'coseno rialzato α = 0,25', lx, pT + 12, { color: C.amber, size: 10.5, align: 'right' });
+          tag(ctx, '- - impulsi rettangolari', lx, pT + 27, { color: C.text, size: 10.5, align: 'right' });
           const fy = yDb(floor) - 9;
           if (fy > pT + 44 && fy < pB - 6) tag(ctx, 'fondo di rumore', lx, fy, { color: C.text, size: 10.5, align: 'right' });
         }
       } else {
+        // righe dello spettro; quando sono tante, un solo tracciato senza alone
         const many = d.lines.length > 40;
         const width = Math.max(1, Math.min(3, ((st.fm / d.H) * (sW / 2)) * 0.35));
+        const bars = new Path2D();
         d.lines.forEach((l) => {
           if (Math.abs(l.f) > d.H) return;
           const v = 20 * Math.log10(Math.abs(l.a) + 1e-12);
           if (v < DB1) return;
           const x = xs(l.f);
-          EA.draw.line(ctx, [[x, pB], [x, yDb(v)]], C.amber, width, !many);
+          if (many) { bars.moveTo(x, pB); bars.lineTo(x, yDb(v)); } else EA.draw.line(ctx, [[x, pB], [x, yDb(v)]], C.amber, width, true);
         });
+        if (many) {
+          ctx.save();
+          ctx.strokeStyle = C.amber;
+          ctx.lineWidth = width;
+          ctx.stroke(bars);
+          ctx.restore();
+        }
         // il rumore copre le righe più deboli
         const pts = [];
         for (let b = 0; b <= nb; b++) pts.push([sx + Math.min(sW, b * bin), yDb(noiseAt(b))]);
@@ -1550,10 +1633,10 @@
         ctx.beginPath(); ctx.arc(pr[0], pr[1], 7, 0, TAU); ctx.stroke();
         info.push(['errori: ' + d.sim.errors.toLocaleString('it-IT') + ' su ' + NSIM.toLocaleString('it-IT'), d.sim.errors ? C.ink : C.green]);
         info.push(['teoria: ' + pct(d.serTh), C.text]);
-        if (narrow) {
-          info.push([d.k + ' bit per simbolo', C.text]);
-          info.push(['Shannon: ' + EA.fmt(d.cap, 1) + ' bit/s/Hz', C.text]);
-        }
+        if (narrow) info.push([d.k + ' bit per simbolo', C.text]);
+        // efficienza della modulazione e massimo teorico di Shannon con questo SNR
+        info.push(['limite di Shannon: ' + EA.fmt(d.cap, 1) + ' bit/s/Hz', C.text]);
+        info.push([MODE_NAMES[st.mode] + ' ne usa ' + EA.fmt(d.eff, 1), d.eff > d.cap ? C.red : C.text]);
       } else {
         // nuvola di campioni rumorosi lungo la traiettoria del fasore
         const env = (tau) => {
@@ -1591,8 +1674,9 @@
         }
       }
       ctx.restore();
-      EA.draw.text(ctx, 'I', qx + iqS - 8, cy - 6, { color: C.dim, size: 10.5, align: 'center' });
-      EA.draw.text(ctx, 'Q', cx + 8, qy + 14, { color: C.dim, size: 10.5, align: 'center' });
+      // nomi degli assi su fondo scuro: restano leggibili anche sopra la nuvola di punti
+      tag(ctx, 'I', qx + iqS - 10, cy - 7, { color: C.dim, size: 10.5, align: 'center' });
+      tag(ctx, 'Q', cx + 10, qy + 15, { color: C.dim, size: 10.5, align: 'center' });
       const maxW = narrow ? g.w - g.infoX - 8 : iqS;
       let y = g.infoY;
       info.forEach(([txt, col]) => {
@@ -1621,35 +1705,38 @@
     id: 'radio',
     intro: [
       'Nel 1865 James Clerk Maxwell ricavò dalle sue equazioni che un campo elettrico e un campo magnetico che variano nel tempo possono staccarsi dalle cariche e viaggiare da soli, alla velocità della luce: <strong>la luce stessa è un\'onda elettromagnetica</strong>. Poco più di vent\'anni dopo Heinrich Hertz generò e rivelò in laboratorio onde della stessa natura, invisibili e molto più lunghe, e nel 1895, vicino a Bologna, il ventunenne Guglielmo Marconi le usò per mandare segnali oltre una collina. Erano nate le <em>onde radio</em>.',
-      'Per lanciare un\'onda radio basta far oscillare delle cariche in un conduttore, l\'<em>antenna</em>. A ogni oscillazione il campo elettrico si richiude in un anello che si stacca e si allontana alla velocità <var>c</var>, circa 300 000 km al secondo. La distanza tra due anelli uguali è la <strong>lunghezza d\'onda</strong> λ = <var>c</var>/<var>f</var>: a 100 MHz è di 3 metri, e un\'antenna efficiente, il dipolo a mezz\'onda, è lunga circa la metà.',
-      'Un\'onda sempre uguale, la <em>portante</em>, non dice niente. Per trasportare voce, musica o dati bisogna <strong>modularla</strong>: variarne l\'ampiezza (AM), la frequenza (FM), oppure ampiezza e fase insieme, saltando tra i punti di una costellazione (QAM). Ogni scelta ha un prezzo in banda occupata e in resistenza al rumore: è lo stesso compromesso che si ritrova dalla radio in onde medie fino al Wi-Fi e al 5G.',
+      'Per lanciare un\'onda radio basta far oscillare delle cariche in un conduttore, l\'<em>antenna</em>. A ogni mezza oscillazione le linee del campo elettrico si richiudono in un anello che si stacca e si allontana alla velocità <var>c</var>, circa 300 000 km al secondo. La distanza tra due anelli uguali è la <strong>lunghezza d\'onda</strong> λ = <var>c</var>/<var>f</var>: a 100 MHz è di 3 metri, e un\'antenna efficiente, il dipolo a mezz\'onda, è lunga circa la metà.',
+      'Un\'onda sempre uguale, la <em>portante</em>, non dice niente. Per trasportare voce e musica bisogna <strong>modularla</strong>, cioè variarne l\'ampiezza (AM) o la frequenza (FM) seguendo il suono. Con i dati la modulazione procede a scatti: si cambia l\'ampiezza, fino ad accendere e spegnere la portante come nel Morse dei radiotelegrafisti (ASK), se ne inverte la fase (PSK), oppure si cambiano ampiezza e fase insieme, saltando tra i punti di una costellazione (QAM). Ogni scelta ha un prezzo in banda occupata e in resistenza al rumore: è lo stesso compromesso che si ritrova dalla radio in onde medie fino al Wi-Fi e al 5G.',
+      'Come l\'onda arriva a destinazione dipende dalla frequenza. Le onde lunghe e medie seguono la curvatura della Terra; le onde corte rimbalzano sulla <em>ionosfera</em>, lo strato di gas ionizzato tra circa 60 e 1000 km di quota, e possono fare il giro del mondo; sopra qualche decina di MHz l\'onda la attraversa e a terra arriva solo in linea retta, come la luce, fino all\'orizzonte. Al ricevitore giunge una frazione minuscola della potenza, mescolata al rumore: per questo conta il <strong>rapporto segnale-rumore</strong>, e per questo il ricevitore <em>supereterodina</em>, inventato nel 1918 e usato ancora oggi, sposta la stazione scelta su una frequenza intermedia fissa, dove filtrarla e amplificarla è più facile.',
     ],
     steps: [
-      { title: 'Le cariche oscillano', text: 'Un generatore spinge gli elettroni su e giù lungo i due bracci dell\'antenna. La corrente è massima al centro e nulla alle estremità, dove le cariche si accumulano: positive da una parte, negative dall\'altra, poi si scambiano.', focus: 'cariche' },
-      { title: 'Il campo si stacca e viaggia', text: 'Le linee del campo elettrico partono dalle cariche. Quando le cariche si invertono, le linee si richiudono su se stesse, si staccano dall\'antenna e corrono via alla velocità della luce. Tra due anelli uguali c\'è una lunghezza d\'onda: λ = <var>c</var>/<var>f</var>.', focus: 'onda' },
-      { title: 'La portante', text: 'Un\'onda con ampiezza e frequenza sempre uguali è la portante. Arriva al ricevitore, ma non porta alcuna informazione: nello spettro è una sola riga, alla frequenza <var>f</var><sub>c</sub>.', focus: 'portante' },
+      { title: 'Le cariche oscillano', text: 'Un generatore spinge gli elettroni su e giù lungo i due bracci dell\'antenna. La corrente è massima al centro e nulla alle estremità, dove le cariche si accumulano: positive da una parte, negative dall\'altra, poi si scambiano. Nell\'animazione le frecce sono la corrente, i pallini rossi e azzurri le cariche.', focus: 'cariche' },
+      { title: 'Il campo si stacca e viaggia', text: 'Le linee del campo elettrico partono dalle cariche. Quando le cariche si invertono, le linee si richiudono su se stesse, si staccano dall\'antenna e corrono via alla velocità della luce; tra due anelli uguali c\'è una lunghezza d\'onda, λ = c/f. Qui l\'antenna si spegne per un istante: gli anelli già partiti proseguono da soli, e il ricevitore si riaccende solo quando lo raggiunge il nuovo fronte d\'onda.', focus: 'onda' },
+      { title: 'La portante', text: 'Un\'onda con ampiezza e frequenza sempre uguali è la portante. Arriva al ricevitore, ma non porta alcuna informazione: nello spettro è una sola riga, alla sua frequenza fc.', focus: 'portante' },
       { title: 'AM: l\'ampiezza segue la voce', text: 'Il microfono trasforma la voce in un segnale elettrico (qui, per chiarezza, un tono puro) che fa crescere e calare l\'ampiezza della portante. L\'inviluppo ricalca il messaggio e nello spettro compaiono due bande laterali.', focus: 'am' },
       { title: 'FM: la frequenza segue la voce', text: 'Ora l\'ampiezza resta costante e cambia la frequenza: le onde si infittiscono quando il messaggio sale e si diradano quando scende. Lo spettro si riempie di righe e la banda occupata cresce.', focus: 'fm' },
-      { title: 'QAM: simboli digitali', text: 'Per i dati, ampiezza e fase saltano tra 16 combinazioni prefissate. Ogni simbolo è un punto della costellazione e porta 4 bit: guardala accendersi punto per punto.', focus: 'qam' },
+      { title: 'QAM: simboli digitali', text: 'Per i dati, ampiezza e fase saltano tra 16 combinazioni prefissate. Ogni simbolo è un punto della costellazione, cioè una freccia con la sua lunghezza (l\'ampiezza) e il suo angolo (la fase), e porta 4 bit: guarda la costellazione accendersi punto per punto.', focus: 'qam' },
     ],
     formulas: [
       { label: 'Lunghezza d\'onda', eq: 'λ = <var>c</var> ⁄ <var>f</var>', text: 'È la distanza che l\'onda percorre in un periodo. Con <var>c</var> = 1/√(<var>μ</var><sub>0</sub><var>ε</var><sub>0</sub>) ≈ 299 792 km/s, a 100 MHz λ ≈ 3 m: un dipolo a mezz\'onda misura circa 1,5 m, a 2,4 GHz appena 6 cm.' },
-      { label: 'Modulazione d\'ampiezza', eq: '<var>s</var>(<var>t</var>) = <var>A</var><sub>c</sub>[1 + <var>m</var>·<var>x</var>(<var>t</var>)] cos 2π<var>f</var><sub>c</sub><var>t</var>', text: 'Con |<var>x</var>| ≤ 1 e 0 ≤ <var>m</var> ≤ 1 l\'inviluppo ricalca il messaggio; oltre <var>m</var> = 1 si ribalta (sovramodulazione). Portante e due bande laterali occupano <var>B</var> = 2<var>f</var><sub>m</sub>.' },
+      { label: 'Modulazione d\'ampiezza', eq: '<var>s</var>(<var>t</var>) = <var>A</var><sub>c</sub>[1 + <var>m</var>·<var>x</var>(<var>t</var>)]<br>· cos(2π<var>f</var><sub>c</sub><var>t</var>)', text: 'Con |<var>x</var>| ≤ 1 e 0 ≤ <var>m</var> ≤ 1 l\'inviluppo ricalca il messaggio; oltre <var>m</var> = 1 si ribalta (sovramodulazione). Portante e due bande laterali occupano <var>B</var> = 2<var>f</var><sub>m</sub>.' },
       { label: 'FM e regola di Carson', eq: '<var>B</var> ≈ 2(Δ<var>f</var> + <var>f</var><sub>m</sub>)', text: 'Δ<var>f</var> è lo scostamento massimo di frequenza e <var>β</var> = Δ<var>f</var>/<var>f</var><sub>m</sub> l\'indice di modulazione. Le righe hanno ampiezze date dalle funzioni di Bessel <var>J<sub>n</sub></var>(<var>β</var>). Per la radio FM, con Δ<var>f</var> = 75 kHz e <var>f</var><sub>m</sub> = 15 kHz, <var>B</var> ≈ 180 kHz.' },
       { label: 'Bit per simbolo', eq: '<var>R</var><sub>b</sub> = <var>R</var><sub>s</sub> · log<sub>2</sub> <var>M</var>', text: 'Una costellazione di <var>M</var> punti porta log<sub>2</sub> <var>M</var> bit per simbolo: BPSK 1, 16-QAM 4, 4096-QAM 12. Più punti nella stessa banda danno più bit al secondo, ma i punti si avvicinano e serve più rapporto segnale-rumore.' },
+      { label: 'Limite di Shannon', eq: '<var>C</var> = <var>B</var> · log<sub>2</sub>(1 + <var>S</var>/<var>N</var>)', text: 'È il massimo di bit al secondo che un canale largo <var>B</var> può trasportare senza errori, con il miglior codice correttore possibile; <var>S</var>/<var>N</var> è il rapporto segnale-rumore, non in decibel. Per ogni hertz di banda: 1 bit/s a 0 dB, circa 3,5 a 10 dB, 6,7 a 20 dB. La 16-QAM del laboratorio ne usa 3,2: sotto circa 10 dB chiede più di quanto il canale possa dare.' },
     ],
     timeline: [
       { year: 1865, title: 'La luce è un\'onda elettromagnetica', who: 'James Clerk Maxwell, Londra', text: 'Nella memoria «A Dynamical Theory of the Electromagnetic Field», letta alla Royal Society nel dicembre 1864 e pubblicata nel 1865, Maxwell ricava onde elettromagnetiche la cui velocità, calcolata da misure elettriche (circa 310 000 km/s con i dati di allora), coincide con quella della luce.' },
-      { year: 1888, title: 'Hertz genera e rivela le onde', who: 'Heinrich Hertz, Politecnico di Karlsruhe', text: 'Tra il 1886 e il 1888 produce onde con un oscillatore a scintilla e le rivela a distanza con un risonatore dotato di un minuscolo spinterometro. Mostra che si riflettono, si rifrangono, sono polarizzate e viaggiano alla velocità della luce. Secondo l\'IEEE i suoi apparati lavoravano intorno a 450 MHz.' },
-      { year: 1895, title: 'Il segnale scavalca la collina', who: 'Guglielmo Marconi, Villa Griffone, Pontecchio (Bologna)', text: 'Dopo le prove al chiuso del 1894, tra l\'estate e l\'autunno del 1895 Marconi collega un trasmettitore a scintilla, derivato dall\'oscillatore di Augusto Righi, a un\'antenna verticale e a una lastra interrata. Riceve i segnali con un coherer oltre la collina dei Celestini, a circa 2 km. Il brevetto britannico, chiesto nel 1896, gli viene concesso nel 1897.' },
+      { year: 1888, title: 'Hertz genera e rivela le onde', who: 'Heinrich Hertz, Politecnico di Karlsruhe', text: 'Tra il 1886 e il 1888 produce onde con un oscillatore a scintilla e le rivela a distanza con un risonatore, un anello di filo aperto in cui scocca una scintilla minuscola. Mostra che si riflettono, si rifrangono, sono polarizzate e viaggiano alla velocità della luce. Secondo l\'IEEE i suoi apparati lavoravano intorno a 450 MHz.' },
+      { year: 1895, title: 'Il segnale scavalca la collina', who: 'Guglielmo Marconi, Villa Griffone, Pontecchio (Bologna)', text: 'Dopo le prove al chiuso del 1894, tra l\'estate e l\'autunno del 1895 Marconi collega un trasmettitore a scintilla, derivato dall\'oscillatore di Augusto Righi, a un\'antenna verticale e a una lastra interrata. Riceve i segnali oltre la collina dei Celestini, a circa 2 km, con un coherer: un tubetto di limatura metallica che diventa conduttore quando arriva l\'onda. Il brevetto britannico, chiesto nel 1896, gli viene concesso nel 1897.' },
       { year: 1901, title: 'Attraverso l\'Atlantico, forse', who: 'Guglielmo Marconi e George Kemp, da Poldhu (Cornovaglia) a Terranova', text: 'Il 12 dicembre 1901 Marconi annuncia di aver udito in cuffia la lettera S dell\'alfabeto Morse, trasmessa a circa 3500 km di distanza, con un\'antenna sollevata da un aquilone. La ricezione, debole e non registrata, è ancora discussa. Nel 1909 Marconi e Ferdinand Braun ricevono il Nobel per la fisica per la telegrafia senza fili.' },
       { year: 1906, title: 'La voce viaggia via radio', who: 'Reginald Fessenden, Brant Rock (Massachusetts)', text: 'Il 21 dicembre 1906 Fessenden dimostra in pubblico la radiotelefonia in modulazione d\'ampiezza, con un alternatore ad alta frequenza che genera una portante continua al posto delle scintille. La famosa trasmissione di musica della vigilia di Natale è raccontata solo da lui, in una lettera del 1932.' },
       { year: 1918, title: 'Nasce la supereterodina', who: 'Edwin H. Armstrong a Parigi; indipendentemente Lucien Lévy e Walter Schottky', text: 'Il segnale dell\'antenna viene mescolato con un oscillatore locale e portato a una frequenza intermedia fissa, dove amplificarlo e filtrarlo è molto più facile. Armstrong chiede il brevetto negli Stati Uniti nel 1919, ma Lévy ne aveva già depositato uno in Francia nel 1917, e un tribunale statunitense gli riconobbe la priorità.' },
       { year: 1933, title: 'La FM a larga banda', who: 'Edwin H. Armstrong, Columbia University, New York', text: 'Il 26 dicembre 1933 Armstrong ottiene quattro brevetti sulla modulazione di frequenza. La sua FM usa una deviazione molto più ampia della banda audio e così riduce drasticamente scariche e rumore. Presenta il sistema all\'Institute of Radio Engineers nel novembre 1935.' },
       { year: 1991, title: 'Il cellulare diventa digitale', who: 'Harri Holkeri e Kaarina Suonio, rete Radiolinja (Finlandia)', text: 'Il 1° luglio 1991 l\'ex primo ministro finlandese Harri Holkeri chiama la vicesindaca di Tampere: è la prima telefonata ufficiale su una rete GSM, a 900 MHz. La voce viaggia digitalizzata, con una modulazione digitale a inviluppo costante (GMSK) su canali larghi 200 kHz.' },
       { year: 2019, title: 'Le prime reti 5G per smartphone', who: 'Operatori della Corea del Sud e Verizon (Stati Uniti)', text: 'Il 3 aprile 2019 partono i primi servizi 5G commerciali per smartphone, basati su OFDM: migliaia di sottoportanti modulate in QAM, con una costellazione che si adatta alla qualità del canale. Il primato è conteso: AT&T aveva lanciato a fine 2018 un 5G per soli hotspot mobili.' },
+      { year: 2024, title: 'Wi-Fi 7: 12 bit per simbolo', who: 'Wi-Fi Alliance e gruppo di lavoro IEEE 802.11 (standard 802.11be)', text: 'L\'8 gennaio 2024 parte la certificazione Wi-Fi 7: canali larghi fino a 320 MHz nella banda dei 6 GHz e una costellazione di 4096 punti, cioè 12 bit per simbolo, che si può usare solo con un segnale fortissimo e pulito. Lo standard IEEE 802.11be viene approvato il 26 settembre 2024; il primo 802.11, nel 1997, arrivava a 2 Mbit/s.' },
     ],
-    fun: 'Nel 1894 Augusto Righi, a Bologna, generava onde lunghe pochi centimetri: microonde intorno ai 10 GHz, la stessa gamma della TV satellitare di oggi. Marconi, che voleva arrivare lontano, fece il contrario: aggiunse all\'oscillatore di Righi un\'antenna verticale e una lastra a terra, e le onde si allungarono. E contrariamente a quanto si racconta, non fu mai allievo di Righi: lo incontrò più volte, ma Righi stesso dichiarò nel 1897 che Marconi non era un suo allievo.',
+    fun: 'Nel 1894 Augusto Righi, a Bologna, generava onde lunghe pochi centimetri: microonde intorno ai 10 GHz, la stessa gamma della TV satellitare di oggi. Marconi, che voleva arrivare lontano, fece il contrario: aggiunse all\'oscillatore di Righi un\'antenna verticale e una lastra a terra, e le onde si allungarono. E, contrariamente a quanto si racconta spesso, Marconi non fu mai allievo di Righi: lo incontrò più volte, ma fu lo stesso Righi a precisarlo nel 1897.',
     uses: [
       'Radio AM, FM e DAB+',
       'Telefonia 4G e 5G (OFDM e QAM adattiva)',
@@ -1665,9 +1752,11 @@
       { term: 'Portante', def: 'Onda sinusoidale ad alta frequenza <var>f</var><sub>c</sub> che trasporta il messaggio. Da sola non porta informazione, ma fissa la lunghezza d\'onda e quindi la taglia dell\'antenna.' },
       { term: 'Bande laterali', def: 'Le righe che la modulazione crea ai lati della portante: in AM a <var>f</var><sub>c</sub> ± <var>f</var><sub>m</sub>, in FM a <var>f</var><sub>c</sub> ± <var>n f</var><sub>m</sub>. Contengono l\'informazione e decidono la banda occupata.' },
       { term: 'Indice di modulazione', def: 'Quanto il messaggio modifica la portante: in AM la profondità <var>m</var> (oltre 1 c\'è sovramodulazione), in FM <var>β</var> = Δ<var>f</var>/<var>f</var><sub>m</sub>.' },
+      { term: 'Piano I/Q e fasore', def: 'Una sinusoide si può disegnare come una freccia che ruota, il <em>fasore</em>: la lunghezza è l\'ampiezza, l\'angolo è la fase. Nel piano I/Q la freccia si guarda rispetto alla portante: I è la parte in fase con la portante, Q quella sfasata di 90°, in quadratura.' },
       { term: 'Costellazione', def: 'I simboli di una modulazione digitale disegnati come punti nel piano I/Q. Con <var>M</var> punti ogni simbolo porta log<sub>2</sub> <var>M</var> bit; il ricevitore sceglie il punto ideale più vicino a quello ricevuto.' },
       { term: 'Baud', def: 'Unità della velocità di simbolo: 1 baud è un simbolo al secondo. Con 4 bit per simbolo, 1 megabaud trasporta 4 Mbit/s.' },
       { term: 'SNR', def: 'Rapporto segnale-rumore, di solito in decibel: +3 dB è circa il doppio della potenza, +10 dB dieci volte. Nei sistemi digitali si usano <var>E</var><sub>s</sub>/<var>N</var><sub>0</sub> (per simbolo) o <var>E</var><sub>b</sub>/<var>N</var><sub>0</sub> (per bit).' },
+      { term: 'Ionosfera', def: 'Strato dell\'alta atmosfera, tra circa 60 e 1000 km di quota, ionizzato dalla radiazione del Sole. Riflette le onde corte, che così superano l\'orizzonte; le frequenze più alte la attraversano.' },
       { term: 'Supereterodina', def: 'Ricevitore che mescola il segnale d\'antenna con un oscillatore locale e lo trasla, modulazione compresa, a una frequenza intermedia fissa (455 kHz in AM, 10,7 MHz in FM), dove filtrarlo e amplificarlo.' },
       { term: 'OFDM', def: 'Divisione di frequenza ortogonale: i dati viaggiano su molte sottoportanti vicine, ciascuna modulata in QAM a bassa velocità e tutte generate insieme con una FFT. È alla base di Wi-Fi, 4G, 5G, DAB+ e TV digitale.' },
     ],
@@ -1686,6 +1775,9 @@
       { id: 'ea-radio-02', chapter: 'radio', level: 2, topic: 'Banda di Carson', q: 'Una stazione FM usa una deviazione massima di 75 kHz e trasmette audio fino a 15 kHz. Quanta banda occupa, secondo la regola di Carson?', options: ['Circa 180 kHz', 'Circa 30 kHz', 'Circa 90 kHz', 'Circa 100 MHz'], answer: 0, why: 'B ≈ 2(Δf + fm) = 2·(75 + 15) kHz = 180 kHz, con indice β = 75/15 = 5. La frequenza della portante dice dove sta il canale nello spettro, non quanto è largo.' },
       { id: 'ea-radio-03', chapter: 'radio', level: 2, topic: 'Bit per simbolo', q: 'Un collegamento usa la 16-QAM a 2 milioni di simboli al secondo. Quanti bit porta ogni simbolo e qual è la velocità in bit?', options: ['4 bit per simbolo, 8 Mbit/s', '16 bit per simbolo, 32 Mbit/s', '2 bit per simbolo, 4 Mbit/s', '4 bit per simbolo, 2 Mbit/s'], answer: 0, why: 'Con M = 16 punti ogni simbolo porta log₂ 16 = 4 bit, quindi la velocità è 2 Msimboli/s × 4 = 8 Mbit/s. Velocità in bit e velocità di simbolo coincidono solo quando ogni simbolo porta un bit, come nella BPSK.' },
       { id: 'ea-radio-04', chapter: 'radio', level: 3, topic: 'Potenza in AM', q: 'In AM con profondità di modulazione m = 1, che frazione della potenza trasmessa finisce nelle bande laterali, cioè dove sta l\'informazione?', options: ['Un terzo', 'Due terzi', 'La metà', 'Tutta'], answer: 0, why: 'La potenza totale è Pc·(1 + m²/2): con m = 1 le bande laterali ne portano 1/3 e la portante, che non contiene informazione, i restanti 2/3. Con m = 0,5 le bande laterali scendono a circa l\'11%.' },
+      { id: 'ea-radio-05', chapter: 'radio', level: 2, topic: 'Rumore e costellazioni', q: 'Con lo stesso rapporto segnale-rumore, perché la 16-QAM sbaglia molti più simboli della BPSK?', options: ['Perché i suoi punti sono più vicini e basta meno rumore per confonderli', 'Perché a pari velocità di simbolo occupa una banda 16 volte più larga', 'Perché la sua portante deve avere una frequenza molto più alta', 'Perché trasmette soltanto la fase e non anche l\'ampiezza'], answer: 0, why: 'A parità di energia per simbolo, i 16 punti della 16-QAM stanno molto più vicini tra loro dei due punti della BPSK: il rumore sposta ogni punto ricevuto, e basta uno spostamento più piccolo per finire nella casella sbagliata. La banda dipende dalla velocità di simbolo, non dal numero di punti. Per questo Wi-Fi e 5G scelgono la costellazione in base alla qualità del collegamento.' },
+      { id: 'ea-radio-06', chapter: 'radio', level: 2, topic: 'Propagazione', q: 'Perché le onde corte, tra 3 e 30 MHz, possono arrivare dall\'altra parte del mondo, mentre una stazione FM a 100 MHz si riceve solo fino all\'orizzonte?', options: ['Perché la ionosfera riflette le onde corte, non quelle a 100 MHz', 'Perché le onde corte viaggiano più veloci della luce', 'Perché le stazioni FM trasmettono sempre con poca potenza', 'Perché l\'aria assorbe le onde a 100 MHz in pochi chilometri'], answer: 0, why: 'Le onde corte vengono riflesse dalla ionosfera, lo strato ionizzato dell\'alta atmosfera, e rimbalzando tra cielo e terra superano l\'orizzonte. Sopra qualche decina di MHz la ionosfera non le riflette più: l\'onda prosegue nello spazio e a terra arriva solo in vista, come la luce. Tutte le onde radio viaggiano alla stessa velocità, c.' },
+      { id: 'ea-radio-07', chapter: 'radio', level: 1, topic: 'Marconi a Pontecchio', q: 'Dove fece Guglielmo Marconi, nel 1895, la prova che mandò un segnale radio oltre una collina?', options: ['A Villa Griffone, vicino a Bologna', 'A Poldhu, in Cornovaglia', 'Nel laboratorio di Hertz a Karlsruhe', 'A Brant Rock, nel Massachusetts'], answer: 0, why: 'Nella villa di famiglia a Pontecchio, oggi Pontecchio Marconi (Sasso Marconi), ricevette i segnali oltre la collina dei Celestini, a circa 2 km. Poldhu è la stazione del collegamento transatlantico del 1901; a Brant Rock Fessenden dimostrò la radiotelefonia nel 1906.' },
     ],
     hero: {
       caption: 'Un dipolo a mezz\'onda lancia anelli di campo elettrico verso l\'antenna ricevente; in basso il segnale trasmesso. Tempi molto rallentati: a 100 MHz un\'oscillazione dura 10 ns.',
