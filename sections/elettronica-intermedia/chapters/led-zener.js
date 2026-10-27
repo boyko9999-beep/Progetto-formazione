@@ -39,6 +39,9 @@
     '9.1': { vz: 9.1, b: 0.025, rs: 5, mech: 'valanga', dep: 0.26, label: '9,1 V', win: [12, 20] },
     '12': { vz: 12, b: 0.03, rs: 8, mech: 'valanga', dep: 0.3, label: '12 V', win: [15, 20] },
   };
+  // L'ordine dei pulsanti, dalla tensione più bassa: Object.keys metterebbe '12' per primo
+  // (le chiavi che sembrano numeri interi vengono prima delle altre).
+  const ZENER_KEYS = ['3.3', '5.1', '9.1', '12'];
 
   // Una giunzione con la sua resistenza interna: V(I) = b·ln(1 + I/Is) + rs·I, con V(i0) = v0.
   // Per un LED b = n·VT; per uno Zener in inversa b è piccolo e la curva parte quasi a Vz.
@@ -80,7 +83,7 @@
 
   const cache = {};
   const model = {
-    VT: VT, HC: HC, I_NOM: I_NOM, I_MAX: I_MAX, PZ_MAX: PZ_MAX, LEDS: LEDS, ZENERS: ZENERS,
+    VT: VT, HC: HC, I_NOM: I_NOM, I_MAX: I_MAX, PZ_MAX: PZ_MAX, LEDS: LEDS, ZENERS: ZENERS, ZENER_KEYS: ZENER_KEYS,
     junction: junction, vAt: vAt, iAt: iAt, series: series,
     // Energia del fotone (eV) dalla lunghezza d'onda (nm), e viceversa.
     photonEnergy: (nm) => HC / nm,
@@ -212,6 +215,8 @@
       legend: [{ label: 'Vout', color: 'var(--trace-1)' }, { label: 'Iz, corrente nello Zener', color: 'var(--trace-3)' }, { label: 'Iz massima (0,5 W)', color: 'var(--trace-4)' }],
       aria: 'Tensione d\'uscita e corrente nello Zener in funzione della tensione d\'ingresso, con il punto di lavoro',
     });
+    // le linee tratteggiate lo sono anche nella legenda: la retta di carico, se no, sembra il LED bianco
+    [plotLed, plotZ].forEach((p) => p.figure.querySelector('.ei-legend-item:last-child').classList.add('led-zener-dash'));
 
     /* --- strumenti --- */
     const rI = lab.readout({ label: 'Corrente I', fmt: fmtA, color: 'var(--trace-3)', max: I_MAX });
@@ -246,7 +251,7 @@
     const gZ = lab.group('Regolatore con lo Zener da 0,5 W');
     lab.choice({
       into: gZ, label: 'Tensione di Zener Vz', value: '5.1',
-      options: Object.keys(ZENERS).map((k) => ({ value: k, label: ZENERS[k].label })),
+      options: ZENER_KEYS.map((k) => ({ value: k, label: ZENERS[k].label })),
       onChange: (v) => { st.vz = v; },
     });
     lab.slider({ into: gZ, label: 'Tensione d\'ingresso Vin', min: 0, max: 20, step: 0.1, value: 12, fmt: (v) => num(v, 1) + ' V', onInput: (v) => { st.vin = Math.round(v * 10) / 10; } });
@@ -900,8 +905,8 @@
       if (i < 5e-5) {
         const v1 = model.ledV(st.color, 0.001);
         let msg = 'Il LED ' + name + ' resta spento. Ai suoi capi arrivano ' + fmtV(vled) + ', meno della sua [[tensione-diretta]]: per avere almeno 1 mA ne servono ' + fmtV(v1) + '. ' +
-          'La barriera della [[giunzione-pn]] resta alta e passano appena ' + fmtA(i) + '.';
-        if (ev > 2.3) msg += ' Ogni [[fotone]] ' + c.light + ' porta ' + num(ev, 2) + ' eV: un elettrone può crearlo solo se la pila gli ha dato almeno quell\'energia, cioè quasi ' + num(ev, 1) + ' volt. Un fotone rosso ne chiede meno di 2.';
+          'La barriera della [[giunzione-pn]] resta alta e ' + (i < 1e-7 ? 'non passa quasi nessuna corrente.' : 'passano appena ' + fmtA(i) + '.');
+        if (ev > 2.3) msg += ' Ogni [[fotone]] ' + c.light + ' porta ' + num(ev, 2) + ' eV: un elettrone può crearlo solo se la pila gli ha dato almeno quell\'energia, cioè circa ' + num(ev, 1) + ' volt. Un fotone rosso ne chiede meno di 2.';
         return msg;
       }
       if (i < 0.002) {
@@ -1218,6 +1223,7 @@
     model: model,
     css: [
       '.led-zener-term { fill: var(--scope-bg); stroke: var(--sym); stroke-width: 2.2; }',
+      '.ei-legend-item.led-zener-dash::before { background: repeating-linear-gradient(90deg, var(--lc) 0 4px, transparent 4px 7px); box-shadow: none; }',
       '.led-zener-heat { fill: var(--trace-2); opacity: 0; filter: blur(8px); transition: fill .3s ease; }',
       '.led-zener-load { transition: opacity .3s ease; }',
       '.led-zener-load.off { opacity: .22; }',

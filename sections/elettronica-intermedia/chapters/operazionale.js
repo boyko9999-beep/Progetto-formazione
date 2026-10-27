@@ -234,7 +234,9 @@
 
     function build() {
       const G = GEO[mq && mq.matches ? 'narrow' : 'wide'];
-      lab.view(G.W, G.H);
+      // il comparatore non ha l'anello di retroazione: si taglia la fascia vuota sopra il circuito
+      const y0 = st.mode === 'cmp' ? (G.narrow ? 84 : 64) : 0;
+      svg.setAttribute('viewBox', '0 ' + y0 + ' ' + G.W + ' ' + (G.H - y0));
       if (S) S.root.remove();
       const mode = st.mode;
       const fb = mode !== 'cmp';
@@ -398,14 +400,14 @@
 
       // in alto, fuori dal disegno spostato: la formula con i valori scelti e la legenda dei colori
       const hud = s('g', { class: 'operazionale-hud' }, root);
-      const eq = s('text', { x: G.eqX, y: G.eqY, class: 'operazionale-eq' }, hud);
+      const eq = s('text', { x: G.eqX, y: G.eqY + y0, class: 'operazionale-eq' }, hud);
       let leg = null;
       if (G.legend) {
         const bx1 = G.W - 18;
         const bw = 128;
-        s('text', { x: bx1, y: 19, class: 'operazionale-legend-title', 'text-anchor': 'end', text: 'TENSIONE DEI FILI' }, hud);
-        s('rect', { x: bx1 - bw, y: 27, width: bw, height: 6, rx: 3, fill: 'url(#operazionale-vgrad)' }, hud);
-        leg = ['start', 'middle', 'end'].map((a, i) => s('text', { x: bx1 - bw + i * bw / 2, y: 46, class: 'operazionale-legend-tick', 'text-anchor': a }, hud));
+        s('text', { x: bx1, y: 19 + y0, class: 'operazionale-legend-title', 'text-anchor': 'end', text: 'TENSIONE DEI FILI' }, hud);
+        s('rect', { x: bx1 - bw, y: 27 + y0, width: bw, height: 6, rx: 3, fill: 'url(#operazionale-vgrad)' }, hud);
+        leg = ['start', 'middle', 'end'].map((a, i) => s('text', { x: bx1 - bw + i * bw / 2, y: 46 + y0, class: 'operazionale-legend-tick', 'text-anchor': a }, hud));
       }
 
       S = {
@@ -987,7 +989,7 @@
         { year: 1968, title: 'Il µA741', who: 'Dave Fullagar, Fairchild', text: 'Il condensatore di compensazione da 30 pF entra nel chip: basta collegarlo e funziona. Diventa lo standard dell\'analogico.' },
       ],
     },
-    fun: 'Il brevetto di Black arrivò dopo più di nove anni: l\'idea di buttare via guadagno per migliorare un amplificatore sembrava così strana che, raccontò lui stesso, la sua domanda fu trattata come quella di una macchina a moto perpetuo.',
+    fun: 'Il brevetto americano di Black arrivò dopo più di nove anni: l\'idea di buttare via guadagno per migliorare un amplificatore sembrava così strana che all\'inizio l\'ufficio brevetti non credeva che potesse funzionare. Black raccontò poi che una sua domanda di brevetto era stata trattata come quella di una macchina a moto perpetuo.',
     uses: 'Preamplificatori per microfoni e chitarre, mixer e amplificatori per cuffie, filtri attivi, la lettura di sensori deboli come termocoppie, estensimetri e fotodiodi, gli elettrocardiografi, i comparatori di termostati e caricabatterie, l\'amplificatore d\'errore dentro ogni regolatore di tensione, i convertitori analogico-digitali.',
     links: [
       { href: '#bjt', section: 'Questa sezione', title: 'Il transistor bipolare: i mattoni dentro il 741' },

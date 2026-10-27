@@ -129,3 +129,12 @@ test('bjt: con i valori di partenza (Rb 22 kΩ, β 150) Q è alto e il guadagno 
   const g = Math.abs(m.gain(m.vinFor(VQ(c15), c15.rb, c15.beta), c15));
   assert.ok(g >= 18 && g <= 22, 'guadagno ' + g);
 });
+
+test('bjt: la sfida «venti» si completa davvero: 20 mV, nessuna tosatura e guadagno misurato tra 18 e 22', () => {
+  // la stessa misura del laboratorio: escursione dell'uscita diviso l'escursione dell'ingresso
+  const c = amplif(15000);
+  const vq = m.vinFor(VQ(c), c.rb, c.beta);
+  const cyc = m.cycle(vq, 0.02, c, 96);
+  assert.ok(!cyc.clipTop && !cyc.clipBottom && cyc.asym < 0.1, 'onda deformata');
+  assert.ok(cyc.gain >= 18 && cyc.gain <= 22, 'guadagno misurato ' + cyc.gain);
+});

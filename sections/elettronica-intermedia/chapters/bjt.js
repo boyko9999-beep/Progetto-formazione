@@ -125,6 +125,8 @@
     };
   }
   const gauss = () => (Math.random() + Math.random() + Math.random() - 1.5) * 2;
+  // Sotto il picoampere EI.si scriverebbe "0,0000257 pA": per lo strumento è zero.
+  const tiny = (v, unit, sig) => (Math.abs(v) < 1e-12 ? '0 ' + unit : si(v, unit, { sig: sig || 3 }));
 
   // Geometria del banco: largo (computer) o alto e stretto (telefono).
   const GEO = {
@@ -759,12 +761,12 @@
     /* --- strumenti --- */
 
     const rReg = lab.readout({ label: 'Regione', color: 'var(--trace-1)', fmt: () => '' });
-    const rIb = lab.readout({ label: 'Base Ib', unit: 'A', color: 'var(--trace-2)' });
-    const rIc = lab.readout({ label: 'Collettore Ic', unit: 'A', color: 'var(--trace-3)' });
+    const rIb = lab.readout({ label: 'Base Ib', color: 'var(--trace-2)', fmt: (v) => tiny(v, 'A') });
+    const rIc = lab.readout({ label: 'Collettore Ic', color: 'var(--trace-3)', fmt: (v) => tiny(v, 'A') });
     const rVce = lab.readout({ label: 'Tensione Vce', unit: 'V', color: 'var(--trace-1)', max: VCC });
     const rBeta = lab.readout({ label: 'Rapporto Ic / Ib', color: 'var(--trace-4)', fmt: (v) => (v > 0 ? num(v, 0) : '—') });
     const rQ = lab.readout({ label: 'Vce a riposo (Q)', unit: 'V', color: 'var(--trace-1)' });
-    const rPd = lab.readout({ label: 'Calore Vce · Ic', unit: 'W', color: 'var(--trace-4)' });
+    const rPd = lab.readout({ label: 'Calore Vce · Ic', color: 'var(--trace-4)', fmt: (v) => tiny(v, 'W') });
     const rGain = lab.readout({ label: 'Guadagno Av', color: 'var(--trace-1)', fmt: (v) => (Math.abs(v) < 0.05 ? '0' : (v < 0 ? '−' : '') + num(Math.abs(v), 1)) });
 
     /* --- comandi --- */
@@ -888,8 +890,8 @@
       const it = sw ? G.ibTag : G.ibTagA;
       c.ibTag.setAttribute('x', it[0]);
       c.ibTag.setAttribute('y', it[1]);
-      c.ibTag.textContent = 'Ib ' + si(q.ib, 'A', { sig: 2 });
-      c.icTag.textContent = 'Ic ' + si(q.ic, 'A', { sig: 2 });
+      c.ibTag.textContent = 'Ib ' + tiny(q.ib, 'A', 2);
+      c.icTag.textContent = 'Ic ' + tiny(q.ic, 'A', 2);
       c.ibTag.style.opacity = q.ib > 1e-7 ? '1' : '0.35';
       c.icTag.style.opacity = q.ic > 1e-6 ? '1' : '0.35';
       const R = REG[q.region];
@@ -987,8 +989,9 @@
     }
 
     function explainSw(q, c) {
-      const ib = si(q.ib, 'A', { sig: 2, trim: true });
-      const ic = si(q.ic, 'A', { sig: 2, trim: true });
+      // tre cifre, come negli strumenti accanto
+      const ib = si(q.ib, 'A', { sig: 3 });
+      const ic = si(q.ic, 'A', { sig: 3 });
       if (q.region === 'off') {
         if (q.ib >= 1e-8) {
           return 'Con Vin = <b>' + num(q.vin, 2) + ' V</b> la giunzione base-emettitore è appena socchiusa: per aprirla davvero servono circa 0,65–0,7 V. Nella base entra un filo di corrente, <b>' + ib + '</b>, e il collettore ne lascia passare β volte tanto: appena <b>' + ic + '</b>, troppo poco per la lampada. Il transistor è ancora in [[interdizione]], un interruttore aperto.';
@@ -996,24 +999,39 @@
         return 'Con Vin = <b>' + num(q.vin, 2) + ' V</b> la giunzione base-emettitore resta chiusa: per aprirla servono circa 0,6–0,7 V. Senza corrente di base non passa nemmeno quella di collettore: il transistor è in [[interdizione]], un interruttore aperto. I 12 V stanno tutti su di lui e la lampada è spenta.';
       }
       if (q.region === 'att') {
-        return '[[zona-attiva|Zona attiva]]: nella base entrano <b>' + ib + '</b> e il collettore ne fa passare β volte tanti, ' + num(c.beta, 0) + ' × ' + ib + ' = <b>' + ic + '</b>. Quasi tutti gli elettroni dell\'[[emettitore]] attraversano la base e arrivano al [[collettore]]. La lampada è a metà e il transistor scalda: Vce · Ic = <b>' + si(q.pd, 'W', { sig: 2, trim: true }) + '</b>.';
+        // la luce dipende da quanta corrente arriva rispetto a quella della lampada accesa in pieno
+        const pct = Math.round(100 * q.ic / q.icsat);
+        const lamp = pct < 20 ? 'La lampada resta quasi spenta (le arriva il ' + pct + '% della corrente massima)'
+          : pct < 70 ? 'La lampada è accesa solo in parte (le arriva il ' + pct + '% della corrente massima)'
+            : 'La lampada è quasi accesa in pieno (' + pct + '% della corrente massima)';
+        return '[[zona-attiva|Zona attiva]]: nella base entrano <b>' + ib + '</b> e il collettore ne fa passare β volte tanti, ' + num(c.beta, 0) + ' × ' + ib + ' = <b>' + ic + '</b>. Quasi tutti gli elettroni dell\'[[emettitore]] attraversano la base e arrivano al [[collettore]]. ' + lamp + ' e il transistor scalda: Vce · Ic = <b>' + si(q.pd, 'W', { sig: 3 }) + '</b>.';
       }
       const need = q.icsat / c.beta;
-      let msg = '[[saturazione-bjt|Saturazione]]: nella base entrano <b>' + ib + '</b>, più dei ' + si(need, 'A', { sig: 2, trim: true }) + ' che basterebbero. Ma la lampada lascia passare al massimo (12 − 0,2) V / 120 Ω ≈ <b>' + ic + '</b>: Vce scende a 0,2 V e il transistor è un interruttore chiuso, che scalda appena <b>' + si(q.pd, 'W', { sig: 2, trim: true }) + '</b>.';
+      let msg = '[[saturazione-bjt|Saturazione]]: nella base entrano <b>' + ib + '</b>, più dei ' + si(need, 'A', { sig: 3 }) + ' che basterebbero. Ma la lampada lascia passare al massimo (12 − 0,2) V / 120 Ω ≈ <b>' + ic + '</b>: Vce scende a 0,2 V e il transistor è un interruttore chiuso, che scalda appena <b>' + si(q.pd, 'W', { sig: 3 }) + '</b>.';
       if (q.ib > 1e-3 && q.vin > 4.9) msg += ' Però stai sprecando corrente: prova una Rb più grande.';
       return msg;
     }
 
     function explainAmp(cyc, c, amp) {
       const q = cyc.q;
-      const vs = si(amp, 'V', { sig: 2, trim: true });
+      const vs = si(amp, 'V', { sig: 3, trim: true });
+      const moves = cyc.span > 0.5; // l'uscita si muove almeno nei picchi del segnale
       if (q.region === 'off') {
-        return 'Polarizzazione troppo bassa: a riposo il transistor è in [[interdizione]] (Vce ≈ 12 V). Un segnale di ±' + vs + ' non basta ad aprire la giunzione, e in uscita passa poco o niente. Alza Vpol verso 0,9–1 V.';
+        return 'Polarizzazione troppo bassa: a riposo il transistor è in [[interdizione]] (Vce ≈ 12 V). ' +
+          (moves ? 'Conduce solo nei picchi positivi del segnale di ±' + vs + ': l\'uscita è fatta di impulsi verso il basso, molto distorta.'
+            : 'Un segnale di ±' + vs + ' non basta ad aprire la giunzione, e in uscita passa poco o niente.') +
+          ' Alza Vpol: deve superare gli 0,6–0,7 V della giunzione più la caduta su Rb.';
       }
       if (q.region === 'sat') {
-        return 'Polarizzazione troppo alta: il transistor è saturo anche a riposo (Vce ≈ 0,2 V). L\'uscita non può scendere di più e il segnale si perde. Abbassa Vpol.';
+        return 'Polarizzazione troppo alta: il transistor è saturo anche a riposo (Vce ≈ 0,2 V). ' +
+          (moves ? 'Esce dalla saturazione solo nei picchi negativi del segnale: l\'uscita è fatta di impulsi verso l\'alto, molto distorta.'
+            : 'L\'uscita non può scendere di più e il segnale si perde.') +
+          ' Abbassa Vpol, oppure usa una Rb più grande.';
       }
       const g = num(cyc.gain, 1);
+      const size = cyc.gain >= 1.05 ? 'L\'uscita è <b>' + g + ' volte</b> più grande, ma capovolta'
+        : cyc.gain > 0.95 ? 'L\'uscita è grande quanto l\'ingresso, ma capovolta'
+          : 'L\'uscita è addirittura più piccola dell\'ingresso (<b>' + g + ' volte</b>) e capovolta';
       const qs = 'Q è a Vce = <b>' + num(q.vce, 2) + ' V</b>';
       if (cyc.clipTop || cyc.clipBottom) {
         const where = cyc.clipTop && cyc.clipBottom ? 'da tutte e due le parti: in basso il transistor va in saturazione (Vce non scende sotto 0,2 V), in alto in interdizione (Vce non sale oltre 12 V)'
@@ -1024,7 +1042,7 @@
       const dIb = si(cyc.ibSwing, 'A', { sig: 2, trim: true });
       const dIc = si(cyc.ibSwing * c.beta, 'A', { sig: 2, trim: true });
       const dV = si(cyc.span / 2, 'V', { sig: 2, trim: true });
-      let msg = qs + ', in [[zona-attiva]]. Il segnale di ±' + vs + ' fa oscillare la corrente di base di ±' + dIb + '; il collettore la moltiplica per β: ±' + dIc + ', che su Rc = 2,2 kΩ diventano ±' + dV + '. L\'uscita è <b>' + g + ' volte</b> più grande, ma capovolta: quando l\'ingresso sale, Ic cresce e Vce scende.';
+      let msg = qs + ', in [[zona-attiva]]. Il segnale di ±' + vs + ' fa oscillare la corrente di base di ±' + dIb + '; il collettore la moltiplica per β: ±' + dIc + ', che su Rc = 2,2 kΩ diventano ±' + dV + '. ' + size + ': quando l\'ingresso sale, Ic cresce e Vce scende.';
       if (cyc.gain < 17) msg += ' Per avere più guadagno serve una Rb più piccola o un β più alto: Av ≈ −β · Rc / (Rb + rπ).';
       else if (cyc.gain > 23) msg += ' Tanto guadagno, ma tutto legato a β, che cambia da un esemplare all\'altro: con una Rb più grande scende.';
       return msg;
@@ -1336,9 +1354,9 @@
       'Il transistor bipolare NPN è un sandwich di tre zone dello stesso cristallo: l\'[[emettitore]] di tipo N, molto drogato; la [[base-transistor|base]] di tipo P, sottilissima e poco drogata; il [[collettore]] di tipo N, il più grande. Ci sono quindi due [[giunzione-pn|giunzioni P-N]]: base-emettitore e base-collettore.',
       'Nel funzionamento normale la giunzione base-emettitore è in [[polarizzazione-diretta]], con circa 0,6–0,7 V, mentre quella base-collettore è in [[polarizzazione-inversa]]. L\'emettitore spinge nella base un fiume di [[elettrone-libero|elettroni]].',
       'Nella base gli elettroni potrebbero [[ricombinazione|ricombinarsi]] con le [[lacuna|lacune]], ma la base è così sottile che quasi tutti la attraversano prima di trovarne una. Arrivati alla giunzione base-collettore, il campo della [[zona-di-svuotamento]] li risucchia nel collettore.',
-      'Le poche lacune perse nelle ricombinazioni vanno rimpiazzate dal contatto di base: è questa la corrente di base Ib. Per ogni elettrone che si ricombina, circa β elettroni arrivano al collettore, quindi Ic = β · Ib. Il [[guadagno-di-corrente]] β vale di solito tra 100 e 300 e cambia molto da un esemplare all\'altro.',
+      'Le poche lacune perse nelle ricombinazioni vanno rimpiazzate dal contatto di base: è questa la corrente di base Ib. Per ogni elettrone che si ricombina, circa β elettroni arrivano al collettore, quindi Ic = β · Ib. Il [[guadagno-di-corrente]] vale di solito tra 100 e 300 e cambia molto da un esemplare all\'altro.',
       'Il transistor ha tre modi di lavorare. In [[interdizione]] (Vbe sotto 0,5 V circa) è spento. In [[zona-attiva]] vale Ic = β · Ib: è l\'amplificatore. In [[saturazione-bjt|saturazione]] la base riceve più corrente di quanta ne serva e la corrente la decide il carico: tra collettore ed emettitore restano circa 0,2 V, come un interruttore chiuso.',
-      'Come interruttore: il piedino di un microcontrollore dà 5 V e una ventina di milliampere, troppo poco per una lampada, un motorino o un relè. Attraverso una resistenza di base comanda un transistor che porta la corrente del carico; Rb si sceglie perché Ib sia 2–5 volte più di Ic / β, così il transistor resta saturo anche con un β basso. Sui relè si mette un diodo in parallelo alla bobina, che assorbe l\'impulso di tensione allo spegnimento.',
+      'Come interruttore: il piedino di un microcontrollore dà 5 V e una ventina di milliampere, troppo poco per una lampada, un motorino o un relè. Attraverso una resistenza di base comanda un transistor che porta la corrente del carico; Rb si sceglie in modo che Ib sia da 2 a 5 volte Ic / β: così il transistor resta saturo anche con un β basso. Sui relè si mette un diodo in parallelo alla bobina, che assorbe l\'impulso di tensione allo spegnimento.',
       'Come amplificatore, nello stadio a [[emettitore-comune]]: una tensione di polarizzazione mette il [[punto-di-lavoro]] a metà della [[retta-di-carico]]; un piccolo segnale sulla base fa oscillare Ib, il collettore lo moltiplica e la resistenza Rc lo trasforma in una tensione più grande e capovolta. Il PNP funziona allo stesso modo, con drogaggi, correnti e tensioni invertiti.',
     ],
     formulas: [

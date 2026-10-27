@@ -989,22 +989,25 @@
     /* --- strumenti, grafici, spiegazione --- */
 
     const txt = { n: '', p: '', rho: '', i: '' };
-    const rN = lab.readout({ label: 'Elettroni liberi n', color: 'var(--trace-3)', max: 15, fmt: () => txt.n });
-    const rP = lab.readout({ label: 'Lacune p', color: 'var(--trace-2)', max: 15, fmt: () => txt.p });
-    const rR = lab.readout({ label: 'Resistività ρ', color: 'var(--trace-1)', fmt: () => txt.rho });
+    // style.css scrive etichette e titoli in maiuscolo: simboli e unità restano come sono, se no
+    // ρ diventerebbe Ρ (uguale a una P, accanto alle lacune p) e cm diventerebbe CM
+    const asIs = (t) => EI.h('span', { class: 'semiconduttori-sym' }, t);
+    const rN = lab.readout({ label: ['Elettroni liberi ', asIs('n')], color: 'var(--trace-3)', max: 15, fmt: () => txt.n });
+    const rP = lab.readout({ label: ['Lacune ', asIs('p')], color: 'var(--trace-2)', max: 15, fmt: () => txt.p });
+    const rR = lab.readout({ label: ['Resistività ', asIs('ρ')], color: 'var(--trace-1)', fmt: () => txt.rho });
     const rI = lab.readout({ label: 'Corrente I', color: 'var(--flow)', fmt: () => txt.i });
 
     // Etichette corte ("−50°"): sul telefono le sette tacche restano tutte leggibili.
     const xAxis = { min: T_MIN, max: T_MAX, fmt: (v) => (v < 0 ? '−' : '') + num(Math.abs(v), 0) + '°', label: 'temperatura (°C)' };
     const GREY = '#8fa79f';
     const plotC = lab.plot({
-      title: 'Portatori liberi · per cm³', height: 220,
+      title: ['Portatori liberi · per ', asIs('cm³')], height: 220,
       x: Object.assign({}, xAxis),
       y: { min: 0, max: 20, count: 5, fmt: pow10 },
       aria: 'Concentrazione di elettroni e lacune in funzione della temperatura, in scala logaritmica',
     });
     const plotR = lab.plot({
-      title: 'Resistività · Ω·cm', height: 220,
+      title: ['Resistività · ', asIs('Ω·cm')], height: 220,
       x: Object.assign({}, xAxis),
       y: { min: -3, max: 10, count: 7, fmt: pow10 },
       aria: 'Resistività del cristallo in funzione della temperatura, in scala logaritmica',
@@ -1347,6 +1350,7 @@
       '.semiconduttori-svg { user-select: none; -webkit-user-select: none; }',
       // style.css fissa --fill: 50% sul cursore stesso e copre il valore che core.js scrive sul contenitore
       '.semiconduttori-lab .ei-slider input[type="range"] { --fill: inherit; }',
+      '.semiconduttori-lab .semiconduttori-sym { text-transform: none; }',
       '@media (max-width: 640px) { .ei-stage-svg.semiconduttori-svg.tall { max-height: 640px; } }',
       '.semiconduttori-crystal { fill: #0c1714; stroke: #2a3e37; stroke-width: 1.5; }',
       '.semiconduttori-zone { transition: opacity .5s ease; }',
@@ -1409,7 +1413,7 @@
       'In un metallo moltissimi elettroni sono liberi di muoversi e la corrente passa facilmente; in un isolante, come il vetro, ogni elettrone resta legato al suo atomo. Un [[semiconduttore]] sta in mezzo: a temperatura ambiente ha poche cariche libere, ma il loro numero si può cambiare enormemente.',
       'Il silicio ha 4 elettroni esterni, detti di valenza. Nel cristallo ogni atomo li mette in comune con 4 vicini: ogni [[legame-covalente]] è una coppia di elettroni condivisa. Nel disegno il reticolo è piatto; in realtà i quattro legami puntano ai vertici di un tetraedro.',
       'Per strappare un elettrone da un legame serve un\'energia minima, la [[banda-proibita]]: 1,12 eV nel silicio, 0,66 eV nel germanio, più di 5 eV negli isolanti. Ogni tanto l\'agitazione termica la fornisce: nasce un [[elettrone-libero]] e al suo posto, nel legame, resta una [[lacuna]].',
-      'Anche la lacuna si muove. Un elettrone del legame vicino salta nel posto vuoto e lascia un vuoto dietro di sé: è come la sedia libera in una fila al cinema, che "viaggia" verso destra mentre le persone si spostano di un posto verso sinistra. Per questo la lacuna si comporta come una carica positiva.',
+      'Anche la lacuna si muove. Un elettrone del legame vicino salta nel posto vuoto e lascia un vuoto dietro di sé: è come la sedia libera in una fila al cinema, che «viaggia» verso destra mentre le persone si spostano di un posto verso sinistra. Per questo la lacuna si comporta come una carica positiva.',
       'Più il cristallo è caldo, più coppie nascono: vicino ai 25 °C il loro numero più che raddoppia ogni 10 °C. Intanto elettroni e lacune si incontrano e si [[ricombinazione|ricombinano]], così il numero resta in equilibrio. Per questo la resistenza di un semiconduttore puro scende quando si scalda, al contrario di quella dei metalli.',
       'Il [[drogaggio]] cambia tutto. Un atomo di fosforo (5 elettroni di valenza) al posto di un silicio è un [[donatore]]: il quinto elettrone resta libero e il fosforo diventa uno ione positivo fisso. Un atomo di boro (3 elettroni) è un [[accettore]]: in un legame manca un elettrone, nasce una lacuna e il boro diventa uno ione negativo fisso.',
       'Nel tipo N gli elettroni sono i [[portatori-maggioritari]] e le lacune i minoritari; nel tipo P il contrario. Il prodotto n·p resta sempre uguale a nᵢ²: più elettroni ci sono, meno lacune sopravvivono. Basta un atomo di fosforo ogni 10 milioni per far scendere la resistività da circa 400.000 a circa 1 Ω·cm.',
@@ -1440,10 +1444,10 @@
     ],
     history: {
       text: [
-        'La storia comincia con una stranezza. Nel 1833 Michael Faraday nota che il solfuro d\'argento conduce meglio quando lo scalda, il contrario di quello che fanno i metalli. Arrivano poi altre sorprese: nel 1873 Willoughby Smith scopre che il selenio conduce di più se è illuminato, e nel 1874 Ferdinand Braun vede che un cristallo di galena toccato da una punta metallica fa passare la corrente meglio in un verso che nell\'altro (la storia continua nel capitolo sul diodo). Sono materiali capricciosi: due campioni "uguali" si comportano in modo diverso, e nessuno sa perché.',
+        'La storia comincia con una stranezza. Nel 1833 Michael Faraday nota che il solfuro d\'argento conduce meglio quando lo scalda, il contrario di quello che fanno i metalli. Arrivano poi altre sorprese: nel 1873 Willoughby Smith scopre che il selenio conduce di più se è illuminato, e nel 1874 Ferdinand Braun vede che un cristallo di galena toccato da una punta metallica fa passare la corrente meglio in un verso che nell\'altro (la storia continua nel capitolo sul diodo). Sono materiali capricciosi: due campioni «uguali» si comportano in modo diverso, e nessuno sa perché.',
         'La spiegazione arriva con la meccanica quantistica. Felix Bloch e Rudolf Peierls studiano come si muovono gli elettroni in un cristallo; nel 1929 Peierls, analizzando l\'effetto Hall, mostra che una banda quasi piena si comporta come se portasse cariche positive: è l\'idea della lacuna, che Werner Heisenberg riprende nel 1931. Nello stesso anno Alan Wilson, un fisico di Cambridge ospite dell\'istituto di Heisenberg a Lipsia, spiega con le bande di energia la differenza tra conduttori, isolanti e semiconduttori, e il ruolo delle impurezze.',
-        'Restava un problema pratico: la purezza. Alla fine degli anni Trenta i Bell Labs cercano rivelatori a cristallo per le microonde, presto indispensabili nei radar. Nel 1940 Russell Ohl trova un campione di silicio diviso in due zone che si comportano in modo opposto; con Jack Scaff e il chimico Henry Theuerer si capisce il perché: tracce di fosforo danno un piccolo eccesso di elettroni, tracce di boro un piccolo difetto. Le due varietà vengono chiamate "n" (negativo) e "p" (positivo), e il loro confine è la giunzione P-N del prossimo capitolo.',
-        'Poi servivano cristalli perfetti. Il metodo per "tirarli" da un bagno fuso lo aveva trovato Jan Czochralski a Berlino nel 1916; alla fine degli anni Quaranta Gordon Teal e John Little, ai Bell Labs, lo perfezionano partendo da un piccolo cristallo-seme e ottengono monocristalli di germanio. Intorno al 1951 William Pfann mette a punto la purificazione a zone. Il germanio, più facile da purificare, è il materiale dei primi transistor; dal 1954 arrivano quelli al silicio, che è abbondantissimo, regge temperature più alte e ha un ossido, la silice, perfetto per isolare e proteggere i chip.',
+        'Restava un problema pratico: la purezza. Alla fine degli anni Trenta i Bell Labs cercano rivelatori a cristallo per le microonde, presto indispensabili nei radar. Nel 1940 Russell Ohl trova un campione di silicio diviso in due zone che si comportano in modo opposto; con Jack Scaff e il chimico Henry Theuerer si capisce il perché: tracce di fosforo danno un piccolo eccesso di elettroni, tracce di boro un piccolo difetto. Le due varietà vengono chiamate «n» (negativo) e «p» (positivo), e il loro confine è la giunzione P-N del prossimo capitolo.',
+        'Poi servivano cristalli perfetti. Il metodo per «tirarli» da un bagno fuso lo aveva trovato Jan Czochralski a Berlino nel 1916; alla fine degli anni Quaranta Gordon Teal e John Little, ai Bell Labs, lo perfezionano partendo da un piccolo cristallo-seme e ottengono monocristalli di germanio. Intorno al 1951 William Pfann mette a punto la purificazione a zone. Il germanio, più facile da purificare, è il materiale dei primi transistor; dal 1954 arrivano quelli al silicio, che è abbondantissimo, regge temperature più alte e ha un ossido, la silice, perfetto per isolare e proteggere i chip.',
       ],
       events: [
         { year: 1833, title: 'Un cristallo che conduce meglio se scaldato', who: 'Michael Faraday', text: 'Nel solfuro d\'argento la conduzione cresce con la temperatura: è considerato il primo effetto da semiconduttore documentato.' },
@@ -1453,7 +1457,7 @@
         { year: 1951, title: 'La purificazione a zone', who: 'William G. Pfann, Bell Labs', text: 'Una zona fusa che scorre lungo la barra si porta via le impurezze: germanio e silicio diventano purissimi.' },
       ],
     },
-    fun: 'Per fare i chip il silicio viene purificato fino a "undici nove", il 99,999999999%: resta circa un atomo estraneo ogni 100 miliardi. Poi lo si sporca di nuovo, apposta e con precisione: un atomo di fosforo ogni 10 milioni di silicio è come una sola persona in tutta la Lombardia, eppure basta a far condurre il cristallo centinaia di migliaia di volte di più.',
+    fun: 'Per fare i chip il silicio viene purificato fino a «undici nove», il 99,999999999%: resta circa un atomo estraneo ogni 100 miliardi. Poi lo si sporca di nuovo, apposta e con precisione: un atomo di fosforo ogni 10 milioni di silicio è come una sola persona in tutta la Lombardia, eppure basta a far condurre il cristallo centinaia di migliaia di volte di più.',
     uses: 'Diodi, transistor, celle solari e circuiti integrati nascono quasi tutti da silicio drogato: i wafer dei chip sono fette di lingotti cresciuti di solito con il metodo Czochralski. I LED invece usano altri semiconduttori, come l\'arseniuro e il nitruro di gallio, perché nel silicio la ricombinazione produce quasi solo calore. Il silicio è il secondo elemento più abbondante della crosta terrestre, dopo l\'ossigeno. La conduzione che cresce con il calore è sfruttata nei termistori NTC, piccoli sensori di temperatura fatti di ossidi semiconduttori.',
     links: [
       { href: '../elettronica-base/index.html#corrente', section: 'Elettronica base', title: 'La corrente: cariche che si muovono' },

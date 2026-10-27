@@ -791,8 +791,14 @@
       const log = st.scale === 'log';
       const yTarget = 2.3 / R;
       st.ymax = dt > 0 ? Math.exp(EI.approach(Math.log(st.ymax), Math.log(yTarget), dt, 7)) : yTarget;
+      // sul telefono «−5 V −4 V …» non ci sta e un'etichetta sparirebbe: l'unità resta solo sull'ultima
+      // (il titolo dell'asse può finire sotto l'etichetta del punto di lavoro); anche il titolo della
+      // scala logaritmica si accorcia, se no finisce sotto «← inversa»
+      plot.resize();
+      const narrow = plot.w < 480;
+      plot.opts.x.fmt = narrow ? (v) => (v < 0 ? '−' : '') + num(Math.abs(v), 0) + (v > 1.5 ? ' V' : '') : null;
       plot.opts.y = log
-        ? { min: -12.4, max: -0.6, count: 11, label: 'corrente, scala logaritmica', fmt: (v) => si(Math.pow(10, v), 'A', { sig: 1, trim: true }) }
+        ? { min: -12.4, max: -0.6, count: 11, label: narrow ? 'corrente (log)' : 'corrente, scala logaritmica', fmt: (v) => si(Math.pow(10, v), 'A', { sig: 1, trim: true }) }
         : { min: -0.08 * st.ymax, max: st.ymax, unit: 'A', label: 'corrente' };
       const yv = (I) => (log ? (Math.abs(I) > 1e-14 ? Math.log10(Math.abs(I)) : NaN) : I);
       plot.clear();
@@ -800,9 +806,6 @@
       plot.vband(-5.2, 0, { color: P.t4, alpha: 0.05 });
       plot.vband(0, 2.1, { color: P.t1, alpha: 0.035 });
       plot.vline(0, { color: P.text, alpha: 0.35, dash: [] });
-      const x0 = plot.X(0);
-      plotText(c, x0 - 8, plot.py0 + 12, '← inversa', P.t4, 'right');
-      plotText(c, x0 + 8, plot.py0 + 12, 'diretta →', P.t1, 'left');
 
       const other = MATERIALS[st.mat === 'si' ? 'ge' : 'si'];
       const Io = model.isat(other, Tk);
@@ -813,9 +816,25 @@
       }
       plot.line((V) => yv(model.shockley(V, d.Is, d.n, Tk)), { color: P.t1, width: 2.6 });
       // retta di carico: tutte le coppie (V, I) che il generatore e la resistenza permettono
-      plot.line((V) => yv((st.dVs - V) / R), { color: P.t2, width: 1.8, dash: [7, 5], glow: false });
+      const LOAD = { color: P.t2, width: 1.8, dash: [7, 5], glow: false };
+      if (!log) plot.line((V) => (st.dVs - V) / R, LOAD);
+      else if (st.dVs !== 0) {
+        // in scala logaritmica si vede solo |I|: la retta serve tra 0 e Vs, dove la sua corrente ha lo
+        // stesso segno di quella del diodo (fuori, ripiegata, incrocerebbe la curva in un punto che non
+        // esiste). Vicino a Vs la corrente va a zero e la retta precipita: lì i punti si infittiscono
+        // finché scende sotto il fondo, così passa davvero per il punto di lavoro anche in inversa.
+        const pts = [];
+        const sg = Math.sign(st.dVs);
+        for (let k = 0; k < 160; k++) pts.push([st.dVs * k / 160, yv(st.dVs * (1 - k / 160) / R)]);
+        for (let dv = Math.abs(st.dVs) / 160; dv > R * 1e-13; dv /= 2) pts.push([st.dVs - sg * dv, yv(dv / R)]);
+        plot.line(pts, LOAD);
+      }
       // soglia (1 mA) e corrente di saturazione
       plot.vline(d.soglia, { color: P.t1, alpha: 0.4 });
+      // i due versi, sopra le curve (col bordo del colore di fondo restano leggibili) e sotto le etichette
+      const x0 = plot.X(0);
+      plotText(c, x0 - 8, plot.py0 + 12, '← inversa', P.t4, 'right');
+      plotText(c, x0 + 8, plot.py0 + 12, 'diretta →', P.t1, 'left');
       // in scala logaritmica in alto passa la retta di carico: l'etichetta va in basso, dove non c'è niente
       plot.tag(plot.X(d.soglia), log ? plot.py1 - 30 : plot.py0 + 34, 'soglia ' + num(d.soglia, 2) + ' V', P.t1, 'right');
       if (log) {

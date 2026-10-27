@@ -66,6 +66,9 @@ test('led-zener: con 2,5 V il rosso si accende, il blu resta spento', () => {
 
 test('led-zener: lo Zener vale Vz a 5 mA e sopra il ginocchio la tensione cambia poco', () => {
   for (const k of Object.keys(m.ZENERS)) close(m.zenerV(k, 0.005), m.ZENERS[k].vz, 1e-9);
+  // i pulsanti vanno dal più basso al più alto e coprono tutti gli Zener (Object.keys metterebbe '12' per primo)
+  assert.deepEqual([...m.ZENER_KEYS].sort(), Object.keys(m.ZENERS).sort());
+  for (let j = 1; j < m.ZENER_KEYS.length; j++) assert.ok(m.ZENERS[m.ZENER_KEYS[j]].vz > m.ZENERS[m.ZENER_KEYS[j - 1]].vz);
   // resistenza dinamica a 5 mA: il 3,3 V (effetto Zener) è molto più morbido del 9,1 V (valanga)
   const rz = (k) => (m.zenerV(k, 0.0055) - m.zenerV(k, 0.0045)) / 0.001;
   assert.ok(rz('3.3') > 3 * rz('9.1'));
