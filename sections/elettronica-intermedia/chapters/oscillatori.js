@@ -314,7 +314,12 @@
     lab.slider({ into: g1, label: 'Resistenza R2', min: 1000, max: 100000, series: 'E12', value: DEF.R2, fmt: fmtR, help: 'tra i piedini 7 e 6: conta nella carica e nella scarica', onInput: (v) => touch('r2', () => { st.R2 = v; }) });
     lab.slider({ into: g1, label: 'Condensatore C', min: 10e-9, max: 100e-6, series: 'E6', value: DEF.C, fmt: fmtC, help: 'da 10 nF (suoni) a 100 µF (lampi lenti)', onInput: (v) => touch('c', () => { st.C = v; }) });
     const g2 = lab.group('Alimentazione e strumenti');
-    lab.slider({ into: g2, label: 'Alimentazione Vcc', min: 5, max: 15, step: 0.5, value: DEF.Vcc, fmt: fmtV, help: 'il 555 bipolare lavora tra 5 e 15 V', onInput: (v) => touch('vcc', () => { st.Vcc = v; }) });
+    lab.slider({ into: g2, label: 'Alimentazione Vcc', min: 5, max: 15, step: 0.5, value: DEF.Vcc, fmt: fmtV, help: 'il 555 bipolare lavora tra 5 e 15 V', onInput: (v) => touch('vcc', () => {
+      // come una pila che cambia piano piano: Vc conserva la sua frazione di Vcc, quindi la fase del ciclo
+      // (senza questo un salto da 15 V a 5 V lascerebbe per qualche secondo Vc sopra Vcc)
+      st.vc *= v / st.Vcc;
+      st.Vcc = v;
+    }) });
     const insideCtl = lab.toggle({
       into: g2, label: 'Dentro il 555', on: 'blocchi visibili', off: 'chip chiuso', value: false,
       onChange: (v) => { st.inside = v; st.lastCtl = 'inside'; lab.root.classList.toggle('oscillatori-xray', v); if (S) S.chip.setAttribute('aria-pressed', String(v)); },
@@ -953,11 +958,11 @@
       const lo = p.Vcc / 3;
       const hi = 2 * p.Vcc / 3;
       const N = st.N;
-      const slow = N > 1 ? ' Schema e oscilloscopio sono rallentati <b>' + fmtN(N) + ' volte</b>, il LED no.' : '';
+      const slow = N > 1 && !reduced ? ' Schema e oscilloscopio sono rallentati <b>' + fmtN(N) + ' volte</b>, il LED no.' : '';
       let regime = null;
       if (f > 90) regime = 'A ' + fmtF(f) + ' il LED si accende e si spegne ' + fmtN(Math.round(f)) + ' volte al secondo: l\'occhio non separa più i lampi e vede una luce fissa, meno intensa, al ' + fmtPct(st.duty) + ' della luminosità piena. È la [[persistenza-della-visione]].' + slow;
       else if (f > 20) regime = 'A ' + fmtF(f) + ' il LED tremola: siamo vicini al limite dell\'occhio, che di solito smette di vedere lo sfarfallio tra i 50 e i 90 lampi al secondo.' + slow;
-      else if (N > 1) regime = 'Il LED lampeggia davvero ' + fmtF(f) + ', troppo in fretta per seguire il ciclo. Nello schema rallentato vedi Vc salire fino a ⅔ di Vcc in ' + fmtT(st.tH) + ' e scendere fino a ⅓ in ' + fmtT(st.tL) + '.' + slow;
+      else if (N > 1 && !reduced) regime = 'Il LED lampeggia davvero ' + fmtF(f) + ', troppo in fretta per seguire il ciclo. Nello schema rallentato vedi Vc salire fino a ⅔ di Vcc in ' + fmtT(st.tH) + ' e scendere fino a ⅓ in ' + fmtT(st.tL) + '.' + slow;
       const insideMsg = 'Dentro il 555 il partitore di tre resistenze da 5 kΩ fissa le soglie a ' + fmtV(lo) + ' e ' + fmtV(hi) + '. Quando Vc tocca ⅔ di Vcc il [[comparatore]] di soglia azzera il [[flip-flop]]: l\'uscita va bassa e il transistor di scarica si accende. Quando Vc scende a ⅓ il comparatore di trigger rimette Q a 1. In mezzo il flip-flop ricorda lo stato: è questa memoria a creare l\'[[isteresi]].';
       const baseMsg = 'Uscita alta: C si carica attraverso R1 e R2 da ⅓ a ⅔ di Vcc in <b>' + fmtT(st.tH) + '</b>. Uscita bassa: il piedino 7 lo scarica attraverso la sola R2 in <b>' + fmtT(st.tL) + '</b>. Un ciclo dura ' + fmtT(st.T) + ', cioè ' + fmtF(f) + '.' + (reduced ? ' Con il movimento ridotto lo schema resta fermo: scegli la fase da guardare.' : ' Fai clic sul chip per vedere chi decide quando cambiare.');
       const audioMsg = () => {
@@ -969,7 +974,7 @@
       if (st.first && !reduced && !st.lastCtl) return 'Appena acceso il condensatore è scarico: per salire da 0 V a ⅔ di Vcc impiega ln 3 · (R1 + R2) · C = <b>' + fmtT(model.firstHigh(p.R1, p.R2, p.C)) + '</b>, più di un tempo alto normale (' + fmtT(st.tH) + '). Dal ciclo successivo oscillerà soltanto tra ⅓ e ⅔ di Vcc.';
       switch (st.lastCtl) {
         case 'vcc':
-          return 'Con Vcc = <b>' + fmtV(p.Vcc) + '</b> le soglie diventano ' + fmtV(lo) + ' e ' + fmtV(hi) + '. Il condensatore si carica più o meno in fretta, in volt al secondo, ma la strada da fare è sempre la stessa frazione: metà della distanza da Vcc. Per questo il periodo resta <b>' + fmtT(st.T) + '</b>: i fronti coincidono con quelli della traccia grigia.';
+          return 'Con Vcc = <b>' + fmtV(p.Vcc) + '</b> le soglie diventano ' + fmtV(lo) + ' e ' + fmtV(hi) + '. Il condensatore si carica più o meno in fretta, in volt al secondo, ma la strada da fare è sempre la stessa frazione: nella carica deve dimezzare la distanza da Vcc, nella scarica quella da 0 V. Per questo il periodo resta <b>' + fmtT(st.T) + '</b>: i fronti coincidono con quelli della traccia grigia.';
         case 'audio':
           if (st.audio) return audioMsg();
           if (st.audioFail) return 'Questo browser non permette di generare suoni: l\'altoparlante resta spento, ma il LED e l\'oscilloscopio raccontano lo stesso ritmo.';
