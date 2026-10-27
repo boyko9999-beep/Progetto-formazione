@@ -678,8 +678,8 @@
   function labLight() {
     const K1 = 0.3; // fattore di processo usato nel calcolo della riga più fine
     const SRC = [
-      { id: 'g', name: 'Lampada al mercurio, riga g', short: 'g · 436', nm: 436, na: 0.45, year: 'anni Ottanta' },
-      { id: 'i', name: 'Lampada al mercurio, riga i', short: 'i · 365', nm: 365, na: 0.6, year: 'dal 1990 circa' },
+      { id: 'g', name: 'Lampada al mercurio, riga g', short: 'g · 436', nm: 436, na: 0.45, year: 'anni Ottanta', then: 'Ma è un calcolo con le tecniche di oggi: negli anni Ottanta, con questa luce, le righe più fini erano di circa un micrometro, cioè 1.000 nm.' },
+      { id: 'i', name: 'Lampada al mercurio, riga i', short: 'i · 365', nm: 365, na: 0.6, year: 'dal 1990 circa', then: 'Ma è un calcolo con le tecniche di oggi: nei primi anni Novanta, con questa luce, si stampavano righe da 800 a 350 nm.' },
       { id: 'krf', name: 'Laser a fluoruro di kripton (KrF)', short: 'KrF · 248', nm: 248, na: 0.8, year: 'dalla metà degli anni Novanta' },
       { id: 'arf', name: 'Laser a fluoruro di argon (ArF)', short: 'ArF · 193', nm: 193, na: 0.93, year: 'dai primi anni Duemila' },
       { id: 'arfi', name: 'ArF a immersione, con acqua tra lente e wafer', short: 'ArF imm.', nm: 193, na: 1.35, year: 'dal 2007 circa' },
@@ -747,7 +747,7 @@
       metaEl.textContent = 'λ = ' + PL.fmt(s0.nm, s0.nm < 100 ? 1 : 0) + ' nm · NA = ' + PL.fmt(s0.na, 2) + ' · ' + s0.year;
       cdEl.textContent = PL.fmt(cd, cd < 20 ? 1 : 0) + ' nm';
       const atoms = Math.round(cd / 0.235);
-      readout.replaceChildren(PL.rich('Con una lunghezza d\'onda di ' + PL.fmt(s0.nm, s0.nm < 100 ? 1 : 0) + ' nm e un\'apertura numerica di ' + PL.fmt(s0.na, 2) + ', la riga più fine che si stampa in un solo passaggio è di circa <strong>' + PL.fmt(cd, cd < 20 ? 1 : 0) + ' nm</strong>: ' + (cd > 100 ? 'più grande di un virus dell\'influenza, che misura circa 100 nm.' : cd > 30 ? 'più piccola di un virus dell\'influenza (circa 100 nm), ma ancora larga circa ' + atoms + ' atomi di silicio messi in fila.' : 'larga appena ' + atoms + ' atomi di silicio messi in fila.')));
+      readout.replaceChildren(PL.rich('Con una lunghezza d\'onda di ' + PL.fmt(s0.nm, s0.nm < 100 ? 1 : 0) + ' nm e un\'apertura numerica di ' + PL.fmt(s0.na, 2) + ', la riga più fine che si stampa in un solo passaggio è di circa <strong>' + PL.fmt(cd, cd < 20 ? 1 : 0) + ' nm</strong>: ' + (cd > 100 ? 'più grande di un virus dell\'influenza, che misura circa 100 nm.' : cd > 30 ? 'più piccola di un virus dell\'influenza (circa 100 nm), ma ancora larga circa ' + atoms + ' atomi di silicio messi in fila.' : 'larga appena ' + atoms + ' atomi di silicio messi in fila.') + (s0.then ? ' ' + s0.then : '')));
     }
     const nameEl = h('p', { class: 'k4-name' });
     const metaEl = h('p', { class: 'k4-meta pl-mono' });
@@ -770,7 +770,7 @@
       controls: [seg.el],
       stage: h('div', { class: 'k4-grid' }, chart, panel),
       readout,
-      caption: 'Ogni colonna è ingrandita in modo diverso, per mostrare cinque righe della larghezza indicata. Modello semplificato: il contrasto delle righe segue la risposta di un sistema ottico ideale e la riga più fine stampabile in un solo passaggio è k₁·λ/NA, con k₁ = 0,3 (il limite teorico è 0,25). Con trucchi come le esposizioni multiple si scende ancora.',
+      caption: 'Ogni colonna è ingrandita in modo diverso, per mostrare cinque righe della larghezza indicata. Modello semplificato: il contrasto delle righe segue la risposta di un sistema ottico ideale e la riga più fine stampabile in un solo passaggio è k₁·λ/NA, con k₁ = 0,3, un valore tipico di oggi (il limite teorico è 0,25; negli anni Ottanta k₁ valeva circa 0,8). Con trucchi come le esposizioni multiple si scende ancora.',
       class: 'k4-lab',
     });
   }
@@ -783,7 +783,7 @@
       { id: 'citta', name: 'Aria di città', per: 35200000, flow: 0, note: 'nebbia di polveri, pollini, fumi' },
       { id: 'sala', name: 'Sala operatoria', per: 352000, flow: 0, note: 'ISO 7' },
       { id: 'iso5', name: 'Camera bianca ISO 5', per: 3520, flow: 1, note: 'flusso d\'aria dall\'alto' },
-      { id: 'iso3', name: 'Camera bianca ISO 3', per: 35, flow: 1, note: 'come nelle sale di litografia' },
+      { id: 'iso3', name: 'Camera bianca ISO 3', per: 35, flow: 1, note: 'come intorno ai wafer' },
     ];
     const r = rng(14644);
     const boxes = ROOMS.map((room) => {
@@ -895,7 +895,7 @@
     });
     const drops = s('g', { class: 'k0-drops' });
     for (let k = 0; k < 6; k++) drops.append(s('circle', { class: 'k0-drop', cx: P[0], cy: 34, r: 3.4, style: { '--k': k } }));
-    const art = PL.svg('0 0 640 300', { class: 'pl-svg k0-art', role: 'img', 'aria-label': 'Schema della sorgente di luce EUV: dall\'alto cadono goccioline di stagno; un laser, entrando da un foro nello specchio, colpisce ogni goccia due volte e la trasforma in un plasma che emette luce a 13,5 nanometri; lo specchio curvo la raccoglie e la concentra in un punto, da cui entra nel resto della macchina.' });
+    const art = PL.svg('0 0 640 300', { class: 'pl-svg k0-art', role: 'img', 'aria-label': 'Schema della sorgente di luce EUV: dall\'alto vengono sparate goccioline di stagno; un laser, entrando da un foro nello specchio, colpisce ogni goccia due volte e la trasforma in un plasma che emette luce a 13,5 nanometri; lo specchio curvo la raccoglie e la concentra in un punto, da cui entra nel resto della macchina.' });
     art.append(
       s('g', { class: 'k0-rays' }, rays),
       s('path', { class: 'k0-mirror', d: arc(149, 176.5) }),
@@ -921,7 +921,7 @@
       s('text', { class: 'k0-t is-small', x: 22, y: 288 }, 'tutto sotto vuoto'));
     const fig = ui.figure({
       art, dark: true, class: 'k0-fig',
-      caption: 'La sorgente di luce di una macchina EUV, molto semplificata e al rallentatore: in realtà cadono circa 50.000 goccioline di stagno al secondo, ognuna più sottile di un capello. Ogni goccia viene colpita due volte da un laser: il primo impulso la schiaccia come una frittella, il secondo la trasforma in un plasma a circa 220.000 °C, che emette luce ultravioletta estrema. Lo specchio curvo la raccoglie e la concentra in un punto, da cui entra nel resto della macchina. Tutto avviene sotto vuoto.',
+      caption: 'La sorgente di luce di una macchina EUV, molto semplificata e al rallentatore: in realtà un generatore spara circa 50.000 goccioline di stagno fuso al secondo, ognuna di 25-30 micrometri, meno della metà dello spessore di un capello. Ogni goccia viene colpita due volte da un laser a CO₂: il primo impulso la schiaccia come una frittella, il secondo la trasforma in un plasma di centinaia di migliaia di gradi (circa 220.000 °C secondo ASML), che emette luce ultravioletta estrema. Lo specchio curvo la raccoglie e la concentra in un punto, da cui entra nel resto della macchina. Tutto avviene sotto vuoto.',
     });
     if (PL.reduced()) fig.classList.add('is-still');
     else PL.onVisible(fig, () => fig.classList.add('is-in'), { threshold: 0.3 });
@@ -1029,8 +1029,8 @@
       { year: 1984, title: 'Nasce ASML', text: 'Philips e ASM International fondano nei Paesi Bassi l\'azienda che diventerà l\'unica a costruire macchine per la litografia EUV.' },
       { year: 1987, title: 'La prima fonderia', text: 'Morris Chang fonda a Taiwan la TSMC, che fabbricherà soltanto chip progettati da altri.', key: true },
       { year: 2001, title: 'Wafer da 300 mm', text: 'In Giappone e in Germania comincia la produzione in volume su wafer da 300 mm di diametro.' },
-      { year: 2019, title: 'L\'EUV in produzione', text: 'La luce a 13,5 nanometri entra nella produzione di massa dei chip più avanzati.', key: true },
-      { year: 2023, title: 'La prima High-NA', text: 'ASML consegna a Intel la prima macchina EUV ad alta apertura numerica.' },
+      { year: 2019, title: 'L\'EUV in produzione', text: 'La luce a 13,5 nanometri entra nella produzione di massa: i primi chip fatti così finiscono negli smartphone di quell\'anno.', key: true },
+      { year: 2023, title: 'La prima High-NA', text: 'ASML spedisce a Intel, in Oregon, la prima macchina EUV ad alta apertura numerica.' },
     ],
     glossary: [
       { term: 'Silicio', def: 'Elemento chimico (simbolo Si), il secondo più abbondante nella crosta terrestre dopo l\'ossigeno. È un semiconduttore: purificato e cristallizzato, è il materiale di quasi tutti i chip.' },
@@ -1040,7 +1040,7 @@
       { term: 'Wafer', def: 'Fetta sottile di silicio monocristallino lucidata a specchio, oggi di solito da 300 mm di diametro e spessa 775 micrometri, su cui si costruiscono insieme centinaia di chip.' },
       { term: 'Fotolitografia', def: 'Tecnica che stampa con la luce il disegno di uno strato del chip: si illumina un fotoresist attraverso una maschera, lo si sviluppa e si usa ciò che resta come stencil per incidere, depositare o drogare.' },
       { term: 'Fotoresist', def: 'Resina sensibile alla luce stesa in un velo sottilissimo sul wafer. Nel tipo positivo le parti illuminate si sciolgono nello sviluppo; nel tipo negativo restano.' },
-      { term: 'Maschera', def: 'Lastra di quarzo con il disegno di uno strato del chip tracciato in cromo; per la luce EUV è invece uno specchio. Nelle macchine moderne il disegno è quattro volte più grande di quello stampato sul wafer.' },
+      { term: 'Maschera', def: 'Lastra di quarzo con il disegno di uno strato del chip tracciato in cromo; per la luce EUV è invece uno specchio. Nelle macchine moderne il disegno è di solito quattro volte più grande di quello stampato sul wafer; nelle High-NA è quattro volte più grande in una direzione e otto nell\'altra.' },
       { term: 'Incisione', def: 'Rimozione del materiale nelle zone non protette dal fotoresist. Si fa con bagni chimici o, per i dettagli più fini, con plasmi di gas reattivi.' },
       { term: 'Drogaggio', def: 'Aggiunta controllata di pochissimi atomi di altri elementi, come boro o fosforo, che cambiano il modo in cui il silicio conduce la corrente. Crea le zone n e p dei transistor.' },
       { term: 'Impiantazione ionica', def: 'Tecnica di drogaggio che accelera atomi elettricamente carichi (ioni) e li conficca nel silicio: permette di scegliere con precisione quanti atomi mettere e a che profondità.' },
@@ -1138,24 +1138,24 @@
 
         ui.section({ id: 'luce', title: 'Una luce sempre più corta', kicker: 'Da 436 a 13,5 nanometri', lead: 'Più i dettagli diventano piccoli, più la luce fa fatica a disegnarli. Per andare avanti l\'industria ha dovuto cambiare luce più volte, fino a una sorgente che sembra fantascienza.' },
           ui.prose(
-            'La luce è un\'onda, e un\'onda non riesce a disegnare in modo nitido dettagli molto più piccoli della sua lunghezza: oltre un certo limite le righe si confondono in una macchia uniforme. È lo stesso motivo per cui un microscopio ottico non riesce a vedere un virus. La riga più fine che si può stampare dipende dalla lunghezza d\'onda della luce, dall\'apertura dell\'ottica, cioè da quanto è ampio il cono di luce che arriva sul wafer, e dai trucchi del processo.',
-            'Fino agli anni Ottanta si usavano lampade a vapori di mercurio, filtrate per tenerne un solo colore: la riga g, a 436 nanometri, una luce blu-violetta, poi la riga i, a 365 nanometri, già nell\'ultravioletto. Dagli anni Novanta arrivarono i laser a eccimeri: a fluoruro di kripton, a 248 nanometri, e poi a fluoruro di argon, a 193. Per scendere ancora, negli anni Duemila si mise un velo d\'acqua tra l\'ultima lente e il wafer: l\'acqua piega la luce più dell\'aria, e con questa litografia a immersione si stampano righe di circa 40 nanometri.'),
+            'La luce è un\'onda, e un\'onda non riesce a disegnare in modo nitido dettagli molto più piccoli della sua lunghezza: oltre un certo limite le righe si confondono in una macchia uniforme. È lo stesso motivo per cui un microscopio ottico non riesce a vedere la maggior parte dei virus. La riga più fine che si può stampare dipende dalla lunghezza d\'onda della luce, dall\'apertura dell\'ottica, cioè da quanto è ampio il cono di luce che arriva sul wafer, e dai trucchi del processo.',
+            'Fino a metà degli anni Novanta si usarono soprattutto lampade a vapori di mercurio, filtrate per tenerne un solo colore: prima la riga g, a 436 nanometri, una luce blu-violetta, poi la riga i, a 365 nanometri, già nell\'ultravioletto. Poi arrivarono i laser a eccimeri: a fluoruro di kripton, a 248 nanometri, e nei primi anni Duemila a fluoruro di argon, a 193. Per scendere ancora, dalla metà degli anni Duemila si mise un velo d\'acqua tra l\'ultima lente e il wafer: l\'acqua piega la luce più dell\'aria, e con questa litografia a immersione si stampano righe di circa 40 nanometri.'),
           labLight(),
           ui.prose(
-            'Il passo successivo richiese decenni. L\'ultravioletto estremo, o [[EUV]], ha una lunghezza d\'onda di 13,5 nanometri, circa quattordici volte più corta di quella a 193. Ma viene assorbito da tutto, perfino dall\'aria e dal vetro: la macchina deve lavorare sotto vuoto e al posto delle lenti usa specchi, fatti di decine di strati alternati di molibdeno e silicio e levigati con una precisione quasi incredibile. Dopo più di vent\'anni di ricerche, nel 2019 l\'EUV è entrato nella produzione di massa.'),
+            'Il passo successivo richiese decenni. L\'ultravioletto estremo, o [[EUV]], ha una lunghezza d\'onda di 13,5 nanometri, circa quattordici volte più corta di quella a 193. Ma viene assorbito da tutto, perfino dall\'aria e dal vetro: la macchina deve lavorare sotto vuoto e al posto delle lenti usa specchi, ricoperti da un centinaio di strati alternati di molibdeno e silicio, spessi pochi nanometri ciascuno, e levigati con una precisione quasi incredibile. Le prime prove risalgono alla metà degli anni Ottanta, in Giappone: dopo più di trent\'anni di ricerche, nel 2019 l\'EUV è entrato nella produzione di massa, con i processi a 7 nanometri di Samsung e di TSMC.'),
           figEuv(),
-          ui.prose('Le macchine EUV le costruisce un\'unica azienda al mondo, l\'olandese ASML, nata nel 1984 da Philips e ASM International. Una di queste macchine pesa circa 150 tonnellate, viaggia smontata in decine di container e costa intorno ai 200 milioni di euro; la versione ad alta apertura, la High-NA, supera i 350 milioni. La prima è stata consegnata a Intel alla fine del 2023.'),
+          ui.prose('Le macchine EUV le costruisce un\'unica azienda al mondo, l\'olandese ASML, nata nel 1984 a Eindhoven da Philips e ASM International, ma dentro ci sono anche gli specchi della tedesca Zeiss e il laser della tedesca TRUMPF. Una di queste macchine è grande come un autobus, pesa tra 150 e 180 tonnellate, viaggia smontata in circa 40 container e costa tra 150 e 200 milioni di euro; la versione ad alta apertura, la High-NA, circa 350-400 milioni. La prima è stata spedita a Intel, in Oregon, nel dicembre 2023.'),
           ui.callout({
             kind: 'note',
             title: 'La luce che si consuma per strada',
-            body: 'Nemmeno lo specchio migliore riflette tutta la luce EUV: ognuno ne perde circa un terzo. Dopo una decina di specchi, tra la sorgente e il wafer, arriva a destinazione solo una piccolissima parte della luce prodotta. Per questo la sorgente deve essere così potente.',
+            body: 'Nemmeno lo specchio migliore riflette tutta la luce EUV: ognuno ne perde circa un terzo. Dopo una decina di specchi, tra la sorgente e il wafer, arriva a destinazione solo qualche per cento della luce prodotta. Per questo la sorgente deve essere così potente.',
           })),
 
-        ui.section({ id: 'camera-bianca', title: 'La stanza più pulita del mondo', kicker: 'Aria filtrata, tute e luce gialla', lead: 'Un granello di polvere invisibile è un macigno per un chip con righe di pochi nanometri. Per questo i chip si fabbricano in stanze migliaia di volte più pulite di una sala operatoria.' },
+        ui.section({ id: 'camera-bianca', title: 'La stanza più pulita del mondo', kicker: 'Aria filtrata, tute e luce gialla', lead: 'Un granello di polvere invisibile è un macigno per un chip con righe di pochi nanometri. Per questo i chip si fabbricano in stanze fino a migliaia di volte più pulite di una sala operatoria.' },
           ui.prose(
             'Una particella di polvere di mezzo micrometro, invisibile a occhio nudo, è larga come decine di righe di un chip moderno: se cade sul wafer nel momento sbagliato può interrompere un collegamento o crearne uno di troppo. Per questo i chip si costruiscono in [[Camera bianca|camere bianche]], dove l\'aria viene filtrata in continuazione.',
-            'L\'aria entra dal soffitto attraverso filtri che trattengono quasi tutte le particelle, scende verso il pavimento forato in un flusso uniforme, viene aspirata e torna ai filtri, centinaia di volte in un\'ora. La pulizia si misura con le classi della norma ISO 14644-1: in una camera bianca di classe ISO 5 un metro cubo d\'aria può contenere al massimo 3.520 particelle di almeno mezzo micrometro, mentre nell\'aria di una città se ne contano decine di milioni.',
-            'La prima fonte di sporco sono le persone, che perdono di continuo frammenti di pelle, capelli e fibre dei vestiti. Chi entra indossa una tuta che lascia scoperti solo gli occhi, guanti, sovrascarpe e mascherina. Nelle fabbriche più moderne, poi, i wafer viaggiano chiusi in contenitori sigillati, portati da robot su rotaie appese al soffitto, e si aprono solo dentro le macchine: l\'aria più pulita di tutte è lì dentro.'),
+            'L\'aria entra dal soffitto attraverso filtri ad altissima efficienza, che fermano almeno 99.999 particelle su 100.000, scende verso il pavimento forato in un flusso uniforme, viene aspirata e torna ai filtri: nelle zone più pulite, centinaia di volte in un\'ora. Questa stanza con l\'aria che scende dall\'alto fu inventata all\'inizio degli anni Sessanta dal fisico americano Willis Whitfield, ai Sandia National Laboratories. La pulizia si misura con le classi della norma ISO 14644-1, una scala a gradini di dieci: ogni classe ammette dieci volte più particelle della precedente. In una camera bianca di classe ISO 5 un metro cubo d\'aria può contenere al massimo 3.520 particelle di almeno mezzo micrometro, mentre nell\'aria di una città se ne contano decine di milioni.',
+            'La prima fonte di sporco sono le persone, che perdono di continuo frammenti di pelle, capelli e fibre dei vestiti: secondo stime classiche molto citate, una persona ferma libera ogni minuto circa centomila particelle di almeno 0,3 micrometri, e camminando qualche milione. Chi entra indossa una tuta intera di tessuto sintetico che non perde fibre e lascia scoperti solo gli occhi, con guanti, calzari e mascherina: in inglese la chiamano «bunny suit», tuta da coniglietto. Nelle fabbriche più moderne, poi, i wafer viaggiano chiusi in contenitori sigillati, portati da robot su rotaie appese al soffitto, e si aprono solo dentro le macchine: l\'aria più pulita di tutte è lì dentro.'),
           labAir(),
           ui.callout({
             kind: 'fun',
