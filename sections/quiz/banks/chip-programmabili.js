@@ -169,11 +169,11 @@
       // ------------------------------------------------------------ I processori a 8 bit
       {
         id: 'cp-21', level: 1, topic: 'MOS 6502', chapter: 'otto-bit', type: 'choice',
-        q: 'Il processore in figura, del 1975, si vendeva a 25 dollari, molto meno dei concorrenti. Chi ne guidò il progetto?',
+        q: 'Il processore in figura, del 1975, finì nell\'Apple II, nel Commodore PET e in molti home computer. Chi ne guidò il progetto?',
         figure: { kind: 'chip', pins: 40, label: 'MOS 6502', note: '1975' },
         options: ['Chuck Peddle', 'Federico Faggin', 'Steve Wozniak', 'Ted Hoff'],
         answer: 0,
-        why: 'Chuck Peddle aveva lavorato al 6800 in Motorola; alla MOS Technology progettò il 6502 con Bill Mensch e altri colleghi. Il prezzo basso lo portò nell\'Apple II, nel Commodore PET e in molti home computer.',
+        why: 'Chuck Peddle aveva lavorato al 6800 in Motorola; alla MOS Technology progettò il 6502 con Bill Mensch e altri colleghi. Steve Wozniak lo scelse per l\'Apple II, ma non lo progettò.',
       },
       {
         id: 'cp-22', level: 3, topic: 'Assembly Z80', chapter: 'otto-bit', type: 'choice',

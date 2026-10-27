@@ -13,9 +13,9 @@
     'elettronica-avanzata': 40,
     'porte-logiche': 40,
     'chip-programmabili': 40,
-    'storia-pc': 40,
+    'storia-pc': 43,
     programmazione: 44,
-    bus: 77,
+    bus: 86,
   };
   const totale = Object.keys(domande).reduce((t, k) => t + domande[k], 0);
 
