@@ -351,7 +351,7 @@
         h('ul', { class: 'ei-links' }, c.links.map((l) => h('li', null, h('a', { class: 'ei-link', href: l.href }, h('small', null, l.section || 'Questa sezione'), h('span', null, l.title)))))));
     }
     blocks.push(h('section', { class: 'ei-block ei-quiz-cta reveal' },
-      h('div', null, h('h2', null, 'Mettiti alla prova'), h('p', null, 'Domande sul capitolo "' + c.title + '" nel quiz dell\'enciclopedia.')),
+      h('div', null, h('h2', null, 'Mettiti alla prova'), h('p', null, 'Domande sul capitolo «' + c.title + '» nel quiz dell\'enciclopedia.')),
       h('a', { class: 'btn primary', href: QUIZ + '/' + c.id }, 'Vai al quiz')));
 
     const page = h('article', { class: 'ei-chapter' }, crumbs, head, blocks, pager);

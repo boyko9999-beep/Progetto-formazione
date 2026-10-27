@@ -33,3 +33,8 @@ test('core: EI.rich trasforma i termini del glossario in collegamenti', () => {
   assert.match(out, />due prove<\/a>/);
   delete EI.glossary.prova;
 });
+
+test('core: EI.si mostra i femto e azzera i valori trascurabili', () => {
+  assert.strictEqual(EI.si(3.2e-14, 'A'), '32,0\u202ffA');
+  assert.strictEqual(EI.si(2.57e-17, 'A', { trim: true }), '0\u202fA');
+});

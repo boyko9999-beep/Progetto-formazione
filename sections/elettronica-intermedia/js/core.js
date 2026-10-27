@@ -34,7 +34,7 @@
     return x.toLocaleString('it-IT', { minimumFractionDigits: d, maximumFractionDigits: d });
   };
 
-  const PREFIXES = [[1e9, 'G'], [1e6, 'M'], [1e3, 'k'], [1, ''], [1e-3, 'm'], [1e-6, 'µ'], [1e-9, 'n'], [1e-12, 'p']];
+  const PREFIXES = [[1e9, 'G'], [1e6, 'M'], [1e3, 'k'], [1, ''], [1e-3, 'm'], [1e-6, 'µ'], [1e-9, 'n'], [1e-12, 'p'], [1e-15, 'f']];
 
   // Valore con prefisso SI e cifre significative: EI.si(0.0047, 'A') → "4,70 mA".
   // opts: { sig: 3, trim: false (toglie gli zeri finali), prefix: true, signed: false }
@@ -46,6 +46,8 @@
     const sign = x < 0 ? '−' : (o.signed && x > 0 ? '+' : '');
     let a = Math.abs(x);
     let p = '';
+    // sotto il mezzo femto non ha senso mostrare cifre: è zero
+    if (o.prefix !== false && a !== 0 && a < 5e-16) a = 0;
     if (o.prefix !== false && a !== 0) {
       let i = PREFIXES.findIndex(([f]) => a >= f);
       if (i < 0) i = PREFIXES.length - 1;
@@ -330,17 +332,22 @@
     c.fillStyle = p.text;
     c.textAlign = 'center';
     c.textBaseline = 'top';
-    let lastX = -1e9;
+    // Etichette centrate sulle tacche, spostate solo dove uscirebbero dalla tela. Da sinistra a destra
+    // senza sovrapposizioni; l'ultima (spesso quella con l'unità) ha la precedenza sulla vicina.
+    const labs = [];
     for (const t of xs) {
       if (!t.major) continue;
       const s = tickLabel(this.opts.x, t.v);
       const wTxt = c.measureText(s).width;
-      // posizione già spostata dentro il grafico: il controllo delle sovrapposizioni usa quella vera
-      const x = EI.clamp(this.X(t.v), px0 + wTxt / 2, px1 - wTxt / 2);
-      if (x - wTxt / 2 < lastX + 6) continue;
-      c.fillText(s, x, py1 + 6);
-      lastX = x + wTxt / 2;
+      labs.push({ s: s, w: wTxt, x: EI.clamp(this.X(t.v), wTxt / 2 + 2, this.w - wTxt / 2 - 2) });
     }
+    const hit = (A, B) => B.x - B.w / 2 < A.x + A.w / 2 + 6;
+    const keep = [];
+    labs.forEach((L, k) => {
+      while (k === labs.length - 1 && keep.length > 1 && hit(keep[keep.length - 1], L)) keep.pop();
+      if (!keep.length || !hit(keep[keep.length - 1], L)) keep.push(L);
+    });
+    keep.forEach((L) => c.fillText(L.s, L.x, py1 + 6));
     c.textAlign = 'right';
     c.textBaseline = 'middle';
     let lastY = 1e9;

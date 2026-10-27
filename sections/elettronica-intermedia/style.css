@@ -126,7 +126,8 @@
   transition: border-color var(--t-normal) ease;
 }
 .ei-readout.wide { grid-column: 1 / -1; }
-.ei-readout-label { font: 700 .64rem var(--font); letter-spacing: .1em; text-transform: uppercase; color: var(--scope-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* niente maiuscole forzate: simboli e unità devono restare come sono scritti (τ, Rds, ms, cm) */
+.ei-readout-label { font: 700 .72rem var(--font); letter-spacing: .02em; color: var(--scope-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ei-readout-val {
   font: 700 1.24rem/1.2 var(--mono); color: var(--rc, var(--trace-1)); font-variant-numeric: tabular-nums;
   text-shadow: 0 0 12px color-mix(in srgb, var(--rc, var(--trace-1)) 45%, transparent);
@@ -150,7 +151,8 @@
 .ei-plots.cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .ei-plot { margin: 0; background: var(--scope-bg); padding: 10px 12px 12px; min-width: 0; }
 .ei-plot figcaption { display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: center; margin-bottom: 6px; }
-.ei-plot-title { font: 800 .66rem var(--mono); text-transform: uppercase; letter-spacing: .14em; color: var(--scope-text); }
+.ei-plot-title { font: 800 .72rem var(--mono); letter-spacing: .03em; color: var(--scope-text); }
+.ei-lab .ei-sym { text-transform: none; }
 .ei-legend { display: flex; flex-wrap: wrap; gap: 4px 14px; }
 .ei-legend-item { display: inline-flex; align-items: center; gap: 7px; color: var(--lab-ink); font: 600 .78rem var(--mono); }
 .ei-legend-item::before { content: ""; width: 16px; height: 3px; border-radius: 2px; background: var(--lc); box-shadow: 0 0 6px var(--lc); }
