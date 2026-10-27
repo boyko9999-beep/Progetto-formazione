@@ -5,6 +5,9 @@
  * fotonica ed elettronica quantistica: quattro domande per capitolo.
  * I capitoli sono le ancore delle pagine della sezione; il formato delle
  * domande è descritto in sections/quiz/README.md.
+ * Le domande con id come 'ea-fourier-01' chiedono le stesse cose di quelle
+ * della sezione (sections/elettronica-avanzata/quiz.js) e ne hanno lo stesso
+ * id: quando quel file è caricato vale la versione della sezione.
  */
 (function (root) {
   'use strict';
@@ -54,7 +57,7 @@
         why: 'Una sinusoide pura contiene una sola frequenza: nello spettro c\'è una sola riga, alta quanto la sua ampiezza. Un\'onda quadra o triangolare della stessa frequenza avrebbe in più le righe delle armoniche, a frequenze multiple.',
       },
       {
-        id: 'ea-03', level: 2, topic: 'Ampiezza delle armoniche', chapter: 'fourier', type: 'number',
+        id: 'ea-fourier-01', level: 2, topic: 'Ampiezza delle armoniche', chapter: 'fourier', type: 'number',
         q: 'In un\'onda quadra simmetrica la fondamentale ha un\'ampiezza di 1,5 V. Quanto vale l\'ampiezza della quinta armonica, in V?',
         value: 0.3, unit: 'V', tolerance: 0.02,
         why: 'Nell\'onda quadra l\'armonica n ha 1/n dell\'ampiezza della fondamentale: 1,5 V / 5 = 0,3 V. La terza vale 0,5 V, la settima circa 0,21 V; le armoniche pari mancano.',
@@ -97,7 +100,7 @@
         why: 'L\'isolante rallenta l\'onda: nei cavi comuni il segnale viaggia a circa 2/3 della velocità della luce, cioè a 200 000 km/s, e 1 m di cavo lo ritarda di circa 5 ns. Se questo ritardo è paragonabile alla durata dei fronti, il cavo va trattato come una linea di trasmissione.',
       },
       {
-        id: 'ea-08', level: 3, topic: 'Riflessioni', chapter: 'linee', type: 'choice',
+        id: 'ea-linee-01', level: 3, topic: 'Riflessioni', chapter: 'linee', type: 'choice',
         q: 'Su un cavo da 50 Ω viaggia un gradino di 1 V. In fondo al cavo c\'è un carico da 150 Ω. Quanto vale il gradino riflesso che torna verso il generatore?',
         options: ['+0,5 V', '−0,5 V', '+1 V', '0 V'],
         answer: 0,
@@ -106,7 +109,7 @@
 
       // ------------------------------------------------------------ segnali differenziali
       {
-        id: 'ea-09', level: 1, topic: 'Coppia D+ e D−', chapter: 'differenziale', type: 'choice',
+        id: 'ea-differenziale-01', level: 1, topic: 'Coppia D+ e D−', chapter: 'differenziale', type: 'choice',
         q: 'In figura i fili D+ e D− portano gli stessi bit con due segnali opposti. Che cosa guarda il ricevitore per decidere se un bit è 1 o 0?',
         figure: { kind: 'wave', shape: 'differential' },
         options: [
@@ -122,7 +125,7 @@
         id: 'ea-10', level: 1, topic: 'Doppino intrecciato', chapter: 'differenziale', type: 'truefalse',
         q: 'Nel doppino i due fili sono intrecciati perché un disturbo esterno li colpisca quasi allo stesso modo.',
         answer: true,
-        why: 'Con l\'intreccio i due fili si scambiano continuamente di posto: in media stanno alla stessa distanza dalla sorgente del disturbo e raccolgono lo stesso rumore. Questo rumore di modo comune viene poi cancellato dal ricevitore differenziale.',
+        why: 'Con l\'intreccio i due fili si scambiano continuamente di posto: in media stanno alla stessa distanza dalla sorgente del disturbo e raccolgono lo stesso rumore.',
       },
       {
         id: 'ea-11', level: 2, topic: 'Collegamenti differenziali', chapter: 'differenziale', type: 'match',
@@ -160,7 +163,7 @@
         why: 'La portante oscilla sempre alla stessa frequenza, ma la sua ampiezza segue il segnale da trasmettere: la linea tratteggiata, detta inviluppo, ne ripete la forma. È la modulazione di ampiezza, usata dalle radio in onde medie e lunghe.',
       },
       {
-        id: 'ea-14', level: 1, topic: 'Lunghezza d\'onda', chapter: 'radio', type: 'number',
+        id: 'ea-radio-01', level: 1, topic: 'Lunghezza d\'onda', chapter: 'radio', type: 'number',
         q: 'Una stazione FM trasmette a 100 MHz. Quanto è lunga la sua onda, in m? Usa λ = c / f, con c = 300 000 km/s.',
         value: 3, unit: 'm', tolerance: 0.05,
         why: 'λ = c / f = 300 000 000 m/s / 100 000 000 Hz = 3 m. Un\'antenna a mezz\'onda per questa frequenza, come un dipolo, è lunga circa 1,5 m.',
@@ -207,7 +210,7 @@
         why: 'Campionare a 44,1 kHz vuol dire prendere 44 100 campioni al secondo, uno ogni 22,7 µs circa. I livelli dipendono invece dai bit di ogni campione: nel CD sono 16, cioè 65 536 livelli.',
       },
       {
-        id: 'ea-18', level: 1, topic: 'Teorema di Nyquist', chapter: 'conversione', type: 'number',
+        id: 'ea-conversione-01', level: 1, topic: 'Teorema di Nyquist', chapter: 'conversione', type: 'number',
         q: 'Vuoi registrare suoni con frequenze fino a 20 kHz. Secondo il teorema di Nyquist-Shannon, quale valore deve superare la frequenza di campionamento, in kHz?',
         value: 40, unit: 'kHz', tolerance: 0.5,
         why: 'Bisogna campionare a più del doppio della frequenza più alta: fc > 2 × 20 kHz = 40 kHz. Il CD usa 44,1 kHz: il margine in più lascia spazio al filtro che elimina le frequenze sopra i 20 kHz.',
@@ -270,19 +273,19 @@
         why: 'Il boost accumula energia in un induttore mentre l\'interruttore è chiuso; quando si apre, la tensione dell\'induttore si somma a quella d\'ingresso. Così un power bank alza i 3,7 V della batteria al litio a 5 V. Il buck, invece, abbassa la tensione.',
       },
       {
-        id: 'ea-26', level: 2, topic: 'Rendimento', chapter: 'potenza', type: 'number',
+        id: 'ea-potenza-01', level: 2, topic: 'Rendimento', chapter: 'potenza', type: 'number',
         q: 'Un regolatore lineare abbassa la tensione da 12 V a 5 V per un carico che assorbe 1 A. Quanto vale il suo rendimento, in %?',
         value: 41.7, unit: '%', tolerance: 0.5,
         why: 'Nel regolatore lineare entra la stessa corrente che esce: η = (5 V × 1 A) / (12 V × 1 A) = 5 W / 12 W ≈ 41,7%. Gli altri (12 − 5) V × 1 A = 7 W diventano calore; un convertitore switching supera spesso il 90%.',
       },
       {
-        id: 'ea-27', level: 2, topic: 'Convertitore buck', chapter: 'potenza', type: 'number',
+        id: 'ea-potenza-02', level: 2, topic: 'Convertitore buck', chapter: 'potenza', type: 'number',
         q: 'Un convertitore buck alimentato a 12 V deve dare 3,3 V a un microcontrollore. Con quale duty cycle, circa, deve lavorare il PWM che comanda il suo interruttore, in %?',
         value: 27.5, unit: '%', tolerance: 0.5,
         why: 'Nel buck Vout ≈ D × Vin, quindi D = Vout / Vin = 3,3 V / 12 V = 0,275, cioè 27,5%: l\'interruttore, di solito un MOSFET di potenza, resta chiuso per poco più di un quarto del periodo. Induttore e condensatore filtrano gli impulsi e lasciano passare la media.',
       },
       {
-        id: 'ea-28', level: 3, topic: 'GaN e SiC', chapter: 'potenza', type: 'choice',
+        id: 'ea-potenza-04', level: 3, topic: 'GaN e SiC', chapter: 'potenza', type: 'choice',
         q: 'I caricabatterie con transistor al nitruro di gallio (GaN) sono molto più piccoli di quelli al silicio. Quale proprietà del GaN lo permette?',
         options: [
           'Commuta più in fretta e con meno perdite',
@@ -320,13 +323,13 @@
         why: 'L\'accelerometro sente gli urti, il giroscopio le rotazioni, e nel microfono MEMS una membrana di silicio vibra con la voce. Il sensore di pressione stima la quota dal calo della pressione dell\'aria; nei proiettori DLP ogni pixel è un microspecchio che si inclina per accendersi o spegnersi.',
       },
       {
-        id: 'ea-31', level: 2, topic: 'Accelerometro', chapter: 'mems', type: 'truefalse',
+        id: 'ea-mems-01', level: 2, topic: 'Accelerometro', chapter: 'mems', type: 'truefalse',
         q: 'L\'accelerometro di uno smartphone fermo sul tavolo misura un\'accelerazione nulla, perché il telefono non si muove.',
         answer: false,
         why: 'L\'accelerometro sente anche la gravità: da fermo misura circa 1 g, cioè 9,8 m/s², in verticale. È così che il telefono capisce come lo tieni e gira lo schermo. In caduta libera, invece, leggerebbe quasi zero.',
       },
       {
-        id: 'ea-32', level: 3, topic: 'Giroscopio MEMS', chapter: 'mems', type: 'choice',
+        id: 'ea-mems-04', level: 3, topic: 'Giroscopio MEMS', chapter: 'mems', type: 'choice',
         q: 'Come fa il giroscopio MEMS di uno smartphone a misurare le rotazioni?',
         options: [
           'Una massa che vibra viene deviata dalla forza di Coriolis',
@@ -340,7 +343,7 @@
 
       // ------------------------------------------------------------ fotonica
       {
-        id: 'ea-33', level: 1, topic: 'Fibra ottica', chapter: 'fotonica', type: 'choice',
+        id: 'ea-fotonica-01', level: 1, topic: 'Fibra ottica', chapter: 'fotonica', type: 'choice',
         q: 'Perché la luce resta dentro una fibra ottica anche quando la fibra fa una curva?',
         options: [
           'Perché si riflette tutta al confine col mantello',
@@ -387,7 +390,7 @@
         why: 'Per la meccanica quantistica un elettrone può attraversare una barriera sottilissima anche senza l\'energia per scavalcarla: è l\'effetto tunnel. Nei transistor più piccoli causa correnti di perdita ed è uno dei limiti alla miniaturizzazione.',
       },
       {
-        id: 'ea-38', level: 2, topic: 'Misura di un qubit', chapter: 'quantistica', type: 'truefalse',
+        id: 'ea-38', level: 1, topic: 'Misura di un qubit', chapter: 'quantistica', type: 'truefalse',
         q: 'Se misuri un qubit che si trova in sovrapposizione, leggi 0 e 1 nello stesso momento.',
         answer: false,
         why: 'Prima della misura il qubit è in una sovrapposizione di 0 e 1; quando lo misuri ottieni un solo valore, 0 oppure 1, con una certa probabilità, e la sovrapposizione si perde. Per questo un algoritmo quantistico deve rendere molto probabile la risposta giusta.',

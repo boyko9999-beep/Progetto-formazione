@@ -73,7 +73,9 @@
         why: 'Nelle DRAM di oggi ogni bit è un condensatore con un transistor: la carica si disperde, quindi un circuito la rilegge e la riscrive più volte al secondo (refresh). La RAM statica usa un flip-flop e non ne ha bisogno.',
       },
       {
-        id: 'cp-08', level: 2, topic: 'Cancellare le memorie', chapter: 'memorie', type: 'match',
+        // Stesso id della domanda della sezione su EEPROM e Flash: quando
+        // sections/chip-programmabili/quiz.js è caricato vale quella.
+        id: 'memorie-4', level: 2, topic: 'Cancellare le memorie', chapter: 'memorie', type: 'match',
         q: 'Abbina ogni memoria al modo in cui si cancella.',
         pairs: [['PROM', 'Non si cancella: si scrive una volta sola'], ['EPROM', 'Con luce ultravioletta'], ['EEPROM', 'Elettricamente, un byte alla volta'], ['Flash', 'Elettricamente, a blocchi interi']],
         why: 'La PROM si programma bruciando fusibili, una volta sola. La EPROM (Dov Frohman, Intel, 1971) si cancella con gli UV dalla finestrella; la EEPROM elettricamente, byte per byte; la Flash (presentata nel 1984 da Fujio Masuoka di Toshiba) a blocchi.',
@@ -83,7 +85,7 @@
         q: 'Ordina queste memorie non volatili dalla più antica alla più recente.',
         items: ['PROM', 'EPROM', 'EEPROM', 'Flash'],
         ends: ['Più antica', 'Più recente'],
-        why: 'PROM (1956), EPROM (1971, Dov Frohman in Intel), EEPROM (fine anni \'70), Flash (presentata nel 1984 da Fujio Masuoka di Toshiba). La EEPROM si riscrive byte per byte; la Flash cancella a blocchi, ma ha celle più piccole ed economiche.',
+        why: 'PROM (1956), EPROM (1971, Dov Frohman in Intel), EEPROM (fine anni \'70), Flash (presentata nel 1984 da Fujio Masuoka di Toshiba). Oggi la Flash è nelle chiavette USB, nelle schede SD e nei dischi SSD.',
       },
       {
         id: 'cp-10', level: 3, topic: 'RAM statica e dinamica', chapter: 'memorie', type: 'choice',
@@ -120,7 +122,7 @@
         id: 'cp-14', level: 2, topic: 'Periodo del clock', chapter: 'intel-4004', type: 'number',
         q: 'Il clock dell\'Intel 4004 va a 740 kHz. Quanto dura un periodo di clock, in µs?',
         value: 1.351, unit: 'µs', tolerance: 0.05,
-        why: 'T = 1 / f = 1 / 740 000 Hz ≈ 0,00000135 s = 1,35 µs. Un ciclo di istruzione del 4004 durava 8 periodi: 8 × 1,35 µs ≈ 10,8 µs.',
+        why: 'T = 1 / f = 1 / 740 000 Hz ≈ 0,00000135 s = 1,35 µs. Un processore di oggi a 4 GHz ha un periodo di 0,25 ns, più di cinquemila volte più breve.',
       },
       {
         id: 'cp-15', level: 2, topic: 'Codice BCD', chapter: 'intel-4004', type: 'bits',
