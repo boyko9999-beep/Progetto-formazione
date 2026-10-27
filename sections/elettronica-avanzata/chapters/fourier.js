@@ -474,13 +474,13 @@
       { title: 'Una sinusoide è un punto che gira', text: 'Un vettore che ruota a velocità costante proietta un\'ombra che sale e scende: è una sinusoide. La velocità di rotazione è la frequenza, la lunghezza del vettore è l\'ampiezza.', focus: 'uno' },
       { title: 'Si sommano i giri', text: 'In punta al primo vettore se ne attacca un secondo che gira tre volte più veloce ed è lungo un terzo. La punta della catena comincia a disegnare degli spigoli.', focus: 'tre' },
       { title: 'Più armoniche, più spigoli', text: 'Aggiungendo la quinta, la settima, la nona armonica, ognuna più corta della precedente (ampiezza 1/n), la somma assomiglia sempre di più a un\'onda quadra.', focus: 'molte' },
-      { title: 'Il picco che non se ne va', text: 'Vicino ai salti resta un picco di circa il 9% del salto. Più armoniche lo rendono più stretto ma non più basso: è il fenomeno di Gibbs.', focus: 'gibbs' },
+      { title: 'Il picco che non se ne va', text: 'Vicino ai salti resta un picco: aggiungendo armoniche si stringe, ma la sua altezza si ferma a circa il 9% del salto e non sparisce mai. È il fenomeno di Gibbs.', focus: 'gibbs' },
       { title: 'Lo spettro', text: 'Mettendo in fila le armoniche con la loro ampiezza si ottiene lo spettro: righe a f, 3f, 5f… È così che analizzatori, equalizzatori e ricevitori radio vedono i segnali.', focus: 'spettro' },
     ],
     formulas: [
       { label: 'Serie di Fourier', eq: '<var>x</var>(<var>t</var>) = <var>A</var><sub>0</sub> + Σ <var>A<sub>n</sub></var> sin(2π<var>n f</var><sub>0</sub><var>t</var> + <var>φ<sub>n</sub></var>)', text: 'Un segnale periodico di frequenza <var>f</var><sub>0</sub> è un valore medio più sinusoidi a frequenze multiple intere della fondamentale.' },
       { label: 'Onda quadra', eq: '<var>x</var>(<var>t</var>) = <sup>4</sup>⁄<sub>π</sub> (sin ω<var>t</var> + ⅓ sin 3ω<var>t</var> + ⅕ sin 5ω<var>t</var> + …)', text: 'Solo armoniche dispari, con ampiezza che cala come 1/<var>n</var>: per questo gli spigoli richiedono tanta banda.' },
-      { label: 'Fenomeno di Gibbs', eq: 'picco ≈ 1,179 · <var>A</var>', text: 'Troncando la serie, vicino a un salto la somma supera il livello ideale di circa il 9% del salto, qualunque sia il numero di armoniche.' },
+      { label: 'Fenomeno di Gibbs', eq: 'picco ≈ 1,179 · <var>A</var>', text: 'Troncando la serie, vicino a un salto la somma supera il livello ideale: di più con poche armoniche, di circa il 9% del salto con molte. Il valore 1,179 è il limite a cui tende il picco, che non sparisce mai.' },
       { label: 'Banda e fronti', eq: '<var>t</var><sub>r</sub> ≈ 0,35 ⁄ <var>B</var>', text: 'Regola pratica: un fronte di salita (dal 10 al 90%) che dura <var>t</var><sub>r</sub> richiede una banda <var>B</var> di circa 0,35/<var>t</var><sub>r</sub>. Fronti più ripidi vogliono armoniche più alte.' },
     ],
     timeline: [
@@ -518,7 +518,7 @@
     },
     lab: {
       title: 'Sintetizzatore di Fourier',
-      intro: 'Scegli una forma d\'onda e somma le armoniche una alla volta. Guarda gli spigoli comparire, lo spettro riempirsi e il picco di Gibbs che non scende mai sotto il 9% del salto. Premi Ascolta per sentire il timbro cambiare.',
+      intro: 'Scegli una forma d\'onda e somma le armoniche una alla volta. Guarda gli spigoli comparire, lo spettro riempirsi e il picco di Gibbs che, con molte armoniche, resta attorno al 9% del salto. Premi Ascolta per sentire il timbro cambiare.',
       mount: mountLab,
     },
     model,

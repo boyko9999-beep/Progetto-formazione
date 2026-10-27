@@ -24,7 +24,7 @@
   const CAPITOLI = [
     {
       id: 'fourier', titolo: 'Il linguaggio delle frequenze', argomento: 'Segnali e spettro', periodo: '1807 – oggi',
-      descrizione: 'Ogni segnale, anche un\'onda quadra, è una somma di sinusoidi. La scoperta di Fourier insegna a vedere suoni, onde radio e dati come uno spettro.',
+      descrizione: 'Ogni segnale periodico, anche un\'onda quadra, è una somma di sinusoidi. La scoperta di Fourier insegna a vedere suoni, onde radio e dati come uno spettro.',
       freq: { f: 1e3, min: 20, max: 2e4, label: 'udibile: 20 Hz – 20 kHz' }, tinta: '#3ee08f',
     },
     {
@@ -49,7 +49,7 @@
     },
     {
       id: 'clock', titolo: 'Il battito del tempo', argomento: 'Quarzo, oscillatori e PLL', periodo: '1880 – oggi',
-      descrizione: 'Un cristallo che vibra 32 768 volte al secondo e un anello ad aggancio di fase che lo moltiplica fino ai GHz: così nasce il clock di ogni circuito digitale.',
+      descrizione: 'Cristalli di quarzo che vibrano con precisione, 32 768 volte al secondo negli orologi e milioni di volte nei computer, e un anello ad aggancio di fase che ne moltiplica la frequenza fino ai GHz: così nasce il clock di ogni circuito digitale.',
       freq: { f: 4e9, min: 32768, max: 6e9, label: 'da 32 768 Hz a 6 GHz' }, tinta: '#ff9f43',
     },
     {
