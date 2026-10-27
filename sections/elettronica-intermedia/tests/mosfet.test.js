@@ -141,3 +141,17 @@ test('mosfet: P = I² · R e temperatura di giunzione senza dissipatore', () => 
   close(m.junction(0.1), 31.2, 1e-12);
   close(m.junction(2, 40, 30), 110, 1e-12);
 });
+
+test('mosfet: le sfide si possono completare con i passi del cursore (0,05 V)', () => {
+  const grid = [];
+  for (let k = 0; k <= 200; k++) grid.push(Math.round(k * 5) / 100);
+  for (const p of [L, S]) {
+    // soglia: almeno 10 mA entro 0,25 V sopra Vth
+    assert.ok(grid.some((v) => v <= p.vth + 0.25 && m.solve(v, 12, LAMP, p).id >= 0.01), 'soglia irraggiungibile');
+    // a metà strada, in saturazione, con la lampada si superano i 5 W
+    assert.ok(grid.some((v) => { const r = m.solve(v, 12, LAMP, p); return r.region === 'sat' && r.pd > 5; }), 'calore oltre 5 W irraggiungibile');
+  }
+  // meno di 0,1 W con 2 A: solo il MOSFET logico ci riesce, anche a 10 V lo standard scalda di più
+  assert.ok(grid.some((v) => { const r = m.solve(v, 12, LAMP, L); return r.id >= 1.9 && r.pd < 0.1; }));
+  assert.ok(!grid.some((v) => { const r = m.solve(v, 12, LAMP, S); return r.id >= 1.9 && r.pd < 0.1; }));
+});

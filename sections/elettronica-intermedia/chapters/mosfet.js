@@ -125,6 +125,7 @@
   const SLOW = 1e6; // il gate si carica in mezzo microsecondo: nell'animazione i tempi sono rallentati un milione di volte
   const WIN = 5e-6; // finestra dell'oscilloscopio sul gate, in secondi reali
   const IMAX = 2; // corrente di riferimento per la velocità delle cariche
+  const volt = (v) => num(v, v % 1 ? 1 : 0) + ' V'; // «5 V», «3,3 V»
   let UID = 0;
 
   const rnd = (i) => {
@@ -153,13 +154,14 @@
       W: 720, H: 480, tall: false, xs: [318, 10], xh: 460,
       bat: { x: 30, y: 110 },
       railY: 40, gndY: 450, gndX: 140,
-      load: { x: 250, top: 64, cy: 100, bot: 136, node: 152, r: 17, lblX: 222, motLblX: 196, dX: 212, fanX: 286 },
+      load: { x: 250, top: 64, cy: 100, bot: 136, node: 152, r: 17, lblX: 214, motLblX: 196, dX: 212, fanX: 286 },
       mos: { x: 232, y: 214 },
       uc: { x: 46, y: 188, w: 72, h: 76 },
       gen: { x: 82, y: 244 },
       rg: { x: 132, len: 52 },
       lens: [186, 162, 104, 106],
       igTag: [158, 252, 'middle'],
+      gLbl: [-30, -7], // lettera G accanto al gate del simbolo
       zoom: [[290, 162, 318, 14], [290, 268, 318, 466]],
       card: [90, 318, 152, 104],
     },
@@ -167,13 +169,14 @@
       W: 400, H: 656, tall: true, xs: [0, 274], xh: 380,
       bat: { x: 26, y: 74 },
       railY: 26, gndY: 252, gndX: 172,
-      load: { x: 318, top: 44, cy: 76, bot: 108, node: 118, r: 15, lblX: 290, motLblX: 264, dX: 282, fanX: 356 },
+      load: { x: 318, top: 44, cy: 76, bot: 108, node: 118, r: 15, lblX: 284, motLblX: 264, dX: 282, fanX: 356 },
       mos: { x: 300, y: 172 },
       uc: { x: 44, y: 146, w: 80, h: 76 },
       gen: { x: 86, y: 190 },
       rg: { x: 138, len: 58 },
       lens: [254, 120, 98, 104],
-      igTag: [236, 168, 'middle'],
+      igTag: [198, 176, 'start'],
+      gLbl: [-30, 19],
       zoom: [[254, 224, 18, 276], [352, 224, 382, 276]],
       card: null,
     },
@@ -284,8 +287,8 @@
       // carico: lampada
       o.gLamp = s('g', null, g);
       o.lamp = drawLamp(o.gLamp, L.x, L.top, L.bot, L.cy, L.r);
-      EI.label(o.gLamp, L.lblX, L.cy - 9, 'Lampada', { anchor: 'end' });
-      EI.label(o.gLamp, L.lblX, L.cy + 10, '12 V · 24 W', { anchor: 'end', cls: 'mono mosfet-val' });
+      EI.label(o.gLamp, L.lblX, L.cy - 9, 'Lampada', { anchor: 'end', cls: 'mosfet-ll' });
+      EI.label(o.gLamp, L.lblX, L.cy + 10, '12 V · 24 W', { anchor: 'end', cls: 'mono mosfet-val mosfet-ll' });
 
       // carico: motore con ventola e diodo di ricircolo
       o.gMotor = s('g', null, g);
@@ -306,8 +309,8 @@
       o.wDbot = wire(o.gMotor, [[L.dX, L.bot], [L.dX, L.node], [L.x, L.node]]);
       dot(o.gMotor, L.dX, G.railY);
       dot(o.gMotor, L.x, L.node);
-      EI.label(o.gMotor, L.motLblX, L.cy - 9, 'Motore', { anchor: 'end' });
-      EI.label(o.gMotor, L.motLblX, L.cy + 10, '12 V · 1,5 A', { anchor: 'end', cls: 'mono mosfet-val' });
+      EI.label(o.gMotor, L.motLblX, L.cy - 9, 'Motore', { anchor: 'end', cls: 'mosfet-ll' });
+      EI.label(o.gMotor, L.motLblX, L.cy + 10, '12 V · 1,5 A', { anchor: 'end', cls: 'mono mosfet-val mosfet-ll' });
 
       // comando del gate: microcontrollore
       const U = G.uc;
@@ -339,7 +342,7 @@
       o.T = sym.nmos(g, { x: M.x, y: M.y });
       s('text', { x: xD + 8, y: yD + 14, class: 'mosfet-pinl', text: 'D' }, g);
       s('text', { x: xD + 8, y: yS - 8, class: 'mosfet-pinl', text: 'S' }, g);
-      s('text', { x: M.x - 30, y: yG - 7, class: 'mosfet-pinl', text: 'G' }, g);
+      s('text', { x: M.x + G.gLbl[0], y: yG + G.gLbl[1], class: 'mosfet-pinl', text: 'G' }, g);
       o.igTag = s('text', { x: G.igTag[0], y: G.igTag[1], class: 'mosfet-tag', 'text-anchor': G.igTag[2], text: '' }, g);
 
       // scheda del transistor (solo nel disegno largo)
@@ -601,7 +604,7 @@
       onChange: (v) => { st.vlogic = v; },
     });
     ctl.pin = lab.toggle({
-      into: gDrive, label: 'Piedino di uscita', on: 'ALTO: carico acceso', off: 'BASSO: carico spento', value: false,
+      into: gDrive, label: 'Piedino di uscita', on: 'ALTO · 1 logico', off: 'BASSO · 0 logico', value: false,
       onChange: (v) => { st.pin = v; },
     });
     const gParts = lab.group('Componenti');
@@ -620,7 +623,7 @@
       { id: 'soglia', text: 'Trova la [[soglia-mosfet|soglia]] di tutti e due i MOSFET: con il generatore alza Vgs a piccoli passi e fermati appena nel drain passano almeno 10 mA, con la lampada ancora debole.', check: (q) => q.found.logic && q.found.std },
       { id: 'tre-volt', text: 'Il tuo microcontrollore lavora a 3,3 V: scegli il transistor giusto e fai girare il motore a piena velocità.', check: (q) => q.mode === 'uc' && q.vlogic === 3.3 && q.pin && q.load === 'motor' && q.settled && q.region === 'ohm' && q.vload > 11.5 },
       { id: 'fresco', text: 'Accendi del tutto la lampada da 2 A facendo scaldare il MOSFET meno di 0,1 W: quale transistor e quale tensione di gate servono?', check: (q) => q.load === 'lamp' && q.settled && q.id >= 1.9 && q.pd < 0.1 },
-      { id: 'gate-zero', text: 'Accendi un carico e guarda la corrente di gate: una punta di qualche milliampere mentre il gate si carica, poi aspetta che torni a zero.', check: (q) => q.id > 1 && q.maxIg > 0.005 && q.ig === 0 && q.settled },
+      { id: 'gate-zero', text: 'Accendi un carico e guarda la corrente di gate: una punta di decine di milliampere mentre il gate si carica, poi aspetta che torni a zero.', check: (q) => q.id > 1 && q.maxIg > 0.005 && q.ig === 0 && q.settled },
       { id: 'caldo', text: 'Lascia il MOSFET a metà strada, in [[saturazione-mosfet|saturazione]], con la lampada: fai salire il calore oltre 5 W. Perché un interruttore non deve mai restare così?', check: (q) => q.load === 'lamp' && q.settled && q.region === 'sat' && q.pd > 5 },
     ]);
 
@@ -903,7 +906,7 @@
       pT.vline(dev.vth, { color: P.t2, alpha: 0.8, label: 'Vth ' + num(dev.vth, 1) + ' V' });
       if (st.mode === 'uc') {
         pT.vline(st.vlogic, { color: P.t3, alpha: 0.7, dash: [2, 3] });
-        pT.tag(pT.X(st.vlogic), pT.py1 - 36, 'µC ' + num(st.vlogic, 1) + ' V', P.t3, 'right');
+        pT.tag(pT.X(st.vlogic), pT.py1 - 36, 'µC ' + volt(st.vlogic), P.t3, 'right');
       }
       // vicino al limite del carico l'etichetta del punto scende sotto la curva, lontano da quella del limite
       const nearTop = sol.id > 0.75 * VDD / load.r;
@@ -928,7 +931,7 @@
     function message(q, dev, target) {
       const vth = num(dev.vth, 1) + ' V';
       if (q.charging) {
-        let m = 'Il gate ' + (q.ig > 0 ? 'sale' : 'scende') + ': è l\'armatura di un condensatore, la [[capacita-di-gate|capacità di gate]] (circa ' + si(dev.ciss, 'F', { trim: true }) + '), che attraverso Rg ' + (q.ig > 0 ? 'si carica' : 'si scarica') + ' con una punta di corrente fino a <b>' + si(q.maxIg, 'A') + '</b>. Nella realtà dura meno di un microsecondo: qui è rallentato un milione di volte.';
+        let m = 'Il gate ' + (q.ig > 0 ? 'sale' : 'scende') + ': è l\'armatura di un condensatore, la [[capacita-di-gate|capacità di gate]] (circa ' + si(dev.ciss, 'F', { trim: true }) + '), che attraverso Rg ' + (q.ig > 0 ? 'si carica' : 'si scarica') + ' con una punta di corrente fino a <b>' + si(q.maxIg, 'A') + '</b>. Nella realtà tutto si svolge in un paio di microsecondi: qui è rallentato un milione di volte.';
         if (st.load === 'motor' && st.iDiode > 0.05) m += ' La bobina del motore non vuole fermare la sua corrente: per un attimo la fa girare nel diodo di ricircolo.';
         else if (target.region !== 'off' && q.ig > 0) m += ' Nel passaggio il MOSFET attraversa per un istante la saturazione: lì si perde energia a ogni commutazione.';
         return m;
@@ -941,21 +944,28 @@
             (st.mode === 'reg' ? ' Alza piano la tensione del gate.' : ' Porta il piedino del microcontrollore su ALTO.');
         } else {
           m = 'Vgs = <b>' + si(vgT, 'V') + '</b>: il gate positivo crea un campo elettrico che attraversa l\'ossido e spinge in profondità le [[lacuna|lacune]]. Sotto il gate resta una [[zona-di-svuotamento|zona svuotata]], con gli ioni negativi fissi, ma non c\'è ancora un canale: sei sotto la [[soglia-mosfet|soglia]] di ' + vth + ' e la corrente è zero.';
-          if (st.mode === 'uc') m += ' Con un piedino a ' + num(st.vlogic, 1) + ' V questo MOSFET standard non si accende nemmeno: serve un [[mosfet-logico|MOSFET logico]].';
+          if (st.mode === 'uc') m += ' Con un piedino a ' + volt(st.vlogic) + ' questo MOSFET standard non si accende nemmeno: serve un [[mosfet-logico|MOSFET logico]].';
         }
       } else if (target.region === 'sat') {
         const T = model.junction(target.pd);
-        m = 'Oltre la soglia di ' + vth + ' sotto l\'ossido si forma un sottile [[canale-di-inversione|canale N]], ma vicino al drain si strozza: il MOSFET è in [[saturazione-mosfet|saturazione]] e passa solo Id = k/2·(Vgs − Vth)² = <b>' + si(target.id, 'A') + '</b>. Su di lui restano <b>' + si(target.vds, 'V') + '</b>';
+        m = 'Oltre la soglia di ' + vth + ', sotto l\'ossido si forma un sottile [[canale-di-inversione|canale N]], ma vicino al drain si strozza: il MOSFET è in [[saturazione-mosfet|saturazione]] e passa solo Id = k/2·(Vgs − Vth)² = <b>' + si(target.id, 'A') + '</b>. Su di lui restano <b>' + si(target.vds, 'V') + '</b>';
         if (target.pd > 1) {
           m += ' e dissipa <b>' + si(target.pd, 'W') + '</b>: senza dissipatore arriverebbe a circa ' + num(Math.round(T / 5) * 5, 0) + ' °C' +
             (T > 175 ? ', oltre il massimo del chip (150–175 °C). Un interruttore non deve mai restare a metà strada.' : '.');
         } else m += ' e dissipa ' + si(target.pd, 'W') + '.';
+      } else if (target.pd > 0.25) {
+        // zona ohmica, ma con il gate ancora troppo basso: la Rds è alta e il MOSFET scalda
+        const T = num(Math.round(model.junction(target.pd)), 0);
+        m = 'Il canale collega source e drain e il MOSFET è nella zona ohmica, ma non è acceso del tutto: la Rds vale <b>' + si(target.vds / target.id, 'Ω') + '</b>, su di lui restano <b>' + si(target.vds, 'V') + '</b> e scalda P = I²·R = <b>' + si(target.pd, 'W') + '</b>. Senza dissipatore il chip arriverebbe a circa ' + T + ' °C.';
+        if (st.mode === 'uc' && st.dev === 'std') {
+          const alt = model.solve(vgT, VDD, LOADS[st.load].r, DEVICES.logic);
+          m += ' Un MOSFET standard è garantito acceso solo con 10 V sul gate: con lo stesso piedino un [[mosfet-logico|MOSFET logico]] scalderebbe appena ' + si(alt.pd, 'W') + '.';
+        } else m += ' Con più tensione sul gate la [[rds-on|Rds(on)]] scende e il calore cala.';
       } else {
         m = 'Canale largo e pieno di elettroni: il MOSFET è acceso del tutto e fa da piccola resistenza, la [[rds-on|Rds(on)]] = <b>' + si(target.vds / target.id, 'Ω') + '</b>. Sul carico arrivano quasi tutti i 12 V (Vds = <b>' + si(target.vds, 'V') + '</b>) e il MOSFET scalda solo P = I²·R = <b>' + si(target.pd, 'W') + '</b>.';
-        if (target.pd > 0.25) m += ' Senza dissipatore il chip arriverebbe a circa ' + num(Math.round(model.junction(target.pd)), 0) + ' °C: con più tensione sul gate la Rds(on) scende e il calore quasi sparisce.';
-        else if (st.mode === 'uc') m += ' Il microcontrollore ha speso solo la carica del gate: a regime non gli serve corrente.';
-        if (st.load === 'motor') m += ' Il diodo accanto al motore serve allo spegnimento: protegge il MOSFET dalla sovratensione della bobina.';
+        if (st.mode === 'uc') m += ' Il microcontrollore ha speso solo la carica del gate: a regime non gli serve corrente.';
       }
+      if (target.region === 'ohm' && st.load === 'motor') m += ' Il diodo accanto al motore serve allo spegnimento: protegge il MOSFET dalla sovratensione della bobina.';
       if (lab.reduced && st.maxIg > 1e-3) m += ' Per cambiare la tensione del gate è servita una punta di corrente di ' + si(st.maxIg, 'A') + ': la vedi sull\'oscilloscopio.';
       return m;
     }
@@ -1027,7 +1037,7 @@
       C.fan.style.opacity = (0.45 + 0.55 * st.spin).toFixed(2);
       C.heat.setAttribute('opacity', st.heat.toFixed(3));
       C.T.setChannel(smooth(sol.vov / 0.6));
-      C.ucV.textContent = num(st.vlogic, 1) + ' V';
+      C.ucV.textContent = volt(st.vlogic);
       C.ucPin.textContent = st.pin ? 'ALTO' : 'BASSO';
       C.ucPin.classList.toggle('on', st.pin);
       C.igTag.textContent = 'Ig ' + (st.ig === 0 ? '0 A' : si(st.ig, 'A', { signed: true }));
@@ -1195,10 +1205,11 @@
     id: 'mosfet',
     icon: 'mosfet',
     minutes: 14,
-    summary: 'Il MOSFET è un transistor che si comanda con una tensione, non con una corrente: il [[gate]], isolato dal silicio da un velo di ossido, attira gli elettroni e apre un canale tra source e drain. In continua il gate non assorbe corrente, per questo il piedino di un microcontrollore può accendere motori e lampade da molti ampere. Ed è l\'oggetto più fabbricato della storia: un solo processore moderno ne contiene miliardi.',
+    summary: 'Il MOSFET è un transistor che si comanda con una tensione, non con una corrente: il [[gate]], isolato dal silicio da un velo di ossido, attira gli elettroni e apre un canale tra source e drain. In continua il gate non assorbe corrente: per questo il piedino di un microcontrollore può accendere motori e lampade da molti ampere. Ed è l\'oggetto più fabbricato della storia: un solo processore moderno ne contiene miliardi.',
     keywords: ['mosfet', 'effetto-di-campo', 'gate', 'ossido-di-gate', 'canale-di-inversione', 'soglia-mosfet', 'rds-on', 'mosfet-logico'],
     model: model,
     css: [
+      '.ei-stage-svg.mosfet-svg { max-height: 480px; }',
       '.mosfet-svg .mosfet-frame { fill: #0d1714; stroke: var(--lab-line); stroke-width: 1.2; }',
       '.mosfet-svg .mosfet-xtitle { fill: var(--scope-text); font: 800 10.5px var(--mono); letter-spacing: .16em; }',
       '.mosfet-svg .mosfet-term { fill: var(--scope-bg); stroke: var(--sym); stroke-width: 2; }',
@@ -1237,6 +1248,7 @@
       '.mosfet-svg .mosfet-tag { fill: var(--trace-3); font: 700 12px var(--mono); }',
       '.mosfet-svg .mosfet-pinl { fill: var(--scope-text); font: 700 11px var(--mono); }',
       '.mosfet-svg .mosfet-val { fill: var(--trace-2); }',
+      '.mosfet-svg .mosfet-ll { paint-order: stroke; stroke: var(--scope-bg); stroke-width: 4px; stroke-linejoin: round; }',
       '.mosfet-svg .mosfet-bulb { fill: rgba(255, 214, 120, 0); stroke: currentColor; stroke-width: 2.2; }',
       '.mosfet-svg .mosfet-fil { fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; }',
       '.mosfet-svg .mosfet-rays { fill: none; stroke: #ffd27a; stroke-width: 2; stroke-linecap: round; }',
@@ -1259,7 +1271,7 @@
       '  .mosfet-svg.tall .mosfet-tname { font-size: 16px; }',
       '  .mosfet-svg.tall .mosfet-tword { font-size: 13px; }',
       '  .mosfet-svg.tall .mosfet-tval { font-size: 14px; }',
-      '  .mosfet-svg.tall .mosfet-tag { font-size: 15px; }',
+      '  .mosfet-svg.tall .mosfet-tag { font-size: 13.5px; }',
       '  .mosfet-svg.tall .mosfet-pinl { font-size: 14px; }',
       '  .mosfet-svg.tall .mosfet-legend text { font-size: 13px; }',
       '  .mosfet-svg.tall .mosfet-xtitle { font-size: 12.5px; }',
@@ -1289,7 +1301,7 @@
       'Con il gate a 0 V, tra source e drain ci sono due giunzioni P‑N una contro l\'altra: in qualunque verso provi a far passare corrente, una delle due è in [[polarizzazione-inversa|inversa]]. Il MOSFET è un interruttore aperto.',
       'Se il gate diventa positivo rispetto al source, il campo elettrico attraversa l\'ossido e spinge in profondità le [[lacuna|lacune]]: sotto il gate si forma una [[zona-di-svuotamento|zona svuotata]] con gli ioni negativi fissi. È l\'[[effetto-di-campo]]: si comanda il silicio senza toccarlo.',
       'Oltre la [[soglia-mosfet|tensione di soglia]] Vth il campo attira sotto l\'ossido così tanti elettroni che lì il silicio P si comporta come un N: è il [[canale-di-inversione|canale]], uno strato di inversione che collega source e drain. Più Vgs supera Vth, più il canale è spesso e conduce.',
-      'Con Vgs poco sopra la soglia e molta tensione sul drain, il canale si strozza vicino al drain: la corrente non cresce più con Vds e vale Id = k/2·(Vgs − Vth)². È la [[saturazione-mosfet|saturazione]], che nel MOSFET vuol dire «a metà strada», non «tutto acceso» come nel BJT. Con Vgs alta il MOSFET entra nella zona ohmica e diventa una piccola resistenza, la [[rds-on|Rds(on)]]: il calore vale P = I²·Rds(on).',
+      'Con Vgs poco sopra la soglia e molta tensione sul drain, il canale si strozza vicino al drain: la corrente non cresce più con Vds e vale Id = k/2·(Vgs − Vth)². È la [[saturazione-mosfet|saturazione]], che nel MOSFET vuol dire «a metà strada», non «tutto acceso» come nel BJT. Con Vgs alta e poca tensione sul drain il MOSFET lavora invece nella zona ohmica (detta anche di triodo) e diventa una piccola resistenza, la [[rds-on|Rds(on)]]: il calore vale P = I²·Rds(on).',
       'Il gate è isolato: in continua non assorbe corrente, perché è l\'armatura di un condensatore, la [[capacita-di-gate|capacità di gate]], che in un MOSFET di potenza vale qualche nanofarad. Serve solo una breve punta di corrente quando la tensione cambia, come in un [[costante-di-tempo|circuito RC]]. Durante la commutazione la capacità tra gate e drain la fa sembrare ancora più grande (effetto Miller).',
       'Come interruttore il MOSFET va tenuto tutto acceso o tutto spento, perché a metà strada dissipa moltissimo. Un MOSFET standard è garantito acceso solo con 10 V sul gate; un [[mosfet-logico]] già con 4,5 V, e si comanda direttamente da un piedino a 5 V; per un piedino a 3,3 V conviene un modello con la Rds(on) garantita anche a 2,5 V. Esiste anche il MOSFET a canale P, con le zone scambiate: si accende con il gate più basso del source e fa da interruttore verso il positivo.',
     ],
@@ -1297,7 +1309,7 @@
       {
         name: 'Saturazione',
         expr: '<var>I</var><sub>D</sub> = <span class="frac"><span><var>k</var></span><span>2</span></span> · (<var>V</var><sub>GS</sub> − <var>V</var><sub>th</sub>)<sup>2</sup>',
-        legend: [['I<sub>D</sub>', 'corrente di drain, in ampere'], ['k', 'parametro del canale, in A/V²: cresce con la larghezza del canale e con un ossido più sottile'], ['V<sub>th</sub>', 'tensione di soglia']],
+        legend: [['I<sub>D</sub>', 'corrente di drain, in ampere'], ['k', 'parametro del canale, in A/V²: cresce se il canale è più largo e più corto e se l\'ossido è più sottile'], ['V<sub>th</sub>', 'tensione di soglia']],
         note: 'Vale quando V<sub>DS</sub> ≥ V<sub>GS</sub> − V<sub>th</sub>. Esempio: k = 25 A/V², V<sub>th</sub> = 1,5 V e V<sub>GS</sub> = 1,7 V danno I<sub>D</sub> = 12,5 · 0,04 = 0,5 A.',
       },
       {
@@ -1329,26 +1341,27 @@
     ],
     history: {
       text: [
-        'L\'idea del transistor a effetto di campo è più vecchia del transistor stesso. Nel 1925 Julius Edgar Lilienfeld, un fisico nato a Leopoli che insegnava all\'Università di Lipsia, depositò in Canada, e l\'anno dopo negli Stati Uniti, il brevetto di un dispositivo in cui la tensione di un elettrodo comandava la corrente in uno strato di semiconduttore. Nel 1934 il tedesco Oskar Heil propose un elettrodo isolato che agisce sul semiconduttore come l\'armatura di un condensatore. Erano idee giuste, ma non risulta che nessuno dei due abbia costruito un dispositivo funzionante.',
+        'L\'idea del transistor a effetto di campo è più vecchia del transistor stesso. Nel 1925 Julius Edgar Lilienfeld, un fisico nato a Leopoli e professore all\'Università di Lipsia, depositò in Canada, e l\'anno dopo negli Stati Uniti, il brevetto di un dispositivo in cui la tensione di un elettrodo comandava la corrente in uno strato di semiconduttore. Nel 1934 il tedesco Oskar Heil propose un elettrodo isolato che agisce sul semiconduttore come l\'armatura di un condensatore. Erano idee giuste, ma non risulta che nessuno dei due abbia costruito un dispositivo funzionante.',
         'Il problema era la superficie del cristallo. Nel 1945, ai Bell Labs, William Shockley provò a comandare un sottile strato di semiconduttore con un campo elettrico, ma l\'effetto era molto più debole del previsto. John Bardeen capì perché: gli elettroni attirati restavano intrappolati negli «stati di superficie» e schermavano il campo. Da quegli studi nacque, nel 1947, il transistor a punte di contatto, l\'antenato del transistor <a href="#bjt">bipolare</a>.',
-        'La soluzione arrivò dal silicio stesso. Nel 1955 Carl Frosch e Lincoln Derick scoprirono per caso che il silicio, in un forno con un po\' di vapore acqueo, si ricopre di uno strato di biossido che lo protegge; Mohamed Atalla mostrò poi che un ossido cresciuto con cura toglie alla superficie gran parte delle sue trappole. Nel 1959 Atalla e Dawon Kahng costruirono così il primo MOSFET funzionante, presentato nel 1960. Era lento e non serviva alla rete telefonica, così la AT&T non lo sviluppò; ma era semplice da fabbricare e si poteva fare minuscolo: negli anni Sessanta diventò il mattone dei circuiti integrati e, in coppia N e P, delle porte <a href="../porte-logiche/index.html#famiglie">CMOS</a>, nate nel 1963.',
-        'Negli anni Settanta il MOSFET diventò anche di potenza: dopo i VMOS della Siliconix, nel 1978 l\'International Rectifier presentò l\'HEXFET, con migliaia di celle esagonali in parallelo sullo stesso chip. Da allora i MOSFET comandano motori, lampade e alimentatori; e intanto, rimpiccioliti fino a poche decine di nanometri, riempiono i chip. Secondo una stima pubblicata nel 2018 dal Computer History Museum ne erano stati fabbricati circa 13 triliardi, più di qualunque altro oggetto costruito dall\'uomo.',
+        'La soluzione arrivò dal silicio stesso. Nel 1955 Carl Frosch e Lincoln Derick scoprirono per caso che il silicio, in un forno con un po\' di vapore acqueo, si ricopre di uno strato di biossido che lo protegge; Mohamed Atalla mostrò poi che un ossido cresciuto con cura toglie alla superficie gran parte delle sue trappole. Nel 1959 Atalla e Dawon Kahng costruirono così il primo MOSFET funzionante, presentato nel 1960. Era lento e non serviva alla rete telefonica, così i Bell Labs non lo svilupparono oltre; ma era semplice da fabbricare e si poteva fare minuscolo: tra gli anni Sessanta e Settanta diventò il mattone dei circuiti integrati e, in coppia N e P, delle porte <a href="../porte-logiche/index.html#famiglie">CMOS</a>, nate nel 1963.',
+        'Negli anni Settanta il MOSFET diventò anche di potenza: dopo i VMOS della Siliconix, alla fine del 1978 l\'International Rectifier presentò l\'HEXFET, con migliaia di celle esagonali in parallelo sullo stesso chip. Da allora i MOSFET comandano motori, lampade e alimentatori; e intanto, rimpiccioliti fino a poche decine di nanometri, riempiono i chip. Secondo una stima riportata nel 2018 dal Computer History Museum, fino ad allora erano stati fabbricati circa 13 triliardi di transistor, quasi tutti MOS: più esemplari di qualunque altro oggetto costruito dall\'uomo.',
       ],
       events: [
-        { year: 1925, title: 'Il primo brevetto a effetto di campo', who: 'Julius Edgar Lilienfeld', text: 'Deposita in Canada, e nel 1926 negli Stati Uniti, un dispositivo in cui la tensione di un elettrodo regola la corrente in uno strato di semiconduttore. Il brevetto americano è concesso nel 1930.' },
+        { year: 1925, title: 'Il primo brevetto a effetto di campo', who: 'Julius Edgar Lilienfeld', text: 'Deposita in Canada, e nel 1926 negli Stati Uniti, il brevetto di un dispositivo in cui la tensione di un elettrodo regola la corrente in uno strato di semiconduttore. Il brevetto americano è concesso nel 1930.' },
         { year: 1934, title: 'Un elettrodo che agisce come un condensatore', who: 'Oskar Heil', text: 'Il fisico tedesco brevetta il controllo della corrente in un semiconduttore attraverso un elettrodo accoppiato in modo capacitivo: è l\'idea del gate isolato.' },
-        { year: 1955, title: 'L\'ossido nato da un incidente', who: 'Carl Frosch e Lincoln Derick (Bell Labs)', text: 'Una fiammata nel forno di diffusione porta vapore acqueo e ricopre il silicio di uno strato di biossido: protegge la superficie e fa da maschera. Il lavoro è pubblicato nel 1957.' },
+        { year: 1955, title: 'L\'ossido nato da un incidente', who: 'Carl Frosch e Lincoln Derick (Bell Labs)', text: 'L\'idrogeno nel forno di diffusione prende fuoco per un attimo: il vapore acqueo che si forma ricopre il silicio di uno strato di biossido, che protegge la superficie e fa da maschera. Il lavoro è pubblicato nel 1957.' },
         { year: 1959, title: 'Il MOSFET funziona', who: 'Mohamed M. Atalla e Dawon Kahng (Bell Labs)', text: 'Gate di metallo, ossido cresciuto sul silicio, silicio: il primo transistor a effetto di campo con il gate isolato che funziona davvero. Lo presentano nel 1960.' },
-        { year: 1978, title: 'L\'HEXFET', who: 'International Rectifier (Alex Lidow e Tom Herman)', text: 'Un MOSFET di potenza fatto di migliaia di celle esagonali in parallelo: comincia a sostituire i transistor bipolari negli alimentatori e nei comandi dei motori.' },
-        { year: 2018, title: 'Circa 13 triliardi di MOSFET', who: 'Computer History Museum, stima di Jim Handy', text: 'Il MOSFET risulta l\'oggetto più fabbricato nella storia dell\'umanità: circa 1,3 · 10²² esemplari, quasi tutti dentro i chip.' },
+        { year: 1978, title: 'L\'HEXFET', who: 'International Rectifier (Alex Lidow e Tom Herman)', text: 'Un MOSFET di potenza fatto di migliaia di celle esagonali in parallelo, annunciato a fine anno e in vendita dal 1979: comincia a sostituire i transistor bipolari negli alimentatori e nei comandi dei motori.' },
+        { year: 2018, title: 'Circa 13 triliardi di transistor', who: 'Computer History Museum, stima dell\'analista Jim Handy', text: 'Il transistor MOS risulta l\'oggetto costruito in più esemplari nella storia dell\'umanità: circa 1,3 · 10²² transistor tra il 1947 e il 2018, quasi tutti MOS e quasi tutti dentro i chip.' },
       ],
     },
-    fun: 'L\'ossido del gate è così sottile da temere anche l\'elettricità statica: una scarica che non senti nemmeno (si comincia ad avvertirla intorno ai 3000 volt) può forarlo e rovinare il transistor per sempre. Per questo i MOSFET viaggiano in buste antistatiche e si maneggiano con un braccialetto collegato a terra. Per lo stesso motivo i chip hanno protezioni sui piedini e alcuni MOSFET di potenza un piccolo diodo Zener sul gate.',
+    fun: 'L\'ossido del gate è così sottile da temere anche l\'elettricità statica: una scarica che non senti nemmeno può forarlo e rovinare il transistor per sempre. Una scintilla si avverte solo sopra qualche migliaio di volt, mentre per danneggiare un componente delicato possono bastarne poche centinaia. Per questo i MOSFET viaggiano in buste antistatiche e si maneggiano con un braccialetto collegato a terra. Per lo stesso motivo i chip hanno protezioni sui piedini e alcuni MOSFET di potenza un piccolo diodo Zener sul gate.',
     uses: 'Interruttori per motori, strisce LED, resistenze riscaldanti ed elettrovalvole comandati da Arduino, ESP32 o Raspberry Pi; gli alimentatori switching e i caricabatterie, che accendono e spengono un MOSFET centinaia di migliaia di volte al secondo; gli inverter delle auto elettriche e dei pannelli solari; la protezione contro la batteria montata al contrario. E, a miliardi, i chip digitali: processori, memorie, telecamere dei telefoni.',
     links: [
       { href: '#bjt', section: 'Questa sezione', title: 'Il transistor bipolare: comandato in corrente' },
       { href: '#rc-filtri', section: 'Questa sezione', title: 'Circuiti RC: la carica del gate è una curva esponenziale' },
       { href: '../porte-logiche/index.html#famiglie', section: 'Porte logiche', title: 'Le famiglie logiche: MOSFET N e P in coppia nel CMOS' },
+      { href: '../porte-logiche/index.html#struttura', section: 'Porte logiche', title: 'Dentro il chip: miliardi di MOSFET di pochi nanometri' },
       { href: '../elettronica-base/index.html#potenza', section: 'Elettronica base', title: 'La potenza elettrica: P = V · I e il calore' },
       { href: '../elettronica-avanzata/index.html', section: 'Elettronica avanzata', title: 'Elettronica di potenza: MOSFET che commutano centinaia di migliaia di volte al secondo' },
     ],
@@ -1359,7 +1372,7 @@
       'ossido-di-gate': { term: 'Ossido di gate', def: 'Lo strato isolante di biossido di silicio (SiO₂) sotto il gate: pochi nanometri nei chip, qualche decina nei MOSFET di potenza. Non lascia passare la corrente, ma lascia passare il campo elettrico.' },
       'canale-di-inversione': { term: 'Canale di inversione', def: 'Lo strato sottile di elettroni che si forma sotto l\'ossido quando Vgs supera la soglia: lì il silicio P si comporta come un N e collega source e drain.' },
       'soglia-mosfet': { term: 'Tensione di soglia (Vth)', def: 'La tensione tra gate e source oltre la quale nel MOSFET si forma il canale e comincia a passare corrente. Nei MOSFET di potenza va più o meno da 1 a 4 volt.' },
-      'rds-on': { term: 'Rds(on)', def: 'La resistenza tra drain e source di un MOSFET acceso del tutto: nei MOSFET di potenza va da circa un milliohm a qualche decimo di ohm. Il calore prodotto vale P = I²·Rds(on).' },
+      'rds-on': { term: 'Rds(on)', def: 'La resistenza tra drain e source di un MOSFET acceso del tutto: nei MOSFET di potenza va da meno di un milliohm a qualche ohm, secondo la taglia e la tensione massima. Il calore prodotto vale P = I²·Rds(on).' },
       'saturazione-mosfet': { term: 'Saturazione (MOSFET)', def: 'La zona in cui il canale è strozzato vicino al drain e la corrente non cresce più con Vds: Id = k/2·(Vgs − Vth)². Attenzione: è il contrario della saturazione del BJT, dove il transistor è tutto acceso.' },
       'capacita-di-gate': { term: 'Capacità di gate', def: 'La capacità che il gate forma con il canale e con gli altri terminali: qualche nanofarad nei MOSFET di potenza. Va caricata e scaricata a ogni commutazione, con brevi punte di corrente.' },
       'mosfet-logico': { term: 'MOSFET logico', def: 'MOSFET a livello logico: ha la soglia bassa ed è garantito acceso del tutto già con 4,5 V sul gate (alcuni anche con 2,5 V), quindi si comanda direttamente dai piedini di un microcontrollore.' },
