@@ -44,7 +44,7 @@
         id: 'pc-03', level: 3, topic: 'Colossus', chapter: 'giganti', type: 'truefalse',
         q: 'Colossus, il calcolatore elettronico usato a Bletchley Park durante la seconda guerra mondiale, serviva a decifrare i messaggi della macchina Enigma.',
         answer: false,
-        why: 'Falso: Colossus (1944) attaccava il cifrario Lorenz, usato dall\'alto comando tedesco per le telescriventi. Contro Enigma lavoravano le Bombe elettromeccaniche ideate da Alan Turing e Gordon Welchman.',
+        why: 'Falso: Colossus (1944) attaccava il cifrario Lorenz, usato dall\'alto comando tedesco per le telescriventi. Contro Enigma lavoravano le Bombe elettromeccaniche di Alan Turing e Gordon Welchman, nate dalla bomba polacca di Marian Rejewski.',
       },
       {
         id: 'pc-04', level: 2, topic: 'IBM System/360', chapter: 'giganti', type: 'choice',

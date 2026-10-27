@@ -42,7 +42,7 @@
         q: 'Busicom chiedeva a Intel molti chip diversi, ciascuno progettato su misura. Che cosa propose invece Ted Hoff?',
         options: ['Un processore generico che esegue un programma', 'Un unico grande chip cablato con tutte le funzioni', 'Una memoria con i risultati di tutti i calcoli', 'Una calcolatrice collegata a un minicomputer'],
         answer: 0,
-        why: 'Hoff, con Stan Mazor, propose pochi chip generici: un processore a 4 bit, una ROM con il programma e una RAM per i dati. Le funzioni della calcolatrice diventavano software, più facile da cambiare.',
+        why: 'Hoff propose pochi chip generici: un processore a 4 bit, una ROM con il programma e una RAM per i dati; poi ne definì l\'architettura con Stan Mazor. Le funzioni della calcolatrice diventavano software, più facile da cambiare.',
       },
       {
         id: 'cp-04', level: 2, topic: 'Cablato e programmato', chapter: 'idea', type: 'truefalse',

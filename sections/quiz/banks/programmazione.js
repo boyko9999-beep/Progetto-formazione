@@ -62,7 +62,7 @@
         id: 'pr-05', level: 2, topic: 'Logica e calcolo', chapter: 'logica', type: 'match',
         q: 'Abbina ogni studioso all\'idea per cui è ricordato.',
         pairs: [['George Boole', 'Un\'algebra per il vero e il falso'], ['Kurt Gödel', 'I teoremi di incompletezza'], ['Alonzo Church', 'Il lambda calcolo'], ['Claude Shannon', 'La logica dei circuiti a relè'], ['Konrad Zuse', 'Il Plankalkül, un linguaggio di programmazione']],
-        why: 'Boole ridusse la logica a calcoli con vero e falso; Gödel dimostrò che ogni sistema coerente e abbastanza ricco ha enunciati veri che non può dimostrare; il lambda calcolo di Church ispirò il LISP; Shannon applicò l\'algebra di Boole ai relè; il Plankalkül di Zuse restò sulla carta per decenni.',
+        why: 'Boole ridusse la logica a calcoli con vero e falso; Gödel dimostrò che ogni sistema coerente e abbastanza ricco ha enunciati veri che non può dimostrare; dal lambda calcolo di Church il LISP riprese la notazione per le funzioni; Shannon applicò l\'algebra di Boole ai relè; il Plankalkül di Zuse restò sulla carta per decenni.',
       },
       {
         id: 'pr-06', level: 3, topic: 'Tappe della logica', chapter: 'logica', type: 'order',
@@ -101,13 +101,13 @@
         figure: { kind: 'code', lang: 'Assembly x86', text: 'MOV  AL, 5     ; AL = 5\nADD  AL, 3     ; AL = AL + 3' },
         options: ['Traduce ogni sigla nel codice binario dell\'istruzione', 'Esegue subito le istruzioni una alla volta, senza tradurle', 'Lo copia in memoria così com\'è, lettera per lettera', 'Controlla che i calcoli del programma siano giusti'],
         answer: 0,
-        why: 'Il processore capisce solo numeri: l\'assemblatore sostituisce ogni mnemonico, cioè una sigla come MOV o ADD, con il suo codice macchina. Nell\'x86, per esempio, MOV AL, 5 diventa 10110000 00000101. Già nel 1949 gli ordini iniziali dell\'EDSAC traducevano così A25F, «somma il numero della cella 25».',
+        why: 'Il processore capisce solo numeri: l\'assemblatore sostituisce ogni mnemonico, cioè una sigla come MOV o ADD, con il suo codice macchina. Nell\'x86, per esempio, MOV AL, 5 diventa 10110000 00000101. Già nel 1949 gli ordini iniziali dell\'EDSAC traducevano così A 25 S, «somma all\'accumulatore il numero della cella 25».',
       },
       {
         id: 'pr-11', level: 2, topic: 'Pionieri del software', chapter: 'assembly', type: 'match',
         q: 'Abbina ogni pioniere della programmazione al suo contributo.',
         pairs: [['Kathleen Booth', 'Uno dei primi assembly, per il calcolatore ARC'], ['John Mauchly', 'Lo Short Code, per scrivere formule'], ['David Wheeler', 'Il modo di chiamare una subroutine e tornare'], ['Grace Hopper', 'Il compilatore A-0']],
-        why: 'La notazione di Kathleen Booth per l\'ARC (Londra, 1947) è spesso indicata come il primo assembly, ma il primato è discusso; Mauchly propose nel 1949 lo Short Code, poi realizzato come interprete; Wheeler inventò a Cambridge il salto che porta il suo nome; Grace Hopper scrisse l\'A-0 nel 1952.',
+        why: 'La notazione di Kathleen Booth per l\'ARC (Londra, 1947) è spesso indicata come il primo assembly, ma il primato è discusso; Mauchly propose nel 1949 lo Short Code, poi realizzato come interprete; Wheeler inventò a Cambridge il salto che porta il suo nome; Grace Hopper scrisse l\'A-0 tra il 1951 e il 1952.',
       },
       {
         id: 'pr-12', level: 3, topic: 'Interpreti e compilatori', chapter: 'assembly', type: 'choice',
@@ -139,7 +139,7 @@
         q: 'Il rapporto su ALGOL 60, del 1960, rese famoso un modo nuovo e preciso di descrivere un linguaggio di programmazione. Quale?',
         options: ['Una grammatica formale nella notazione BNF', 'Un compilatore di riferimento uguale per tutti', 'Un manuale con tanti esempi commentati', 'Un diagramma di flusso per ogni istruzione'],
         answer: 0,
-        why: 'La forma di Backus-Naur (BNF), presentata da John Backus nel 1959 e usata da Peter Naur nel rapporto, elenca con regole precise le frasi valide, per esempio <cifra> ::= 0 | 1 | 2 | ... | 9. Si usa ancora oggi per definire i linguaggi.',
+        why: 'John Backus propose la notazione nel 1959; Peter Naur la semplificò e la usò per tutto il rapporto, con regole precise come <cifra> ::= 0 | 1 | 2 | ... | 9. All\'inizio BNF voleva dire Backus Normal Form, poi Backus-Naur Form, per dare merito anche a Naur. Si usa ancora oggi per definire i linguaggi.',
       },
 
       // ------------------------------------------------------------ Schede perforate e lotti
@@ -177,10 +177,10 @@
       },
       {
         id: 'pr-20', level: 1, topic: 'La crisi del software', chapter: 'strutturata', type: 'choice',
-        q: 'Nel 1968, contro la «crisi del software» (programmi in ritardo, costosi e pieni di errori), la NATO riunì a Garmisch una cinquantina di esperti. Il titolo della conferenza, «Software Engineering», era una provocazione. Che cosa chiedeva?',
+        q: 'Nel 1968, contro la «crisi del software» (programmi in ritardo, costosi e pieni di errori), la NATO riunì a Garmisch più di cinquanta esperti di undici paesi. Il titolo della conferenza, «Software Engineering», era una provocazione. Che cosa chiedeva?',
         options: ['Di costruire i programmi con i metodi degli ingegneri', 'Di far scrivere i programmi agli ingegneri elettronici', 'Di usare i computer per i calcoli degli ingegneri', 'Di insegnare la programmazione nelle facoltà di ingegneria'],
         answer: 0,
-        why: 'Come ponti e centrali elettriche, anche i programmi andavano costruiti con metodi rigorosi: specifiche, progetto, collaudo, manutenzione. Da Garmisch l\'espressione «ingegneria del software» si diffuse in tutto il mondo.',
+        why: 'Come ponti e centrali elettriche, anche i programmi andavano costruiti con metodi rigorosi: specifiche, progetto, collaudo, manutenzione. L\'espressione «ingegneria del software» circolava già, ma da Garmisch si diffuse in tutto il mondo.',
       },
       {
         id: 'pr-21', level: 3, topic: 'Il software dell\'Apollo', chapter: 'strutturata', type: 'truefalse',
