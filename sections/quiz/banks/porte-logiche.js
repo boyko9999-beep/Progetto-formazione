@@ -11,20 +11,20 @@
     slug: 'porte-logiche',
     number: 4,
     title: 'Porte logiche e chip',
-    subtitle: 'Dalla logica di Boole al circuito integrato',
+    subtitle: 'Dall\'algebra di Boole ai chip con miliardi di transistor',
     chapters: [
-      { id: 'boole', title: 'Boole e la logica' },
+      { id: 'boole', title: 'La logica prima dei circuiti' },
       { id: 'porte', title: 'Le porte logiche' },
-      { id: 'calcolo', title: 'Calcolare con le porte' },
-      { id: 'interruttori', title: 'Relè, valvole e transistor' },
-      { id: 'famiglie', title: 'Famiglie logiche' },
-      { id: 'integrato', title: 'Il circuito integrato' },
+      { id: 'calcolo', title: 'Porte che contano e ricordano' },
+      { id: 'interruttori', title: 'Relè, valvole, transistor' },
+      { id: 'famiglie', title: 'Le famiglie logiche' },
+      { id: 'integrato', title: 'Nasce il circuito integrato' },
       { id: 'fabbrica', title: 'Come si fabbrica un chip' },
       { id: 'struttura', title: 'Dentro il chip' },
-      { id: 'moore', title: 'La legge di Moore' },
+      { id: 'moore', title: 'La legge di Moore e il futuro' },
     ],
     questions: [
-      // ------------------------------------------------------------ Boole e la logica
+      // ------------------------------------------------------------ La logica prima dei circuiti
       {
         id: 'pl-01', level: 1, topic: 'Pionieri della logica', chapter: 'boole', type: 'match',
         q: 'Abbina ogni personaggio al suo contributo.',
@@ -107,7 +107,7 @@
         why: 'Le prime due NAND danno NOT (A AND B) e NOT (C AND D); la terza dà 1 se almeno una delle due vale 0: (A AND B) OR (C AND D). Le sole NAND fanno quindi il lavoro di AND e OR e bastano per qualsiasi circuito; lo stesso vale per le NOR, le sole porte del computer di bordo dell\'Apollo.',
       },
 
-      // ------------------------------------------------------------ Calcolare con le porte
+      // ------------------------------------------------------------ Porte che contano e ricordano
       {
         id: 'pl-11', level: 1, topic: 'Semisommatore', chapter: 'calcolo', type: 'truth',
         q: 'Il semisommatore somma due bit, A e B: la cifra della somma, qui l\'uscita Y, è data da una porta XOR. Completa la sua tabella di verità.',
@@ -143,7 +143,7 @@
         why: 'Sui fronti di discesa DATA è stabile e vale, in ordine, 1, 0, 1, 1, 0, 0, 1, 0. Il primo bit va nel peso 1 e l\'ultimo nel peso 128: il byte è 0100 1101 = 64 + 8 + 4 + 1 = 77 (4D in esadecimale). A ogni fronte ogni bit passa al flip-flop D vicino ed entra quello nuovo.',
       },
 
-      // ------------------------------------------------------------ Relè, valvole e transistor
+      // ------------------------------------------------------------ Relè, valvole, transistor
       {
         id: 'pl-16', level: 1, topic: 'Linea del tempo', chapter: 'interruttori', type: 'order',
         q: 'Metti in ordine cronologico questi calcolatori, dal più antico al più recente.',
@@ -172,7 +172,7 @@
         why: '13 = 8 + 4 + 1, quindi 1101. Un relè ha due soli stati, e anche per questo Zuse scelse il binario: lo Z3 lavorava su parole di 22 bit, in virgola mobile. L\'ENIAC, a valvole, contava invece in decimale, con un anello di dieci elementi per ogni cifra.',
       },
 
-      // ------------------------------------------------------------ Famiglie logiche
+      // ------------------------------------------------------------ Le famiglie logiche
       {
         id: 'pl-20', level: 2, topic: 'Famiglie logiche', chapter: 'famiglie', type: 'match',
         q: 'Abbina ogni famiglia logica alla sua caratteristica.',
@@ -204,8 +204,16 @@
         answer: 0,
         why: 'L\'uscita va a 1 solo se conducono tutti e due i pMOS in serie, cioè con A = B = 0; basta un ingresso a 1 perché il suo nMOS la colleghi a massa. È una NOR con 4 transistor; la NAND ha invece gli nMOS in serie e i pMOS in parallelo.',
       },
+      {
+        id: 'pl-33', level: 1, topic: 'Contenitore e piedini', chapter: 'famiglie', type: 'choice',
+        q: 'Il 7400 in figura contiene quattro porte NAND a due ingressi. Come sono usati i suoi piedini?',
+        figure: { kind: 'chip', pins: 14, label: '7400', note: 'TTL' },
+        options: ['8 ingressi e 4 uscite, più alimentazione e massa', '8 ingressi e 4 uscite, più 2 piedini di riserva', '8 ingressi e 4 uscite, più 2 ingressi di clock', '8 ingressi e 4 uscite, più 2 uscite negate'],
+        answer: 0,
+        why: 'Ogni NAND ha 2 ingressi e 1 uscita: 4 × 3 = 12 piedini. Gli altri due portano l\'alimentazione, +5 V sul piedino 14, e la massa, sul piedino 7: senza di loro nessuna porta potrebbe funzionare.',
+      },
 
-      // ------------------------------------------------------------ Il circuito integrato
+      // ------------------------------------------------------------ Nasce il circuito integrato
       {
         id: 'pl-25', level: 1, topic: 'Tirannia dei numeri', chapter: 'integrato', type: 'choice',
         q: 'Alla fine degli anni Cinquanta gli ingegneri parlavano di "tirannia dei numeri". Quale problema indicavano?',
@@ -239,9 +247,9 @@
       {
         id: 'pl-29', level: 1, topic: 'Dalla sabbia al chip', chapter: 'fabbrica', type: 'order',
         q: 'Metti in ordine le tappe che portano dalla sabbia a un chip finito.',
-        items: ['Purificazione del silicio ricavato dalla sabbia', 'Crescita del lingotto con il metodo Czochralski', 'Taglio del lingotto in wafer sottili', 'Fotolitografia e drogaggio, strato dopo strato', 'Separazione dei chip e montaggio nel package'],
+        items: ['Purificazione del silicio ricavato dalla sabbia', 'Crescita del lingotto con il metodo Czochralski', 'Taglio del lingotto in wafer sottili', 'Fotolitografia e drogaggio, strato dopo strato', 'Separazione dei chip e montaggio nel contenitore'],
         ends: ['Primo passo', 'Ultimo passo'],
-        why: 'Il quarzo della sabbia diventa silicio purissimo; dal silicio fuso si tira su un lingotto monocristallino, che si taglia in wafer. Fotolitografia e drogaggio ripetuti costruiscono i circuiti; infine i chip buoni si separano e si chiudono nel package.',
+        why: 'Il quarzo della sabbia diventa silicio purissimo; dal silicio fuso si tira su un lingotto monocristallino, che si taglia in wafer. Fotolitografia e drogaggio ripetuti costruiscono i circuiti; infine i chip buoni si separano e si chiudono nel contenitore.',
       },
       {
         id: 'pl-30', level: 1, topic: 'Parole della fabbrica', chapter: 'fabbrica', type: 'match',
@@ -271,20 +279,11 @@
 
       // ------------------------------------------------------------ Dentro il chip
       {
-        id: 'pl-33', level: 1, topic: 'Package e piedini', chapter: 'struttura', type: 'choice',
-        q: 'Il 7400 in figura contiene quattro porte NAND a due ingressi. Come sono usati i suoi piedini?',
-        figure: { kind: 'chip', pins: 14, label: '7400', note: 'TTL' },
-        options: ['8 ingressi e 4 uscite, più alimentazione e massa', '8 ingressi e 4 uscite, più 2 piedini di riserva', '8 ingressi e 4 uscite, più 2 ingressi di clock', '8 ingressi e 4 uscite, più 2 uscite negate'],
-        answer: 0,
-        why: 'Ogni NAND ha 2 ingressi e 1 uscita: 4 × 3 = 12 piedini. Gli altri due portano l\'alimentazione, +5 V sul piedino 14, e la massa, sul piedino 7: senza di loro nessuna porta potrebbe funzionare.',
-      },
-      {
         id: 'pl-34', level: 2, topic: 'MOSFET nei chip CMOS', chapter: 'struttura', type: 'choice',
-        q: 'Nelle porte CMOS lavorano due tipi di MOSFET. Di che tipo è quello rappresentato da questo simbolo, e quando conduce?',
-        figure: { kind: 'symbol', name: 'nmos' },
-        options: ['MOSFET a canale N: conduce con il gate a 1', 'MOSFET a canale P: conduce con il gate a 0', 'MOSFET a canale N: conduce con il gate a 0', 'MOSFET a canale P: conduce con il gate a 1'],
+        q: 'Nelle porte CMOS lavorano insieme due tipi di MOSFET, pMOS e nMOS. Quando conduce un nMOS, e a quale livello porta l\'uscita della porta?',
+        options: ['Con il gate a 1, e porta l\'uscita a 0', 'Con il gate a 0, e porta l\'uscita a 0', 'Con il gate a 1, e porta l\'uscita a 1', 'Con il gate a 0, e porta l\'uscita a 1'],
         answer: 0,
-        why: 'La freccia punta verso il canale: è un nMOS, che conduce quando il gate è a 1. Il pMOS, con la freccia verso l\'esterno, conduce con il gate a 0 e collega l\'uscita all\'alimentazione: a ingressi fermi uno dei due è sempre spento, per questo la CMOS consuma pochissimo.',
+        why: 'Gli nMOS stanno tra l\'uscita e la massa e conducono con il gate a 1: quando conducono, l\'uscita va a 0. I pMOS fanno il contrario: conducono con il gate a 0 e collegano l\'uscita all\'alimentazione. Per ogni combinazione degli ingressi conducono i transistor verso l\'alimentazione oppure quelli verso massa, mai tutti e due.',
       },
       {
         id: 'pl-35', level: 2, topic: 'FinFET e GAA', chapter: 'struttura', type: 'truefalse',
@@ -300,13 +299,13 @@
         why: 'Sopra i transistor si costruiscono più di dieci strati di piste di metallo, oggi soprattutto di rame, separati da isolante e uniti da collegamenti verticali. Con un solo strato le piste non potrebbero incrociarsi; i fili saldati uno per uno erano quelli del primo integrato di Kilby.',
       },
 
-      // ------------------------------------------------------------ La legge di Moore
+      // ------------------------------------------------------------ La legge di Moore e il futuro
       {
         id: 'pl-37', level: 1, topic: 'Gordon Moore', chapter: 'moore', type: 'choice',
         q: 'Nel 1965 Gordon Moore, che tre anni dopo avrebbe fondato Intel con Robert Noyce, fece una previsione sui circuiti integrati. Quale?',
         options: ['I componenti per chip sarebbero raddoppiati ogni anno', 'La frequenza dei chip sarebbe raddoppiata ogni anno', 'La tensione dei chip si sarebbe dimezzata ogni anno', 'Le dimensioni dei chip sarebbero raddoppiate ogni anno'],
         answer: 0,
-        why: 'Nell\'articolo del 1965 Moore notò che i componenti per chip raddoppiavano circa ogni anno e previde che il ritmo sarebbe durato almeno dieci anni. Nel 1975 lo corresse in un raddoppio ogni due anni circa: è la "legge di Moore".',
+        why: 'Nell\'articolo del 1965 Moore notò che i componenti per chip raddoppiavano circa ogni anno e previde che il ritmo sarebbe durato almeno dieci anni. Nel 1975 corresse la previsione: verso il 1980 il ritmo sarebbe sceso a un raddoppio ogni due anni circa. È la "legge di Moore".',
       },
       {
         id: 'pl-38', level: 3, topic: 'Raddoppi di Moore', chapter: 'moore', type: 'choice',
