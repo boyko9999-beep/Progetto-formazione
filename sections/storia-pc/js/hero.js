@@ -353,7 +353,8 @@
 
   if ('IntersectionObserver' in window) {
     new IntersectionObserver((entries) => {
-      visibile = entries[0].isIntersecting;
+      // Più notifiche nello stesso giro (per esempio con un link diretto a un capitolo): vale l'ultima.
+      visibile = entries[entries.length - 1].isIntersecting;
       aggiornaStato();
     }, { threshold: 0.15 }).observe(contenitore);
   } else {

@@ -169,3 +169,32 @@ test('il capitolo si carica in Node e rispetta il contratto', () => {
   assert.ok(c.punti.length >= 4 && c.punti.length <= 6);
   assert.ok(c.collegamenti.some((l) => l.href === '../../index.html#/bus/isa'));
 });
+
+test('collegamenti e rimandi nei formati ammessi, verso ancore esistenti', () => {
+  const SEC = path.join(__dirname, '..', 'sections', 'storia-pc');
+  const P = require(path.join(SEC, 'js', 'core.js'));
+  require(path.join(SEC, 'js', 'capitoli', '04-ibm-pc.js'));
+  const c = P.capitoli.find((x) => x.id === 'ibm-pc');
+  const BUS = ['uart', 'rs232', 'rs485', 'midi', 'i2c', 'smbus', 'i3c', 'spi', 'onewire', 'i2s', 'jtag', 'axi', 'unibus', 's100', 'isa', 'scsi',
+    'pci', 'pcie', 'sata', 'gpib', 'centronics', 'usb', 'firewire', 'thunderbolt', 'mil1553', 'modbus', 'can', 'lin', 'profibus', 'flexray', 'ethernet'];
+  const CAPITOLI = ['giganti', 'von-neumann', 'primi-pc', 'ibm-pc', 'scheda-madre', 'memoria', 'avvio', 'grafica', 'prestazioni', 'oggi'];
+  const SEZIONI = {
+    'chip-programmabili': ['idea', 'memorie', 'intel-4004', 'ciclo', 'otto-bit', 'microcontrollori', 'logica-programmabile', 'sedici-bit'],
+    programmazione: ['telai', 'logica', 'cavi', 'assembly', 'fortran', 'schede', 'strutturata', 'unix', 'personal', 'oggetti', 'web', 'ovunque', 'ia', 'atlante'],
+  };
+  // i link scritti nei testi (paragrafi, riquadri, schede) e quelli della barra "Approfondisci"
+  const html = JSON.stringify(c.blocchi) + JSON.stringify(c.punti) + c.intro;
+  const nelTesto = [...html.matchAll(/href=\\?"([^"\\]+)\\?"/g)].map((m) => m[1]);
+  const tutti = nelTesto.concat(c.collegamenti.map((l) => l.href));
+  assert.ok(nelTesto.length >= 4, 'pochi rimandi nel testo');
+  tutti.forEach((h) => {
+    if (h.startsWith('../../index.html#/bus/')) assert.ok(BUS.includes(h.slice('../../index.html#/bus/'.length)), 'bus inesistente: ' + h);
+    else if (h.startsWith('#')) assert.ok(CAPITOLI.includes(h.slice(1)), 'capitolo inesistente: ' + h);
+    else if (h.startsWith('../quiz/')) assert.strictEqual(h, '../quiz/index.html#storia-pc/ibm-pc');
+    else {
+      const m = h.match(/^\.\.\/([a-z-]+)\/index\.html#([a-z0-9-]+)$/);
+      assert.ok(m && SEZIONI[m[1]] && SEZIONI[m[1]].includes(m[2]), 'rimando a un\'altra sezione non valido (serve index.html esplicito): ' + h);
+    }
+  });
+  c.collegamenti.forEach((l) => assert.ok(l.tipo === (l.href.includes('#/bus/') ? 'buslab' : 'sezione'), 'tipo sbagliato per ' + l.href));
+});

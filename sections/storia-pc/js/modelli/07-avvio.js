@@ -2,8 +2,8 @@
  * Storia del PC · capitolo 7 (avvio): dati e logica pura, senza DOM.
  *
  * - Settori di avvio di esempio da 512 byte: il master boot record (MBR) di un disco rigido
- *   di fine anni Ottanta, con codice, tabella delle partizioni (byte 446-509) e firma 55h AAh
- *   (byte 510-511), e il settore di un dischetto del 1981, che la firma non l'aveva.
+ *   di fine anni Ottanta, con codice, tabella delle partizioni (byte 446–509) e firma 55h AAh
+ *   (byte 510–511), e il settore di un dischetto del 1981, che la firma non l'aveva.
  * - Conversioni fra indirizzi CHS (cilindro, testina, settore) e LBA (numero di blocco),
  *   codifica CHS nei 3 byte della tabella, indirizzi segmento:offset dell'8088.
  * - Un'impronta digitale semplificata (FNV-1a a 32 bit) per mostrare la verifica di Secure Boot.
@@ -293,7 +293,7 @@
     reset1981: { id: 'reset', nome: 'Reset', titolo: 'Il processore si sveglia', dove: 'ROM del BIOS', indirizzo: 'FFFF:0000', durata: 1300,
       testo: 'Power Good sale e l\'8088 esce dal reset. Va a prendere la prima istruzione sempre allo stesso indirizzo, <strong>FFFF0h</strong>, 16 byte prima della fine del suo megabyte. Lì c\'è la ROM del BIOS, e in 16 byte c\'è posto solo per un salto: JMP F000:E05B, l\'inizio del programma vero.' },
     postIbm: { id: 'post', nome: 'POST', titolo: 'Il POST, l\'autodiagnosi', dove: 'ROM del BIOS', indirizzo: 'F000:E05B', durata: 4200,
-      testo: 'Il <strong>POST</strong> (power-on self-test) prova i componenti uno dopo l\'altro, dai più essenziali: processore, ROM, timer, memoria, interruzioni, video, tastiera, dischetti. Sull\'IBM PC lo schermo mostra solo il cursore: l\'elenco qui accanto racconta che cosa sta succedendo dentro.' },
+      testo: 'Il <strong>POST</strong> (power-on self-test) prova i componenti uno dopo l\'altro, dai più essenziali: processore, ROM, timer, memoria, interruzioni, video, tastiera, dischetti. Sull\'IBM PC lo schermo mostra solo il cursore: l\'elenco del pannello racconta che cosa succede dentro.' },
     bip: { id: 'bip', nome: 'Bip', titolo: 'Un bip breve: tutto a posto', dove: 'Altoparlante', indirizzo: 'F000', durata: 1000,
       testo: 'Un <strong>bip breve</strong> dall\'altoparlante vuol dire che il POST non ha trovato errori. Accendi il suono per sentirlo: è un\'onda quadra a circa 900 Hz, prodotta dal timer 8253.' },
     int19Dischetto: { id: 'settore', nome: 'Settore', titolo: 'INT 19h: il primo settore del dischetto', dove: 'Dischetto A:', indirizzo: '0000:7C00', durata: 2600,
@@ -301,15 +301,15 @@
     salto1981: { id: 'salto', nome: '7C00', titolo: 'Salto a 0000:7C00', dove: 'RAM', indirizzo: '0000:7C00', durata: 1500,
       testo: 'Il BIOS salta a <strong>0000:7C00</strong> e da qui comanda il codice del dischetto. Quei 512 byte sanno fare una cosa sola: caricare in memoria i due file del sistema, IBMBIO.COM e IBMDOS.COM, e passare loro il comando.' },
     dos1: { id: 'dos', nome: 'DOS', titolo: 'Il PC DOS 1.00 è pronto', dove: 'RAM', indirizzo: '—', durata: 3600,
-      testo: 'Parte l\'interprete dei comandi, COMMAND.COM. Il PC DOS 1.00 non aveva un orologio da leggere e chiedeva ogni volta la data, obbligatoria. Poi il prompt <strong>A&gt;</strong>: il computer aspetta i comandi.' },
+      testo: 'Parte l\'interprete dei comandi, COMMAND.COM. Il PC non aveva un orologio a batteria, e il PC DOS 1.00 chiedeva la data a ogni avvio. Poi il prompt <strong>A&gt;</strong>: il computer aspetta i comandi.' },
     int19Vuoto: { id: 'settore', nome: 'Dischetto', titolo: 'INT 19h: nessun dischetto', dove: 'Dischetto A:', indirizzo: '—', durata: 2000,
       testo: 'Il BIOS prova a leggere il dischetto, ma l\'unità è vuota. Riprova qualche volta, poi si arrende e chiama l\'interruzione <strong>18h</strong>.' },
     basic: { id: 'basic', nome: 'BASIC', titolo: 'INT 18h: il BASIC in ROM', dove: 'ROM del BASIC', indirizzo: 'F600:0000', durata: 2400,
-      testo: 'L\'IBM PC non si arrende: avvia il <strong>BASIC</strong> registrato in quattro ROM della scheda madre (32 KB). Si può programmare subito e salvare i programmi su cassetta, senza nessun disco. Il «C» di C1.00 sta per <em>Cassette</em>.' },
+      testo: 'L\'IBM PC non si arrende: avvia il <strong>BASIC</strong> registrato in quattro ROM della scheda madre (32 KB). Si può programmare subito, con 61.404 byte liberi sui 64 KB, e salvare i programmi su cassetta, senza nessun disco. Il «C» di C1.00 sta per <em>Cassette</em>.' },
     postRam: { id: 'post', nome: 'POST', titolo: 'Il POST trova un guasto', dove: 'ROM del BIOS', indirizzo: 'F000:E05B', durata: 3600, esito: 'errore',
       testo: 'Il POST scrive valori di prova in ogni cella di memoria e li rilegge. Nel blocco che comincia a 32 KB un bit torna diverso da come era stato scritto: un chip di memoria è guasto.' },
     errore: { id: 'errore', nome: 'Errore', titolo: 'Due bip e il codice 201', dove: 'ROM del BIOS', indirizzo: '—', durata: 1600, esito: 'errore',
-      testo: '<strong>Due bip brevi</strong> e un codice sullo schermo: <strong>201</strong> vuol dire «memoria». Le cifre prima del codice, 0840, dicono al tecnico dove si trova il guasto (il blocco di memoria e il bit sbagliato), cioè quale chip sostituire. Qui l\'avvio si ferma.' },
+      testo: '<strong>Due bip brevi</strong> e un codice sullo schermo: <strong>201</strong> vuol dire «memoria». Le cifre prima del codice dicono al tecnico quale chip sostituire: 08 è il blocco di memoria che comincia a 32 KB (segmento 0800h), 40 il bit sbagliato (40h, il bit 6). Con un chip guasto il PC non è affidabile: il laboratorio si ferma qui.' },
 
     correnteAT: { id: 'corrente', nome: 'Corrente', titolo: 'Arriva la corrente', dove: 'Alimentatore', indirizzo: '—', durata: 1400,
       testo: 'Il tasto sul frontale accende l\'alimentatore. Come nel 1981, finché le tensioni non sono stabili il segnale <strong>Power Good</strong> resta basso e il processore aspetta in reset.' },
@@ -318,24 +318,24 @@
     postCompatibile: { id: 'post', nome: 'POST', titolo: 'Il POST conta la memoria', dove: 'ROM del BIOS', indirizzo: 'F000:E05B', durata: 4400,
       testo: 'Su un compatibile di fine anni Ottanta il POST si vede: il BIOS cerca e avvia la ROM della scheda VGA (comincia anch\'essa con 55h AAh), poi conta i kilobyte di memoria provati. Premendo Canc si entra nel <strong>setup</strong>, che legge e scrive le impostazioni nella memoria CMOS tenuta in vita dalla batteria.' },
     int19Disco: { id: 'settore', nome: 'MBR', titolo: 'INT 19h: l\'MBR del disco rigido', dove: 'Disco C:', indirizzo: '0000:7C00', durata: 3000,
-      testo: 'Niente dischetto in A:, allora il BIOS legge il primo settore del disco rigido, il <strong>master boot record</strong>: fino a 446 byte di codice, la tabella delle partizioni (byte 446-509, quattro voci da 16 byte) e la firma <strong>55h AAh</strong> nei byte 510 e 511. La firma c\'è: il disco è avviabile.' },
+      testo: 'Niente dischetto in A:, allora il BIOS legge il primo settore del disco rigido, il <strong>master boot record</strong>: fino a 446 byte di codice, la tabella delle partizioni (byte 446–509, quattro voci da 16 byte) e la firma <strong>55h AAh</strong> nei byte 510 e 511. La firma c\'è: il disco è avviabile.' },
     catena: { id: 'salto', nome: '7C00', titolo: 'La catena: MBR, partizione, DOS', dove: 'RAM', indirizzo: '0000:7C00', durata: 2000,
-      testo: 'Il codice dell\'MBR si copia più in basso (a 0000:0600), cerca nella tabella la partizione attiva (80h), legge dove comincia (cilindro 0, testina 1, settore 1: il settore numero 17 del disco) e ne carica il primo settore, di nuovo a 7C00h. Ogni anello carica il successivo.' },
+      testo: 'Il codice dell\'MBR si copia più in basso (a 0000:0600), cerca nella tabella la partizione attiva (80h), legge dove comincia (cilindro 0, testina 1, settore 1: il settore 17 del disco, contando da 0) e ne carica il primo settore, di nuovo a 7C00h. Ogni anello carica il successivo.' },
     dos3: { id: 'dos', nome: 'DOS', titolo: 'MS-DOS dal disco rigido', dove: 'RAM', indirizzo: '—', durata: 3000,
       testo: 'Il settore della partizione carica IO.SYS e MSDOS.SYS, che leggono CONFIG.SYS e avviano COMMAND.COM. Senza un file AUTOEXEC.BAT il DOS chiede data e ora: l\'orologio CMOS le conosce già, basta premere Invio. Poi il prompt <strong>C&gt;</strong>: il sistema è partito dal disco rigido.' },
 
     correnteOggi: { id: 'corrente', nome: 'Corrente', titolo: 'Il tasto è solo un segnale', dove: 'Scheda madre', indirizzo: '—', durata: 1500,
-      testo: 'L\'alimentatore ATX tiene sempre accesi 5 V di riposo (<em>standby</em>). Il tasto avvisa la scheda madre, che chiede all\'alimentatore di partire (PS_ON). Quando le tensioni sono stabili arriva <strong>PWR_OK</strong>, il Power Good di oggi. Prima della CPU si sveglia un piccolo processore di servizio (Intel ME o AMD PSP).' },
+      testo: 'L\'alimentatore ATX tiene sempre accesi 5 V di riposo (<em>standby</em>). Il tasto avvisa la scheda madre, che chiede all\'alimentatore di partire (PS_ON). Quando le tensioni sono stabili arriva <strong>PWR_OK</strong>, il Power Good di oggi. Prima del processore principale si sveglia un piccolo processore di servizio (il Management Engine di Intel o il Platform Security Processor di AMD).' },
     sec: { id: 'sec', nome: 'SEC', titolo: 'SEC: sicurezza, senza memoria', dove: 'Flash SPI', indirizzo: 'FFFFFFF0h', durata: 1700,
-      testo: 'La CPU parte ancora 16 byte sotto i 4 GB, dove compare il chip di memoria flash del firmware (collegato con il bus SPI). La RAM non funziona ancora: nella fase <strong>SEC</strong> (<em>security</em>) il firmware usa come memoria provvisoria la cache del processore e controlla il codice che eseguirà dopo.' },
+      testo: 'Il processore parte ancora 16 byte sotto i 4 GB, dove compare il chip di memoria flash del firmware (collegato con il bus SPI). La RAM non funziona ancora: nella fase <strong>SEC</strong> (<em>security</em>) il firmware usa come memoria provvisoria la cache del processore e controlla il codice che eseguirà dopo.' },
     pei: { id: 'pei', nome: 'PEI', titolo: 'PEI: la memoria si sveglia', dove: 'Flash SPI e cache', indirizzo: '—', durata: 2400,
-      testo: 'Nella fase <strong>PEI</strong> (<em>pre-EFI initialization</em>) piccoli moduli preparano processore e chipset e soprattutto la memoria: il firmware legge le caratteristiche dei moduli via SMBus e «addestra» i segnali, regolando i tempi di ogni linea. Da qui in poi c\'è la RAM.' },
+      testo: 'Nella fase <strong>PEI</strong> (<em>pre-EFI initialization</em>) piccoli moduli preparano processore e chipset e soprattutto la memoria: il firmware legge le caratteristiche dei moduli attraverso l\'SMBus, il bus di servizio della scheda madre, e «addestra» i segnali, regolando i tempi di ogni linea. Da qui in poi c\'è la RAM.' },
     dxe: { id: 'dxe', nome: 'DXE', titolo: 'DXE: centinaia di driver', dove: 'RAM', indirizzo: '—', durata: 2600,
-      testo: 'Nella fase <strong>DXE</strong> (<em>driver execution environment</em>) il firmware diventa un piccolo sistema operativo: carica i driver per PCI Express, USB, dischi NVMe, rete. Quando parte il driver video (GOP) compare il logo del produttore.' },
+      testo: 'Nella fase <strong>DXE</strong> (<em>driver execution environment</em>) il firmware diventa un piccolo sistema operativo: carica i driver per PCI Express, USB, dischi NVMe, rete. Quando parte il driver video (GOP, <em>graphics output protocol</em>) compare il logo del produttore.' },
     bds: { id: 'bds', nome: 'BDS', titolo: 'BDS: il gestore di avvio', dove: 'RAM', indirizzo: '—', durata: 2200,
       testo: 'La fase <strong>BDS</strong> (<em>boot device selection</em>) legge nella flash la variabile BootOrder, prova le voci di avvio in quell\'ordine e trova sul disco GPT la <strong>partizione di sistema EFI</strong>: una partizione FAT32 con i caricatori come normali file .efi.' },
     firmaOk: { id: 'firma', nome: 'Firma', titolo: 'Secure Boot: firma valida', dove: 'RAM', indirizzo: '—', durata: 2400,
-      testo: 'Prima di eseguire il caricatore, <strong>Secure Boot</strong> ne calcola l\'impronta digitale e la confronta con quella firmata dal produttore, il cui certificato è nella banca dati db (e non nella lista delle firme revocate, dbx). Coincidono: ✓ il caricatore può partire.' },
+      testo: 'Prima di eseguire il caricatore, <strong>Secure Boot</strong> ne calcola l\'impronta digitale e la confronta con quella firmata da chi l\'ha scritto (Microsoft, per Windows), il cui certificato è nella banca dati db e non nella lista delle firme revocate, dbx. Coincidono: ✓ il caricatore può partire.' },
     firmaKo: { id: 'firma', nome: 'Firma', titolo: 'Secure Boot: firma non valida', dove: 'RAM', indirizzo: '—', durata: 2400, esito: 'errore',
       testo: 'Qualcuno ha modificato un solo byte del caricatore, come farebbe un <em>bootkit</em>, un virus che si annida prima del sistema operativo. L\'impronta calcolata non coincide più con quella firmata: ✗ <strong>Secure Boot blocca l\'avvio</strong> e mostra un avviso.' },
     caricatore: { id: 'caricatore', nome: 'Caricatore', titolo: 'Il caricatore carica il kernel', dove: 'RAM', indirizzo: '—', durata: 2200,
@@ -345,9 +345,9 @@
   };
 
   const SCENARI = {
-    ibm: { id: 'ibm', modo: 'bios', etichetta: 'IBM PC 1981', macchina: 'IBM PC 5150 (1981), PC DOS 1.00 su dischetto',
+    ibm: { id: 'ibm', modo: 'bios', etichetta: 'IBM PC 1981', macchina: 'IBM PC 5150 (1981) con 64 KB, PC DOS 1.00 su dischetto',
       post: 'ibm', fasi: [F.corrente1981, F.reset1981, F.postIbm, F.bip, F.int19Dischetto, F.salto1981, F.dos1] },
-    'ibm-vuoto': { id: 'ibm-vuoto', modo: 'bios', etichetta: 'Senza dischetto', macchina: 'IBM PC 5150 (1981), unità A: vuota',
+    'ibm-vuoto': { id: 'ibm-vuoto', modo: 'bios', etichetta: 'Senza dischetto', macchina: 'IBM PC 5150 (1981) con 64 KB, unità A: vuota',
       post: 'ibm', fasi: [F.corrente1981, F.reset1981, F.postIbm, F.bip, F.int19Vuoto, F.basic] },
     'ibm-ram': { id: 'ibm-ram', modo: 'bios', etichetta: 'Memoria guasta', macchina: 'IBM PC 5150 (1981) con un chip di memoria guasto',
       post: 'ibm', fasi: [F.corrente1981, F.reset1981, F.postRam, F.errore] },
@@ -360,7 +360,7 @@
   };
 
   const MODI = {
-    bios: { id: 'bios', etichetta: '1981: IBM PC e BIOS', scenari: ['ibm', 'ibm-vuoto', 'ibm-ram', 'compatibile'] },
+    bios: { id: 'bios', etichetta: 'Ieri: BIOS', scenari: ['ibm', 'ibm-vuoto', 'ibm-ram', 'compatibile'] },
     uefi: { id: 'uefi', etichetta: 'Oggi: UEFI', scenari: ['uefi', 'uefi-ko'] },
   };
 

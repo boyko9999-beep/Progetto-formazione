@@ -447,7 +447,7 @@
           s.fermo = true;
           s.fase = 'FERMO';
           ev.push({ tipo: 'ferma' });
-          if (testi) testo = '<strong>Esecuzione.</strong> HLT: il clock si ferma. Programma finito dopo ' + s.istruzioni + ' istruzioni e ' + (s.cicli + 1) + ' cicli di clock.';
+          if (testi) testo = '<strong>Esecuzione.</strong> HLT: il clock si ferma. Programma finito dopo ' + (s.istruzioni === 1 ? 'una sola istruzione' : s.istruzioni + ' istruzioni') + ' e ' + (s.cicli + 1) + ' cicli di clock.';
         } else {
           ev.push({ tipo: 'nulla' });
           if (testi) testo = nome === 'NOP'

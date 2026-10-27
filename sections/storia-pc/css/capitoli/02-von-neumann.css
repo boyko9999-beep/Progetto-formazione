@@ -61,7 +61,7 @@
   .vn-fig .t2 { font-size: 23px; }
   .vn-fig .tl { font-size: 23px; }
   .vn-fig .td { font-size: 23px; }
-  .vn-fig .tf { font-size: 22.5px; }
+  .vn-fig .tf { font-size: 23.5px; }
   .vn-fig .tf-grande { font-size: 38px; }
 }
 
@@ -69,10 +69,8 @@
  * Laboratorio «Un computer in miniatura»
  * ===================================================================== */
 
-/* La cornice comune taglia il contenuto con overflow: hidden, che impedirebbe
- * alla barra dei comandi di restare in vista (sticky). «clip» taglia allo
- * stesso modo ma non crea un contenitore di scorrimento. */
-#lab-von-neumann.lab { overflow: hidden; overflow: clip; }
+/* La cornice comune .lab usa già overflow: clip, quindi la barra dei comandi
+ * può restare adesiva (sticky) dentro il laboratorio. */
 
 .vn-lab {
   --vn-ind: var(--trace-2);      /* indirizzi: ambra */
@@ -149,7 +147,7 @@
 .vn-largo .vn-storia { font-size: 13px; }
 .vn-stretto .vn-storia, .vn-stretto .vn-info { font-size: 11px; }
 .vn-largo .vn-ind { font-size: 12px; }
-.vn-stretto .vn-ind { font-size: 10.5px; }
+.vn-stretto .vn-ind { font-size: 10.8px; }
 .vn-largo .vn-int { font-size: 12.5px; }
 .vn-stretto .vn-int { font-size: 11px; }
 .vn-largo .vn-val { font-size: 17px; }
@@ -418,6 +416,22 @@
 @media (max-width: 640px) {
   #lab-von-neumann .lab-stage { padding: 12px 8px; }
   .vn-barra { gap: 10px 14px; }
+}
+
+/* Telefoni: i cinque programmi in una griglia di tre colonne uguali, invece di 4 + 1 */
+@media (max-width: 440px) {
+  .vn-barra > .vn-gruppo:first-child { flex: 1 1 100%; }
+  .vn-barra > .vn-gruppo:first-child .lab-seg { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .vn-barra > .vn-gruppo:first-child .lab-seg button { padding: 0 4px; }
+}
+
+/* Telefoni più stretti (360 px): lo strumento si allarga di 8 px nei margini della pagina e
+ * stringe la cornice interna, così lo schema guadagna circa 20 px e i testi più piccoli
+ * restano intorno agli 11 px effettivi. */
+@media (max-width: 400px) {
+  #lab-von-neumann.lab { margin-inline: -8px; }
+  #lab-von-neumann .lab-stage { padding: 12px 6px; }
+  .vn-stretto:not(.vn-medio) .vn-trasporto { margin: 0 -6px; padding-inline: 6px; }
 }
 
 /* ---------- movimento ridotto ---------- */

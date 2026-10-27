@@ -404,3 +404,44 @@ test('rumore dei crinali: ripetibile e sempre fra 0 e 1', () => {
   const caso = G.rng(1);
   for (let i = 0; i < 1000; i++) { const v = caso(); assert.ok(v >= 0 && v < 1); }
 });
+
+/* ---------- il testo del capitolo usa gli stessi numeri del modello ---------- */
+
+test('capitolo: numeri, schede e testi coerenti con il modello', () => {
+  const P = require('../sections/storia-pc/js/core.js');
+  require('../sections/storia-pc/js/capitoli/08-grafica.js'); // non tocca il DOM al caricamento
+  const cap = P.capitoli.find((c) => c.id === 'grafica');
+  assert.ok(cap, 'capitolo registrato');
+  const testo = (s) => String(s || '').replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ');
+  const tutto = cap.blocchi.map((b) => (b.paragrafi || []).concat(b.testo || [], b.didascalia || []).join(' ')).map(testo).join(' ');
+
+  // blocco dei numeri
+  const numeri = cap.blocchi.find((b) => b.tipo === 'numeri').items.map((it) => it.valore);
+  assert.ok(numeri.includes(G.memoriaVideo(512, 342, 1)), 'memoria video del Macintosh');
+  assert.ok(numeri.includes(G.perId('vga').possibili), 'tavolozza della VGA');
+  assert.ok(numeri.includes(G.perId('fhd').memoria), 'fotogramma Full HD');
+  assert.strictEqual(Math.round(G.schermateCGA(G.perId('fhd').memoria)), 389);
+  assert.ok(G.schermateCGA(G.perId('fhd').memoria) < 389, '«quasi» 389 schermate CGA');
+
+  // cifre citate nel testo e calcolate dal modello
+  [[G.memoriaVideo(640, 350, 4), '112.000'], [G.memoriaVideo(320, 200, 8), '64.000'], [G.memoriaVideo(720, 350, 1), '31.500'], [80 * 25 * 2, '4.000'], [G.perId('vga').possibili, '262.144']]
+    .forEach(([v, s]) => {
+      // punto delle migliaia anche a quattro cifre, come nel testo (4.000 byte)
+      assert.strictEqual(String(v).replace(/\B(?=(\d{3})+(?!\d))/g, '.'), s);
+      assert.ok(tutto.includes(s), 'il testo cita ' + s);
+    });
+  assert.ok(G.memoriaVideo(720, 350, 1) / 4000 > 7.5 && G.memoriaVideo(720, 350, 1) / 4000 < 8, '«quasi otto volte tanto»');
+
+  // schede: anni in ordine, una voce italiana, nessun anno fuori dal periodo del capitolo
+  const schede = cap.blocchi.find((b) => b.tipo === 'schede').items;
+  const anni = schede.map((s) => s.anno);
+  assert.deepStrictEqual(anni, anni.slice().sort((a, b) => a - b));
+  assert.ok(anni[0] >= 1968 && anni[anni.length - 1] <= 2026);
+  assert.ok(schede.length >= 7 && schede.length <= 12);
+  assert.ok(schede.some((s) => s.italia));
+
+  // le epoche del laboratorio seguono le date del testo
+  assert.ok(/aprile 1987/.test(tutto) && G.perId('vga').anno === 1987);
+  assert.ok(/24 gennaio 1984/.test(tutto) && G.perId('mac').anno === 1984);
+  assert.ok(/Nel 1984 IBM rispose con la EGA/.test(tutto) && G.perId('ega').anno === 1984);
+});

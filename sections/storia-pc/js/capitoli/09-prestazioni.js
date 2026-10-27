@@ -26,7 +26,7 @@
       k += 1;
       return '<g class="prs-cella" style="--i:' + k + '">' +
         '<rect class="' + FASI[f] + ' l" x="' + (x + 2) + '" y="' + y + '" width="' + (C - 4) + '" height="30" rx="6"/>' +
-        '<text class="lettera ' + FASI[f] + '-t" x="' + (x + C / 2) + '" y="' + (y + 22.5) + '">' + cesto + '</text></g>';
+        '<text class="lettera ' + FASI[f] + '-t" x="' + (x + C / 2) + '" y="' + (y + 23) + '">' + cesto + '</text></g>';
     }
     let griglia = '';
     for (let t = 0; t <= 12; t++) griglia += '<path d="M' + (X0 + t * C) + ' 212V438"/>';
@@ -210,7 +210,7 @@
           [1982.2, '<strong>1982</strong>: il 286 ne ha 134.000, quasi sessanta volte tanto, in poco più di dieci anni.'],
           [1989.3, '<strong>1989</strong>: con il 486 si supera il milione di transistor.'],
           [2000.9, '<strong>2000</strong>: il Pentium 4 arriva a 42 milioni.'],
-          [2011.1, '<strong>2011</strong>: si supera il miliardo (Core i7-2600K, 1,16 miliardi).'],
+          [2010.3, '<strong>2010</strong>: anche nei processori per PC si supera il miliardo di transistor: il Core i7-980X, a sei core, ne ha 1,17 miliardi.'],
           [2022.2, '<strong>2022</strong>: l\'Apple M1 Ultra, due chip uniti, supera i cento miliardi.'],
         ],
         finale: () => 'Dai 2.300 transistor del 4004 ai 184 miliardi dell\'Apple M3 Ultra: circa ' + raddoppiM3 + ' raddoppi in poco più di 53 anni, <strong>uno ogni ' + fmt(M.raddoppioDal4004('m3ultra'), 1) + ' anni</strong>. Accendi la «retta del raddoppio» per confrontare.',
@@ -232,7 +232,7 @@
           [2004.9, '<strong>2004</strong>: il Pentium 4 si ferma a 3,8 GHz. È il <strong>muro della potenza</strong>.'],
           [2013.5, '<strong>2013</strong>: 5 GHz, ma solo in turbo e con 220 watt (AMD FX-9590).'],
         ],
-        finale: () => 'Nel 2024 il record è 6,2 GHz, raggiunti in turbo da uno o due core: appena 1,6 volte il 2004. Con il ritmo di prima saremmo a <strong>circa ' + fmt(ghz2025) + ' GHz</strong>.',
+        finale: () => 'Nel 2024 si arriva a 6,2 GHz, raggiunti in turbo da uno o due core: appena 1,6 volte il 2004. Con il ritmo di prima saremmo a <strong>circa ' + fmt(ghz2025) + ' GHz</strong>.',
         sintesi: () => 'Fino al 2004 la frequenza raddoppia ogni <strong>' + fmt(tendF.periodo, 1) + ' anni</strong>; dal 2004 al 2024 sale solo da 3,8 a 6,2 GHz.',
       },
       core: {
@@ -338,7 +338,7 @@
       h('dl', { class: 'lab-kv prs-amdahl-kv' },
         voce('Accelerazione', kv.acc), voce('Tempo rispetto a 1 core', kv.tempo), voce('Lavoro utile per core', kv.eff), voce('Limite con infiniti core', kv.lim)));
 
-    const boxTab = h('div', { class: 'prs-tabella', id: idTab, hidden: true });
+    const boxTab = h('div', { class: 'prs-tabella', id: idTab, hidden: true, tabindex: '0', role: 'region', 'aria-label': 'Tabella dei dati del grafico' });
     const radice = h('div', { class: 'prs-lab' },
       h('div', { class: 'prs-testa' }, h('div', { class: 'lab-seg prs-viste', role: 'group', 'aria-label': 'Scegli il grafico' }, bottoniVista), btnTab),
       boxStoria, boxAmdahl, elNota, boxTab);
@@ -648,7 +648,7 @@
       if (v === 'core') {
         detMeta.textContent = d.c.anno + ' · ' + SERIE[d.serie];
         detNome.textContent = d.c.chip;
-        righe.push(['Core', d.y + (d.c.p ? ' (' + d.c.p + ' P + ' + d.c.e + ' E)' : '')], ['Dal', String(d.c.anno)]);
+        righe.push(['Core', d.y + (d.c.p ? ' (' + d.c.p + '\u00a0P\u00a0+\u00a0' + d.c.e + '\u00a0E)' : '')], ['Dal', String(d.c.anno)]);
       } else {
         const c = d.c;
         detMeta.textContent = c.marca + ' · ' + c.anno;
@@ -1224,7 +1224,7 @@
     periodo: '1982–oggi',
     colore: 'var(--era-9)',
     sommario: 'Dal 286 ai processori con decine di core: frequenza, pipeline e cache, la legge di Moore, il muro della potenza e la legge di Amdahl.',
-    intro: 'Il processore dell\'IBM PC AT, nel 1984, aveva 134.000 transistor e lavorava a 6&nbsp;MHz. Un chip di oggi ne contiene decine di miliardi e i più veloci, per brevi momenti, superano i 6&nbsp;GHz. In mezzo ci sono quarant\'anni di corsa: prima ai megahertz, poi, quando il calore ha detto basta, ai core. Questo capitolo racconta come si misura la velocità di un computer, quali idee l\'hanno moltiplicata e perché oggi non basta più aggiungere processori per andare più forte.',
+    intro: 'Il processore dell\'IBM PC AT, nel 1984, aveva 134.000 transistor e lavorava a 6&nbsp;MHz. Un chip di oggi ne contiene decine di miliardi e i più veloci, per brevi momenti, superano i 6&nbsp;GHz. In mezzo ci sono quarant\'anni di corsa: prima ai megahertz, poi, quando il calore ha detto basta, ai core. Questo capitolo racconta come si misura la velocità di un computer, quali idee l\'hanno moltiplicata e perché moltiplicare i core, da solo, non basta per andare più forte.',
     blocchi: [
       {
         tipo: 'testo',
@@ -1232,15 +1232,15 @@
         paragrafi: [
           'Un processore lavora al ritmo di un orologio interno, il <strong>clock</strong>: un segnale che oscilla milioni o miliardi di volte al secondo e scandisce ogni passo, come il metronomo per un musicista. La frequenza del clock si misura in hertz (Hz), cioè cicli al secondo. L\'8088 dell\'IBM PC del 1981 andava a 4,77&nbsp;MHz (milioni di cicli al secondo), un processore di oggi a 4 o 5&nbsp;GHz (miliardi). Per vent\'anni la frequenza è stata il numero stampato sulle scatole e nelle pubblicità.',
           'La frequenza però dice solo quanto spesso batte il tempo, non quanto lavoro si fa a ogni battito. Il secondo ingrediente è l\'<strong>IPC</strong> (Instructions Per Cycle, istruzioni per ciclo): quante istruzioni il processore completa, in media, a ogni colpo di clock. L\'8086 aveva bisogno di parecchi cicli per una sola istruzione; un core moderno ne completa diverse in un ciclo solo.',
-          'Il tempo che serve per un programma si ottiene così: <strong>tempo = istruzioni ÷ (IPC × frequenza)</strong>. Si va più veloci in tre modi: alzando la frequenza, facendo più lavoro a ogni ciclo oppure dividendo il lavoro fra più processori. Per questo, nel 2006, un Core 2 Duo a 2,66&nbsp;GHz batteva in quasi tutte le prove i Pentium più veloci dell\'epoca, che andavano a oltre 3,6&nbsp;GHz: batteva meno colpi, ma a ogni colpo faceva molto di più.',
+          'Il tempo che serve per un programma si ottiene così: <strong>tempo = istruzioni ÷ (IPC × frequenza)</strong>. Si va più veloci in tre modi: alzando la frequenza, facendo più lavoro a ogni ciclo oppure dividendo il lavoro fra più processori. Per questo, nel 2006, un Core 2 Duo a 2,66&nbsp;GHz batteva in quasi tutte le prove i Pentium più veloci dell\'epoca, che arrivavano a 3,8&nbsp;GHz: batteva meno colpi, ma a ogni colpo faceva molto di più.',
         ],
       },
       {
         tipo: 'testo',
         titolo: 'Da 16 a 32 bit: 286, 386 e 486',
         paragrafi: [
-          'La famiglia x86 nasce nel 1978 con l\'8086, la cui storia interna è raccontata nella <a href="../chip-programmabili/index.html#sedici-bit">sezione 5</a>. Il passo successivo è l\'<strong>80286</strong>, presentato da Intel nel febbraio 1982: 134.000 transistor e una novità destinata a durare, la <em>modalità protetta</em>. In questa modalità il processore indirizza fino a 16&nbsp;MB di memoria (l\'8086 si fermava a 1&nbsp;MB) e impedisce a un programma di scrivere nella memoria di un altro: la base per far girare più programmi insieme. Il 286 arriva nei PC nel 1984, con l\'IBM PC AT.',
-          'L\'<strong>80386</strong> (ottobre 1985) porta la famiglia a 32 bit: registri più larghi, 4&nbsp;GB di memoria indirizzabile e la <em>paginazione</em>. La memoria viene divisa in pagine da 4&nbsp;KB, ogni programma vede uno spazio tutto suo e le pagine che non servono possono finire sul disco: è la memoria virtuale. Il primo PC con il 386 non è un IBM ma il Compaq Deskpro 386, del 1986; e sarà un PC con il 386 a ospitare, nel 1991, la prima versione di Linux.',
+          'La famiglia x86 nasce nel 1978 con l\'8086, la cui storia interna è raccontata nella <a href="../chip-programmabili/index.html#sedici-bit">sezione 5</a>. Il passo successivo è l\'<strong>80286</strong>, presentato da Intel nel febbraio 1982: 134.000 transistor e una novità destinata a durare, la <em>modalità protetta</em>. In questa modalità il processore indirizza fino a 16&nbsp;MB di memoria (l\'8086 si fermava a 1&nbsp;MB) e impedisce a un programma di scrivere nella memoria di un altro: la base per far girare più programmi insieme. Nei PC si diffonde dal 1984, con l\'IBM PC AT.',
+          'L\'<strong>80386</strong> (ottobre 1985) porta la famiglia a 32 bit: registri più larghi, 4&nbsp;GB di memoria indirizzabile e la <em>paginazione</em>. La memoria viene divisa in pagine da 4&nbsp;KB, ogni programma vede uno spazio tutto suo e le pagine che non servono possono finire sul disco: è la memoria virtuale. Il primo PC con il 386 messo in vendita non è un IBM ma il Compaq Deskpro 386, del settembre 1986; e sarà un PC con il 386 a ospitare, nel 1991, la prima versione di Linux.',
           'Il <strong>486</strong> (aprile 1989) supera il milione di transistor e mette nello stesso chip tre cose che prima stavano fuori o non c\'erano: il coprocessore matematico (FPU, Floating Point Unit, l\'unità per i numeri con la virgola), una memoria cache da 8&nbsp;KB e una pipeline a cinque stadi. Molte istruzioni semplici si completano così in un solo ciclo di clock: a parità di frequenza, un 486 va circa il doppio di un 386.',
           'La <strong>cache</strong> è una piccola memoria velocissima accanto al processore, che tiene una copia dei dati usati più spesso. Serve perché la memoria principale (RAM, Random Access Memory) è molto più lenta del processore: senza cache, il processore passerebbe gran parte del tempo ad aspettare. Oggi i livelli di cache dentro il chip sono tre (L1, L2 e L3); se ne parla nel capitolo sulla <a href="#memoria">memoria</a>.',
         ],
@@ -1252,8 +1252,8 @@
           'L\'idea più importante è la <strong>pipeline</strong>, una specie di catena di montaggio. Pensate a una lavanderia con tre postazioni: lavatrice, asciugatrice e tavolo per piegare. Se si aspetta che il primo cesto sia piegato prima di mettere in lavatrice il secondo, quattro cesti richiedono dodici turni. Ma appena il primo cesto passa nell\'asciugatrice la lavatrice è libera: con le tre postazioni sempre occupate, gli stessi quattro cesti sono pronti in sei turni. Ogni cesto impiega lo stesso tempo, ma ne esce uno a ogni turno.',
           'Il processore fa lo stesso con le istruzioni: mentre ne esegue una, decodifica la successiva e va a prendere in memoria quella dopo ancora (sono le fasi del <a href="../chip-programmabili/index.html#ciclo">ciclo dell\'istruzione</a>). Il guaio sono i salti: quando il programma arriva a un «se», la pipeline non sa quale strada prendere finché il confronto non è finito. I processori allora tirano a indovinare con la <em>previsione dei salti</em> (branch prediction): ricordano come sono andati quei salti le volte precedenti e scommettono. Se indovinano non perdono tempo; se sbagliano devono buttare il lavoro cominciato e ripartire.',
           'Il <strong>Pentium</strong> (marzo 1993) è il primo x86 <em>superscalare</em>: ha due pipeline affiancate e, quando due istruzioni vicine non dipendono l\'una dall\'altra, le esegue insieme. Nel 1994 un professore di matematica americano, Thomas Nicely, scopre che in rarissimi casi il Pentium sbaglia le divisioni con la virgola: è il <em>bug FDIV</em>, dal nome dell\'istruzione. Intel prima minimizza, poi accetta di sostituire il processore a chiunque lo chieda, e nel gennaio 1995 mette a bilancio una perdita di 475 milioni di dollari.',
-          'Il <strong>Pentium Pro</strong> (1995) porta nei PC l\'<em>esecuzione fuori ordine</em> (out-of-order): il processore traduce le istruzioni x86 in operazioni più semplici, le micro-operazioni, e le esegue non nell\'ordine scritto nel programma ma appena i loro dati sono pronti, rimettendo in fila i risultati alla fine. È come un cuoco che, mentre l\'acqua bolle, taglia già le verdure del piatto successivo. Quasi tutti i processori veloci di oggi lavorano così.',
-          'L\'ultima idea è il <strong>SIMD</strong> (Single Instruction, Multiple Data: un\'istruzione, molti dati). Con le istruzioni multimediali <strong>MMX</strong> del 1997 una sola istruzione somma otto numeri da 8 bit alla volta: comodo per immagini, suoni e video, dove la stessa operazione si ripete su milioni di valori. Seguono le estensioni SSE (1999), che fanno lo stesso con quattro numeri con la virgola, e AVX (2011), che lavora su 256 bit alla volta.',
+          'Con il <strong>Pentium Pro</strong> (1995) arriva nei processori Intel l\'<em>esecuzione fuori ordine</em> (out-of-order): il processore traduce le istruzioni x86 in operazioni più semplici, le micro-operazioni, e le esegue non nell\'ordine scritto nel programma ma appena i loro dati sono pronti, rimettendo in fila i risultati alla fine. È come un cuoco che, mentre l\'acqua bolle, taglia già le verdure del piatto successivo. Quasi tutti i processori veloci di oggi lavorano così.',
+          'L\'ultima idea è il <strong>SIMD</strong> (Single Instruction, Multiple Data: un\'istruzione, molti dati). Con le istruzioni multimediali <strong>MMX</strong> del 1997 una sola istruzione somma otto numeri da 8 bit alla volta: comodo per immagini, suoni e video, dove la stessa operazione si ripete su milioni di valori. Seguono le estensioni SSE (Streaming SIMD Extensions, 1999), che fanno lo stesso con quattro numeri con la virgola, e AVX (Advanced Vector Extensions, 2011), che lavorano su 256 bit alla volta.',
         ],
       },
       {
@@ -1268,7 +1268,7 @@
         paragrafi: [
           'Alla fine degli anni Novanta la frequenza diventa un argomento di vendita e la gara si fa a due. L\'<strong>Athlon</strong> di AMD, uscito nel giugno 1999, batte i Pentium sul loro stesso terreno. Il 6 marzo 2000 AMD annuncia l\'Athlon a 1&nbsp;GHz, il primo processore per PC a mille megahertz; il Pentium III a 1&nbsp;GHz arriva due giorni dopo.',
           'La risposta di Intel è il <strong>Pentium 4</strong> (novembre 2000), con un\'architettura chiamata NetBurst e pensata per salire di frequenza: una pipeline lunghissima, di 20 stadi, poi 31 nella versione «Prescott» del 2004. Più stadi vogliono dire meno lavoro per ciascuno, e quindi un clock che può battere più in fretta; ma ogni previsione di salto sbagliata costa più cara, perché c\'è più lavoro da buttare. Al lancio Intel parlava di un\'architettura capace, in prospettiva, di arrivare a 10&nbsp;GHz.',
-          'I 10&nbsp;GHz non arriveranno mai. Il 14 ottobre 2004 Intel cancella il Pentium 4 a 4&nbsp;GHz e annuncia che punterà sui processori a due core. A novembre esce il modello a 3,8&nbsp;GHz, il più veloce della serie: consuma fino a 115 watt, più di una vecchia lampadina da 100, quasi tutti concentrati in un quadratino di silicio di poco più di un centimetro di lato.',
+          'I 10&nbsp;GHz non arriveranno mai. Nel maggio 2004 Intel rinuncia al successore del Prescott, che avrebbe consumato ancora di più; il 14 ottobre cancella anche il Pentium 4 a 4&nbsp;GHz e annuncia che punterà sui processori a due core. A novembre esce il modello a 3,8&nbsp;GHz, il più veloce della serie: produce fino a 115 watt di calore, più di una vecchia lampadina a incandescenza da 100 watt, tutti concentrati in un quadratino di silicio di poco più di un centimetro di lato.',
           'Nel frattempo AMD fa un\'altra mossa decisiva: estende l\'architettura x86 a 64 bit. L\'estensione, chiamata <strong>AMD64</strong> (o x86-64), debutta nell\'aprile 2003 con l\'Opteron, un processore per server, e a settembre arriva nei PC con l\'Athlon 64, che ha anche il controller della memoria dentro il processore. Programmi a 32 e a 64 bit girano sullo stesso chip; Intel, che puntava su un\'architettura diversa (Itanium), nel 2004 adotta la stessa estensione. I PC di oggi con processore Intel o AMD usano ancora x86-64.',
         ],
       },
@@ -1276,9 +1276,9 @@
         tipo: 'numeri',
         items: [
           { prefisso: '×', valore: 80, unita: 'milioni', etichetta: 'quante volte sono cresciuti i transistor in un chip: dai 2.300 del 4004 (1971) ai 184 miliardi dell\'Apple M3 Ultra (2025)' },
-          { valore: 3.8, decimali: 1, unita: 'GHz', etichetta: 'il record del Pentium 4 nel 2004: vent\'anni dopo i processori più veloci arrivano a 6,2&nbsp;GHz, e solo in turbo' },
+          { valore: 3.8, decimali: 1, unita: 'GHz', etichetta: 'il massimo del Pentium 4 (2004). Vent\'anni dopo, nel 2024, si arriva a 6,2&nbsp;GHz, e solo in turbo' },
           { valore: 31, unita: 'stadi', etichetta: 'la pipeline del Pentium 4 «Prescott» (2004), una delle più lunghe mai costruite' },
-          { valore: 475, unita: 'milioni $', etichetta: 'il costo del bug FDIV del Pentium per Intel (gennaio 1995)' },
+          { valore: 475, unita: 'milioni di $', etichetta: 'il costo del bug FDIV del Pentium per Intel (gennaio 1995)' },
         ],
       },
       {
@@ -1287,15 +1287,15 @@
         paragrafi: [
           'Perché la corsa si è fermata? Per trent\'anni ogni nuova generazione di transistor è stata più piccola e più veloce e, a parità di superficie, ha consumato la stessa potenza. Lo aveva descritto nel 1974 Robert Dennard, l\'ingegnere dell\'IBM che aveva inventato la DRAM (la memoria dinamica dei banchi di RAM), e la regola porta il suo nome: <em>scala di Dennard</em>. Rimpicciolire i transistor permetteva di metterne di più e di farli andare più veloci senza scaldare di più.',
           'Intorno al 2005 la scala di Dennard si rompe. Sotto una certa misura i transistor non si spengono più del tutto e lasciano passare un po\' di corrente anche a riposo (la corrente di dispersione), mentre la tensione di alimentazione non si può più abbassare come prima. La <a href="../elettronica-base/index.html#potenza">potenza</a> di un chip cresce con la frequenza e con il quadrato della tensione: spingere ancora il clock voleva dire produrre più calore di quanto un dissipatore ad aria riesca a smaltire. È il <strong>muro della potenza</strong> (power wall).',
-          'La via d\'uscita è usare i transistor in più in un altro modo: invece di un processore sempre più veloce, due o più processori completi, i <strong>core</strong> (letteralmente «nuclei»), sullo stesso chip. Nella primavera del 2005 arrivano i primi doppio core per PC, il Pentium D di Intel e l\'Athlon 64 X2 di AMD. Nel 2006 il <strong>Core 2 Duo</strong>, nato da un progetto del centro Intel di Haifa, in Israele, supera il Pentium 4 con frequenze più basse e circa metà dei consumi: l\'IPC torna a contare più dei megahertz. Nel 2008 il <strong>Core i7</strong> porta quattro core, il controller della memoria nel chip e il Turbo Boost, che alza la frequenza di un core quando gli altri riposano.',
-          'Oggi le strade sono tre, spesso percorse insieme. I <em>core ibridi</em>: dal 2021, con Alder Lake, Intel affianca core grandi e veloci (P-core) e core piccoli ed efficienti (E-core), un\'idea nata nei telefoni con processori ARM. I <em>chiplet</em>: dal 2019 AMD costruisce i Ryzen con più chip piccoli nello stesso involucro, uno per memoria e collegamenti e uno o due da otto core ciascuno, più facili da produrre di un chip grande. E i <em>sistemi su chip</em> come l\'Apple M1 (2020) e i suoi successori, con processore, grafica e memoria nello stesso pacchetto.',
+          'La via d\'uscita è usare i transistor in più in un altro modo: invece di un processore sempre più veloce, due o più processori completi, i <strong>core</strong> (letteralmente «nuclei»), sullo stesso chip. Nella primavera del 2005 arrivano i primi doppio core per PC, il Pentium D di Intel e l\'Athlon 64 X2 di AMD. Nel 2006 il <strong>Core 2 Duo</strong>, nato da un progetto del centro Intel di Haifa, in Israele, supera il Pentium 4 con frequenze più basse e circa metà dei consumi: l\'IPC torna a contare più dei megahertz. Nel 2008 il <strong>Core i7</strong> riunisce in un solo chip quattro core e il controller della memoria, e introduce il Turbo Boost, che alza la frequenza di un core quando gli altri riposano.',
+          'Oggi le strade sono tre, spesso percorse insieme. I <em>core ibridi</em>: nel 2021, con Alder Lake, Intel porta nei PC desktop core grandi e veloci (P-core) affiancati a core piccoli ed efficienti (E-core), un\'idea nata nei telefoni con processori ARM (big.LITTLE, 2011). I <em>chiplet</em>: dal 2019 AMD costruisce i Ryzen con più chip piccoli nello stesso involucro, uno per memoria e collegamenti e uno o due da otto core ciascuno, più facili da produrre di un chip grande. E i <em>sistemi su chip</em> come l\'Apple M1 (2020) e i suoi successori, con processore, grafica e memoria nello stesso pacchetto.',
         ],
       },
       {
         tipo: 'figura',
         svg: figuraDie,
         alt: 'Schema del chip di un processore a otto core: quattro core in alto e quattro in basso, la cache L3 condivisa al centro dentro un anello di collegamento, il controller della memoria e PCI Express a sinistra, la grafica integrata a destra.',
-        didascalia: '<strong>Dentro un processore a otto core</strong>, in uno schema ispirato ai processori desktop del 2018–2020. Ogni core ha la sua cache privata (la striscia grigia, L2); tutti condividono una grande cache L3. Un anello di collegamento (ring bus) unisce core e cache al controller della memoria, ai collegamenti PCI Express e alla grafica integrata, fatta di tante piccole unità di calcolo uguali. Le proporzioni sono indicative.',
+        didascalia: '<strong>Dentro un processore a otto core</strong>, in uno schema ispirato ai processori desktop del 2018–2020. Ogni core ha la sua cache privata (la striscia grigia, L2); tutti condividono una grande cache L3. Un anello di collegamento (ring bus) unisce core e cache al controller della memoria, ai collegamenti PCI Express (il bus delle schede video e dei dischi più veloci) e alla grafica integrata, fatta di tante piccole unità di calcolo uguali. Le proporzioni sono indicative.',
       },
       {
         tipo: 'testo',
@@ -1303,7 +1303,7 @@
         paragrafi: [
           'Nel 1965 Gordon Moore, allora alla Fairchild e tre anni dopo tra i fondatori di Intel, notò che il numero di componenti che conveniva mettere in un circuito integrato raddoppiava ogni anno, e previde che sarebbe andata avanti così per almeno dieci anni. Nel 1975 corresse la stima: un raddoppio circa ogni due anni. È la <strong>legge di Moore</strong>, raccontata nella <a href="../porte-logiche/index.html#moore">sezione 4</a>.',
           'Non è una legge della fisica, come la gravità: è un\'osservazione economica diventata un obiettivo. Per decenni l\'industria dei semiconduttori ha pianificato le sue tappe per rispettarla, e la previsione si è avverata anche perché tutti lavoravano per farla avverare. Il laboratorio qui sotto mostra quanto è stata precisa: dai 2.300 transistor del 4004 ai 184 miliardi di un chip del 2025, un raddoppio ogni due anni circa. Negli ultimi anni il ritmo è rallentato e ogni passo costa sempre di più, ma i transistor continuano ad aumentare.',
-          'La seconda legge spiega perché i core non sono una bacchetta magica. Nel 1967 Gene Amdahl, progettista di calcolatori all\'IBM, fece notare che ogni programma ha una parte che si può dividere fra più processori e una parte che va eseguita per forza in fila, un passo dopo l\'altro. Se la parte divisibile è <em>p</em> e i processori sono <em>N</em>, l\'accelerazione è <strong>1 ÷ ((1 − p) + p ÷ N)</strong>: è la <strong>legge di Amdahl</strong>.',
+          'La seconda legge spiega perché i core non sono una bacchetta magica. Nel 1967 Gene Amdahl, uno dei progettisti dell\'IBM System/360 (<a href="#giganti">capitolo 1</a>), fece notare che ogni programma ha una parte che si può dividere fra più processori e una parte che va eseguita per forza in fila, un passo dopo l\'altro. Se la parte divisibile è <em>p</em> e i processori sono <em>N</em>, l\'accelerazione è <strong>1 ÷ ((1 − p) + p ÷ N)</strong>: è la <strong>legge di Amdahl</strong>. Amdahl, in realtà, non scrisse nessuna formula: questa è la forma che altri diedero al suo ragionamento negli anni successivi.',
           'Un esempio: un programma parallelo al 90% su 10 core non va 10 volte più veloce, ma 5,26 volte, perché il 10% che resta in fila non accelera; e anche con infiniti core non supererebbe le 10 volte. Per questo un processore a 8 core non è 8 volte più veloce di uno a un core: lo è quasi solo nei lavori che si dividono bene, come il montaggio video, la grafica 3D o le simulazioni scientifiche. Nel 1988 John Gustafson mostrò l\'altra faccia della medaglia: con più core, di solito, non si fa più in fretta lo stesso lavoro, ma si affrontano problemi più grandi.',
         ],
       },
@@ -1322,7 +1322,7 @@
         tipo: 'italia',
         titolo: 'APE, i calcolatori paralleli dei fisici italiani',
         paragrafi: [
-          'Quando i PC avevano ancora un solo processore, un gruppo dell\'INFN (Istituto Nazionale di Fisica Nucleare) guidato da Nicola Cabibbo, con Giorgio Parisi tra i progettisti, costruiva calcolatori fatti di molti processori che lavorano insieme. Si chiamavano <strong>APE</strong> (Array Processor Experiment) e servivano a simulare le forze che tengono insieme i quark dentro protoni e neutroni, un calcolo enorme ma quasi tutto divisibile in parti.',
+          'Quando i PC avevano ancora un solo processore, un gruppo dell\'INFN (Istituto Nazionale di Fisica Nucleare) guidato da Nicola Cabibbo, con Giorgio Parisi fra gli ideatori dell\'architettura, costruiva calcolatori fatti di molti processori che lavoravano insieme. Si chiamavano <strong>APE</strong> (Array Processor Experiment) e servivano a simulare le forze che tengono insieme i quark dentro protoni e neutroni, un calcolo enorme ma quasi tutto divisibile in parti.',
           'Il primo APE, da circa un miliardo di operazioni con la virgola al secondo (1&nbsp;GFLOPS), comincia a lavorare per la fisica nel 1987. APE100, con 2.048 nodi, arriva a circa 100&nbsp;GFLOPS nella prima metà degli anni Novanta e viene anche messo in commercio con il nome Quadrics. È il caso ideale per la legge di Amdahl: ogni nodo calcola la sua porzione di spazio e parla solo con i vicini. La famiglia continua con APEmille e apeNEXT; nel 2021 Parisi riceve il premio Nobel per la fisica.',
         ],
       },
@@ -1331,17 +1331,17 @@
         titolo: 'Le tappe della corsa',
         items: [
           { anno: 1982, nome: 'Intel 80286', luogo: 'Santa Clara (California), Intel', testo: 'Modalità protetta, 16&nbsp;MB di memoria indirizzabile e 134.000 transistor. Dal 1984 è il processore dell\'IBM PC AT.' },
-          { anno: 1985, nome: 'Intel 80386', luogo: 'Santa Clara (California), Intel', testo: 'Il primo x86 a 32 bit, con la paginazione per la memoria virtuale e 275.000 transistor. Lo monta per primo il Compaq Deskpro 386 (1986).' },
+          { anno: 1985, nome: 'Intel 80386', luogo: 'Santa Clara (California), Intel', testo: 'Il primo x86 a 32 bit, con la paginazione per la memoria virtuale e 275.000 transistor. Il primo PC in vendita che lo monta è il Compaq Deskpro 386 (1986).' },
           { anno: 1987, nome: 'APE', luogo: 'Roma, INFN', italia: true, testo: 'Comincia a lavorare il primo calcolatore parallelo APE, progettato dal gruppo di Nicola Cabibbo e Giorgio Parisi: circa un miliardo di operazioni con la virgola al secondo.' },
           { anno: 1989, nome: 'Intel 486', luogo: 'Santa Clara (California), Intel', testo: 'Oltre un milione di transistor, coprocessore matematico e cache nello stesso chip, pipeline a cinque stadi: circa il doppio di un 386 alla stessa frequenza.' },
           { anno: 1993, nome: 'Pentium', luogo: 'Santa Clara (California), Intel', testo: 'Il primo x86 superscalare, con due pipeline affiancate. Nel 1994 il bug FDIV delle divisioni costerà a Intel 475 milioni di dollari.' },
-          { anno: 1995, nome: 'Pentium Pro', luogo: 'Santa Clara (California), Intel', testo: 'Porta nei PC l\'esecuzione fuori ordine: le istruzioni diventano micro-operazioni, eseguite appena i loro dati sono pronti.' },
+          { anno: 1995, nome: 'Pentium Pro', luogo: 'Hillsboro (Oregon), Intel', testo: 'Porta nei processori Intel l\'esecuzione fuori ordine: le istruzioni diventano micro-operazioni, eseguite appena i loro dati sono pronti.' },
           { anno: 2000, nome: 'Athlon a 1 GHz', luogo: 'Sunnyvale (California), AMD', testo: 'Il 6 marzo AMD annuncia il primo processore per PC a un gigahertz, due giorni prima del Pentium III a 1&nbsp;GHz.' },
           { anno: 2003, nome: 'AMD64: Opteron e Athlon 64', luogo: 'Sunnyvale (California), AMD', testo: 'AMD estende x86 a 64 bit e porta il controller della memoria nel processore. Intel adotta la stessa estensione nel 2004.' },
-          { anno: 2005, nome: 'I primi doppio core per PC', luogo: 'Pentium D (Intel), Athlon 64 X2 (AMD)', testo: 'Il Pentium 4 si è fermato a 3,8&nbsp;GHz: la corsa passa dai megahertz ai core, due processori completi nello stesso chip.' },
+          { anno: 2005, nome: 'Pentium D e Athlon 64 X2', luogo: 'Intel e AMD', testo: 'I primi doppio core per PC: il Pentium 4 si è fermato a 3,8&nbsp;GHz e la corsa passa dai megahertz ai core, due processori completi nello stesso chip.' },
           { anno: 2006, nome: 'Core 2 Duo', luogo: 'Haifa (Israele), Intel', testo: 'Frequenze più basse del Pentium 4, molto più lavoro per ciclo e circa metà dei consumi: l\'IPC torna a contare più dei megahertz.' },
           { anno: 2020, nome: 'Apple M1', luogo: 'Cupertino (California), Apple', testo: 'Un sistema su chip ARM con 16 miliardi di transistor: quattro core veloci, quattro efficienti, grafica e memoria nello stesso pacchetto.' },
-          { anno: 2021, nome: 'Alder Lake', luogo: 'Intel', testo: 'Core ibridi nei PC desktop: core grandi e veloci (P-core) insieme a core piccoli ed efficienti (E-core), fino a 16 nello stesso chip.' },
+          { anno: 2021, nome: 'Alder Lake', luogo: 'Santa Clara (California), Intel', testo: 'Core ibridi nei PC desktop: core grandi e veloci (P-core) insieme a core piccoli ed efficienti (E-core), fino a 16 nello stesso chip.' },
         ],
       },
     ],

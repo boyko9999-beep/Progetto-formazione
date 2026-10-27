@@ -431,7 +431,7 @@
         switch (y) {
           case 0: case 1: return ris('JMP ' + A, 3, 'salta all\'indirizzo ' + A);
           case 2: return ris('OUT ' + D, 2, 'manda A alla porta ' + D);
-          case 3: return ris('IN ' + D, 2, b1 === PORTA_INTERRUTTORI ? 'legge gli interruttori 15–8 del pannello' : 'legge la porta ' + D);
+          case 3: return ris('IN ' + D, 2, b1 === PORTA_INTERRUTTORI ? 'legge le levette 15–8 del pannello' : 'legge la porta ' + D);
           case 4: return ris('XTHL', 1, 'scambia HL con la cima della pila');
           case 5: return ris('XCHG', 1, 'scambia DE con HL');
           case 6: return ris('DI', 1, 'disabilita le interruzioni');
@@ -881,10 +881,10 @@
       { indirizzo: 0o011, byte: [0o032], testo: 'LDAX D', spiegazione: 'ancora, per rendere la luce più brillante' },
       { indirizzo: 0o012, byte: [0o032], testo: 'LDAX D', spiegazione: 'ancora' },
       { indirizzo: 0o013, byte: [0o032], testo: 'LDAX D', spiegazione: 'ancora' },
-      { indirizzo: 0o014, byte: [0o011], testo: 'DAD B', spiegazione: 'HL = HL + BC: il riporto scatta ogni 4.681 giri' },
+      { indirizzo: 0o014, byte: [0o011], testo: 'DAD B', spiegazione: 'HL = HL + BC: il riporto scatta circa ogni 4.681 giri' },
       { indirizzo: 0o015, byte: [0o322, 0o010, 0o000], testo: 'JNC 010', spiegazione: 'senza riporto ripete il giro' },
-      { indirizzo: 0o020, byte: [0o333, 0o377], testo: 'IN 377', spiegazione: 'legge gli interruttori 15–8' },
-      { indirizzo: 0o022, byte: [0o252], testo: 'XRA D', spiegazione: 'inverte i bit di D sotto gli interruttori alzati' },
+      { indirizzo: 0o020, byte: [0o333, 0o377], testo: 'IN 377', spiegazione: 'legge le levette 15–8' },
+      { indirizzo: 0o022, byte: [0o252], testo: 'XRA D', spiegazione: 'inverte i bit di D sotto le levette alzate' },
       { indirizzo: 0o023, byte: [0o017], testo: 'RRC', spiegazione: 'sposta il disegno di un posto a destra' },
       { indirizzo: 0o024, byte: [0o127], testo: 'MOV D,A', spiegazione: 'salva il nuovo disegno in D' },
       { indirizzo: 0o025, byte: [0o303, 0o010, 0o000], testo: 'JMP 010', spiegazione: 'torna al giro che accende le luci' },
@@ -1010,7 +1010,7 @@
             : 'All\'indirizzo ' + oi(ev.indirizzo) + ' non c\'è memoria: il byte va perso.';
         }
         return ev.azione === 'deposit'
-          ? '<strong>DEPOSIT</strong>: il byte degli interruttori 7–0, <strong>' + o3(ev.valore) + '</strong> (' + bin8(ev.valore) + '), è scritto nella cella ' + oi(ev.indirizzo) + '. L\'indirizzo non cambia.'
+          ? '<strong>DEPOSIT</strong>: il byte delle levette 7–0, <strong>' + o3(ev.valore) + '</strong> (' + bin8(ev.valore) + '), è scritto nella cella ' + oi(ev.indirizzo) + '. L\'indirizzo non cambia.'
           : '<strong>DEPOSIT NEXT</strong>: la CPU passa alla cella <strong>' + oi(ev.indirizzo) + '</strong> e ci scrive <strong>' + o3(ev.valore) + '</strong> (' + bin8(ev.valore) + ').';
       }
       case 'reset':
@@ -1021,7 +1021,7 @@
         if (ev.halt) return '<strong>RUN</strong>: la CPU però è in arresto dopo HLT. Premi <strong>RESET</strong> per ripartire da 000.';
         return o.lento
           ? '<strong>RUN</strong> al rallentatore: la CPU parte da ' + oi(ev.indirizzo) + ' e qui vedi un ciclo macchina alla volta.'
-          : '<strong>RUN</strong>: la CPU esegue il programma da ' + oi(ev.indirizzo) + ' a 2 MHz. I LED sembrano accesi a metà: indirizzi e dati cambiano milioni di volte al secondo e l\'occhio vede una media.';
+          : '<strong>RUN</strong>: la CPU esegue il programma da ' + oi(ev.indirizzo) + ' a 2 MHz. I LED sembrano accesi a metà: indirizzi e dati cambiano centinaia di migliaia di volte al secondo e l\'occhio vede una media.';
       case 'stop': {
         const c = ev.ciclo;
         return '<strong>STOP</strong>: la CPU si ferma e aspetta (spia WAIT accesa)' + (c ? ' prima del ciclo all\'indirizzo <strong>' + oi(c.indirizzo) + '</strong>.' : '.');
@@ -1056,7 +1056,7 @@
 
   const PASSI_SOMMA = [
     { id: 'reset', titolo: 'Premi RESET', testo: 'Leva RESET in su: il contatore di programma torna all\'indirizzo 000.' },
-    { id: 'programma', titolo: 'Inserisci i 14 byte del programma', testo: 'Per ogni byte imposta gli interruttori 7–0, poi DEPOSIT per il primo e DEPOSIT NEXT per tutti gli altri.' },
+    { id: 'programma', titolo: 'Inserisci i 14 byte del programma', testo: 'Per ogni byte imposta le levette 7–0, poi DEPOSIT per il primo e DEPOSIT NEXT per tutti gli altri.' },
     { id: 'numeri', titolo: 'Scrivi i due numeri', testo: 'Imposta 200 e premi EXAMINE; deposita il primo numero con DEPOSIT e il secondo con DEPOSIT NEXT (per esempio 005 e 010, cioè 5 e 8).' },
     { id: 'esegui', titolo: 'Fai partire il programma', testo: 'RESET per tornare a 000, poi RUN.' },
     { id: 'ferma', titolo: 'Ferma la CPU', testo: 'Leva STOP in su.' },
@@ -1066,7 +1066,7 @@
   const PASSI_KILLBIT = [
     { id: 'programma', titolo: 'Inserisci i 24 byte del gioco', testo: 'A mano sono tanti: usa pure «Inserisci il programma per me».' },
     { id: 'avvia', titolo: 'RESET e RUN', testo: 'Una luce comincia a correre sui LED A15–A8, da sinistra a destra.' },
-    { id: 'uccidi', titolo: 'Spegni la luce', testo: 'Tocca l\'interruttore (15–8) che sta sotto la luce proprio mentre ci passa. Se sbagli il momento, ne nasce un\'altra.' },
+    { id: 'uccidi', titolo: 'Spegni la luce', testo: 'Tocca la levetta (15–8) che sta sotto la luce proprio mentre ci passa. Se sbagli il momento, ne nasce un\'altra.' },
   ];
 
   function creaMissione(tipo) {
@@ -1167,7 +1167,7 @@
               if (!t) return 'Il programma è completo.';
               const ist = disassemblaRiga(t);
               let s = 'Prossimo byte: cella <strong>' + oi(t.indirizzo) + '</strong> ← <strong>' + o3(t.byte) + '</strong>' + ist +
-                '. Interruttori 7–0: <strong>' + bin8(t.byte) + '</strong>';
+                '. Levette 7–0: <strong>' + bin8(t.byte) + '</strong>';
               if (alt.inEsecuzione) return s + '. Prima premi STOP.';
               if (mostrato === t.indirizzo) s += sw === t.byte ? ' (pronti!). Ora <strong>DEPOSIT</strong>.' : ', poi <strong>DEPOSIT</strong>.';
               else if (mostrato === t.indirizzo - 1) s += sw === t.byte ? ' (pronti!). Ora <strong>DEPOSIT NEXT</strong>.' : ', poi <strong>DEPOSIT NEXT</strong>.';
@@ -1180,7 +1180,7 @@
               if (!depositi.has(d.primo)) {
                 return mostrato === d.primo
                   ? 'Sei alla cella 200. Imposta il primo numero (per esempio <strong>005</strong> = 00 000 101) e premi <strong>DEPOSIT</strong>.'
-                  : 'Imposta <strong>200</strong> sugli interruttori (10 000 000) e premi <strong>EXAMINE</strong>.';
+                  : 'Imposta <strong>200</strong> sulle levette (10 000 000) e premi <strong>EXAMINE</strong>.';
               }
               return mostrato === d.primo
                 ? 'Ora il secondo numero (per esempio <strong>010</strong> = 00 001 000, cioè 8) e <strong>DEPOSIT NEXT</strong>: andrà nella cella 201.'
@@ -1198,7 +1198,7 @@
             case 'leggi':
               if (st.avvisoVecchio) return 'Nella cella 202 c\'è un risultato vecchio: i numeri sono cambiati dopo l\'ultimo RUN. Premi RESET, RUN, STOP e di nuovo EXAMINE 202.';
               if (alt.inEsecuzione) return 'Premi prima <strong>STOP</strong>.';
-              return 'Imposta <strong>202</strong> sugli interruttori (10 000 010) e premi <strong>EXAMINE</strong>.';
+              return 'Imposta <strong>202</strong> sulle levette (10 000 010) e premi <strong>EXAMINE</strong>.';
             default: {
               const r = m.risultato(alt);
               return 'Missione compiuta! ' + o3(r.a) + ' + ' + o3(r.b) + ' = <strong>' + o3(r.somma) + '</strong> in ottale, cioè ' + r.a + ' + ' + r.b + ' = ' + r.somma +
@@ -1217,10 +1217,10 @@
           case 'uccidi': {
             const n = contaBit(alt.r.d);
             if (!alt.inEsecuzione) return 'Il gioco è fermo: premi RUN.';
-            return 'Luci accese: <strong>' + n + '</strong>. Tocca l\'interruttore sotto la luce mentre ci passa sopra.';
+            return 'Luci accese: <strong>' + n + '</strong>. Tocca la levetta sotto la luce mentre ci passa sopra.';
           }
           default:
-            return 'Hai ucciso il bit! I LED A15–A8 sono tutti spenti. Toccando un interruttore fai nascere una nuova luce: il gioco continua.';
+            return 'Hai ucciso il bit! I LED A15–A8 sono tutti spenti. Toccando una levetta fai nascere una nuova luce: il gioco continua.';
         }
       },
     };

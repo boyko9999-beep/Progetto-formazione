@@ -170,6 +170,19 @@ test('POST, codici di errore e schermate', () => {
   assert.strictEqual(M.DISCO_GPT[0].fs, 'FAT32');
 });
 
+test('il codice 0840 201: blocco di memoria a 32 KB e bit 6, come racconta la fase del POST', () => {
+  const [pos, codice] = M.SCHERMI.errore[0].split(' ');
+  assert.strictEqual(codice, '201');
+  assert.strictEqual(M.ERRORI_IBM[codice], 'memoria');
+  const segmento = parseInt(pos.slice(0, 2), 16) << 8; // le prime due cifre: byte alto del segmento
+  const bit = parseInt(pos.slice(2), 16);              // le ultime due: i bit sbagliati
+  assert.strictEqual(M.fisico(segmento, 0), 32 * 1024);
+  assert.strictEqual(bit, 1 << 6);
+  const fase = M.SCENARI['ibm-ram'].fasi.find((f) => f.id === 'post');
+  assert.ok(/32 KB/.test(fase.testo));
+  assert.ok(M.SCENARI['ibm-ram'].fasi.some((f) => /bit 6/.test(f.testo)));
+});
+
 test('il capitolo: schede in ordine di anno, laboratorio, collegamenti', () => {
   const P = require('../sections/storia-pc/js/core.js');
   require('../sections/storia-pc/js/capitoli/07-avvio.js');
@@ -178,11 +191,18 @@ test('il capitolo: schede in ordine di anno, laboratorio, collegamenti', () => {
   const schede = cap.blocchi.find((b) => b.tipo === 'schede');
   assert.ok(schede.items.length >= 7 && schede.items.length <= 12);
   schede.items.forEach((it, i) => {
+    assert.ok(Number.isInteger(it.anno) && it.anno >= 1970 && it.anno <= 2026, 'anno non valido: ' + it.nome);
+    assert.ok(it.luogo && it.testo.length > 40, 'scheda incompleta: ' + it.nome);
     if (i) assert.ok(it.anno >= schede.items[i - 1].anno, 'schede fuori ordine: ' + it.nome);
   });
   const testi = cap.blocchi.filter((b) => b.tipo === 'testo');
   const parole = testi.map((b) => b.paragrafi.join(' ')).join(' ').replace(/<[^>]+>/g, ' ').split(/\s+/).filter(Boolean).length;
-  assert.ok(parole >= 1400 && parole <= 2300, 'parole dei testi: ' + parole);
+  assert.ok(parole >= 1400 && parole <= 2200, 'parole dei testi: ' + parole);
+  // collegamenti: BusLab con #/bus/<id>, altre sezioni con index.html esplicito, capitoli con #id
+  cap.collegamenti.forEach((l) => {
+    assert.ok(/^(\.\.\/\.\.\/index\.html#\/bus\/[a-z0-9]+|\.\.\/[a-z-]+\/index\.html#[a-z0-9/-]+|#[a-z-]+)$/.test(l.href), 'collegamento non valido: ' + l.href);
+    assert.strictEqual(l.tipo, /#\/bus\//.test(l.href) ? 'buslab' : 'sezione', 'tipo sbagliato: ' + l.href);
+  });
   assert.ok(cap.blocchi.filter((b) => b.tipo === 'figura').length >= 2);
   assert.ok(cap.blocchi.some((b) => b.tipo === 'numeri') && cap.blocchi.some((b) => b.tipo === 'nota'));
   assert.strictEqual(typeof cap.lab.crea, 'function');

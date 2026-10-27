@@ -212,6 +212,16 @@ test('generazioni della RAM: anni in ordine, tensioni in calo, banda in crescita
   G.forEach((g) => assert.ok(Math.abs(M.bandaModulo(g.mts) - g.gbs) < 1e-9, g.nome));
 });
 
+test('le frasi del laboratorio reggono: metà cache vuota con i due array, 63 colpi su 64 con blocchi da 64 byte', () => {
+  const r = M.simula({ vie: 1 }, M.generaAccessi('conflitto'));
+  const usate = r.cache.linee.flat().filter((l) => l.valida).length;
+  assert.strictEqual(usate, 4, 'nella cache diretta i due array usano solo 4 righe su 8');
+  const seq = [];
+  for (let i = 0; i < 64; i++) seq.push(i);
+  const vera = M.simula({ righe: 8, blocco: 64, vie: 1, ram: 4096 }, seq);
+  assert.strictEqual(vera.colpi, 63, 'lettura in fila con le linee da 64 byte delle cache vere');
+});
+
 /* ---------- contenuti del capitolo ---------- */
 
 test('il capitolo rispetta la struttura: testi, schede, figure, numeri, punti', () => {

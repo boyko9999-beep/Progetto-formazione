@@ -89,6 +89,8 @@
 .altair [hidden] { display: none !important; }
 /* bersagli di almeno 40 px anche per i pulsanti segmentati comuni (che di base sono alti 36 px) */
 .altair .lab-seg button { min-height: 40px; }
+/* sul fondo scuro il verde scuro del focus di BusLab (tema chiaro) si vede poco: stesso azzurro delle levette */
+.altair :is(.lab-btn, .lab-seg button):focus-visible { outline: 2px solid var(--trace-3); outline-offset: 2px; }
 .altair-banco, .altair-lati, .altair-info, .altair-missione { min-width: 0; }
 .altair-lati { display: grid; gap: 14px; align-items: start; }
 /* Colonne esplicite a ogni livello: una griglia annidata con una colonna 1fr, misurata
@@ -97,6 +99,10 @@
 
 /* disposizioni scelte dal codice in base alla larghezza disponibile */
 .altair--largo .altair-lati { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); }
+/* sul pannello largo la colonna delle letture resta in vista mentre si scorre la missione (più lunga) */
+@media (min-height: 760px) {
+  .altair--largo .altair-info { position: sticky; top: calc(var(--spc-cima) + 12px); }
+}
 .altair--affianca { grid-template-columns: minmax(326px, 400px) minmax(0, 1fr); align-items: start; }
 .altair--solo .altair-pannello { max-width: 440px; margin-inline: auto; }
 @media (max-width: 480px) {
@@ -159,6 +165,28 @@
 .altair-svg .alt-leva-asta { fill: #dde3e8; stroke: #7a838b; stroke-width: 1; vector-effect: non-scaling-stroke; }
 .altair-svg .alt-leva-punta { fill: #f3f5f7; stroke: #7a838b; stroke-width: 1; }
 .altair-svg .alt-sopra .alt-leva-rondella { stroke: var(--trace-3); stroke-width: 2.2; }
+
+/* eco del prossimo passo: solo sul pannello stretto, adesivo in cima allo schermo (sopra fascia e LED
+   di stato, le parti meno usate durante la missione), trasparente ai tocchi */
+.altair-eco-ancora { position: sticky; top: calc(var(--spc-cima) + 6px); z-index: 3; height: 0; pointer-events: none; }
+.altair:not([data-pannello="stretto"]) .altair-eco-ancora { display: none; }
+.altair-eco {
+  position: absolute; left: 4px; right: 4px; top: 4px;
+  display: grid; gap: 2px; padding: 8px 12px 9px; border-radius: 12px;
+  background: rgba(8, 14, 12, .95); border: 1px solid color-mix(in srgb, var(--trace-2) 38%, var(--scope-grid));
+  box-shadow: 0 18px 34px -16px rgba(0, 0, 0, .95);
+  font-size: .84rem; line-height: 1.42; color: var(--scope-text);
+  opacity: 0; visibility: hidden; transform: translateY(-10px);
+  transition: opacity var(--dur-normal) var(--ease-smooth), transform var(--dur-normal) var(--ease-smooth), visibility 0s linear var(--dur-normal);
+}
+.altair-eco.altair-eco--su {
+  opacity: 1; visibility: visible; transform: none;
+  transition: opacity var(--dur-fast) var(--ease-smooth), transform var(--dur-normal) var(--ease-bounce), visibility 0s;
+}
+.altair-eco-tit { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; }
+.altair-eco-passo { font: 700 .62rem var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--trace-2); }
+.altair-eco-fatto { font-size: .78rem; font-weight: 700; color: var(--trace-1); }
+.altair-eco-testo strong { color: #fff; }
 
 /* ---------- letture, cicli macchina, racconto ---------- */
 

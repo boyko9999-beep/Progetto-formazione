@@ -158,7 +158,9 @@
       '<text class="ibm-c-t chiaro" x="280" y="50">Stessi programmi</text>' +
       '<rect class="ibm-c-dos l" x="40" y="84" width="480" height="52" rx="12"/>' +
       '<text class="ibm-c-t chiaro" x="280" y="117">Stesso DOS</text>' +
-      '<path class="ibm-c-freccia" d="M155 138V164M425 138V164" marker-end="url(#ibm-freccia)"/>' +
+      // due frecce separate: marker-end vale solo per l'ultimo punto di un path
+      '<path class="ibm-c-freccia" d="M155 138V164" marker-end="url(#ibm-freccia)"/>' +
+      '<path class="ibm-c-freccia" d="M425 138V164" marker-end="url(#ibm-freccia)"/>' +
       colonna(40, true) + colonna(290, false) +
       '<text class="ibm-c-uguale inchiostro" x="280" y="242">=</text>' +
       '</svg>';
@@ -469,7 +471,8 @@
     const btnPrec = h('button', { type: 'button', class: 'lab-btn ibm-passo', 'aria-label': 'Pezzo precedente', onclick: () => passo(-1) }, h('span', { 'aria-hidden': 'true' }, '◀'));
     const btnSucc = h('button', { type: 'button', class: 'lab-btn ibm-passo', 'aria-label': 'Pezzo successivo', onclick: () => passo(1) }, h('span', { 'aria-hidden': 'true' }, '▶'));
     const contatore = h('span', { class: 'lab-readout ibm-contatore', 'aria-hidden': 'true' }, '– / ' + C.length);
-    const btnGiro = h('button', { type: 'button', class: 'lab-btn ibm-giro', 'aria-pressed': 'false', onclick: () => (giro ? fermaGiro(true) : avviaGiro()) }, 'Visita guidata');
+    const giroIcona = h('span', { class: 'ibm-giro-icona', 'aria-hidden': 'true' }, '▶');
+    const btnGiro = h('button', { type: 'button', class: 'lab-btn ibm-giro', 'aria-pressed': 'false', onclick: () => (giro ? fermaGiro(true) : avviaGiro()) }, giroIcona, 'Visita guidata');
     const comandi = h('div', { class: 'lab-controls ibm-comandi' }, btnApri, h('span', { class: 'ibm-passi' }, btnPrec, contatore, btnSucc), btnGiro);
 
     // scheda informativa del pezzo scelto
@@ -490,6 +493,13 @@
       legenda.append(b);
       return b;
     });
+    // Sul telefono la legenda è una striscia che scorre: i bordi sfumano solo dove c'è altro da vedere.
+    function bordiLegenda() {
+      const max = legenda.scrollWidth - legenda.clientWidth;
+      legenda.classList.toggle('a-sinistra', max > 2 && legenda.scrollLeft > 2);
+      legenda.classList.toggle('a-destra', max > 2 && legenda.scrollLeft < max - 2);
+    }
+    legenda.addEventListener('scroll', bordiLegenda, { passive: true });
     legenda.addEventListener('keydown', (e) => {
       const i = chip.indexOf(document.activeElement);
       if (i < 0) return;
@@ -685,7 +695,7 @@
     function avviaGiro() {
       giro = true;
       btnGiro.setAttribute('aria-pressed', 'true');
-      btnGiro.textContent = 'Ferma la visita';
+      giroIcona.textContent = '■';
       const avanti = () => {
         if (!giro) return;
         if (!aperto) apriCase(0);
@@ -702,7 +712,7 @@
       clearTimeout(giroTimer);
       timers.delete(giroTimer);
       btnGiro.setAttribute('aria-pressed', 'false');
-      btnGiro.textContent = 'Visita guidata';
+      giroIcona.textContent = '▶';
       if (annuncio) ctx.annuncia(nota, 'Visita guidata fermata.');
     }
 
@@ -774,7 +784,9 @@
     const fSeg = campo(idM.seg, 'Segmento', st.seg);
     const fOff = campo(idM.off, 'Offset', st.off);
     const errore = h('p', { class: 'ibm-errore', id: idM.err }, '');
-    const btnA20 = h('button', { type: 'button', class: 'lab-btn ibm-a20', 'aria-pressed': 'false', onclick: () => cambiaA20() }, '');
+    const a20Stato = h('span', { class: 'ibm-a20-stato', 'aria-hidden': 'true' }, '');
+    const btnA20 = h('button', { type: 'button', class: 'lab-btn ibm-a20', 'aria-pressed': 'false', onclick: () => cambiaA20() },
+      h('span', { class: 'ibm-a20-led', 'aria-hidden': 'true' }), h('span', { class: 'ibm-a20-nome' }, 'Linea A20'), a20Stato);
 
     // addizione in colonna: 6 cifre esadecimali per riga
     const riga = (etichetta, cls) => {
@@ -812,10 +824,11 @@
       const top = 30, fondo = 10;
       const totale = H - top - fondo;
       const barH = totale * 16 / 17;
-      const addrW = 46;
-      const mainX = addrW + 6, mainW = stretto ? 26 : 34;
-      const lensX = mainX + mainW + (stretto ? 24 : 42), lensW = stretto ? 64 : 88;
-      const labX = lensX + lensW + 10;
+      // colonna degli indirizzi abbastanza larga per «100000» senza toccare il puntatore
+      const addrW = 54;
+      const mainX = addrW + 6, mainW = stretto ? 22 : 34;
+      const lensX = mainX + mainW + (stretto ? 18 : 36), lensW = stretto ? 58 : 88;
+      const labX = lensX + lensW + (stretto ? 8 : 10);
       return {
         W, H, top, totale, barH, ghostH: totale - barH, mainX, mainW, lensX, lensW, labX, labW: W - labX - 4,
         ms: barH / 0x100000, ls: totale / 0x10000, lungo: W - labX - 4 > 190,
@@ -845,7 +858,7 @@
       [0, 0xA0000, 0xC0000, 0xF0000, 0x100000].forEach((a) => {
         const y = n1(top + a * ms);
         barra.append(s('path', { class: 'ibm-m-tacca', d: 'M' + (mainX - 4) + ' ' + y + 'H' + (mainX + mainW) }),
-          s('text', { class: 'ibm-m-ind', x: mainX - 7, y: n1(y + (a ? 4 : 8)) }, M.esa(a, a > 0xFFFFF ? 6 : 5)));
+          s('text', { class: 'ibm-m-ind', x: mainX - 13, y: n1(y + (a ? 4 : 8)) }, M.esa(a, a > 0xFFFFF ? 6 : 5)));
       });
       const tit = [s('text', { class: 'ibm-m-tit', x: n1(mainX + mainW / 2), y: 18, 'text-anchor': 'middle' }, '1 MB'),
         s('text', { class: 'ibm-m-tit', x: lensX, y: 18 }, 'Finestra del segmento: 64 KB')];
@@ -915,6 +928,15 @@
         G.etichette.append(g);
         return Object.assign({ g: g }, v);
       });
+      // Le etichette non devono uscire dal disegno (i caratteri cambiano da un sistema all'altro):
+      // se una è troppo lunga passa al nome breve e, al limite, perde l'indirizzo.
+      const spazio = L.W - L.labX - 13 - 4;
+      G.voci.forEach((v) => {
+        const t = v.g.lastChild;
+        if (!t.getComputedTextLength || t.getComputedTextLength() <= spazio) return;
+        t.lastChild.textContent = v.breve;
+        if (t.getComputedTextLength() > spazio) t.firstChild.textContent = '';
+      });
     }
 
     function fisicoVisto() {
@@ -965,7 +987,7 @@
       fSeg.range.setAttribute('aria-valuetext', M.esa(st.seg, 4) + ' esadecimale');
       fOff.range.setAttribute('aria-valuetext', M.esa(st.off, 4) + ' esadecimale');
       btnA20.setAttribute('aria-pressed', String(st.a20));
-      btnA20.textContent = st.a20 ? 'Linea A20 accesa (PC AT)' : 'Linea A20 spenta (come l\'8088)';
+      a20Stato.textContent = st.a20 ? 'accesa, come su un PC AT' : 'spenta, come sull\'8088';
     }
 
     function scriviCifre(r, testo, classi) {
@@ -986,6 +1008,7 @@
       scriviCifre(rOff, col.offset);
       scriviCifre(rSom, col.somma, r.oltre ? { 0: 'riporto' } : null);
       rFin.tr.hidden = !r.oltre;
+      rFin.tr.classList.toggle('a20', st.a20);
       if (r.oltre) {
         rFin.th.textContent = st.a20 ? 'con A20 accesa' : 'con 20 linee';
         scriviCifre(rFin, st.a20 ? col.fisico : '1' + col.fisico, { 0: st.a20 ? 'tenuta' : 'persa' });
@@ -1138,12 +1161,14 @@
         richiesto = true;
         requestAnimationFrame(() => {
           richiesto = false;
+          bordiLegenda();
           if (vista !== 'mappa') return;
           const w = Math.round(tela.clientWidth);
           if (w && w !== misura) { misura = w; disegnaMappa(); posiziona(); }
         });
       });
       ro.observe(tela);
+      ro.observe(legenda);
     }
 
     // Unico ciclo continuo: l'onda attorno al numero scelto (case) o al puntatore (mappa).
@@ -1167,6 +1192,7 @@
     aggiornaCampi();
     aggiornaLettura(null, { muto: true, flash: false });
     marche.forEach((_, i) => statoMarca(i, 0));
+    bordiLegenda();
     ctx.annuncia(nota, 'Il PC è chiuso, come appena uscito dalla scatola. Premi «Apri il case»: si svitano le viti sul retro, il coperchio scivola in avanti e i pezzi si separano.');
 
     return {
@@ -1228,9 +1254,9 @@
         paragrafi: [
           'Il 12 agosto 1981, a New York, IBM presentò il suo Personal Computer, modello 5150. Il cuore era un Intel 8088 a 4,77 MHz (megahertz, milioni di cicli al secondo): un processore a 16 bit al suo interno, ma con il bus esterno a 8 bit, che permetteva di usare chip di supporto e schede più economici. Il chip in sé è raccontato nella <a href="../chip-programmabili/index.html#sedici-bit">sezione 5</a>.',
           'Anche quella frequenza strana aveva una ragione economica. Sulla scheda madre c\'era un solo quarzo da 14,318 MHz, il quadruplo della frequenza del colore nella televisione americana: diviso per 3 dava il clock del processore, diviso per 4 il segnale del colore per la scheda video. Un componente in meno, qualche dollaro risparmiato su ogni macchina.',
-          'La memoria di base era di soli 16 KB (kilobyte: 1 KB = 1.024 byte), espandibile a 64 KB sulla scheda madre e oltre con schede aggiuntive. Per conservare programmi e dati c\'erano due strade: un comune registratore a cassette, collegato a una presa sul retro, oppure una o due unità per dischetti da 5,25 pollici (circa 13 cm), da 160 KB ciascuno. Senza dischetto, all\'accensione partiva il BASIC registrato in una ROM (<em>read-only memory</em>, memoria a sola lettura) della scheda madre.',
-          'La scheda madre aveva cinque slot di espansione, connettori in cui infilare schede per il video, i dischetti, la stampante o altra memoria: era il bus che diventerà famoso come ISA (ne parla il <a href="#scheda-madre">capitolo 5</a>). Per il video si sceglieva fra due schede: la MDA (<em>Monochrome Display Adapter</em>), con un testo nitidissimo sul monitor monocromatico a fosfori verdi IBM 5151, e la CGA (<em>Color Graphics Adapter</em>), con grafica a colori anche su un televisore. La tastiera, la Model F a 83 tasti, aveva molle che scattano a ogni pressione e un rumore inconfondibile.',
-          'Il prezzo di partenza era di 1.565 dollari, ma comprendeva solo l\'unità centrale con 16 KB di memoria e la tastiera: niente dischetti né monitor, da sostituire con il registratore e il televisore di casa. Con un\'unità per dischetti e il monitor si arrivava a circa 3.000 dollari. Quasi nessuno scelse le cassette: il futuro erano i dischetti.',
+          'La memoria di base era di soli 16 KB (kilobyte: 1 KB = 1.024 byte), espandibile a 64 KB sulla scheda madre e oltre con schede aggiuntive. Per conservare programmi e dati c\'erano due strade: un comune registratore a cassette, collegato a una presa sul retro, oppure una o due unità per dischetti da 5,25 pollici (circa 13 cm), da 160 KB ciascuno. Senza dischetto, all\'accensione partiva il BASIC registrato nelle ROM (<em>read-only memory</em>, memorie a sola lettura) della scheda madre.',
+          'La scheda madre aveva cinque slot di espansione, connettori in cui infilare schede per il video, i dischetti, la stampante o altra memoria: era il bus che diventerà famoso come ISA (<em>Industry Standard Architecture</em>; ne parla il <a href="#scheda-madre">capitolo 5</a>). Per il video si sceglieva fra due schede: la MDA (<em>Monochrome Display Adapter</em>), con un testo nitidissimo sul monitor monocromatico a fosfori verdi IBM 5151, e la CGA (<em>Color Graphics Adapter</em>), con grafica a colori anche su un televisore. La tastiera, la Model F a 83 tasti, aveva molle che scattano a ogni pressione e un rumore inconfondibile.',
+          'Il prezzo di partenza era di 1.565 dollari, ma comprendeva solo l\'unità centrale con 16 KB di memoria, la tastiera e la scheda video CGA: niente dischetti né monitor, da sostituire con il registratore a cassette e il televisore di casa. Con più memoria, un\'unità per dischetti e il monitor si arrivava a circa 3.000 dollari. Quasi nessuno scelse le cassette: il futuro erano i dischetti.',
         ],
       },
       {
@@ -1249,7 +1275,7 @@
         paragrafi: [
           'La scelta più importante, però, non stava dentro la scatola ma in un libro. IBM pubblicò il <em>Technical Reference</em>, un manuale con gli schemi elettrici completi della scheda madre e delle schede, la descrizione di ogni segnale del bus e perfino il listato commentato del BIOS. Chi voleva costruire una scheda di espansione o scrivere un programma aveva tutto quello che serviva, senza chiedere il permesso a nessuno. Già nel 1982 decine di aziende vendevano schede di memoria, porte seriali, orologi e schede grafiche per il PC.',
           'Il BIOS (<em>Basic Input/Output System</em>, sistema di base per l\'ingresso e l\'uscita) è un programma di 8 KB registrato in una ROM. All\'accensione controlla la macchina e avvia il sistema operativo; poi resta a disposizione come uno sportello di servizio. Un programma che vuole scrivere un carattere sullo schermo, leggere un tasto o un settore del dischetto lo chiede al BIOS con un\'istruzione di interruzione (INT 10h per lo schermo, INT 13h per i dischi, INT 16h per la tastiera; la «h» indica un numero esadecimale), senza dover conoscere i chip che stanno sotto.',
-          'Gli schemi si potevano imitare, perché erano fatti di chip che tutti potevano comprare. Il BIOS no: era protetto dal diritto d\'autore, e nel 1983 la sentenza Apple contro Franklin confermò negli Stati Uniti che anche un programma registrato in una ROM è un\'opera protetta. Il BIOS era quindi l\'unico pezzo davvero proprietario del PC. Chi voleva costruire un clone doveva riscriverlo da capo: un programma che si comportasse esattamente come l\'originale, senza copiarne una riga.',
+          'Gli schemi si potevano imitare, perché erano fatti di chip che tutti potevano comprare. Il BIOS no: era protetto dal diritto d\'autore, e nel 1983 la sentenza Apple contro Franklin confermò negli Stati Uniti che anche un programma registrato in una ROM è un\'opera protetta. Il BIOS era quindi l\'unico pezzo davvero proprietario di cui un compatibile non poteva fare a meno (il BASIC in ROM, protetto anch\'esso, si poteva sostituire con un BASIC su dischetto). Chi voleva costruire un clone doveva riscriverlo da capo: un programma che si comportasse esattamente come l\'originale, senza copiarne una riga.',
         ],
       },
       {
@@ -1263,8 +1289,8 @@
         titolo: 'Il DOS, un sistema operativo comprato',
         paragrafi: [
           'Anche il sistema operativo arrivò da fuori. IBM si rivolse a Microsoft, la piccola azienda di Bill Gates e Paul Allen nota per i suoi interpreti BASIC, che però un sistema operativo per l\'8088 non l\'aveva. IBM aveva trattato anche con Digital Research, l\'azienda del CP/M, il sistema più diffuso sui computer a 8 bit, ma l\'accordo non si fece: sul perché, i racconti dei protagonisti non concordano.',
-          'Microsoft trovò la soluzione a pochi chilometri da casa. A Seattle Tim Paterson, un programmatore della Seattle Computer Products, aveva scritto nel 1980, in pochi mesi, un sistema operativo per le schede con l\'Intel 8086 della sua ditta, ispirandosi al CP/M. Si chiamava QDOS (<em>Quick and Dirty Operating System</em>, «sistema operativo veloce e sporco»), poi 86-DOS. Microsoft ne comprò prima una licenza e poi, nel luglio 1981, tutti i diritti, e assunse Paterson per adattarlo al PC.',
-          'Diventò il PC DOS 1.0 (DOS sta per <em>disk operating system</em>, sistema operativo su disco). E il contratto conteneva il dettaglio che cambiò la storia: IBM pagava le licenze, ma Microsoft restava libera di vendere lo stesso sistema ad altri costruttori, con il nome MS-DOS. Quando arrivarono i cloni, il loro sistema operativo era già pronto, uguale a quello di IBM.',
+          'Microsoft trovò la soluzione a pochi chilometri da casa. A Seattle Tim Paterson, un programmatore della Seattle Computer Products, aveva scritto nel 1980, in pochi mesi, un sistema operativo per le schede con l\'Intel 8086 della sua ditta, ispirandosi al CP/M. Si chiamava QDOS (<em>Quick and Dirty Operating System</em>, «sistema operativo veloce e sporco»), poi 86-DOS. Microsoft ne comprò prima una licenza, poi assunse Paterson per adattarlo al PC e nel luglio 1981, poche settimane prima del lancio, ne acquistò tutti i diritti.',
+          'Diventò il PC DOS 1.0 (DOS sta per <em>disk operating system</em>, sistema operativo su disco). E il contratto conteneva il dettaglio che cambiò la storia: IBM otteneva il sistema per il suo PC, ma Microsoft restava libera di vendere lo stesso sistema ad altri costruttori, con il nome MS-DOS. Quando arrivarono i cloni, il loro sistema operativo era già pronto, uguale a quello di IBM.',
           'IBM offrì anche altri due sistemi: il CP/M-86 di Digital Research e l\'UCSD p-System, nato all\'Università della California a San Diego. Ma il PC DOS costava 40 dollari, il CP/M-86 240 e arrivò mesi dopo: la scelta del pubblico fu quasi unanime. Negli anni seguenti il DOS diventò il sistema di decine di milioni di PC, e sopra di lui, dal 1985, Microsoft costruì Windows (la storia del software è nella <a href="../programmazione/index.html#personal">sezione 7</a>).',
         ],
       },
@@ -1274,7 +1300,7 @@
         paragrafi: [
           'Schemi pubblici, chip in commercio, un sistema operativo in vendita: per costruire un computer «IBM compatibile», capace di far girare gli stessi programmi, mancava solo il BIOS. Il primo compatibile in commercio fu l\'MPC 1600 della Columbia Data Products, nel giugno 1982. Ma il caso che fece scuola fu quello di Compaq, fondata a Houston, in Texas, nel 1982 da tre ex dirigenti della Texas Instruments.',
           'Per riscrivere il BIOS Compaq usò il metodo della «camera bianca» (<em>clean room</em>). Un gruppo di tecnici studiò il BIOS di IBM e ne scrisse una descrizione minuziosa: che cosa fa ogni funzione, non come lo fa. Un secondo gruppo, di programmatori che non avevano mai visto il codice originale, scrisse un BIOS nuovo partendo solo da quella descrizione. Così, in caso di causa, si poteva dimostrare di non aver copiato nulla.',
-          'Il Compaq Portable, annunciato nel novembre 1982 e in vendita dal marzo 1983 a 2.995 dollari, era una valigia da circa 13 chili con il monitor incorporato, compatibile con quasi tutti i programmi del PC IBM. Nel primo anno di vendite Compaq ne vendette 53.000 e incassò 111 milioni di dollari, un record per un\'azienda americana. La prova del nove, per tutti i compatibili, era far girare due programmi esigenti come il foglio elettronico Lotus 1-2-3 e il Flight Simulator di Microsoft.',
+          'Il Compaq Portable, annunciato nel novembre 1982 e in vendita dal marzo 1983 a 2.995 dollari, era una valigia da circa 13 chili con il monitor incorporato, compatibile con quasi tutti i programmi del PC IBM. Nel 1983, il primo anno di vendite, Compaq ne vendette circa 53.000 e incassò 111 milioni di dollari: un debutto record, si disse allora, per un\'azienda americana. La prova del nove, per tutti i compatibili, era far girare due programmi esigenti come il foglio elettronico Lotus 1-2-3 e il Flight Simulator di Microsoft.',
           'Nel 1984 Phoenix Technologies, un\'azienda del Massachusetts, mise in vendita un BIOS compatibile scritto anch\'esso in camera bianca e lo diede in licenza a chiunque. Da quel momento costruire un clone diventò soprattutto un lavoro di assemblaggio: scheda madre, BIOS di Phoenix (o dei concorrenti Award e AMI), MS-DOS. Negli Stati Uniti, in Asia e in Europa nacquero centinaia di marche.',
         ],
       },
@@ -1308,10 +1334,10 @@
         titolo: 'Macchine e svolte, 1980–1988',
         items: [
           { anno: 1980, nome: 'QDOS, poi 86-DOS', luogo: 'Seattle Computer Products, Seattle (Stati Uniti)', testo: 'Tim Paterson scrive in pochi mesi un sistema operativo per l\'Intel 8086 ispirato al CP/M. Microsoft lo compra nel 1981: diventerà PC DOS per IBM e MS-DOS per tutti gli altri.' },
-          { anno: 1981, nome: 'IBM Personal Computer 5150', luogo: 'IBM, Boca Raton (Florida)', testo: 'Presentato il 12 agosto a New York: Intel 8088 a 4,77&nbsp;MHz, da 16&nbsp;KB di memoria, cinque slot, schede video MDA o CGA, da 1.565 dollari. Il manuale tecnico ne pubblica schemi e BIOS.' },
+          { anno: 1981, nome: 'IBM Personal Computer 5150', luogo: 'IBM, Boca Raton (Florida)', testo: 'Presentato il 12 agosto a New York: Intel 8088 a 4,77&nbsp;MHz, memoria da 16&nbsp;KB in su, cinque slot, schede video MDA o CGA; prezzo da 1.565 dollari. Il manuale tecnico ne pubblica schemi e listato del BIOS.' },
           { anno: 1982, nome: 'Olivetti M20', luogo: 'Olivetti, Ivrea', italia: true, testo: 'Il primo personal computer di Olivetti: Zilog Z8001 a 16 bit e sistema operativo PCOS. Una buona macchina, ma incompatibile con il PC IBM proprio mentre diventava lo standard.' },
           { anno: 1982, nome: 'Columbia Data Products MPC 1600', luogo: 'Columbia Data Products (Stati Uniti)', testo: 'In vendita da giugno: il primo computer in commercio compatibile con il PC IBM. Apre la strada ai cloni.' },
-          { anno: 1982, nome: 'Compaq Portable', luogo: 'Compaq, Houston (Texas)', testo: 'Annunciato a novembre, in vendita dal marzo 1983: un compatibile da circa 13&nbsp;kg con monitor incorporato e BIOS riscritto in camera bianca. Nel primo anno ne vende 53.000.' },
+          { anno: 1982, nome: 'Compaq Portable', luogo: 'Compaq, Houston (Texas)', testo: 'Annunciato a novembre, in vendita dal marzo 1983: un compatibile da circa 13&nbsp;kg con monitor incorporato e BIOS riscritto in camera bianca. Nel primo anno ne vende circa 53.000.' },
           { anno: 1983, nome: 'IBM PC/XT', luogo: 'IBM, Boca Raton (Florida)', testo: 'Disco rigido da 10&nbsp;MB, otto slot, alimentatore da 130&nbsp;W e 128&nbsp;KB di memoria: il PC diventa una macchina da ufficio.' },
           { anno: 1984, nome: 'Olivetti M24', luogo: 'Olivetti, Ivrea', italia: true, testo: 'Un compatibile più veloce dell\'originale, con l\'Intel 8086 a 8&nbsp;MHz. Dal giugno 1984 AT&amp;T lo vende negli Stati Uniti come PC 6300. Alcune fonti datano la presentazione al 1983.' },
           { anno: 1984, nome: 'Il BIOS di Phoenix', luogo: 'Phoenix Technologies (Massachusetts)', testo: 'Un BIOS compatibile scritto in camera bianca e venduto in licenza a tutti: costruire un clone diventa un lavoro di assemblaggio.' },
@@ -1328,9 +1354,9 @@
       crea: creaLab,
     },
     punti: [
-      'IBM costruì il PC 5150 (1981) in circa un anno con componenti in commercio, come l\'Intel 8088 e il DOS di Microsoft, e ne pubblicò schemi e listato del BIOS: un\'architettura aperta.',
+      'IBM costruì il PC 5150 (1981) in circa un anno con componenti già in commercio, come l\'Intel 8088, e con il DOS di Microsoft; ne pubblicò schemi e listato del BIOS: un\'architettura aperta.',
       'L\'8088 a 4,77 MHz indirizza 1 MB con 20 linee: IBM riservò i 384 KB più alti a video e ROM, da cui il limite dei 640 KB.',
-      'Il BIOS era l\'unico pezzo protetto: i cloni lo riscrissero in camera bianca, come Compaq nel 1982–1983, o lo comprarono da Phoenix dal 1984.',
+      'Il BIOS era l\'unico pezzo indispensabile protetto dal diritto d\'autore: i cloni lo riscrissero in camera bianca, come Compaq nel 1982–1983, o lo comprarono da Phoenix dal 1984.',
       'Microsoft conservò il diritto di vendere MS-DOS a tutti: i compatibili nacquero con lo stesso sistema operativo dell\'originale.',
       'Con l\'AT (1984) arrivano il bus a 16 bit, la memoria CMOS con batteria e la porta A20; con il Deskpro 386 (1986) Compaq batte IBM sul tempo.',
       'Il bus MCA dei PS/2 (1987) non convinse i costruttori, che risposero con l\'EISA (1988): da allora «IBM compatibile» vuol dire semplicemente PC.',

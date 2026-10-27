@@ -231,12 +231,12 @@
     cga: '<strong>CGA, 1981.</strong> 320' + X + '200 pixel e 4 colori presi da tavolozze fisse: qui la più famosa, nero, ciano, magenta e bianco. Con 2 bit per pixel l\'immagine occupa 16.000 byte, quasi tutti i 16 KB della scheda. Rossi e arancioni non esistono: il tramonto diventa un mosaico di puntini.',
     mac: '<strong>Macintosh, 1984.</strong> 512' + X + '342 pixel quadrati, ma un solo bit per pixel: bianco o nero. Le sfumature si imitano alternando punti bianchi e neri. Lo schermo occupa 21.888 byte, presi dai 128 KB di memoria del computer.',
     ega: '<strong>EGA, 1984.</strong> 640' + X + '350 pixel e 16 colori, qui i 16 predefiniti scelti fra 64 possibili. Con 4 bit per pixel servono 112.000 byte, più dei 64 KB montati di serie: per avere i 16 colori a questa risoluzione serviva l\'espansione di memoria.',
-    vga: '<strong>VGA, modalità 13h, 1987.</strong> Di nuovo 320' + X + '200 pixel, ma con 256 colori scelti dal programma fra 262.144. Qui li sceglie l\'algoritmo <em>median cut</em>: divide i colori del disegno in 256 gruppi e usa la media di ciascuno. Un byte per pixel: 64.000 byte.',
+    vga: '<strong>VGA, modalità 13h, 1987.</strong> Di nuovo 320' + X + '200 pixel, ma con 256 colori scelti dal programma fra 262.144. Qui li sceglie l\'algoritmo <em>median cut</em> («taglio alla mediana»): divide i colori del disegno in 256 gruppi e usa la media di ciascuno. Un byte per pixel: 64.000 byte.',
   };
 
   const NOTE_RETINATURA = {
-    nessuna: 'Senza retinatura ogni pixel prende il colore più vicino della tavolozza e le sfumature si spezzano in bande.',
-    fs: 'Retinatura di Floyd e Steinberg (1976): la differenza fra il colore voluto e quello disponibile, l\'«errore», passa ai pixel vicini non ancora disegnati, nelle proporzioni 7/16, 3/16, 5/16 e 1/16.',
+    nessuna: 'Senza retinatura (<em>dithering</em>) ogni pixel prende il colore più vicino della tavolozza e le sfumature si spezzano in bande.',
+    fs: 'Retinatura (<em>dithering</em>) di Floyd e Steinberg (1976): la differenza fra il colore voluto e quello disponibile, l\'«errore», passa ai pixel vicini non ancora disegnati, nelle proporzioni 7/16, 3/16, 5/16 e 1/16.',
     atkinson: 'Retinatura di Bill Atkinson, usata sui primi Macintosh: l\'errore va per un ottavo a sei vicini e i due ottavi restanti si perdono. Più contrasto, ma luci e ombre «bruciate».',
   };
 
@@ -267,14 +267,22 @@
   function* scenaTramonto(g, W, H) {
     const orizzonte = Math.round(H * 0.6);
     const caso = M.rng(1984);
+    // Il browser rimanda il disegno vero e proprio a quando servono i pixel: leggerne uno a ogni passo
+    // lo costringe a disegnare un pezzo per volta, invece che tutto insieme alla lettura finale.
+    const disegna = () => { g.getImageData(0, 0, 1, 1); };
 
     // cielo
     const cielo = g.createLinearGradient(0, 0, 0, orizzonte);
     [[0, '#0d1238'], [0.22, '#232566'], [0.42, '#55327f'], [0.6, '#a2427f'], [0.75, '#e05d6f'], [0.87, '#f99157'], [0.95, '#ffbf6b'], [1, '#ffd98c']]
       .forEach((s) => cielo.addColorStop(s[0], s[1]));
     g.fillStyle = cielo;
-    g.fillRect(0, 0, W, orizzonte + 20);
-    yield 0.06;
+    // le sfumature grandi si stendono a strisce, una per passo
+    for (let k = 0; k < 3; k++) {
+      const y0 = Math.round(k * (orizzonte + 20) / 3), y1 = Math.round((k + 1) * (orizzonte + 20) / 3);
+      g.fillRect(0, y0, W, y1 - y0);
+      disegna();
+      yield 0.02 * (k + 1);
+    }
 
     // stelle, più fitte e luminose in alto
     for (let i = 0; i < 240; i++) {
@@ -284,6 +292,7 @@
       g.fillStyle = 'rgba(255, 246, 228, ' + a.toFixed(3) + ')';
       g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill();
     }
+    disegna();
     yield 0.12;
 
     // sole con il suo alone
@@ -293,13 +302,19 @@
     alone.addColorStop(0.25, 'rgba(255, 160, 100, 0.35)');
     alone.addColorStop(1, 'rgba(255, 120, 110, 0)');
     g.fillStyle = alone;
-    g.fillRect(0, 0, W, orizzonte + 20);
+    for (let k = 0; k < 3; k++) {
+      const y0 = Math.round(k * (orizzonte + 20) / 3), y1 = Math.round((k + 1) * (orizzonte + 20) / 3);
+      g.fillRect(0, y0, W, y1 - y0);
+      disegna();
+      yield 0.12 + 0.02 * k;
+    }
     const disco = g.createRadialGradient(sx, sy - sr * 0.3, sr * 0.1, sx, sy, sr);
     disco.addColorStop(0, '#fffdf0');
     disco.addColorStop(0.6, '#ffe9a8');
     disco.addColorStop(1, '#ffc56e');
     g.fillStyle = disco;
     g.beginPath(); g.arc(sx, sy, sr, 0, Math.PI * 2); g.fill();
+    disegna();
     yield 0.18;
 
     // nuvole sottili, illuminate da sotto
@@ -313,6 +328,7 @@
         g.beginPath(); g.ellipse(x, y, ax, ay, 0, 0, Math.PI * 2); g.fill();
         g.beginPath(); g.ellipse(x + ax * 0.3, y - ay * 0.9, ax * 0.45, ay * 0.9, 0, 0, Math.PI * 2); g.fill();
       });
+    disegna();
     yield 0.26;
 
     // tre catene di montagne, dalle più lontane (velate) alle più vicine (scure)
@@ -345,6 +361,7 @@
         g.stroke();
       }
       profili.push({ punti: punti, s: s });
+      disegna();
       yield 0.3 + 0.08 * profili.length;
     }
 
@@ -375,6 +392,7 @@
     g.fillStyle = 'rgba(40, 20, 60, 0.18)';
     for (let i = 0; i < 70; i++) g.fillRect(caso2() * W, lagoAlto + caso2() * (lagoBasso - lagoAlto), 40 + caso2() * 160, 1.5);
     g.restore();
+    disegna();
     yield 0.6;
 
     // riva in controluce con i fili d'erba
@@ -402,6 +420,7 @@
       g.quadraticCurveTo(x + (caso2() - 0.5) * 10, base - alto * 0.6, x + (caso2() - 0.5) * 18, base - alto);
       g.stroke();
     }
+    disegna();
     yield 0.7;
 
     // un tavolino con un piccolo computer degli anni Ottanta
@@ -454,6 +473,7 @@
     g.fillStyle = luceTavolo;
     g.fillRect(tx - 20, ty - 30, tw + 40, 70);
     g.restore();
+    disegna();
     yield 0.85;
 
     // uccelli lontani: linee sottilissime che le basse risoluzioni perdono
@@ -465,8 +485,17 @@
       g.quadraticCurveTo(x + s * 0.45, y - s * 0.6, x + s, y - s * 0.35);
       g.stroke();
     });
+    disegna();
     yield 0.95;
-    return g.getImageData(0, 0, W, H).data;
+    // lettura finale a fasce, un pezzo per fotogramma
+    const dati = new Uint8ClampedArray(W * H * 4);
+    const fasce = 4;
+    for (let k = 0; k < fasce; k++) {
+      const y0 = Math.round(k * H / fasce), y1 = Math.round((k + 1) * H / fasce);
+      dati.set(g.getImageData(0, y0, W, y1 - y0).data, y0 * W * 4);
+      if (k < fasce - 1) yield 0.95 + 0.05 * (k + 1) / fasce;
+    }
+    return dati;
   }
 
   function creaLaboratorio(el, ctx) {
@@ -498,7 +527,7 @@
     /* ---------- struttura ---------- */
 
     const idAiuto = ctx.uid('gfx-aiuto');
-    const annunci = h('p', { class: 'gfx-sr', 'aria-live': 'polite' });
+    const annunci = h('p', { class: 'spc-sr-only', 'aria-live': 'polite' });
 
     const pillola = h('span', { class: 'gfx-pillola', 'aria-hidden': 'true' });
     const bottoniEpoca = lista.map((m) => h('button', {
@@ -524,7 +553,7 @@
     const testoPixel = h('span', { class: 'gfx-pixel-testo' }, 'Preparo il disegno…');
     const btnLente = h('button', { type: 'button', class: 'lab-btn gfx-btn-lente', 'aria-pressed': 'true', onclick: () => impostaLente(!stato.lente) }, 'Lente');
     const infoPixel = h('div', { class: 'gfx-pixel' }, campione, h('p', { class: 'lab-mono' }, testoPixel), btnLente);
-    const aiuto = h('p', { class: 'gfx-aiuto', id: idAiuto }, 'Passa sopra l\'immagine, oppure toccala e trascina, per muovere la lente. Da tastiera: frecce, con Maiusc per passi lunghi.');
+    const aiuto = h('p', { class: 'gfx-aiuto', id: idAiuto }, 'Passa sopra l\'immagine con il mouse, oppure toccala o trascina il dito di lato, per spostare la lente. Da tastiera: seleziona l\'immagine e usa le frecce, con Maiusc a passi lunghi.');
 
     const letture = {};
     const voce = (k, nome) => { letture[k] = h('dd', null, '—'); return h('div', null, h('dt', null, nome), letture[k]); };
@@ -714,6 +743,20 @@
       return c;
     }
 
+    // Il fotogramma composto resta in memoria finché lo schermo non cambia misura:
+    // tornare a un'epoca già vista non ricostruisce le tele grandi.
+    const recenti = []; // risultati con un fotogramma composto, al massimo 4 (ognuno occupa qualche MB)
+    function composto(res) {
+      const c = res.composto;
+      const valido = c && c.width === tela.width && c.height === tela.height;
+      if (!valido) res.composto = componi(res);
+      const i = recenti.indexOf(res);
+      if (i >= 0) recenti.splice(i, 1);
+      recenti.push(res);
+      if (recenti.length > 4) recenti.shift().composto = null;
+      return res.composto;
+    }
+
     function copiaTela() {
       const c = nuovaTela(tela.width, tela.height);
       c.getContext('2d').drawImage(tela, 0, 0);
@@ -768,7 +811,7 @@
       const res = risultatoCorrente();
       if (!res) return;
       stato.daMostrare = false;
-      transizione(componi(res), animato);
+      transizione(composto(res), animato);
       aggiornaLente();
       disegnaTavolozza();
     }
@@ -924,26 +967,35 @@
       stato.dito = e.dito;
       aggiornaLente(false);
     }
-    function daEvento(e, subito) {
-      puntatore = { x: e.clientX, y: e.clientY, dito: e.pointerType !== 'mouse' };
+    // dito = true tiene la lente sopra il punto, perché il dito non la copra.
+    function daEvento(e, subito, dito) {
+      puntatore = { x: e.clientX, y: e.clientY, dito: !!dito };
       if (subito) { if (rafLente) { cancelAnimationFrame(rafLente); rafLente = 0; } applicaPuntatore(); }
       else if (!rafLente) rafLente = requestAnimationFrame(applicaPuntatore);
     }
-    schermo.addEventListener('pointermove', (e) => {
-      if (!stato.lente) return;
-      if (e.pointerType === 'mouse' || tocco === e.pointerId) daEvento(e);
-    });
+    // Mouse e penna muovono la lente subito. Col dito (touch-action: pan-y) un trascinamento di lato
+    // la muove, un tocco la porta nel punto toccato, uno scorrimento in verticale muove solo la pagina:
+    // in quel caso il browser manda pointercancel e la lente resta dov'era.
     schermo.addEventListener('pointerdown', (e) => {
       if (!stato.lente) return;
-      if (e.pointerType !== 'mouse') {
-        tocco = e.pointerId;
-        try { schermo.setPointerCapture(e.pointerId); } catch (err) { /* puntatore già rilasciato */ }
-      }
-      daEvento(e, true);
+      if (e.pointerType !== 'touch') { daEvento(e, true, false); return; }
+      tocco = { id: e.pointerId, x: e.clientX, mosso: false };
+      try { schermo.setPointerCapture(e.pointerId); } catch (err) { /* puntatore già rilasciato */ }
     });
-    const fineTocco = (e) => { if (tocco === e.pointerId) tocco = null; };
-    schermo.addEventListener('pointerup', fineTocco);
-    schermo.addEventListener('pointercancel', fineTocco);
+    schermo.addEventListener('pointermove', (e) => {
+      if (!stato.lente) return;
+      if (e.pointerType !== 'touch') { daEvento(e, false, false); return; }
+      if (!tocco || tocco.id !== e.pointerId) return;
+      if (!tocco.mosso && Math.abs(e.clientX - tocco.x) < 8) return;
+      tocco.mosso = true;
+      daEvento(e, false, true);
+    });
+    schermo.addEventListener('pointerup', (e) => {
+      if (!tocco || tocco.id !== e.pointerId) return;
+      if (stato.lente) daEvento(e, true, tocco.mosso);
+      tocco = null;
+    });
+    schermo.addEventListener('pointercancel', (e) => { if (tocco && tocco.id === e.pointerId) tocco = null; });
     schermo.addEventListener('keydown', (e) => {
       const passi = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] };
       const d = passi[e.key];
@@ -1328,7 +1380,7 @@
         tela.width = w; tela.height = hh;
         if (anim) { anim.cancel(); anim = null; }
         const res = risultatoCorrente();
-        visibile = componi(stato.daMostrare ? null : res);
+        visibile = res && !stato.daMostrare ? composto(res) : componi(null);
         tela.getContext('2d').drawImage(visibile, 0, 0);
       }
       const L = latoLente();
@@ -1349,7 +1401,8 @@
     aggiornaNota();
     attesa = 'fhd';
     attesaDa = performance.now();
-    accoda('scena', () => scenaTramonto(scena.getContext('2d'), W, H), true);
+    // willReadFrequently: la tela della scena si legge con getImageData, meglio tenerla nella memoria del processore
+    accoda('scena', () => scenaTramonto(scena.getContext('2d', { willReadFrequently: true }), W, H), true);
     misura();
 
     function attiva() {
@@ -1394,14 +1447,14 @@
     periodo: '1968–oggi',
     colore: 'var(--era-8)',
     sommario: 'Dal terminale a caratteri allo schermo a pixel, dal mouse di Engelbart alle finestre, dalle schede CGA, EGA e VGA alla GPU, dall\'altoparlante del PC alla Sound Blaster.',
-    intro: 'Per decenni i computer hanno parlato con le persone a righe di testo, prima su carta e poi su uno schermo. Poi lo schermo si è riempito di pixel: sono arrivati il mouse, le finestre, i colori, il suono e infine la GPU, il chip che oggi muove i videogiochi e addestra l\'intelligenza artificiale. Nel laboratorio vedrai lo stesso disegno come l\'avrebbero mostrato cinque computer di epoche diverse.',
+    intro: 'Per decenni i computer hanno parlato con le persone a righe di testo, prima su carta e poi su uno schermo. Poi lo schermo si è riempito di pixel: sono arrivati il mouse, le finestre, i colori, il suono e infine la GPU, il processore grafico che oggi muove i videogiochi e addestra l\'intelligenza artificiale. Nel laboratorio vedrai lo stesso disegno come l\'avrebbero mostrato cinque computer di epoche diverse.',
     blocchi: [
       {
         tipo: 'testo',
         titolo: 'Dalla telescrivente allo schermo a pixel',
         paragrafi: [
           'Negli anni Sessanta con un computer si dialogava soprattutto attraverso la <strong>telescrivente</strong> (in inglese <em>teletype</em>): una macchina da scrivere elettrica collegata al computer, che stampava su un rotolo di carta le domande dell\'operatore e le risposte della macchina. La Teletype Model 33, del 1963, costava relativamente poco e divenne il terminale di migliaia di minicomputer. Negli anni Settanta la carta lasciò il posto al vetro: i <strong>terminali video</strong>, come il VT100 della Digital Equipment Corporation (1978), mostravano 24 righe di 80 caratteri su un tubo catodico. Sapevano scrivere lettere, numeri e simboli, ma non disegnare.',
-          'Un terminale a caratteri tiene in memoria soltanto il codice di ogni lettera. Mentre il fascio di elettroni percorre lo schermo, un <strong>generatore di caratteri</strong>, cioè una piccola memoria a sola lettura (ROM) che contiene il disegno di ogni simbolo, trasforma i codici in puntini luminosi. È un trucco che fa risparmiare moltissima memoria. Nel modo testo del PC IBM, per esempio, una pagina di 80' + X + '25 caratteri occupa 4.000 byte (due per carattere: il codice e un byte di attributi, come il colore o la sottolineatura), mentre la stessa pagina disegnata punto per punto, a 720' + X + '350 pixel, ne richiederebbe 31.500.',
+          'Un terminale a caratteri tiene in memoria soltanto il codice di ogni lettera. Mentre il fascio di elettroni percorre lo schermo, un <strong>generatore di caratteri</strong>, cioè una piccola memoria a sola lettura (ROM) che contiene il disegno di ogni simbolo, trasforma i codici in puntini luminosi. È un trucco che fa risparmiare moltissima memoria. Sul monitor monocromatico del PC IBM, per esempio, una pagina di 80' + X + '25 caratteri occupa 4.000 byte (due per carattere: il codice e un byte di attributi, come il colore o la sottolineatura), mentre la stessa pagina disegnata punto per punto, a 720' + X + '350 pixel, ne richiederebbe 31.500: quasi otto volte tanto.',
           'Lo schermo <strong>a mappa di bit</strong> (<em>bitmap</em>) fa il contrario: a ogni punto dell\'immagine, il <strong>pixel</strong> (da <em>picture element</em>, elemento d\'immagine), corrispondono uno o più bit in una zona di memoria chiamata <strong>memoria video</strong> (<em>framebuffer</em>). Il circuito video la rilegge da capo decine di volte al secondo e la trasforma nel segnale per lo schermo. Così si può disegnare qualsiasi cosa: linee, icone, lettere di ogni forma e grandezza, fotografie. Il prezzo è la memoria, che negli anni Settanta costava carissima: per questo i primi schermi a pixel nacquero nei laboratori di ricerca.',
         ],
       },
@@ -1409,15 +1462,15 @@
         tipo: 'testo',
         titolo: 'Il mouse, le finestre e la scrivania',
         paragrafi: [
-          'Il 9 dicembre 1968, a San Francisco, Douglas Engelbart dello Stanford Research Institute (SRI) salì sul palco di un congresso di informatica e per circa 90 minuti mostrò a un migliaio di persone il suo NLS (<em>oN-Line System</em>), collegato al computer del suo laboratorio a una cinquantina di chilometri di distanza. Con una mano usava la tastiera, con l\'altra una scatoletta di legno con due rotelle e un filo come coda: il <strong>mouse</strong>, costruito nel 1964 dall\'ingegnere Bill English sulla base dei suoi schizzi. In quella che fu poi chiamata «la madre di tutte le demo» comparvero anche testi con collegamenti ipertestuali, lo schermo diviso in finestre, una videochiamata e un documento modificato in due a distanza.',
-          'Molte di quelle idee maturarono allo <strong>Xerox PARC</strong> (Palo Alto Research Center), in California. Lì nel 1973 nacque lo <strong>Xerox Alto</strong>, con uno schermo verticale di 606' + X + '808 pixel in bianco e nero, il mouse e la rete Ethernet; con il linguaggio Smalltalk, sviluppato dal gruppo di Alan Kay, arrivarono le finestre sovrapposte e i menu. L\'Alto non fu mai messo in vendita: ne furono costruiti fra 1.500 e 2.000 circa, usati nei laboratori Xerox e in alcune università. Il suo erede commerciale, lo <strong>Xerox Star</strong> del 1981, introdusse la «scrivania» con le icone di documenti e cartelle, ma costava 16.595 dollari a postazione e vendette poco.',
+          'Il 9 dicembre 1968, a San Francisco, Douglas Engelbart dello Stanford Research Institute (SRI) salì sul palco di un congresso di informatica e per circa 90 minuti mostrò a un migliaio di persone il suo NLS (<em>oN-Line System</em>), collegato al computer del suo laboratorio a una cinquantina di chilometri di distanza. Con una mano scriveva sulla tastiera, con l\'altra muoveva una scatoletta con due rotelle e un filo come coda: il <strong>mouse</strong>. Il primo esemplare, di legno, l\'aveva costruito nel 1964 l\'ingegnere Bill English seguendo gli schizzi di Engelbart. In quella che fu poi chiamata «la madre di tutte le demo» comparvero anche testi con collegamenti ipertestuali, lo schermo diviso in finestre, una videochiamata e un documento modificato in due a distanza.',
+          'Molte di quelle idee maturarono allo <strong>Xerox PARC</strong> (Palo Alto Research Center), in California. Lì nel 1973 nacque lo <strong>Xerox Alto</strong>, con uno schermo verticale di 606' + X + '808 pixel in bianco e nero, il mouse e la rete Ethernet; con il linguaggio Smalltalk, sviluppato dal gruppo di Alan Kay, arrivarono le finestre sovrapposte e i menu. L\'Alto non fu mai messo in vendita: ne furono costruiti fra 1.500 e 2.000 esemplari, usati nei laboratori Xerox e in alcune università. Il suo erede commerciale, lo <strong>Xerox Star</strong> del 1981, introdusse la «scrivania» con le icone di documenti e cartelle, ma costava 16.595 dollari a postazione e vendette poco.',
           'Nel dicembre 1979 un gruppo di Apple guidato da Steve Jobs visitò il PARC, grazie a un accordo che permetteva alla Xerox di comprare azioni Apple prima della quotazione in Borsa. Non fu un semplice furto di idee: Apple aveva già avviato il progetto Lisa, e i suoi tecnici inventarono molto di nuovo, come la barra dei menu a tendina, il trascinamento delle icone e il cestino. Il primo frutto fu l\'<strong>Apple Lisa</strong> (1983), potente ma carissima: 9.995 dollari. Il secondo fu il <strong>Macintosh</strong>, presentato il 24 gennaio 1984: schermo da 9 pollici di 512' + X + '342 pixel in bianco e nero, 128 KB di memoria, 2.495 dollari. A disegnare tutto, a grande velocità, era QuickDraw, scritto da Bill Atkinson.',
-          'Nel 1985 arrivarono macchine a colori più economiche. L\'<strong>Amiga 1000</strong> di Commodore, presentato a luglio, aveva chip dedicati alla grafica e al suono: mostrava 32 colori scelti fra 4.096 e, con un trucco chiamato HAM (<em>Hold-And-Modify</em>), perfino tutti i 4.096 insieme. L\'<strong>Atari 520ST</strong> offriva 16 colori fra 512 e due prese MIDI (<em>Musical Instrument Digital Interface</em>, lo standard che collega gli strumenti musicali elettronici), che lo resero amatissimo dai musicisti. Nel mondo dei PC IBM l\'interfaccia grafica arrivò con <strong>Windows</strong>: la versione 1.0 (1985) ebbe poco successo, la 3.0 (1990) si diffuse ovunque, Windows 95 (1995) introdusse il menu Start e la barra delle applicazioni. La storia di questi programmi è raccontata nella <a href="../programmazione/index.html#personal">sezione 7</a>.',
+          'Nel 1985 arrivarono macchine a colori più economiche. L\'<strong>Amiga 1000</strong> di Commodore, presentato a luglio, aveva chip dedicati alla grafica e al suono: mostrava 32 colori scelti fra 4.096 e, con un trucco chiamato HAM (<em>Hold-And-Modify</em>), perfino tutti i 4.096 insieme. L\'<strong>Atari 520ST</strong> offriva 16 colori fra 512 e due prese MIDI (<em>Musical Instrument Digital Interface</em>, lo standard che collega gli strumenti musicali elettronici), che lo resero amatissimo dai musicisti. Nel mondo dei PC IBM l\'interfaccia grafica si affermò con <strong>Windows</strong>: la versione 1.0 (1985) ebbe poco successo, la 3.0 (1990) si diffuse ovunque, Windows 95 (1995) introdusse il menu Start e la barra delle applicazioni. La storia di questi programmi è raccontata nella <a href="../programmazione/index.html#personal">sezione 7</a>.',
         ],
       },
       {
         tipo: 'citazione',
-        testo: 'Se nel vostro ufficio voi, lavoratori intellettuali, aveste uno schermo collegato a un computer acceso per voi tutto il giorno e pronto a rispondere all\'istante a ogni vostra azione, quanto valore potreste ricavarne?',
+        testo: 'Se nel vostro ufficio, come lavoratori intellettuali, aveste a disposizione uno schermo collegato a un computer attivo per voi tutto il giorno e pronto a rispondere all\'istante a ogni vostra azione, quanto valore potreste ricavarne?',
         autore: 'Douglas Engelbart',
         fonte: 'apertura della dimostrazione del 9 dicembre 1968 (traduzione)',
       },
@@ -1431,10 +1484,10 @@
         tipo: 'testo',
         titolo: 'Le schede video del PC: da MDA a VGA',
         paragrafi: [
-          'L\'IBM PC del 1981 non aveva un circuito video sulla scheda madre: il monitor si collegava a una scheda inserita in uno degli slot di espansione (il bus che più tardi sarà chiamato ISA, <em>Industry Standard Architecture</em>). Chi lo comprava sceglieva fra due schede. La <strong>MDA</strong> (<em>Monochrome Display Adapter</em>) mostrava solo testo, 80' + X + '25 caratteri molto nitidi su un monitor monocromatico, e aveva appena 4 KB di memoria. La <strong>CGA</strong> (<em>Color Graphics Adapter</em>) aveva 16 KB e sapeva disegnare: 320' + X + '200 pixel a 4 colori oppure 640' + X + '200 a 2 colori. I quattro colori venivano da tavolozze fisse: la più famosa era nero, ciano, magenta e bianco.',
+          'L\'IBM PC del 1981 non aveva un circuito video sulla scheda madre: il monitor si collegava a una scheda inserita in uno degli slot di espansione (il bus che più tardi sarà chiamato ISA, <em>Industry Standard Architecture</em>), e chi lo comprava sceglieva fra due schede. La <strong>MDA</strong> (<em>Monochrome Display Adapter</em>) mostrava solo testo, 80' + X + '25 caratteri molto nitidi su un monitor monocromatico, e aveva appena 4 KB di memoria. La <strong>CGA</strong> (<em>Color Graphics Adapter</em>) aveva 16 KB e sapeva disegnare: 320' + X + '200 pixel a 4 colori oppure 640' + X + '200 a 2 colori. I quattro colori venivano da tavolozze fisse: la più famosa era nero, ciano, magenta e bianco. Per imitare i colori mancanti si alternavano puntini di colori diversi: è la <strong>retinatura</strong> (<em>dithering</em>), parente del retino con cui si stampano le fotografie sui giornali.',
           'I vuoti lasciati da IBM furono riempiti da altri. Nel 1982 la scheda <strong>Hercules</strong>, progettata da Van Suwannukul per scrivere al computer la sua tesi di dottorato in thailandese, aggiunse alla compatibilità con la MDA una grafica monocromatica di 720' + X + '348 pixel e divenne uno standard di fatto. Nel 1984 IBM rispose con la <strong>EGA</strong> (<em>Enhanced Graphics Adapter</em>): 640' + X + '350 pixel con 16 colori scelti fra 64. Per avere davvero i 16 colori a quella risoluzione servivano però 112.000 byte, più dei 64 KB montati di serie: bisognava comprare l\'espansione di memoria.',
-          'La svolta arrivò nell\'aprile 1987 con la <strong>VGA</strong> (<em>Video Graphics Array</em>), presentata insieme ai nuovi PS/2 di IBM: 640' + X + '480 pixel a 16 colori e, nella <strong>modalità 13h</strong> amata dai programmatori di videogiochi, 320' + X + '200 pixel con 256 colori scelti fra 262.144. In quella modalità ogni pixel occupa esattamente un byte e una schermata (64.000 byte) sta tutta in un segmento di memoria da 64 KB: disegnare diventava semplicissimo. La VGA portò anche un connettore a 15 poli su tre file, che trasporta i segnali del rosso, del verde e del blu come tensioni variabili, cioè in forma <strong>analogica</strong>: è rimasto su PC, monitor e proiettori per decenni.',
-          'Dopo la VGA ogni costruttore aggiunse modalità proprie, a 800' + X + '600 pixel e oltre, chiamate genericamente <strong>SVGA</strong> (<em>Super VGA</em>) ma diverse da una marca all\'altra: ogni programma doveva conoscere ogni scheda. Per mettere ordine nacque la <strong>VESA</strong> (<em>Video Electronics Standards Association</em>), annunciata alla fine del 1988, che nel 1989 pubblicò le VESA BIOS Extensions, un modo comune per chiedere alla scheda le modalità avanzate. A metà degli anni Novanta il connettore VGA guadagnò anche due fili per il DDC (<em>Display Data Channel</em>): un piccolo bus seriale a due fili, l\'I²C (<em>Inter-Integrated Circuit</em>), attraverso il quale il computer legge dal monitor quali risoluzioni sa mostrare.',
+          'La svolta arrivò nell\'aprile 1987 con la <strong>VGA</strong> (<em>Video Graphics Array</em>), presentata insieme ai nuovi PS/2 di IBM: 640' + X + '480 pixel a 16 colori e, nella <strong>modalità 13h</strong> amata dai programmatori di videogiochi, 320' + X + '200 pixel con 256 colori scelti fra 262.144 (il nome è il numero della modalità, 13 in esadecimale). Lì ogni pixel occupa esattamente un byte e una schermata (64.000 byte) sta tutta in un segmento di memoria da 64 KB: disegnare diventava semplicissimo. La VGA portò anche un connettore a 15 poli su tre file, che trasporta i segnali del rosso, del verde e del blu come tensioni variabili, cioè in forma <strong>analogica</strong>: è rimasto su PC, monitor e proiettori per decenni.',
+          'Dopo la VGA ogni costruttore aggiunse modalità proprie, a 800' + X + '600 pixel e oltre, chiamate genericamente <strong>SVGA</strong> (<em>Super VGA</em>) ma diverse da una marca all\'altra: ogni programma doveva conoscere ogni scheda. Per mettere ordine nacque la <strong>VESA</strong> (<em>Video Electronics Standards Association</em>), annunciata alla fine del 1988, che nel 1989 pubblicò le VESA BIOS Extensions: un modo comune per chiedere le modalità avanzate al BIOS della scheda, il programma registrato nella sua memoria permanente. A metà degli anni Novanta due piedini del connettore VGA furono dedicati al DDC (<em>Display Data Channel</em>): un piccolo bus seriale a due fili, l\'I²C (<em>Inter-Integrated Circuit</em>), attraverso il quale il computer legge dal monitor quali risoluzioni sa mostrare.',
         ],
       },
       {
@@ -1450,7 +1503,7 @@
           { valore: 90, unita: 'minuti', etichetta: 'la dimostrazione di Engelbart del 9 dicembre 1968, con il primo mouse in pubblico' },
           { valore: 21888, unita: 'byte', etichetta: 'la memoria video del primo Macintosh (512' + X + '342 pixel a 1 bit): un sesto dei suoi 128 KB' },
           { valore: 262144, unita: 'colori', etichetta: 'la tavolozza della VGA (64' + X + '64' + X + '64), da cui un programma ne sceglie 256' },
-          { valore: 6220800, unita: 'byte', etichetta: 'un solo fotogramma Full HD a 24 bit: quanto 389 schermate CGA' },
+          { valore: 6220800, unita: 'byte', etichetta: 'un solo fotogramma Full HD a 24 bit: lo spazio di quasi 389 schermate CGA' },
         ],
       },
       {
@@ -1464,9 +1517,9 @@
         tipo: 'testo',
         titolo: 'Dall\'acceleratore alla GPU',
         paragrafi: [
-          'Con Windows lo schermo diventò un lavoro pesante: trascinare una finestra significa ricopiare centinaia di migliaia di byte di memoria video, e il processore ci perdeva molto tempo. All\'inizio degli anni Novanta si diffusero gli <strong>acceleratori grafici</strong> 2D, come l\'S3 86C911 del 1991, che facevano da soli le operazioni più comuni: copiare blocchi di pixel, riempire rettangoli, tracciare linee, disegnare il puntatore del mouse.',
-          'Poi arrivò il 3D. Nel 1996 la 3dfx mise in commercio la <strong>Voodoo Graphics</strong>, una scheda che sapeva fare solo grafica tridimensionale e si collegava con un cavetto alla scheda video normale. Disegnava triangoli ricoperti di <em>texture</em> (immagini «incollate» sulle superfici) e le sfumava per non far vedere i quadretti, con una velocità mai vista nei videogiochi per PC. Nel 1999 NVIDIA presentò la <strong>GeForce 256</strong> come «la prima GPU» (<em>Graphics Processing Unit</em>, unità di elaborazione grafica), perché calcolava da sola anche la posizione e l\'illuminazione dei triangoli, un lavoro che prima toccava al processore. Era soprattutto uno slogan pubblicitario: il termine circolava già, per esempio per il chip grafico della PlayStation di Sony del 1994. Ma da allora è rimasto.',
-          'Nel 2001, con la GeForce 3 e la libreria DirectX 8 di Microsoft, le GPU diventarono <strong>programmabili</strong>: piccoli programmi chiamati <em>shader</em> decidono come spostare ogni vertice e di che colore dipingere ogni pixel. Una GPU contiene centinaia, oggi migliaia, di unità di calcolo semplici che eseguono la stessa operazione su tanti dati insieme. Qualcuno capì che quella potenza poteva servire anche ad altro, e nacque il <strong>GPGPU</strong> (<em>General-Purpose computing on GPU</em>), il calcolo di uso generale sulle GPU. Fra il 2006 e il 2007 NVIDIA presentò <strong>CUDA</strong>, che permetteva di programmarle con un linguaggio derivato dal C.',
+          'Con Windows lo schermo diventò un lavoro pesante: trascinare una finestra significava ricopiare centinaia di migliaia di byte di memoria video, e il processore ci perdeva molto tempo. All\'inizio degli anni Novanta si diffusero gli <strong>acceleratori grafici</strong> 2D, come l\'S3 86C911 del 1991, che facevano da soli le operazioni più comuni: copiare blocchi di pixel, riempire rettangoli, tracciare linee, disegnare il puntatore del mouse.',
+          'Poi arrivò il 3D. Nel 1996 uscirono le schede con il chip <strong>Voodoo Graphics</strong> della 3dfx: sapevano fare solo grafica tridimensionale e si collegavano con un cavetto alla scheda video normale. Disegnavano triangoli ricoperti di <em>texture</em> (immagini «incollate» sulle superfici) e le sfumavano per non far vedere i quadretti, con una velocità mai vista nei videogiochi per PC. Nel 1999 NVIDIA presentò la <strong>GeForce 256</strong> come «la prima GPU» (<em>Graphics Processing Unit</em>, unità di elaborazione grafica), perché calcolava da sola anche la posizione e l\'illuminazione dei triangoli, un lavoro che prima toccava al processore. Era soprattutto uno slogan pubblicitario: il termine circolava già, per esempio per il chip grafico della PlayStation di Sony del 1994. Ma da allora il nome è rimasto.',
+          'Nel 2001, con la GeForce 3 e la libreria DirectX 8 di Microsoft, le GPU diventarono <strong>programmabili</strong>: piccoli programmi chiamati <em>shader</em> decidono come spostare ogni vertice e di che colore dipingere ogni pixel. Una GPU contiene molte unità di calcolo semplici (oggi sono migliaia) che eseguono la stessa operazione su tanti dati insieme. Presto si capì che quella potenza poteva servire anche ad altro, e nacque il <strong>GPGPU</strong> (<em>General-Purpose computing on GPU</em>), il calcolo di uso generale sulle GPU. Fra il 2006 e il 2007 NVIDIA presentò <strong>CUDA</strong>, che permetteva di programmarle con un linguaggio derivato dal C.',
           'Nel 2012 la rete neurale <strong>AlexNet</strong>, addestrata in cinque o sei giorni su due schede GeForce GTX 580 da videogiochi, vinse la gara di riconoscimento di immagini ImageNet: sbagliava il 15,3% delle volte (contando come giusta la risposta corretta fra le sue prime cinque ipotesi), contro il 26,2% del secondo classificato. Da quel momento le GPU sono diventate il motore dell\'intelligenza artificiale: i grandi modelli di oggi si addestrano su migliaia di GPU che lavorano insieme.',
         ],
       },
@@ -1474,8 +1527,8 @@
         tipo: 'testo',
         titolo: 'Dal tubo catodico ai cristalli liquidi',
         paragrafi: [
-          'Intanto cambiavano anche gli schermi. Il <strong>tubo catodico</strong> (CRT, <em>Cathode Ray Tube</em>) disegna l\'immagine con un fascio di elettroni che percorre lo schermo riga per riga, dall\'alto in basso, decine di volte al secondo, e accende puntini di fosforo rossi, verdi e blu. Per questo la memoria video viene letta nello stesso ordine, una riga dopo l\'altra: la tendina che nel laboratorio cambia l\'immagine imita proprio quel fascio.',
-          'Lo schermo a <strong>cristalli liquidi</strong> (LCD, <em>Liquid Crystal Display</em>) ha invece una griglia fissa di pixel, ciascuno formato da tre <strong>subpixel</strong>, rosso, verde e blu, che lasciano passare più o meno la luce di una lampada posta dietro lo schermo. È sottile, leggero e consuma meno: fra il 2003 e il 2004 i monitor LCD hanno cominciato a vendersi più dei CRT. Anche il segnale è diventato digitale: prima il DVI (1999), poi HDMI e DisplayPort, che oggi viaggiano anche attraverso la porta USB-C.',
+          'Intanto cambiavano anche gli schermi. Il <strong>tubo catodico</strong> (CRT, <em>Cathode Ray Tube</em>) disegna l\'immagine con un fascio di elettroni (nei tubi a colori sono tre, uno per colore) che percorre lo schermo riga per riga, dall\'alto in basso, decine di volte al secondo, e fa brillare puntini di fosforo rossi, verdi e blu. Per questo la memoria video viene letta nello stesso ordine, una riga dopo l\'altra: la tendina che nel laboratorio cambia l\'immagine imita proprio quel fascio.',
+          'Lo schermo a <strong>cristalli liquidi</strong> (LCD, <em>Liquid Crystal Display</em>) ha invece una griglia fissa di pixel, ciascuno formato da tre <strong>subpixel</strong>, rosso, verde e blu, che lasciano passare più o meno la luce di una lampada posta dietro lo schermo. È sottile, leggero e consuma meno: i monitor LCD hanno superato i CRT nelle vendite in Europa nel 2003 e nel mondo nel 2004. Anche il segnale è diventato digitale: prima con il DVI (<em>Digital Visual Interface</em>, 1999), poi con l\'HDMI (<em>High-Definition Multimedia Interface</em>, 2002) e il DisplayPort (2006), che oggi possono passare anche dalla presa USB-C dei portatili.',
         ],
       },
       {
@@ -1484,14 +1537,14 @@
         paragrafi: [
           'Il PC IBM aveva un solo altoparlante, pensato per i segnali acustici. Lo comandava un contatore programmabile (il chip Intel 8253) che produceva un\'<strong>onda quadra</strong>: il segnale aveva solo due livelli, acceso o spento, proprio come un pixel in bianco e nero. Bastava per i bip e per melodie a una voce sola; con trucchi di programmazione molto ingegnosi, alcuni giochi riuscirono perfino a fargli pronunciare qualche parola.',
           'Nel 1987 la canadese Ad Lib mise in vendita la <strong>AdLib Music Synthesizer Card</strong>, con il chip Yamaha YM3812 (detto OPL2) a <strong>sintesi FM</strong>: invece di riprodurre suoni registrati, li costruisce facendo variare la frequenza di un\'onda con un\'altra onda (FM sta per <em>Frequency Modulation</em>, modulazione di frequenza), con nove voci contemporanee. Nel 1989 la Creative di Singapore lanciò la <strong>Sound Blaster</strong>: stesso chip, quindi compatibile con i giochi per AdLib, più un convertitore per registrare e riprodurre suoni digitali a 8 bit e una porta per il joystick. Divenne lo standard di fatto: per anni le schede audio di ogni marca si dichiararono «compatibili Sound Blaster». Nel 1992 la Sound Blaster 16 portò l\'audio a 16 bit, con la qualità di un CD.',
-          'L\'ultimo tassello fu il <strong>CD-ROM</strong>. Nel 1983 Sony e Philips avevano stabilito come registrare dati su un compact disc: un CD-ROM arrivò a contenere circa 650 MB, quanto più di 450 dischetti da 1,44 MB. Alla fine del 1990 Microsoft e altre aziende annunciarono lo standard <strong>MPC</strong> (<em>Multimedia PC</em>), e dal 1991 comparvero i computer con il suo marchio: lettore di CD-ROM, scheda audio, grafica VGA e Windows con le estensioni multimediali. Enciclopedie con filmati e suoni, giochi con musiche registrate e voci di attori: il PC era diventato <strong>multimediale</strong>.',
+          'L\'ultimo tassello fu il <strong>CD-ROM</strong> (<em>Compact Disc Read-Only Memory</em>), il compact disc usato come memoria a sola lettura. Sony e Philips ne definirono il formato fra il 1983 e il 1985: un disco arrivò a contenere circa 650 MB, quanto più di 450 dischetti da 1,44 MB. Nel 1990 Microsoft e altre aziende stabilirono lo standard <strong>MPC</strong> (<em>Multimedia PC</em>), e nei primi anni Novanta arrivarono i computer e i kit di espansione con il suo marchio: lettore di CD-ROM, scheda audio, grafica VGA e Windows con le estensioni multimediali. Enciclopedie con filmati e suoni, giochi con musiche registrate e voci di attori: il PC era diventato <strong>multimediale</strong>.',
         ],
       },
       {
         tipo: 'italia',
         titolo: 'Dal mouse all\'MP3',
         paragrafi: [
-          'Tra i fondatori della Logitech, nata il 2 ottobre 1981 ad Apples, in Svizzera, ci sono due italiani: Pierluigi Zappacosta, nato a Chieti, e Giacomo Marini, che aveva lavorato alla Olivetti e all\'IBM. I loro primi mouse, nei primi anni Ottanta, nascevano da un progetto del Politecnico federale di Losanna; oggi Logitech è uno dei maggiori produttori di mouse al mondo. E nel 1983 l\'Olivetti M24, un compatibile IBM progettato in Italia, offriva una grafica di 640' + X + '400 pixel, il doppio delle righe della CGA.',
+          'Tra i fondatori della Logitech, nata il 2 ottobre 1981 ad Apples, in Svizzera, ci sono due italiani: Pierluigi Zappacosta, nato a Chieti, e Giacomo Marini, che aveva lavorato alla Olivetti e all\'IBM. I loro primi mouse, nei primi anni Ottanta, nascevano da un progetto del Politecnico federale di Losanna; oggi Logitech è uno dei maggiori produttori di mouse al mondo. E l\'Olivetti M24 di Ivrea, un compatibile IBM presentato all\'inizio del 1984, offriva una grafica di 640' + X + '400 pixel: il doppio delle righe della CGA.',
           'Il legame più forte con il multimediale passa però da Torino. Leonardo Chiariglione, ingegnere del CSELT (Centro Studi e Laboratori Telecomunicazioni, il centro di ricerca del gruppo pubblico dei telefoni), nel 1988 fondò con il giapponese Hiroshi Yasuda il gruppo <strong>MPEG</strong> (<em>Moving Picture Experts Group</em>) e lo guidò fino al 2020. Dagli standard MPEG vengono il Video CD, l\'MP3 (<em>MPEG-1 Audio Layer III</em>), i DVD, la televisione digitale e buona parte dei video che guardiamo in rete.',
         ],
       },
@@ -1505,8 +1558,8 @@
           { anno: 1984, nome: 'Apple Macintosh', luogo: 'Apple, Cupertino (Stati Uniti)', testo: 'Presentato il 24 gennaio: 512' + X + '342 pixel quadrati in bianco e nero, mouse e interfaccia grafica per 2.495 dollari.' },
           { anno: 1985, nome: 'Amiga 1000', luogo: 'Commodore-Amiga, Los Gatos (Stati Uniti)', testo: 'Chip dedicati a grafica e suono: 4.096 colori possibili, animazioni fluide e quattro canali di suono campionato.' },
           { anno: 1987, nome: 'VGA', luogo: 'IBM (Stati Uniti)', testo: 'Arriva con i PS/2: 640' + X + '480 a 16 colori, oppure 320' + X + '200 con 256 colori fra 262.144. Il suo connettore a 15 poli resterà in uso per decenni.' },
-          { anno: 1987, nome: 'AdLib Music Synthesizer Card', luogo: 'Ad Lib, Québec (Canada)', testo: 'La prima scheda musicale di successo per i PC: sintesi FM con il chip Yamaha YM3812 e nove voci.' },
-          { anno: 1988, nome: 'Nasce il gruppo MPEG', luogo: 'Leonardo Chiariglione, CSELT di Torino', testo: 'Chiariglione fonda con Hiroshi Yasuda il gruppo che scriverà gli standard di video e audio digitali: Video CD, MP3, DVD, televisione digitale.', italia: true },
+          { anno: 1987, nome: 'AdLib Music Synthesizer Card', luogo: 'Ad Lib, città di Québec (Canada)', testo: 'La prima scheda musicale di successo per i PC: sintesi FM con il chip Yamaha YM3812 e nove voci.' },
+          { anno: 1988, nome: 'Nasce il gruppo MPEG', luogo: 'CSELT, Torino (Italia)', testo: 'Leonardo Chiariglione fonda con il giapponese Hiroshi Yasuda il gruppo che scriverà gli standard di video e audio digitali: Video CD, MP3, DVD, televisione digitale.', italia: true },
           { anno: 1989, nome: 'Sound Blaster', luogo: 'Creative Technology, Singapore', testo: 'Compatibile con la AdLib e capace di registrare e riprodurre suoni digitali: diventa lo standard dell\'audio per PC.' },
           { anno: 1996, nome: '3dfx Voodoo Graphics', luogo: '3dfx Interactive, San Jose (Stati Uniti)', testo: 'Una scheda solo per il 3D, da affiancare a quella normale: porta nei videogiochi per PC texture sfumate e grafica fluida.' },
           { anno: 1999, nome: 'NVIDIA GeForce 256', luogo: 'NVIDIA, Santa Clara (Stati Uniti)', testo: 'Presentata come «la prima GPU»: calcola da sola posizione e illuminazione dei triangoli, togliendo lavoro al processore.' },

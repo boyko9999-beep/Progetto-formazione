@@ -49,7 +49,7 @@
 .prs-fig .f-lava-t { fill: #fff; }
 .prs-fig .f-asciuga-t, .prs-fig .f-piega-t { fill: #1b2127; }
 .prs-fig .t { font-size: 23px; font-weight: 800; text-anchor: middle; }
-.prs-fig .lettera { font-size: 21px; font-weight: 800; text-anchor: middle; }
+.prs-fig .lettera { font-size: 23px; font-weight: 800; text-anchor: middle; }
 .prs-fig .titolo { font-size: 24px; font-weight: 800; fill: var(--ink); letter-spacing: -.01em; }
 .prs-fig .nota { font-size: 24px; font-weight: 600; fill: var(--muted); }
 .prs-fig .nota.forte { font-weight: 800; fill: var(--prs-accento); }
@@ -96,6 +96,9 @@
  * ===================================================================== */
 
 .prs-lab { display: grid; gap: 14px; min-width: 0; }
+/* il laboratorio è sempre scuro: anello di fuoco chiaro anche nel tema chiaro (quello comune è verde scuro) */
+.prs-lab :focus-visible { outline: 3px solid var(--trace-1); outline-offset: 2px; }
+.prs-lab .lab-btn.primary:focus-visible { outline-color: #fff; }
 .prs-testa { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
 .prs-viste button { min-height: 40px; min-width: 44px; padding: 0 14px; }
 

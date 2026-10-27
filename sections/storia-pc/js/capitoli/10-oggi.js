@@ -219,7 +219,7 @@
       },
     },
     stretto: {
-      w: 360, h: 556, k: 1.15, pkg: [180, 176], etichetta: [47, 181],
+      w: 360, h: 556, k: 1.15, pkg: [180, 176], etichetta: [180, 270],
       pezzi: {
         fpu: { c: [124, 46], w: 52, h: 52, strada: [[124, 46], [124, 176]] },
         cache: { c: [256, 46], w: 104, h: 68, strada: [[256, 38], [214, 38], [214, 176]] },
@@ -412,7 +412,8 @@
       M.TAPPE.map((t) => h('i', { style: 'left:' + n(100 * (t.anno - M.ANNO_MIN) / (M.ANNO_MAX - M.ANNO_MIN)) + '%' })));
     const btnPrec = h('button', { type: 'button', class: 'lab-btn', 'aria-label': 'Tappa precedente' }, h('span', { 'aria-hidden': 'true' }, '◀'), ' Tappa');
     const btnSucc = h('button', { type: 'button', class: 'lab-btn', 'aria-label': 'Tappa successiva' }, 'Tappa ', h('span', { 'aria-hidden': 'true' }, '▶'));
-    const btnGioca = h('button', { type: 'button', class: 'lab-btn primary ogl-gioca', 'aria-pressed': 'false' }, 'Riproduci');
+    // l'etichetta cambia (Riproduci / Pausa): niente aria-pressed, che con un'etichetta variabile confonde i lettori di schermo
+    const btnGioca = h('button', { type: 'button', class: 'lab-btn primary ogl-gioca' }, 'Riproduci');
     const comandi = h('div', { class: 'ogl-comandi' },
       h('div', { class: 'ogl-anni' },
         h('label', { class: 'spc-sr-only', for: idCur }, 'Anno'),
@@ -763,13 +764,13 @@
     }
     function ferma() {
       if (gioco) { clearTimeout(gioco); timer.delete(gioco); gioco = 0; }
-      btnGioca.setAttribute('aria-pressed', 'false');
+      btnGioca.classList.remove('ogl-in-corso');
       btnGioca.textContent = 'Riproduci';
     }
     function suona() {
       if (gioco) { ferma(); return; }
       if (anno >= M.ANNO_MAX) vaiA(M.ANNO_MIN, true);
-      btnGioca.setAttribute('aria-pressed', 'true');
+      btnGioca.classList.add('ogl-in-corso');
       btnGioca.textContent = 'Pausa';
       const passo = () => {
         const t = M.tappaSuccessiva(anno);
@@ -793,7 +794,8 @@
       applica(st, false);
       mostraImpulsi();
     }
-    const scegli = (w) => (w > 0 && w < 520 ? 'stretto' : 'largo');
+    // sotto i 540 px la scheda larga scenderebbe sotto gli 11 px di testo: si passa a quella verticale
+    const scegli = (w) => (w > 0 && w < 540 ? 'stretto' : 'largo');
     ricostruisci(scegli(tela.clientWidth));
     vaiA(anno, false);
     let ro = null;
@@ -829,14 +831,14 @@
   const LAB_TACCHE = {
     massa: [[0, '0'], [5, '5 kg'], [10, '10 kg']],
     spessore: [[0, '0'], [10, '10 cm'], [20, '20 cm']],
-    autonomia: [[0, '0'], [6, '6 ore'], [12, '12'], [18, '18'], [24, '24 ore']],
-    transistor: [[1e3, 'mille'], [1e6, 'un milione'], [1e9, 'un miliardo'], [1e11, '100 miliardi']],
+    autonomia: [[0, '0'], [8, '8 ore'], [16, '16 ore'], [24, '24 ore']],
+    transistor: [[1e3, 'mille'], [1e6, '1 milione'], [1e9, '1 miliardo']],
   };
 
   function labValore(m, v, f) {
     if (m.id === 'massa') return v >= 1 ? f(v, v < 10 ? 2 : 1) + ' kg' : f(v * 1000, 0) + ' g';
     if (m.id === 'spessore') return v >= 1 ? f(v, v < 10 ? 2 : 1) + ' cm' : f(v * 10, 2) + ' mm';
-    if (m.id === 'autonomia') return v > 0 ? f(v, 0) + ' ore' : 'nessuna batteria';
+    if (m.id === 'autonomia') return f(v, 0) + ' ore';
     if (v >= 1e9) return f(v / 1e9, 0) + ' miliardi';
     if (v >= 1e6) return f(v / 1e6, 0) + ' milioni';
     return String(Math.round(v)).replace(/\B(?=(\d{3})+(?!\d))/g, '.');   // 8.500, con il punto anche sotto le 10.000
@@ -883,10 +885,10 @@
         fTxt.textContent = 'Una pila di ' + f(Math.round(r('osborne', 'telefono')), 0) + ' telefoni è alta quanto un Osborne 1 chiuso. Il MacBook Air, nel punto più spesso, vale poco più di due telefoni.';
       } else if (m.id === 'autonomia') {
         fNum.textContent = f(M.PORTATILI[2].autonomiaOre, 0) + ' ore';
-        fTxt.textContent = 'Quasi un giorno intero di video per il telefono, 5 ore di lavoro per il MacBook Air. L\'Osborne 1 lontano dalla presa si spegneva.';
+        fTxt.textContent = 'Quasi un giorno intero di video per il telefono, 5 ore di lavoro senza fili per il MacBook Air. L\'Osborne 1 viveva attaccato alla presa: un pacco di batterie venduto a parte dava circa un\'ora.';
       } else {
         fNum.textContent = f(r('telefono', 'osborne') / 1e6, 1) + ' milioni×';
-        fTxt.textContent = 'Per ogni transistor dello Z80 dell\'Osborne 1, l\'A17 Pro dell\'iPhone ne ha più di due milioni. Il processore del MacBook Air ne aveva già ' + f(Math.round(r('air', 'osborne') / 1000), 0) + ' mila volte tanti.';
+        fTxt.textContent = 'Per ogni transistor dello Z80 dell\'Osborne 1, l\'A17 Pro dell\'iPhone ne ha più di due milioni. Il Core 2 Duo del MacBook Air ne aveva già circa ' + f(Math.round(r('air', 'osborne') / 1000) * 1000, 0) + ' volte tanti.';
       }
     }
 
@@ -895,7 +897,7 @@
       if (m.id === 'massa') {
         const quanti = Math.round(M.rapporto('osborne', 'telefono', 'massa'));
         o = '<svg viewBox="0 0 320 112" class="ogl-pitto-svg">' + LAB_ICONE.osborne.replace('<svg viewBox="0 0 56 40">', '<g transform="translate(0 30) scale(1.25)">').replace('</svg>', '</g>') +
-          '<text class="ogl-pitto-t" x="35" y="100">1 Osborne 1</text><text class="ogl-pitto-uguale" x="84" y="66">=</text>';
+          '<text class="ogl-pitto-t" x="38" y="100">1 Osborne 1</text><text class="ogl-pitto-uguale" x="84" y="66">=</text>';
         for (let i = 0; i < quanti; i++) {
           const c = i % 15, r = Math.floor(i / 15);
           o += '<rect class="ogl-pitto-tel" style="--i:' + i + '" x="' + (104 + c * 14) + '" y="' + (12 + r * 21) + '" width="9" height="16" rx="2"/>';
@@ -917,10 +919,11 @@
     }
 
     function disegnaAsse(m) {
-      asse.replaceChildren(...LAB_TACCHE[m.id].map((t, i, a) => h('span', {
-        class: i === 0 ? 'primo' : i === a.length - 1 ? 'ultimo' : '',
-        style: 'left:' + n(100 * M.frazione(m, t[0])) + '%',
-      }, t[1])));
+      // le scritte agli estremi si allineano al bordo, le altre si centrano sulla tacca
+      asse.replaceChildren(...LAB_TACCHE[m.id].map((t) => {
+        const fr = M.frazione(m, t[0]);
+        return h('span', { class: fr < 0.02 ? 'primo' : fr > 0.98 ? 'ultimo' : '', style: 'left:' + n(100 * fr) + '%' }, t[1]);
+      }));
     }
 
     function scegli(id) {
@@ -1002,9 +1005,9 @@
         titolo: 'Il computer con la maniglia (1981–1985)',
         paragrafi: [
           'Il primo portatile di successo arriva nell\'aprile del 1981. L\'<strong>Osborne 1</strong>, voluto dall\'editore Adam Osborne e progettato da Lee Felsenstein, è una valigia di plastica di 52 × 23 × 33 centimetri che pesa 11,1 chili. La tastiera fa da coperchio; dentro ci sono uno schermo a tubo catodico da 5 pollici (52 colonne per 24 righe), due unità per dischetti, un processore Z80 a 4 MHz e 64 KB di memoria. Non ha una batteria interna: si porta da una presa all\'altra (un pacco esterno, venduto a parte, dava circa un\'ora di autonomia).',
-          'Il colpo di genio è il prezzo: 1.795 dollari, con un pacchetto di programmi incluso, fra cui il sistema operativo CP/M, il programma di scrittura WordStar e il foglio di calcolo SuperCalc. Per la prima volta un computer completo, programmi compresi, sta in una valigia che entra sotto il sedile di un aereo. Il successo è immediato, ma nel settembre 1983 l\'azienda fallisce. Si racconta spesso che l\'abbia affondata l\'annuncio troppo anticipato dei modelli nuovi, che bloccò le vendite di quello in commercio (il cosiddetto «effetto Osborne»); in realtà pesarono anche una gestione disordinata, la concorrenza del Kaypro II, con uno schermo molto più grande, e l\'avanzata dei computer compatibili con il <a href="#ibm-pc">PC IBM</a>.',
-          'Nello stesso anno si vede anche l\'altra strada. L\'<strong>Epson HX-20</strong>, presentato nel novembre 1981 e venduto dal 1982, pesa circa 1,6 chili e va a batterie ricaricabili: ha uno schermo a cristalli liquidi di quattro righe da venti caratteri, una piccola stampante e, a richiesta, un registratore a microcassette. Anche Olivetti ha il suo portatile a pile, l\'<strong>M10</strong> del 1983, costruito con la giapponese Kyocera come il TRS-80 Model 100: meno di 2 chili, uno schermo inclinabile di 8 righe da 40 caratteri e una ventina di ore di autonomia con quattro pile stilo.',
-          'Il <strong>GRiD Compass</strong> (1982), disegnato da Bill Moggridge, introduce la forma a conchiglia (<em>clamshell</em>): lo schermo si ripiega sulla tastiera, come in tutti i portatili di oggi. È in lega di magnesio, pesa circa 5 chili e costa più di 8.000 dollari; lo comprano soprattutto i militari e la NASA, che lo porta sullo Space Shuttle. Il <strong>Compaq Portable</strong> (1983, circa 13 chili) ha successo perché fa funzionare quasi tutti i programmi del PC IBM. Nel 1985 il <strong>Toshiba T1100</strong> mette insieme le due idee: compatibile con il PC IBM, 4,1 chili, schermo a cristalli liquidi da 80 colonne per 25 righe, dischetti da 3,5 pollici e una batteria da circa otto ore. Toshiba lo presenta come il primo portatile per il grande pubblico.',
+          'Il colpo di genio è il prezzo: 1.795 dollari, con un pacchetto di programmi incluso, fra cui il sistema operativo CP/M, il programma di scrittura WordStar e il foglio di calcolo SuperCalc. Un computer completo, programmi compresi, sta in una valigia che entra sotto il sedile di un aereo. Il successo è immediato, ma nel settembre 1983 l\'azienda fallisce. Si racconta spesso che l\'abbia affondata l\'annuncio troppo anticipato dei modelli nuovi, che bloccò le vendite di quello in commercio (il cosiddetto «effetto Osborne»); in realtà pesarono anche una gestione disordinata, la concorrenza del Kaypro II, con uno schermo molto più grande, e l\'avanzata dei computer compatibili con il <a href="#ibm-pc">PC IBM</a>.',
+          'Nello stesso anno si vede anche l\'altra strada. L\'<strong>Epson HX-20</strong>, presentato nel novembre 1981 e venduto dal 1982, pesa circa 1,6 chili e va a batterie ricaricabili: ha uno schermo a cristalli liquidi di quattro righe da venti caratteri, una piccola stampante e, a richiesta, un registratore a microcassette. Anche Olivetti ha il suo portatile a pile, l\'<strong>M10</strong> del 1983, progettato dalla giapponese Kyocera come il TRS-80 Model 100 della Tandy: meno di 2 chili, uno schermo inclinabile di 8 righe da 40 caratteri e una ventina di ore di autonomia con quattro pile stilo.',
+          'Il <strong>GRiD Compass</strong> (1982), disegnato da Bill Moggridge, introduce la forma a conchiglia (<em>clamshell</em>): lo schermo si ripiega sulla tastiera, come in tutti i portatili di oggi. È in lega di magnesio, pesa circa 5 chili e costa più di 8.000 dollari; lo comprano soprattutto i militari e la NASA, che lo porta sullo Space Shuttle. Il <strong>Compaq Portable</strong> (in vendita dal 1983, circa 13 chili) ha successo perché fa funzionare quasi tutti i programmi del PC IBM. Nel 1985 il <strong>Toshiba T1100</strong> mette insieme le due idee: compatibile con il PC IBM, 4,1 chili, schermo a cristalli liquidi da 80 colonne per 25 righe, dischetti da 3,5 pollici e una batteria da circa otto ore. Toshiba lo presenta come il primo portatile per il grande pubblico.',
         ],
       },
       {
@@ -1019,7 +1022,7 @@
         titolo: 'Il portatile prende la forma di oggi (1991–2011)',
         paragrafi: [
           'Negli anni Novanta il portatile diventa il <em>notebook</em> che conosciamo. Nell\'ottobre 1991 i primi <strong>PowerBook</strong> di Apple spostano la tastiera verso lo schermo e lasciano davanti un poggiapolsi con la trackball al centro: è la disposizione che hanno ancora quasi tutti i portatili. Nell\'ottobre 1992 l\'<strong>IBM ThinkPad 700C</strong> porta uno schermo a colori a matrice attiva (TFT, <em>thin-film transistor</em>) da 10,4 pollici, il più grande dell\'epoca su un portatile, e il <strong>TrackPoint</strong>, il bottoncino rosso fra i tasti G, H e B che si spinge come una piccola leva, ideato da Ted Selker nei laboratori di ricerca IBM. La scatola nera del ThinkPad è di Richard Sapper, designer tedesco che lavorava a Milano, ispirato dalle scatole giapponesi per il pranzo, i <em>bentō</em>.',
-          'Intanto cambiano le batterie. Nel 1991 Sony mette in commercio la prima batteria agli ioni di litio, che a parità di peso immagazzina molta più energia di quelle al nichel-cadmio; in pochi anni arriva nei portatili e poi nei telefoni. Nel marzo 2003 Intel lancia <strong>Centrino</strong>: un processore progettato per consumare poco, il Pentium M, un chipset e una scheda Wi-Fi venduti insieme con un solo marchio. Da allora un portatile senza rete senza fili diventa impensabile, e intorno al 2008, secondo le società di analisi, nel mondo si vendono per la prima volta più portatili che computer da scrivania.',
+          'Intanto cambiano le batterie. Nel 1991 Sony mette in commercio la prima batteria agli ioni di litio, che a parità di peso immagazzina molta più energia di quelle al nichel-cadmio; in pochi anni arriva nei portatili e nei telefoni cellulari. Nel marzo 2003 Intel lancia <strong>Centrino</strong>: un processore progettato per consumare poco, il Pentium M, un chipset e una scheda Wi-Fi (per la rete locale senza fili) venduti insieme con un solo marchio. In pochi anni un portatile senza Wi-Fi diventa impensabile, e intorno al 2008, secondo le società di analisi, nel mondo si vendono per la prima volta più portatili che computer da scrivania.',
           'Poi il portatile prende due direzioni. Nell\'ottobre 2007 l\'<strong>Asus Eee PC</strong> inaugura i <em>netbook</em>: schermo da 7 pollici, memoria flash al posto del disco rigido, sistema operativo Linux, meno di un chilo e un prezzo bassissimo. Nel gennaio 2008 Steve Jobs estrae da una busta per documenti il <strong>MacBook Air</strong>: 1,36 chili e 1,94 centimetri nel punto più spesso. I netbook spariscono in pochi anni, schiacciati dai tablet; il portatile sottile e leggero diventa invece la norma. Nel giugno 2011 arrivano i <strong>Chromebook</strong>, portatili semplici ed economici con il sistema operativo Chrome OS di Google, che usano soprattutto programmi e documenti in rete (nel <em>cloud</em>): oggi sono molto diffusi nelle scuole.',
         ],
       },
@@ -1028,7 +1031,7 @@
         titolo: 'Il computer in tasca',
         paragrafi: [
           'Il 9 gennaio 2007 Apple presenta l\'<strong>iPhone</strong>, in vendita dal 29 giugno: un telefono senza tastiera, con uno schermo che sente il tocco di più dita insieme (<em>multi-touch</em>) e un sistema operativo derivato da quello dei Mac. L\'anno dopo nascono l\'App Store e il primo telefono Android, e lo smartphone diventa un computer in cui ognuno installa i programmi che vuole, le <em>app</em>. Nell\'aprile 2010 l\'<strong>iPad</strong> porta la stessa idea su uno schermo da quasi 10 pollici.',
-          'Per miliardi di persone lo smartphone è oggi il primo, e spesso l\'unico, personal computer: ogni anno se ne vendono più di un miliardo, contro circa 250 milioni di PC. Dentro c\'è tutto ciò che questa sezione ha raccontato finora, stretto in pochi centimetri quadrati: un processore con più core, una GPU (<em>graphics processing unit</em>), la memoria, il modem per la rete telefonica, il Wi-Fi, i sensori e, dal 2017, anche un\'unità per l\'intelligenza artificiale.',
+          'Per miliardi di persone lo smartphone è oggi il primo, e spesso l\'unico, personal computer: ogni anno se ne vendono più di un miliardo, contro circa 250 milioni di PC. Dentro c\'è tutto ciò che questa sezione ha raccontato finora, stretto in pochi centimetri quadrati: un processore con più <em>core</em> (unità di calcolo che lavorano in parallelo), una GPU (<em>graphics processing unit</em>), la memoria, il modem per la rete telefonica, il Wi-Fi, i sensori e, dal 2017, anche un\'unità per l\'intelligenza artificiale.',
           'Quasi tutti questi telefoni hanno un processore della stessa famiglia, ARM. Non è un caso: in un oggetto che deve stare in tasca e durare un giorno intero con una piccola batteria, conta soprattutto quanta energia serve per ogni operazione.',
         ],
       },
@@ -1038,8 +1041,9 @@
         paragrafi: [
           'L\'architettura ARM nasce nel 1985 a Cambridge, in Inghilterra, nella ditta di computer Acorn: un processore RISC (<em>reduced instruction set computer</em>, con un insieme ridotto di istruzioni semplici) che usa pochi transistor e quindi poca energia (la sua nascita è raccontata nella <a href="../chip-programmabili/index.html#sedici-bit">sezione 5</a>). Nel 1990 Acorn, Apple e VLSI Technology fondano ARM Ltd, che fa una scelta insolita: non fabbrica chip, ma vende il progetto del processore, e la licenza per usarlo, alle aziende che li producono.',
           'Il primo cliente importante è il palmare Newton di Apple (1993). Poi arrivano i cellulari: nel 1997 Nokia presenta il 6110, uno dei primi telefoni GSM di massa con un processore ARM, un ARM7TDMI dentro un chip di Texas Instruments. Da lì ARM conquista quasi tutti i telefoni e i tablet e una miriade di altri oggetti, dalle automobili agli elettrodomestici: nel 2021 i chip con un processore ARM prodotti in tutto il mondo avevano già superato i 200 miliardi.',
-          'I PC, intanto, restano fedeli all\'architettura x86 di Intel e AMD, erede dell\'8086 del 1978. Il primo tentativo di Windows su ARM, Windows RT con il tablet Surface RT (2012), è un insuccesso: non fa funzionare i normali programmi per Windows. Dal 2017 Windows 10 torna su ARM e impara a tradurre al volo i programmi per x86, ma resta una nicchia. La svolta arriva nel novembre 2020, quando Apple lascia Intel e mette nei Mac l\'<strong>M1</strong>, un sistema su chip ARM progettato in casa, con la memoria nello stesso contenitore: il MacBook Air con M1 è più veloce del modello precedente e non ha più bisogno della ventola. Nel giugno 2024 arrivano i primi <strong>Copilot+ PC</strong> con Windows e processori ARM Snapdragon X di Qualcomm, che hanno un\'NPU (<em>neural processing unit</em>, unità per le reti neurali) da almeno 40 TOPS, cioè 40 mila miliardi di operazioni al secondo; Intel e AMD rispondono pochi mesi dopo con processori x86 che hanno anche loro un\'NPU di quella potenza.',
-          'Nel frattempo cresce un\'altra architettura, <strong>RISC-V</strong>, nata nel 2010 all\'Università della California a Berkeley da un progetto di Krste Asanović, Yunsup Lee e Andrew Waterman con David Patterson. È un insieme di istruzioni aperto: chiunque può progettare e vendere un processore RISC-V senza pagare licenze. Oggi si trova soprattutto nei microcontrollori e nei chip che lavorano nascosti dentro altri dispositivi, come dischi e schede di rete. E nel febbraio 2012 la fondazione Raspberry Pi di Cambridge mette in vendita a 35 dollari il <strong>Raspberry Pi</strong>, un computer con chip ARM grande come una carta di credito, pensato per insegnare a programmare: è diventato il computer britannico più venduto di sempre.',
+          'I PC, intanto, restano fedeli all\'architettura x86 di Intel e AMD, erede dell\'8086 del 1978. Il primo tentativo di portare su ARM il Windows dei PC, Windows RT con il tablet Surface RT (2012), è un insuccesso: non fa funzionare i normali programmi per Windows. Dal 2017 Windows 10 torna su ARM e impara a tradurre al volo i programmi per x86, ma resta una nicchia.',
+          'La svolta arriva nel novembre 2020, quando Apple comincia a lasciare Intel e mette nei Mac l\'<strong>M1</strong>, un sistema su chip ARM progettato in casa, con la memoria nello stesso contenitore: il MacBook Air con M1 è più veloce del modello precedente e non ha più bisogno della ventola. Nel giugno 2024 arrivano i primi <strong>Copilot+ PC</strong>, portatili Windows con processori ARM Snapdragon X di Qualcomm. Hanno un\'NPU (<em>neural processing unit</em>, unità per le reti neurali) da almeno 40 TOPS (<em>tera operations per second</em>), cioè 40 mila miliardi di operazioni al secondo. Intel e AMD rispondono pochi mesi dopo con processori x86 che hanno anche loro un\'NPU di quella potenza.',
+          'Nel frattempo cresce un\'altra architettura, <strong>RISC-V</strong>, nata nel 2010 all\'Università della California a Berkeley da un progetto di Krste Asanović, Yunsup Lee e Andrew Waterman con David Patterson. È un insieme di istruzioni aperto: chiunque può progettare e vendere un processore RISC-V senza pagare licenze. Oggi si trova soprattutto nei microcontrollori e nei chip che lavorano nascosti dentro altri dispositivi, come dischi e schede di rete. Intanto, nel febbraio 2012, la fondazione Raspberry Pi di Cambridge mette in vendita a 35 dollari il <strong>Raspberry Pi</strong>, un computer con chip ARM grande come una carta di credito, pensato per insegnare a programmare: è diventato il computer britannico più venduto di sempre.',
         ],
       },
       {
@@ -1047,7 +1051,7 @@
         titolo: 'Il calore è il vero limite',
         paragrafi: [
           'Ogni operazione di un chip consuma energia, e quasi tutta quell\'energia diventa calore. Un processore da scrivania può dissipare più di 100 watt, con un dissipatore e una ventola grandi come un pugno; un portatile sottile deve cavarsela con qualche decina di watt, un telefono, che si tiene in mano e non ha ventole, con pochi watt. Per questo oggi si misurano le <strong>prestazioni per watt</strong>: quanto lavoro si fa con ogni joule di energia. Più efficienza vuol dire batterie che durano di più, apparecchi più sottili e silenziosi, centri di calcolo che consumano meno.',
-          'Da dove viene il consumo? In un chip CMOS (<em>complementary metal-oxide-semiconductor</em>, la tecnologia di quasi tutti i chip digitali) l\'energia si spende soprattutto per caricare e scaricare le minuscole capacità dei transistor e dei fili: la potenza è circa P = C · V² · f, cioè cresce con la frequenza f e con il quadrato della tensione V. Fino ai primi anni Duemila ogni generazione di transistor, più piccoli, lavorava anche a tensione più bassa e il conto tornava; poi la tensione ha smesso di scendere e i processori hanno sbattuto contro il <a href="#prestazioni">muro della potenza</a>. Da allora, per fare di più, bisogna sprecare di meno.',
+          'Da dove viene il consumo? In un chip CMOS (<em>complementary metal-oxide-semiconductor</em>, la tecnologia di quasi tutti i chip digitali) l\'energia si spende soprattutto per caricare e scaricare le minuscole capacità dei transistor e dei fili: la potenza è circa P = C · V² · f, cioè cresce con la frequenza f e con il quadrato della tensione V. Fino a metà degli anni Duemila ogni generazione di transistor, più piccoli, lavorava anche a tensione più bassa e il conto tornava; poi la tensione ha smesso di scendere e i processori hanno sbattuto contro il <a href="#prestazioni">muro della potenza</a>. Da allora, per fare di più, bisogna sprecare di meno.',
           'Una delle voci più care è spostare i dati. Secondo le stime di Mark Horowitz (Università di Stanford, 2014), in un chip a 45 nanometri una somma fra due numeri a 32 bit costa circa 0,1 picojoule; andare a prendere quei 32 bit nella memoria DRAM, fuori dal chip, costa da diverse centinaia a oltre mille picojoule, migliaia di volte di più. Accorciare le strade, cioè <strong>integrare</strong>, fa risparmiare energia: per questo la memoria è entrata nel package del processore e la scheda madre si è ridotta a pochi chip. Il laboratorio qui sotto mostra come è andata, tappa per tappa.',
           'Conta anche la specializzazione: un circuito progettato per un solo compito, come decodificare un video o fare i calcoli di una rete neurale, lo svolge con molta meno energia di un processore generico. Un SoC (<em>system on a chip</em>, sistema su chip) moderno è una piccola città di unità diverse: core veloci e core efficienti (l\'idea big.LITTLE, presentata da ARM nel 2011), una GPU, un\'NPU, i circuiti per foto e video. Ognuna si accende solo quando serve.',
         ],
@@ -1073,7 +1077,7 @@
         tipo: 'italia',
         titolo: 'Arduino: da Ivrea al mondo',
         paragrafi: [
-          'Nel 2005, all\'Interaction Design Institute Ivrea (IDII), una scuola di design dell\'interazione fondata nel 2001 da Olivetti e Telecom Italia, un gruppo di docenti e studenti crea <strong>Arduino</strong>: una piccola scheda con un microcontrollore, economica e facile da programmare, pensata per chi vuole costruire oggetti che reagiscono all\'ambiente senza essere un ingegnere elettronico. I fondatori sono Massimo Banzi, David Cuartielles, Tom Igoe, Gianluca Martino e David Mellis; l\'ambiente di programmazione deriva da Wiring, il progetto di tesi di Hernando Barragán all\'IDII (2003).',
+          'Nel 2005, all\'Interaction Design Institute Ivrea (IDII), una scuola di design dell\'interazione aperta nel 2001 da Olivetti e Telecom Italia, un gruppo di docenti e studenti crea <strong>Arduino</strong>: una piccola scheda con un microcontrollore, economica e facile da programmare, pensata per chi vuole costruire oggetti che reagiscono all\'ambiente senza essere un ingegnere elettronico. I fondatori sono Massimo Banzi, David Cuartielles, Tom Igoe, Gianluca Martino e David Mellis; l\'ambiente di programmazione deriva da Wiring, il progetto di tesi di Hernando Barragán all\'IDII (2003).',
           'Il nome viene dal bar di Ivrea dove il gruppo si ritrovava, intitolato ad Arduino d\'Ivrea, re d\'Italia dal 1002. Gli schemi della scheda sono pubblici (hardware libero, <em>open source</em>): chiunque può studiarli, copiarli e migliorarli. Così Arduino è diventato lo strumento con cui milioni di studenti, artisti e appassionati in tutto il mondo imparano l\'elettronica; la scheda più famosa, l\'Arduino Uno, è del 2010.',
           'È un cerchio che si chiude. Ivrea è la città della Olivetti, l\'azienda che costruì l\'Elea 9003, uno dei primi grandi calcolatori a transistor (<a href="#giganti">capitolo 1</a>), e la Programma 101, antenata dei personal computer (<a href="#primi-pc">capitolo 3</a>). Mezzo secolo dopo, dalla stessa città è partita una scheda minuscola che ha messo l\'elettronica nelle mani di tutti.',
         ],
@@ -1082,7 +1086,7 @@
         tipo: 'figura',
         svg: figuraArduino,
         alt: 'Disegno schematico di una scheda Arduino Uno vista dall\'alto: circuito stampato verde acqua con, a sinistra, la presa USB e la presa di alimentazione; in alto la fila dei pin digitali, in basso quelle dei pin di alimentazione e analogici; il microcontrollore ATmega328P lungo e nero in basso a destra; piccoli LED e il pulsante di reset. Sette numeri indicano le parti, spiegate nella didascalia.',
-        didascalia: '<strong>La scheda Arduino Uno (2010)</strong>, lunga 6,9 cm, qui ingrandita circa sette volte. <strong>1</strong> Presa USB, per programmarla e alimentarla. <strong>2</strong> Chip ATmega16U2 (ATmega8U2 nelle prime versioni), che traduce la USB in una porta seriale. <strong>3</strong> Pulsante di reset. <strong>4</strong> Pin digitali da 0 a 13. <strong>5</strong> Il microcontrollore ATmega328P: 16 MHz, 32 KB di memoria flash per il programma e 2 KB di RAM. <strong>6</strong> Pin di alimentazione e pin analogici da A0 ad A5. <strong>7</strong> Presa per un alimentatore esterno. Il piccolo LED «L», a destra del chip 2, è collegato al pin 13: è quello che lampeggia nel primo programma di quasi tutti.',
+        didascalia: '<strong>La scheda Arduino Uno (2010)</strong>, lunga 6,9 cm e larga 5,3, qui ingrandita. <strong>1</strong> Presa USB, per programmarla e alimentarla. <strong>2</strong> Chip ATmega16U2 (ATmega8U2 nelle prime versioni), che traduce la USB in una porta seriale. <strong>3</strong> Pulsante di reset. <strong>4</strong> Pin digitali da 0 a 13. <strong>5</strong> Il microcontrollore ATmega328P: 16 MHz, 32 KB di memoria flash per il programma e 2 KB di RAM. <strong>6</strong> Pin di alimentazione e pin analogici da A0 ad A5. <strong>7</strong> Presa per un alimentatore esterno. Il piccolo LED «L», a destra del chip 2, è collegato al pin 13: è quello che lampeggia nel primo programma di quasi tutti.',
       },
       {
         tipo: 'testo',
@@ -1098,8 +1102,8 @@
         titolo: 'Macchine e tappe',
         items: [
           { anno: 1981, nome: 'Osborne 1', luogo: 'Hayward (California), Osborne Computer Corporation', testo: 'Il primo portatile di successo: una valigia da 11,1 kg con schermo da 5 pollici, due unità per dischetti e i programmi compresi nel prezzo di 1.795 dollari.' },
-          { anno: 1982, nome: 'GRiD Compass', luogo: 'Mountain View (California), GRiD Systems', testo: 'Il primo portatile a conchiglia: lo schermo si ripiega sulla tastiera, la scocca è di magnesio. Costava più di 8.000 dollari e volò sullo Space Shuttle.' },
-          { anno: 1983, nome: 'Olivetti M10', luogo: 'Ivrea, Olivetti (costruito con Kyocera)', italia: true, testo: 'Un portatile a pile di meno di 2 kg, con schermo a cristalli liquidi inclinabile di 8 righe da 40 caratteri; fratello del TRS-80 Model 100.' },
+          { anno: 1982, nome: 'GRiD Compass', luogo: 'Mountain View (California), GRiD Systems', testo: 'Considerato il primo portatile a conchiglia: lo schermo si ripiega sulla tastiera, la scocca è di magnesio. Costava più di 8.000 dollari e volò sullo Space Shuttle.' },
+          { anno: 1983, nome: 'Olivetti M10', luogo: 'Olivetti, Ivrea (progettato da Kyocera, Giappone)', italia: true, testo: 'Un portatile a pile di meno di 2 kg, con schermo a cristalli liquidi inclinabile di 8 righe da 40 caratteri; fratello del TRS-80 Model 100 della Tandy.' },
           { anno: 1985, nome: 'Toshiba T1100', luogo: 'Giappone, Toshiba', testo: 'Compatibile con il PC IBM: 4,1 kg, schermo a cristalli liquidi, dischetti da 3,5 pollici e circa 8 ore di batteria. Per Toshiba è il primo portatile per il grande pubblico.' },
           { anno: 1991, nome: 'Apple PowerBook', luogo: 'Cupertino (California), Apple', testo: 'Tastiera spostata indietro, poggiapolsi e trackball al centro: la disposizione che adottano quasi tutti i portatili successivi.' },
           { anno: 1992, nome: 'IBM ThinkPad 700C', luogo: 'IBM; design di Richard Sapper', testo: 'Schermo a colori TFT da 10,4 pollici e TrackPoint, il bottoncino rosso in mezzo alla tastiera. Lo disegnò Richard Sapper, tedesco di casa a Milano.' },
@@ -1119,7 +1123,7 @@
     },
     punti: [
       'Dall\'Osborne 1 (1981, 11,1 kg) al MacBook Air (2008, 1,36 kg) fino allo smartphone (meno di 200 g): il personal computer è diventato portatile, poi tascabile.',
-      'La forma del portatile moderno nasce fra il 1982 e il 1992: la conchiglia del GRiD Compass, il poggiapolsi del PowerBook, il TrackPoint del ThinkPad; poi arrivano le batterie al litio e il Wi-Fi.',
+      'La forma del portatile moderno nasce fra il 1982 e il 1992: la conchiglia del GRiD Compass, il poggiapolsi del PowerBook, il TrackPoint del ThinkPad; poi arrivano le batterie agli ioni di litio e il Wi-Fi.',
       'ARM non fabbrica chip ma vende progetti di processori efficienti: è in quasi tutti i telefoni e, dal 2020, anche in molti computer. RISC-V è un\'alternativa aperta e senza licenze.',
       'Il calore è il vero limite: conta quanto lavoro si fa con ogni watt, e spostare un dato costa molta più energia che fare un calcolo.',
       'Coprocessore, cache, controller della memoria, grafica, chipset e memoria sono entrati uno dopo l\'altro nel package del processore: dal 1988 al 2020 i pezzi principali della scheda passano da dieci a uno.',

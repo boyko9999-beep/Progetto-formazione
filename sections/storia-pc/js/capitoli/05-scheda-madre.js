@@ -1457,7 +1457,7 @@
           { anno: 1999, nome: 'Intel Hub Architecture', luogo: 'Intel, chipset 810', testo: 'Northbridge e southbridge diventano MCH e ICH, uniti da un collegamento riservato da 266 MB/s; BIOS e Super I/O passano al bus LPC.' },
           { anno: 2004, nome: 'PCI Express nei PC', luogo: 'Intel, chipset 915 e 925', testo: 'Le corsie seriali punto a punto sostituiscono AGP e PCI; con gli stessi chipset arriva il DMI fra northbridge e southbridge.' },
           { anno: 2008, nome: 'Intel Core i7 (Nehalem)', luogo: 'Intel', testo: 'Cinque anni dopo AMD, anche Intel porta il controller della memoria nel processore; il chipset X58 parla con la CPU attraverso il QPI (<em>QuickPath Interconnect</em>).' },
-          { anno: 2009, nome: 'Intel P55, il primo PCH', luogo: 'Intel', testo: 'Con i Core «Lynnfield» memoria e grafica passano nel processore: sulla scheda resta un solo chip, collegato con il DMI.' },
+          { anno: 2009, nome: 'Intel P55, il primo PCH', luogo: 'Intel', testo: 'Con i Core «Lynnfield» il controller della memoria e le corsie PCI Express per la scheda video passano nel processore: sulla scheda resta un solo chip, collegato con il DMI.' },
           { anno: 2011, nome: 'Specifica NVMe 1.0', luogo: 'NVM Express Work Group (consorzio di aziende)', testo: 'Un protocollo pensato per la memoria flash: gli SSD parlano direttamente sulle corsie PCI Express, senza passare per il protocollo nato per i dischi rigidi SATA.' },
           { anno: 2019, nome: 'AMD Ryzen 3000 (Zen 2)', luogo: 'AMD, Santa Clara (California)', testo: 'Chiplet: uno o due chip con i core a 7 nm e un chip di I/O a 12 nm con memoria e PCIe 4.0, tutti nello stesso package.' },
         ],

@@ -33,7 +33,7 @@
 
 .gfx-fig text { font-family: var(--font); }
 .gfx-fig .t { fill: var(--ink); font: 800 25px var(--mono); letter-spacing: -.02em; }
-.gfx-fig .t2 { fill: var(--muted); font-size: 23px; font-weight: 600; }
+.gfx-fig .t2 { fill: var(--muted); font-size: 24.5px; font-weight: 600; }
 .gfx-fig .t3 { fill: var(--gfx-accento); font: 800 24px var(--mono); }
 
 /* scheda VGA */
@@ -49,7 +49,7 @@
 .gfx-fig .lucido { fill: none; stroke: #fff; stroke-width: 2; stroke-linecap: round; opacity: .35; }
 .gfx-fig .piccoli { fill: var(--ill-beige-2); stroke: var(--ill-linea); stroke-width: 1.5; }
 .gfx-fig .chipt { fill: #c4d3cc; font: 800 26px var(--mono); letter-spacing: .08em; }
-.gfx-fig .chipt.piccolo { font-size: 23px; letter-spacing: .04em; }
+.gfx-fig .chipt.piccolo { font-size: 24.5px; letter-spacing: .02em; }
 .gfx-fig .tela { fill: var(--ill-tela-2); }
 .gfx-fig .foro { fill: #0b0d0f; stroke: var(--ill-grigio-2); stroke-width: 1.5; }
 .gfx-fig .pin-r { fill: var(--ill-led); }
@@ -124,7 +124,8 @@
 .gfx-schermo {
   position: relative; aspect-ratio: 16 / 10; overflow: hidden; border-radius: 12px;
   background: #000; border: 1px solid #22322c; cursor: crosshair;
-  touch-action: none; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent;
+  /* col dito: un tocco o un trascinamento di lato spostano la lente, uno in verticale fa scorrere la pagina */
+  touch-action: pan-y pinch-zoom; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent;
   box-shadow: 0 0 0 4px #050807, 0 18px 36px -24px rgba(0, 0, 0, .9);
 }
 .gfx-schermo.senza-lente { cursor: default; touch-action: auto; }
@@ -217,11 +218,6 @@
 .gfx-btn-audio > span { color: var(--trace-2); font-size: 1rem; }
 .gfx-btn-audio[aria-pressed="true"] > span { color: inherit; }
 .gfx-onda { display: block; width: 100%; height: 56px; border-radius: 8px; background: #050807; border: 1px solid var(--scope-grid); }
-
-.gfx-sr {
-  position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden;
-  clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; border: 0;
-}
 
 /* ---------- larghezze: si adatta al laboratorio, non alla finestra ---------- */
 

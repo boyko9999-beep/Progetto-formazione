@@ -155,3 +155,30 @@ test('il laboratorio può contare su percorsi senza giri e su un package ordinat
     ['audio', 'rete', 'modem'].forEach((id) => assert.ok(pos[id] !== 'sud' || pos.sud !== 'assente', a + ': ' + id + ' dentro un ponte sud che non c\'è'));
   }
 });
+
+test('il capitolo si carica senza DOM e rispetta il contratto della sezione', () => {
+  const P = require('../sections/storia-pc/js/core.js');
+  require('../sections/storia-pc/js/capitoli/10-oggi.js');
+  const cap = P.capitoli.find((c) => c.id === 'oggi');
+  assert.ok(cap, 'capitolo non registrato');
+  assert.strictEqual(cap.numero, 10);
+  cap.blocchi.forEach((b) => assert.ok(P.TIPI_BLOCCO.includes(b.tipo), 'tipo di blocco sconosciuto ' + b.tipo));
+  const schede = cap.blocchi.filter((b) => b.tipo === 'schede').flatMap((b) => b.items);
+  assert.ok(schede.length >= 7 && schede.length <= 12, 'schede: ' + schede.length);
+  schede.forEach((s, i) => {
+    assert.ok(Number.isInteger(s.anno) && s.anno >= 1970 && s.anno <= 2026, 'anno non valido ' + s.anno);
+    if (i) assert.ok(s.anno >= schede[i - 1].anno, 'schede non in ordine: ' + s.nome);
+    assert.ok(s.nome && s.luogo && s.testo, 'scheda incompleta ' + s.nome);
+  });
+  assert.ok(schede.some((s) => s.italia), 'manca una voce italiana');
+  const numeri = cap.blocchi.find((b) => b.tipo === 'numeri').items;
+  assert.ok(numeri.length >= 3 && numeri.length <= 4);
+  assert.ok(cap.punti.length >= 4 && cap.punti.length <= 6);
+  cap.collegamenti.forEach((l) => {
+    assert.ok(['buslab', 'sezione'].includes(l.tipo), l.testo);
+    if (l.tipo === 'buslab') assert.match(l.href, /^\.\.\/\.\.\/index\.html#\/bus\/[a-z0-9]+$/);
+    else assert.match(l.href, /^(#[a-z-]+|\.\.\/[a-z-]+\/index\.html#[a-z0-9/-]+)$/, 'collegamento senza index.html esplicito: ' + l.href);
+  });
+  // le figure non si disegnano in Node (niente DOM), ma devono essere funzioni
+  cap.blocchi.filter((b) => b.tipo === 'figura').forEach((b) => assert.strictEqual(typeof b.svg, 'function'));
+});

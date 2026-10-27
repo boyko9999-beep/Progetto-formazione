@@ -61,7 +61,7 @@
       piedini(-40, -32, 8, 11, 5, 10, 'avvf-argento') + piedini(-40, 22, 8, 11, 5, 10, 'avvf-argento') +
       '<rect class="avvf-chip" x="-48" y="-24" width="96" height="48" rx="3"/>' +
       '<circle class="avvf-tacca" cx="-40" cy="0" r="4"/>' +
-      '<rect class="avvf-etichetta" x="-30" y="-16" width="62" height="32" rx="2" transform="rotate(-3)"/>' +
+      '<rect class="avvf-etichetta" x="-33" y="-16" width="68" height="32" rx="2" transform="rotate(-3)"/>' +
       '<text class="avvf-t-chip" x="1" y="8" transform="rotate(-3)">BIOS</text>' +
       '</g>');
 
@@ -96,8 +96,8 @@
 
     // numeri dei passi
     [[110, 100], [320, 100], [530, 100], [530, 292], [320, 292], [110, 292]].forEach((c, i) => {
-      o.push('<circle class="avvf-num" cx="' + (c[0] - 72) + '" cy="' + (c[1] - 56) + '" r="17"/>' +
-        '<text class="avvf-num-t" x="' + (c[0] - 72) + '" y="' + (c[1] - 49) + '">' + (i + 1) + '</text>');
+      o.push('<circle class="avvf-num" cx="' + (c[0] - 72) + '" cy="' + (c[1] - 56) + '" r="19"/>' +
+        '<text class="avvf-num-t" x="' + (c[0] - 72) + '" y="' + (c[1] - 48) + '">' + (i + 1) + '</text>');
     });
     // etichette
     o.push('<text class="avvf-t" x="110" y="184">Alimentatore</text>');
@@ -121,7 +121,7 @@
     // le due schede
     o.push('<rect class="avvf-pcb" x="10" y="10" width="304" height="360" rx="12"/>');
     o.push('<rect class="avvf-pcb" x="326" y="10" width="304" height="360" rx="12"/>');
-    o.push('<path class="avvf-pista" d="M10 186 H40 L52 174 H280 L292 186 H314 M10 300 H28 M150 300 H180 M292 300 H314 M90 60 V70 M232 60 V70"/>');
+    o.push('<path class="avvf-pista" d="M10 188 H28 L42 202 H282 L296 188 H314 M10 300 H28 M150 300 H180 M292 300 H314 M90 60 V70 M232 60 V70"/>');
     o.push('<path class="avvf-pista" d="M326 150 H350 M410 150 H436 L446 140 M326 210 H352 L364 222 V226 M484 232 H520 L530 242 M600 232 H630 M560 300 V340"/>');
     o.push('<text class="avvf-tit" x="162" y="46">Fine anni Ottanta</text>');
     o.push('<text class="avvf-tit" x="478" y="46">Oggi</text>');
@@ -138,13 +138,13 @@
     // orologio CMOS (DIP-24) e batteria cilindrica
     o.push(piedini(42, 214, 9, 11, 5, 9, 'avvf-argento') + piedini(42, 262, 9, 11, 5, 9, 'avvf-argento'));
     o.push('<rect class="avvf-chip" x="34" y="221" width="110" height="43" rx="3"/><circle class="avvf-tacca" cx="44" cy="242" r="4"/>');
-    o.push('<text class="avvf-t-scheda" x="89" y="300">Orologio CMOS</text>');
+    o.push('<text class="avvf-t-scheda" x="89" y="300">Orologio</text><text class="avvf-t-scheda" x="89" y="327">CMOS</text>');
     o.push('<rect class="avvf-argento" x="186" y="244" width="6" height="22"/><rect class="avvf-argento" x="276" y="244" width="6" height="22"/>');
     o.push('<rect class="avvf-batteria" x="178" y="214" width="112" height="44" rx="20"/>' +
       '<rect class="avvf-riflesso" x="190" y="220" width="88" height="7" rx="3"/>' +
       '<rect class="avvf-anello" x="268" y="214" width="8" height="44"/>' +
       '<text class="avvf-t-batt" x="226" y="244">3,6 V</text>');
-    o.push('<text class="avvf-t-scheda" x="234" y="300">Batteria</text>');
+    o.push('<text class="avvf-t-scheda" x="234" y="327">Batteria</text>');
     // macchia di liquido (le vecchie batterie al nichel-cadmio perdevano)
     o.push('<path class="avvf-macchia" d="M200 268 C188 282 206 296 222 288 C236 300 256 288 246 276 Z"/>');
 
@@ -169,7 +169,7 @@
     o.push('<rect class="avvf-chip" x="532" y="250" width="72" height="24" rx="2"/>');
     o.push('<rect class="avvf-oro" x="541" y="256" width="6" height="12"/><rect class="avvf-oro" x="565" y="256" width="6" height="12"/><rect class="avvf-oro" x="589" y="256" width="6" height="12"/>');
     o.push('<rect class="avvf-cappuccio" x="534" y="246" width="44" height="32" rx="4"/><rect class="avvf-riflesso" x="539" y="250" width="34" height="5" rx="2"/>');
-    o.push('<text class="avvf-t-scheda" x="568" y="342">Ponticello</text>');
+    o.push('<text class="avvf-t-scheda" x="562" y="342">Ponticello</text>');
     o.push('</svg>');
     return o.join('');
   }
@@ -235,7 +235,7 @@
 
     const kv = {};
     const letture = h('dl', { class: 'lab-kv avv-kv' },
-      [['fase', 'Fase'], ['dove', 'Esegue da'], ['ind', 'Indirizzo']].map((c) => {
+      [['fase', 'Fase'], ['dove', 'Dove'], ['ind', 'Indirizzo']].map((c) => {
         kv[c[0]] = h('dd', null, '—');
         return h('div', null, h('dt', null, c[1]), kv[c[0]]);
       }));
@@ -555,35 +555,61 @@
         ? 'Mappa dei 512 byte dell\'MBR: codice e messaggi fino al byte 445, tabella delle partizioni dal 446 al 509, firma 55h AAh nei byte 510 e 511.'
         : 'Mappa dei 512 byte del settore di avvio del dischetto: codice nella prima parte, poi zeri; negli ultimi due byte nessuna firma.' });
       for (let i = 0; i < 512; i++) { const c = h('i', { class: 'z-' + s.zone[i] }); celle.push(c); mappa.append(c); }
-      // ingrandimento: gli ultimi 80 byte (1B0h-1FFh)
+      // tutti i 512 byte in esadecimale, in un riquadro che scorre (si vedono cinque righe da 16 byte)
       const hx = [];
-      const zoom = h('div', { class: 'avv-hex lab-mono', 'aria-label': 'Ultimi 80 byte del settore, in esadecimale' });
-      for (let r = 0x1B0; r < 0x200; r += 16) {
+      const righe = [];
+      const zoom = h('div', { class: 'avv-hex lab-mono', role: 'region', tabindex: '0', 'aria-label': 'I 512 byte del settore in esadecimale, 16 per riga: scorri per leggerli tutti' });
+      for (let r = 0; r < 0x200; r += 16) {
         const meta = (da) => h('span', { class: 'avv-hex-meta' }, Array.from({ length: 8 }, (_, k) => {
           const i = da + k;
           const c = h('span', { class: 'avv-hx z-' + s.zone[i] }, esa(b[i]));
           hx[i] = c;
           return c;
         }));
-        zoom.append(h('div', { class: 'avv-hex-riga' },
+        const riga = h('div', { class: 'avv-hex-riga' },
           h('span', { class: 'avv-hex-off' }, esa(r, 3)), meta(r),
-          h('span', { class: 'avv-hex-off seconda' }, esa(r + 8, 3)), meta(r + 8)));
+          h('span', { class: 'avv-hex-off seconda' }, esa(r + 8, 3)), meta(r + 8));
+        righe.push(riga);
+        zoom.append(riga);
       }
+      // porta la riga r in vista dentro il riquadro (senza far scorrere la pagina)
+      let rigaVista = -1;
+      function vediRiga(r, inCima) {
+        if (r === rigaVista) return;
+        rigaVista = r;
+        const el = righe[r];
+        zoom.scrollTop = inCima ? el.offsetTop - 8 : el.offsetTop + el.offsetHeight - zoom.clientHeight + 8;
+      }
+      // tocco sulla mappa: salta a quei byte
+      let puntata = null;
+      mappa.addEventListener('click', (e) => {
+        const i = celle.indexOf(e.target);
+        if (i < 0) return;
+        const r = i >> 4;
+        if (puntata) puntata.classList.remove('punta');
+        puntata = righe[r];
+        puntata.classList.add('punta');
+        rigaVista = -1;
+        vediRiga(r, true);
+      });
       const legenda = h('ul', { class: 'avv-legenda', 'aria-hidden': 'true' },
         (mbr ? [['codice', 'codice'], ['testo', 'messaggi'], ['vuoto', 'zeri'], ['tabella', 'partizioni'], ['firma', 'firma 55 AA']]
-          : [['codice', 'codice'], ['vuoto', 'zeri'], ['nofirma', 'byte 510-511']]).map((z) => h('li', null, h('i', { class: 'z-' + z[0] }), z[1])));
+          : [['codice', 'codice'], ['vuoto', 'zeri'], ['nofirma', 'byte 510–511']]).map((z) => h('li', null, h('i', { class: 'z-' + z[0] }), z[1])));
       const esito = h('p', { class: 'avv-esito' }, '');
       const dec = h('div', { class: 'avv-dec' });
       let mostrati = 0;
       const testa = mbr ? 'Disco C: · cilindro 0, testina 0, settore 1 → 0000:7C00' : 'Dischetto A: · traccia 0, testina 0, settore 1 → 0000:7C00';
+      const aiuto = h('p', { class: 'avv-suggerimento avv-hex-aiuto' }, 'Scorri l\'esadecimale, o tocca la mappa per saltare a quei byte.');
       return {
-        el: riquadro('Il settore di avvio: 512 byte', [h('p', { class: 'avv-sett-testa lab-mono' }, testa), mappa, legenda, zoom, esito, dec]),
+        el: riquadro('Il settore di avvio: 512 byte', [h('p', { class: 'avv-sett-testa lab-mono' }, testa), mappa, legenda, zoom, aiuto, esito, dec]),
         rivela(k) {
           const n = Math.round(k * 512);
-          for (let i = mostrati; i < n; i++) { celle[i].classList.add('letto'); if (hx[i]) hx[i].classList.add('letto'); }
+          for (let i = mostrati; i < n; i++) { celle[i].classList.add('letto'); hx[i].classList.add('letto'); }
           mostrati = Math.max(mostrati, n);
+          if (n > 0) vediRiga(Math.max(4, (n - 1) >> 4), false);
         },
         firma() {
+          vediRiga(31, false);
           if (mbr) {
             [510, 511].forEach((i) => { celle[i].classList.add('evidenzia'); hx[i].classList.add('evidenzia'); });
             esito.innerHTML = '<strong class="ok">✓ Firma 55h AAh presente</strong> nei byte 510 e 511: il disco è avviabile.';
@@ -599,7 +625,7 @@
           const mb = v.settori * 512 / 1048576;
           [446, 447, 448, 449, 450, 451, 452, 453, 454, 455, 456, 457, 458, 459, 460, 461].forEach((i) => hx[i] && hx[i].classList.add('voce1'));
           dec.replaceChildren(
-            h('p', { class: 'avv-dec-tit' }, 'Voce 1 della tabella (byte 446-461)'),
+            h('p', { class: 'avv-dec-tit' }, 'Voce 1 della tabella (byte 446–461)'),
             h('dl', { class: 'lab-kv' }, [
               ['Stato', esa(v.stato) + 'h · attiva'],
               ['Tipo', esa(v.tipo) + 'h · FAT16'],
@@ -673,7 +699,7 @@
 
     function vistaBds() {
       const voci = M.VOCI_AVVIO.map((v) => h('li', null, h('span', { class: 'lab-mono avv-boot-id' }, v.id), h('span', null, v.nome)));
-      const disco = h('div', { class: 'avv-gpt' }, M.DISCO_GPT.map((p, i) => h('span', { class: 'avv-gpt-p p' + i }, h('b', null, p.sigla), h('small', null, p.dim + ' · ' + p.fs))));
+      const disco = h('div', { class: 'avv-gpt' }, M.DISCO_GPT.map((p, i) => h('span', { class: 'avv-gpt-p p' + i }, h('b', null, p.sigla), h('small', null, p.dim), h('small', null, p.fs))));
       const percorso = h('p', { class: 'avv-percorso lab-mono' }, '');
       return {
         el: riquadro('Il gestore di avvio', [
@@ -699,7 +725,7 @@
       const esito = h('p', { class: 'avv-timbro', 'aria-hidden': 'true' }, '');
       const frase = h('p', { class: 'avv-esito' }, '');
       const v = riquadro('Secure Boot: verifica della firma', [
-        h('p', { class: 'avv-percorso lab-mono' }, M.VOCI_AVVIO[0].file),
+        h('p', { class: 'avv-percorso lab-mono', html: M.VOCI_AVVIO[0].file.replace(/\\/g, '\\<wbr>') }),
         h('div', { class: 'avv-hex lab-mono avv-hex-efi' }, righe),
         h('dl', { class: 'lab-kv avv-impronte' },
           h('div', null, h('dt', null, 'Impronta calcolata'), calc),
@@ -1266,8 +1292,8 @@
         tipo: 'testo',
         titolo: 'Tirarsi su per le stringhe degli stivali',
         paragrafi: [
-          'Appena acceso, un computer non sa fare niente. La memoria di lavoro, la RAM (<em>random access memory</em>), si svuota a ogni spegnimento, e il processore sa fare una cosa sola: eseguire le istruzioni che trova in memoria. Ma per mettere un programma in memoria serve un programma. Questo circolo vizioso si chiama <strong>bootstrap</strong>, dall\'espressione inglese «tirarsi su per le stringhe degli stivali» (i <em>bootstraps</em> sono le linguette sul retro degli stivali), cioè riuscire da soli in un\'impresa impossibile. Da lì vengono il verbo <em>to boot</em> e il nostro «fare il boot»; l\'immagine viene spesso legata al barone di Münchhausen, che però, nei racconti delle sue avventure, si tira fuori da una palude per il codino, non per gli stivali.',
-          'Sui primi calcolatori il problema si risolveva a mano. Nei minicomputer degli anni Sessanta e nei primi personal, come l\'Altair 8800 del 1975, l\'operatore inseriva un byte alla volta con le levette del pannello frontale (lo trovi nel <a href="#primi-pc">capitolo 3</a>) un minuscolo caricatore: poche decine di byte il cui unico compito era leggere un programma più lungo da un nastro di carta perforata. Paul Allen raccontò di aver scritto quello per il BASIC dell\'Altair sull\'aereo per Albuquerque, quando si accorse che mancava. I grandi calcolatori avevano invece un tasto che leggeva ed eseguiva la prima scheda perforata o il primo blocco di un nastro; IBM lo chiamava IPL (<em>initial program load</em>, caricamento iniziale del programma).',
+          'Appena acceso, un computer non sa fare niente. La memoria di lavoro, la RAM (<em>random access memory</em>), si svuota a ogni spegnimento, e il processore sa fare una cosa sola: eseguire le istruzioni che trova in memoria. Ma per mettere un programma in memoria serve un programma. Questo circolo vizioso si chiama <strong>bootstrap</strong>, dall\'espressione inglese «tirarsi su per le stringhe degli stivali» (i <em>bootstraps</em> sono le linguette sul retro degli stivali), cioè riuscire da soli in un\'impresa impossibile. Da lì vengono il verbo <em>to boot</em> e il nostro «fare il boot»; l\'immagine viene spesso legata al barone di Münchhausen, che però, nei racconti, si tira fuori da una palude per il codino, non per gli stivali.',
+          'Sui primi calcolatori il problema si risolveva a mano. Nei minicomputer degli anni Sessanta e nei primi personal, come l\'Altair 8800 del 1975 (lo trovi nel <a href="#primi-pc">capitolo 3</a>), l\'operatore inseriva con le levette del pannello frontale, un byte alla volta, un minuscolo caricatore: poche decine di byte il cui unico compito era leggere un programma più lungo da un nastro di carta perforata. Paul Allen raccontò di aver scritto quello per il BASIC dell\'Altair sull\'aereo per Albuquerque, quando si accorse che mancava. I grandi calcolatori avevano invece un tasto di caricamento che leggeva ed eseguiva la prima scheda perforata o il primo blocco di un nastro; IBM chiamava l\'operazione IPL (<em>initial program load</em>, caricamento iniziale del programma).',
           'La soluzione definitiva arrivò con le ROM (<em>read-only memory</em>, memorie a sola lettura), che conservano i dati anche senza corrente e negli anni Settanta diventarono economiche (le racconta la <a href="../chip-programmabili/index.html#memorie">sezione 5</a>). Basta registrare il primo programma in una ROM e costruire il computer in modo che il processore, all\'accensione, cominci sempre da lì: il caricatore diventa parte della macchina. L\'Apple II del 1977, per esempio, aveva in ROM un programma di controllo, il Monitor, e il linguaggio BASIC.',
         ],
       },
@@ -1282,8 +1308,8 @@
         tipo: 'testo',
         titolo: 'Il BIOS, dal CP/M all\'IBM PC',
         paragrafi: [
-          'La sigla BIOS (<em>basic input/output system</em>, sistema di base per l\'ingresso e l\'uscita) nasce con il CP/M, il sistema operativo che Gary Kildall aveva scritto per i computer con processore Intel 8080. Quando Glenn Ewing gli chiese di adattarlo ai dischi della IMSAI, nel 1975 o nel 1976 (i ricordi dei protagonisti non concordano), Kildall separò la parte che dipendeva dall\'hardware: un piccolo modulo con le routine per leggere la tastiera, scrivere sullo schermo e muovere le testine del disco. Il resto del sistema chiedeva tutto a quel modulo e dei chip non sapeva niente: per portare il CP/M su un computer nuovo bastava riscrivere il BIOS.',
-          'L\'IBM PC del 1981 riprese nome e idea, ma registrò il suo BIOS in una ROM da 8 KB saldata sulla scheda madre (come faccia da «sportello» per i programmi lo racconta il <a href="#ibm-pc">capitolo 4</a>). Quando si alza la levetta rossa sul fianco, l\'alimentatore impiega una frazione di secondo a stabilizzare le tensioni, e finché non sono pronte tiene basso un segnale chiamato <strong>Power Good</strong>: il processore resta bloccato in reset. Poi il segnale sale, l\'Intel 8088 si sveglia e va a prendere la prima istruzione sempre allo stesso indirizzo, <strong>FFFF0h</strong> (la «h» indica un numero esadecimale), 16 byte prima della fine del megabyte che può indirizzare. Lì c\'è la ROM del BIOS, e in 16 byte c\'è posto solo per un salto all\'inizio del programma vero.',
+          'La sigla BIOS (<em>basic input/output system</em>, sistema di base per l\'ingresso e l\'uscita) nasce con il CP/M, il sistema operativo che Gary Kildall aveva scritto per i computer con processore Intel 8080. Quando Glenn Ewing gli chiese di adattarlo ai dischi della IMSAI, nel 1976 secondo i ricordi di Kildall (altre fonti indicano il 1975), Kildall separò la parte che dipendeva dall\'hardware: un piccolo modulo con le routine per leggere la tastiera, scrivere sullo schermo e muovere le testine del disco. Il resto del sistema chiedeva tutto a quel modulo e dei chip non sapeva niente: per portare il CP/M su un computer nuovo bastava riscrivere il BIOS.',
+          'L\'IBM PC del 1981 riprese nome e idea, ma registrò il suo BIOS in una ROM da 8 KB sulla scheda madre (come faccia da «sportello» per i programmi lo racconta il <a href="#ibm-pc">capitolo 4</a>). Quando si aziona la grande levetta rossa sul fianco, l\'alimentatore impiega una frazione di secondo a stabilizzare le tensioni, e finché non sono pronte tiene basso un segnale chiamato <strong>Power Good</strong>: il processore resta bloccato in reset. Poi il segnale sale, l\'Intel 8088 si sveglia e va a prendere la prima istruzione sempre allo stesso indirizzo, <strong>FFFF0h</strong> (la «h» indica un numero esadecimale), 16 byte prima della fine del megabyte che può indirizzare. Lì c\'è la ROM del BIOS, e in 16 byte c\'è posto solo per un salto all\'inizio del programma vero.',
           'Il programma comincia con il <strong>POST</strong> (<em>power-on self-test</em>, autodiagnosi all\'accensione). Il BIOS prova i registri del processore, controlla con una somma di controllo che la propria ROM sia integra, verifica il timer e il controllore DMA (<em>direct memory access</em>, l\'accesso diretto alla memoria), scrive e rilegge tutta la memoria, prepara la scheda video, interroga la tastiera e le unità a dischetti. Se tutto va bene, l\'altoparlante emette un <strong>bip breve</strong>. Altrimenti il PC si esprime con bip e numeri: un bip lungo e due brevi indicano un guasto della scheda video, che non può mostrare messaggi; due bip brevi, un errore il cui codice compare sullo schermo, come 201 per la memoria, 301 per la tastiera, 601 per i dischetti.',
         ],
       },
@@ -1291,14 +1317,14 @@
         tipo: 'nota',
         paragrafi: [
           'Ctrl+Alt+Canc nacque durante il progetto dell\'IBM PC, come scorciatoia per chi lo costruiva. Il test della memoria era lento e i programmatori dovevano riavviare la macchina in continuazione: David Bradley, uno degli autori del BIOS, scelse tre tasti lontani fra loro, che nessuno avrebbe premuto insieme per sbaglio. La combinazione fa ripartire il PC senza spegnerlo, un riavvio «a caldo»: il BIOS scrive il valore 1234h in una cella di memoria e, quando lo ritrova, salta il test della memoria.',
-          'Non era pensata per il pubblico, ma la voce si sparse in fretta. Anni dopo Windows la usò per aprire la schermata di accesso, e così diventò famosa nel mondo.',
+          'Non era pensata per il pubblico, ma la voce si sparse in fretta. Anni dopo Windows NT la usò per aprire la schermata di accesso, e così diventò famosa nel mondo.',
         ],
       },
       {
         tipo: 'citazione',
         testo: 'Forse l\'ho inventata io, ma è stato Bill a renderla famosa.',
-        autore: 'David Bradley, ingegnere IBM, seduto accanto a Bill Gates',
-        fonte: 'festa per i vent\'anni del PC IBM, San Jose, 8 agosto 2001 (resoconto dell\'Associated Press)',
+        autore: 'David Bradley, ingegnere IBM, a una tavola rotonda con Bill Gates',
+        fonte: 'festa per i vent\'anni del PC IBM, Tech Museum di San Jose, 8 agosto 2001',
       },
       {
         tipo: 'testo',
@@ -1306,7 +1332,7 @@
         paragrafi: [
           'Finito il POST, il BIOS esegue l\'interruzione <strong>19h</strong>, la routine di avvio. Legge il primo settore del dischetto nell\'unità A (traccia 0, testina 0, settore 1), cioè 512 byte, lo copia in memoria all\'indirizzo <strong>0000:7C00</strong> (in notazione segmento:offset) e ci salta. Da quel momento il BIOS non decide più niente: quei 512 byte, scritti dal sistema operativo quando prepara il disco, devono bastare a caricare il resto. Perché proprio 7C00h? La spiegazione più citata è che il DOS doveva funzionare anche con 32 KB di memoria: il settore e il suo spazio di lavoro finivano nell\'ultimo kilobyte, lasciando libero tutto quello che c\'era sotto.',
           'Senza un dischetto nell\'unità l\'IBM PC non si arrendeva: chiamava l\'interruzione 18h e avviava il BASIC registrato in quattro ROM della scheda madre, 32 KB in tutto. Sullo schermo compariva «The IBM Personal Computer Basic», e si poteva programmare subito e salvare il lavoro su cassetta. I compatibili non avevano il BASIC di IBM, protetto dal diritto d\'autore, e al suo posto mostravano un messaggio d\'errore: nei BIOS della AMI era il celebre «NO ROM BASIC - SYSTEM HALTED».',
-          'Il BIOS del 1981 non controllava nulla: caricava il settore e ci saltava. Con il PC/XT e il PC DOS 2.0, nel 1983, arrivarono i dischi rigidi e un settore di avvio più ricco, il <strong>master boot record</strong> (MBR, record di avvio principale). I suoi 512 byte hanno tre zone: fino a 446 byte di codice; dal byte 446 al 509 la <strong>tabella delle partizioni</strong>, quattro voci da 16 byte che dividono il disco al massimo in quattro parti (per ognuna: se è attiva, il tipo, dove comincia e quanto è lunga); negli ultimi due byte, il 510 e il 511, la firma <strong>55h AAh</strong>. Il BIOS controlla la firma prima di saltare: se manca, il disco non è avviabile.',
+          'Il BIOS del 1981 non controllava il settore: lo caricava e basta. Con il PC/XT e il PC DOS 2.0, nel 1983, arrivarono i dischi rigidi e un settore di avvio più ricco, il <strong>master boot record</strong> (MBR, record di avvio principale). I suoi 512 byte hanno tre zone: fino a 446 byte di codice; dal byte 446 al 509 la <strong>tabella delle partizioni</strong>, quattro voci da 16 byte che dividono il disco al massimo in quattro parti (per ognuna: se è attiva, il tipo, dove comincia e quanto è lunga); negli ultimi due byte, il 510 e il 511, la firma <strong>55h AAh</strong>. Da allora, prima di saltare, il BIOS controlla la firma del disco rigido: se manca, il disco non è avviabile.',
           'Il codice dell\'MBR fa una cosa sola: si sposta più in basso nella memoria, cerca nella tabella la partizione segnata come attiva e ne carica il primo settore, di nuovo all\'indirizzo 7C00h. Quel secondo settore carica i file del sistema operativo, che caricano tutto il resto. In binario 55h e AAh sono 01010101 e 10101010, bit alternati che difficilmente compaiono per caso; la stessa coppia apre anche le ROM delle schede di espansione, come i BIOS delle schede video, che il BIOS principale cerca e avvia durante il POST.',
         ],
       },
@@ -1315,7 +1341,7 @@
         tipo: 'testo',
         titolo: 'Setup, batteria e Plug and Play',
         paragrafi: [
-          'Ogni PC è diverso: quanta memoria, quali dischi, quale scheda video. L\'IBM PC lo scopriva leggendo la posizione di piccoli interruttori sulla scheda madre, i <em>DIP switch</em>. Il PC/AT del 1984 introdusse un chip CMOS (<em>complementary metal-oxide-semiconductor</em>, una tecnologia che consuma pochissimo) con l\'orologio e 64 byte di memoria per le impostazioni, alimentato da una batteria a computer spento. Il programma per modificarle, il <strong>setup</strong>, sull\'AT stava su un dischetto di diagnostica; i BIOS dei compatibili lo portarono nella ROM, da richiamare con un tasto come Canc, F1 o F2 durante il POST.',
+          'Ogni PC è diverso: quanta memoria, quali dischi, quale scheda video. L\'IBM PC lo scopriva leggendo la posizione di piccoli interruttori sulla scheda madre, i <em>DIP switch</em>. Il PC/AT del 1984 introdusse un chip CMOS (<em>complementary metal-oxide-semiconductor</em>, una tecnologia che consuma pochissimo) con l\'orologio e una memoria di appena 64 byte, in gran parte dedicata alle impostazioni, alimentato da una batteria a computer spento. Il programma per modificarle, il <strong>setup</strong>, sull\'AT stava su un dischetto di diagnostica; i BIOS dei compatibili lo portarono nella ROM, da richiamare con un tasto come Canc, F1 o F2 durante il POST.',
           'Negli anni Novanta il BIOS imparò a configurare il PC da solo. Prima, per ogni scheda di espansione bisognava scegliere a mano, con ponticelli e interruttori, una linea di interruzione (IRQ, <em>interrupt request</em>) e un canale DMA, e due schede sulla stessa linea si bloccavano a vicenda. Nel 1994 Compaq, Phoenix e Intel pubblicarono la specifica del <strong>BIOS Plug and Play</strong> («collega e usa»): all\'avvio il BIOS riconosce le schede compatibili e assegna le risorse senza conflitti, d\'accordo con il sistema operativo. Windows 95 la rese popolare, anche se per anni i più scettici la chiamarono <em>Plug and Pray</em>, «collega e prega».',
           'Nel 1996 Intel, Microsoft e Toshiba pubblicarono l\'<strong>ACPI</strong> (<em>advanced configuration and power interface</em>): il firmware descrive al sistema operativo, con tabelle standard, l\'hardware della macchina e il modo di accenderne e spegnerne i pezzi, dalle ventole alla sospensione. Ma i limiti restavano quelli del 1981. Il BIOS girava nella modalità a 16 bit dell\'8088, con un solo megabyte di indirizzi; le ROM delle schede dovevano stare tutte in 128 KB; la tabella MBR, con numeri di settore a 32 bit, non poteva descrivere dischi più grandi di 2,2 TB. E il codice, scritto in assembly e rattoppato per vent\'anni, era sempre più difficile da mantenere.',
         ],
@@ -1324,15 +1350,15 @@
         tipo: 'figura',
         svg: figuraFirmware,
         alt: 'Due porzioni di scheda madre affiancate. A sinistra, fine anni Ottanta: una EPROM del BIOS con la finestrella di quarzo coperta da un\'etichetta, il chip dell\'orologio CMOS e una batteria cilindrica saldata sulla scheda, con una macchia di liquido. A destra, oggi: un minuscolo chip di memoria flash a otto piedini, ingrandito da una lente, la pila a bottone CR2032 nel portapila e un ponticello.',
-        didascalia: '<strong>Dove abita il firmware.</strong> Fino agli anni Novanta il BIOS stava in una EPROM (<em>erasable programmable ROM</em>), che si cancellava con la luce ultravioletta attraverso la finestrella di quarzo: per questo un\'etichetta la copriva. Le impostazioni stavano nella memoria CMOS, tenuta in vita da una batteria, spesso un cilindretto ricaricabile al nichel-cadmio che dopo molti anni poteva perdere liquido corrosivo sulla scheda. Oggi il firmware sta in una memoria flash di 16 o 32 MB, riscrivibile per gli aggiornamenti; una pila a bottone CR2032 alimenta l\'orologio, e un ponticello (o un tasto) cancella le impostazioni. Disegno schematico.',
+        didascalia: '<strong>Dove abita il firmware.</strong> Fino a metà degli anni Novanta il BIOS stava di solito in una EPROM (<em>erasable programmable ROM</em>), che si cancellava con la luce ultravioletta attraverso la finestrella di quarzo: per questo un\'etichetta la copriva. Le impostazioni stavano nella memoria CMOS, tenuta in vita da una batteria, spesso un cilindretto ricaricabile al nichel-cadmio che dopo molti anni poteva perdere liquido corrosivo sulla scheda. Oggi il firmware sta in una memoria flash di 16 o 32 MB, riscrivibile per gli aggiornamenti; una pila a bottone CR2032 alimenta l\'orologio, e un ponticello (o un tasto) cancella le impostazioni. Disegno schematico.',
       },
       {
         tipo: 'testo',
         titolo: 'UEFI: un sistema operativo prima del sistema operativo',
         paragrafi: [
           'Il firmware nuovo nacque per un processore che non era quello dei PC. Nel 1998 Intel avviò un progetto, chiamato prima Intel Boot Initiative e poi <strong>EFI</strong> (<em>extensible firmware interface</em>), per i server con Itanium, il suo processore a 64 bit, a cui il vecchio BIOS a 16 bit non si adattava. Nel 2005 Intel affidò la specifica, arrivata alla versione 1.10, a un consorzio di aziende, lo Unified EFI Forum, che nel gennaio 2006 pubblicò la versione 2.0 con il nuovo nome <strong>UEFI</strong> (<em>unified extensible firmware interface</em>). Nello stesso anno i Mac con processore Intel partirono con EFI; i PC con Windows passarono in massa a UEFI intorno al 2010–2012.',
-          'UEFI è una specifica: dice come il firmware deve comportarsi con il sistema operativo, non come va scritto. In pratica i firmware UEFI sono piccoli sistemi operativi, scritti per lo più in linguaggio C, che lavorano a 32 o 64 bit, caricano driver, leggono i file system FAT e sanno usare la rete. Il loro avvio è diviso in fasi. <strong>SEC</strong> (<em>security</em>, sicurezza) prende il controllo al reset, quando la memoria non funziona ancora, e usa come memoria provvisoria la cache del processore; <strong>PEI</strong> (<em>pre-EFI initialization</em>) prepara la memoria e i componenti essenziali; <strong>DXE</strong> (<em>driver execution environment</em>) carica i driver di tutto il resto, dalla scheda video all\'USB; <strong>BDS</strong> (<em>boot device selection</em>) sceglie da dove avviare.',
-          'Cambia anche il disco. La tabella delle partizioni <strong>GPT</strong> (<em>GUID partition table</em>; un GUID è un identificativo unico di 128 bit) usa numeri di settore a 64 bit, abbastanza per dischi di miliardi di terabyte, e ammette di norma fino a 128 partizioni, con una copia di riserva alla fine del disco. Nel settore 0 resta un MBR «protettivo», che mostra ai vecchi programmi un disco già tutto occupato. E il codice nel settore di avvio scompare: il firmware legge una partizione speciale, la <strong>partizione di sistema EFI</strong> (ESP), formattata FAT, e lì trova i caricatori come normali file .efi. Windows usa \\EFI\\Microsoft\\Boot\\bootmgfw.efi, molte distribuzioni Linux il caricatore GRUB; l\'elenco delle voci di avvio e il loro ordine stanno in variabili salvate nella memoria flash della scheda madre.',
+          'UEFI è una specifica: dice come il firmware deve comportarsi con il sistema operativo, non come va scritto. In pratica i firmware UEFI sono piccoli sistemi operativi, scritti per lo più in linguaggio C, che lavorano a 32 o 64 bit, caricano driver, leggono i file system FAT e sanno usare la rete. Quasi tutti dividono l\'avvio in quattro fasi. <strong>SEC</strong> (<em>security</em>, sicurezza) prende il controllo al reset, quando la memoria non funziona ancora, e usa come memoria provvisoria la cache del processore; <strong>PEI</strong> (<em>pre-EFI initialization</em>) prepara la memoria e i componenti essenziali; <strong>DXE</strong> (<em>driver execution environment</em>) carica i driver di tutto il resto, dalla scheda video all\'USB; <strong>BDS</strong> (<em>boot device selection</em>) sceglie da dove avviare.',
+          'Cambia anche il disco. La tabella delle partizioni <strong>GPT</strong> (<em>GUID partition table</em>; un GUID è un identificativo unico di 128 bit) usa numeri di settore a 64 bit, abbastanza per dischi di miliardi di terabyte, e ammette di norma fino a 128 partizioni, con una copia di riserva alla fine del disco. Nel settore 0 resta un MBR «protettivo», che mostra ai vecchi programmi un disco già tutto occupato. E il codice nel settore di avvio non serve più: il firmware legge una partizione speciale, la <strong>partizione di sistema EFI</strong> (ESP), formattata FAT, e lì trova i caricatori come normali file .efi. Windows usa \\EFI\\Microsoft\\Boot\\bootmgfw.efi, molte distribuzioni Linux il caricatore GRUB; l\'elenco delle voci di avvio e il loro ordine stanno in variabili salvate nella memoria flash della scheda madre.',
           'Per anni i firmware UEFI hanno avuto anche un modulo che imitava il vecchio BIOS, il CSM (<em>compatibility support module</em>), per avviare dischi e sistemi operativi di prima. Nel 2017 Intel annunciò che entro il 2020 lo avrebbe tolto dalle sue piattaforme: dopo quasi quarant\'anni, il BIOS dell\'IBM PC andava in pensione.',
         ],
       },
@@ -1340,9 +1366,9 @@
         tipo: 'testo',
         titolo: 'Un avvio di oggi, passo per passo',
         paragrafi: [
-          'Premi il tasto. Non è più un interruttore che stacca la corrente, come la levetta rossa dell\'IBM PC: dal formato ATX del 1995 (lo racconta il <a href="#scheda-madre">capitolo 5</a>) l\'alimentatore tiene sempre accesa una piccola tensione di riposo, i 5 V di <em>standby</em>, e il tasto è solo un segnale per la scheda madre, che chiede all\'alimentatore di partire. Quando tutte le tensioni sono stabili, fra 0,1 e 0,5 secondi dopo, l\'alimentatore alza il segnale PWR_OK, il Power Good di sempre. Sui PC recenti, prima ancora del processore principale, si sveglia un piccolo processore di servizio (il Management Engine di Intel, il Platform Security Processor di AMD), che prepara il terreno e può verificare che il firmware non sia stato manomesso.',
-          'Il processore esce dal reset e, per compatibilità con il passato, comincia ancora da un indirizzo fisso: FFFFFFF0h, 16 byte sotto i 4 GB, dove il chipset fa comparire il contenuto del chip di memoria flash del firmware, collegato con il <a href="../../index.html#/bus/spi">bus SPI</a>. Seguono SEC; PEI, con l\'«addestramento» della memoria, in cui il firmware legge le caratteristiche dei moduli e regola i tempi dei segnali (con moduli nuovi può volerci più di un minuto); DXE, con centinaia di driver e il logo del produttore sullo schermo; BDS, con la scelta del disco. Il firmware avvia il caricatore, che porta in memoria il nucleo del sistema operativo, il <em>kernel</em>, e chiama la funzione ExitBootServices: da lì il sistema operativo è padrone della macchina. Del firmware restano solo alcuni servizi, come l\'orologio e le variabili, e le tabelle ACPI.',
-          'Con <strong>Secure Boot</strong>, introdotto nella versione 2.3.1 della specifica UEFI (aprile 2011), ogni anello della catena è firmato. Prima di eseguire un driver o un caricatore, il firmware ne calcola l\'impronta digitale, ne verifica la firma con i certificati conservati in una banca dati (db) e rifiuta tutto ciò che compare nella lista delle firme revocate (dbx). Un programma modificato anche di un solo byte non parte: è la difesa contro i <em>bootkit</em>, virus che si annidano prima del sistema operativo, dove gli antivirus non arrivano. Windows 8, nel 2012, lo rese obbligatorio sui PC certificati, e Windows 11 (2021) richiede un firmware UEFI che lo supporti. Le distribuzioni Linux usano un piccolo caricatore firmato, shim, che a sua volta verifica GRUB e il kernel.',
+          'Premi il tasto. Non è più un interruttore che stacca la corrente, come la levetta rossa dell\'IBM PC: dal formato ATX del 1995 (lo racconta il <a href="#scheda-madre">capitolo 5</a>) l\'alimentatore tiene sempre accesa una piccola tensione di riposo, i 5 V di <em>standby</em>, e il tasto è solo un segnale per la scheda madre, che chiede all\'alimentatore di partire. Quando tutte le tensioni sono stabili, fra 0,1 e 0,5 secondi dopo, l\'alimentatore alza il segnale PWR_OK, il Power Good di sempre. Sui PC recenti, prima ancora del processore principale, si sveglia un piccolo processore di servizio (il Management Engine di Intel, il Platform Security Processor di AMD), che può verificare che il firmware non sia stato manomesso.',
+          'Il processore esce dal reset e comincia ancora da un indirizzo fisso: FFFFFFF0h, 16 byte sotto i 4 GB, dove il chipset fa comparire il contenuto del chip di memoria flash del firmware, collegato con il <a href="../../index.html#/bus/spi">bus SPI</a>. Seguono SEC; PEI, con l\'«addestramento» della memoria, in cui il firmware regola i tempi dei segnali dei moduli (la prima volta può volerci più di un minuto); DXE, con centinaia di driver e il logo del produttore; BDS, con la scelta del disco. Il firmware avvia il caricatore, che porta in memoria il nucleo del sistema operativo, il <em>kernel</em>, e chiama la funzione ExitBootServices: da lì il sistema operativo è padrone della macchina. Del firmware restano solo alcuni servizi, come l\'orologio e le variabili, e le tabelle ACPI.',
+          'Con <strong>Secure Boot</strong>, introdotto nella versione 2.3.1 della specifica UEFI (aprile 2011), ogni anello della catena è firmato. Prima di eseguire un driver o un caricatore, il firmware ne calcola l\'impronta digitale, ne verifica la firma con i certificati conservati in una banca dati (db) e rifiuta tutto ciò che compare nella lista delle firme revocate (dbx). Un programma modificato anche di un solo byte non parte: è la difesa contro i <em>bootkit</em>, virus che si annidano prima del sistema operativo, dove gli antivirus non arrivano. Windows 8, nel 2012, lo rese obbligatorio sui PC certificati, e Windows 11 (2021) richiede un firmware UEFI che lo supporti. Molte distribuzioni Linux usano un piccolo caricatore firmato, shim, che a sua volta verifica GRUB e il kernel.',
         ],
       },
       {
@@ -1358,18 +1384,18 @@
         tipo: 'schede',
         titolo: 'Le tappe dell\'avvio, 1976–2021',
         items: [
-          { anno: 1976, nome: 'Il BIOS del CP/M', luogo: 'Digital Research, Pacific Grove (California)', testo: 'Per adattare il CP/M ai dischi dell\'IMSAI, Gary Kildall e Glenn Ewing ne separano le routine che dipendono dall\'hardware: nasce il BIOS. Alcune fonti datano la svolta al 1975.' },
+          { anno: 1976, nome: 'Il BIOS del CP/M', luogo: 'Digital Research, Pacific Grove (California)', testo: 'Per adattare il CP/M ai dischi dell\'IMSAI, Gary Kildall e Glenn Ewing ne separano le routine che dipendono dall\'hardware: nasce il BIOS. L\'anno è quello ricordato da Kildall; alcune fonti indicano il 1975.' },
           { anno: 1981, nome: 'Il settore di avvio a 7C00h', luogo: 'IBM, Boca Raton (Florida)', testo: 'Dopo il POST, il BIOS dell\'IBM PC copia il primo settore del dischetto all\'indirizzo 0000:7C00 e ci salta. Senza dischetto parte il BASIC registrato in ROM.' },
-          { anno: 1983, nome: 'MBR e tabella delle partizioni', luogo: 'IBM PC/XT e PC DOS 2.0', testo: 'Con il disco rigido arriva il master boot record: codice, quattro voci da 16 byte per le partizioni e la firma 55h AAh. Il disco si prepara con il programma FDISK.' },
+          { anno: 1983, nome: 'MBR e tabella delle partizioni', luogo: 'IBM, Boca Raton (Florida)', testo: 'Con il PC/XT e il PC DOS 2.0 arriva il disco rigido, e con lui il master boot record: codice, quattro voci da 16 byte per le partizioni e la firma 55h AAh. Il disco si prepara con il programma FDISK.' },
           { anno: 1994, nome: 'BIOS Plug and Play', luogo: 'Compaq, Phoenix e Intel', testo: 'La specifica permette al BIOS di riconoscere le schede di espansione e di assegnare interruzioni e canali DMA senza ponticelli né conflitti.' },
           { anno: 1996, nome: 'ACPI 1.0', luogo: 'Intel, Microsoft e Toshiba', testo: 'Il firmware descrive l\'hardware al sistema operativo con tabelle standard e gli affida la gestione dell\'energia: sospensione, ventole, batterie.' },
           { anno: 1998, nome: 'Intel Boot Initiative, poi EFI', luogo: 'Intel (Stati Uniti)', testo: 'Comincia il progetto di un firmware nuovo per i server con Itanium a 64 bit, scritto in C, con driver e file system. Diventerà EFI.' },
           { anno: 1999, nome: 'LinuxBIOS, poi coreboot', luogo: 'Los Alamos National Laboratory (Nuovo Messico)', testo: 'Ron Minnich avvia un firmware libero che prepara l\'hardware e passa subito il comando al sistema operativo. Dal 2008 si chiama coreboot e avvia, fra l\'altro, molti Chromebook.' },
           { anno: 2005, nome: 'Unified EFI Forum', luogo: 'Consorzio di aziende', testo: 'Intel affida la specifica EFI 1.10 a un consorzio di costruttori e produttori di software, che la ribattezza UEFI e nel gennaio 2006 pubblica la versione 2.0.' },
           { anno: 2006, nome: 'I Mac con processore Intel', luogo: 'Apple, Cupertino (California)', testo: 'Presentati a gennaio, avviano con EFI invece che con il BIOS: è uno dei primi usi su larga scala del nuovo firmware in un personal computer.' },
-          { anno: 2011, nome: 'Secure Boot', luogo: 'Specifica UEFI 2.3.1', testo: 'La versione di aprile introduce l\'avvio sicuro: il firmware esegue solo driver e caricatori con una firma digitale valida. Windows 8 lo renderà obbligatorio sui PC certificati nel 2012.' },
+          { anno: 2011, nome: 'Secure Boot', luogo: 'Unified EFI Forum', testo: 'La specifica UEFI 2.3.1, pubblicata in aprile, introduce l\'avvio sicuro: il firmware esegue solo driver e caricatori con una firma digitale valida. Windows 8 lo renderà obbligatorio sui PC certificati nel 2012.' },
           { anno: 2017, nome: 'Intel annuncia la fine del CSM', luogo: 'Intel (Stati Uniti)', testo: 'Entro il 2020 le piattaforme Intel abbandoneranno il modulo che imita il vecchio BIOS: i PC si avvieranno solo in modalità UEFI.' },
-          { anno: 2021, nome: 'Windows 11', luogo: 'Microsoft, Redmond (Washington)', testo: 'Per installarlo servono un firmware UEFI con Secure Boot e un chip di sicurezza TPM 2.0: l\'avvio firmato diventa un requisito per tutti.' },
+          { anno: 2021, nome: 'Windows 11', luogo: 'Microsoft, Redmond (Washington)', testo: 'Richiede un firmware UEFI capace di Secure Boot e un modulo di sicurezza TPM 2.0, anche integrato nel processore: il vecchio avvio con il BIOS non è più ammesso.' },
         ],
       },
     ],
@@ -1389,7 +1415,7 @@
     collegamenti: [
       { testo: 'Bus SPI', href: '../../index.html#/bus/spi', tipo: 'buslab' },
       { testo: 'Bus SMBus', href: '../../index.html#/bus/smbus', tipo: 'buslab' },
-      { testo: 'Bus SATA', href: '../../index.html#/bus/sata', tipo: 'buslab' },
+      { testo: 'Bus ISA', href: '../../index.html#/bus/isa', tipo: 'buslab' },
       { testo: 'Sezione 5 · Le memorie: ROM, EPROM, flash', href: '../chip-programmabili/index.html#memorie', tipo: 'sezione' },
       { testo: 'Sezione 5 · L\'8086 e l\'8088', href: '../chip-programmabili/index.html#sedici-bit', tipo: 'sezione' },
       { testo: 'Sezione 2 · L\'alimentatore', href: '../elettronica-intermedia/index.html#alimentatore', tipo: 'sezione' },

@@ -345,6 +345,14 @@ test('ruoli delle celle: istruzioni e dati come scritti nel sorgente', () => {
   M.PROGRAMMI.forEach((q) => assert.strictEqual(q.ruoli.length, 16, q.id));
 });
 
+test('HLT come unica istruzione: la spiegazione usa il singolare', () => {
+  const r = M.esegui([M.codifica('HLT')], 'vn', { testi: true, passi: true });
+  assert.ok(r.fermo);
+  assert.match(r.passi[r.passi.length - 1].testo, /dopo una sola istruzione e 2 cicli di clock/);
+  const r2 = M.esegui(M.programma('somma').memoria, 'vn', { testi: true, passi: true });
+  assert.match(r2.passi[r2.passi.length - 1].testo, /dopo 5 istruzioni e 10 cicli di clock/);
+});
+
 /* ---------- integrità dei contenuti del capitolo ---------- */
 
 test('capitolo: blocchi, schede in ordine, numeri, collegamenti e lunghezza del testo', () => {

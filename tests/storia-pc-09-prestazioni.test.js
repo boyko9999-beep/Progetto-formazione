@@ -60,6 +60,13 @@ test('i valori chiave del capitolo corrispondono alle fonti', () => {
   assert.strictEqual(v('prescott').mhz, 3800);
   assert.strictEqual(v('m3ultra').transistor, 184e9);
   assert.strictEqual(v('i914900ks').mhz, 6200);
+  // l'Athlon 64 «liscio» esce a 2,0 GHz (i 2,2 GHz sono dell'Athlon 64 FX-51)
+  assert.strictEqual(v('athlon64').mhz, 2000);
+  // nella tabella il primo chip oltre il miliardo di transistor è il Core i7-980X (Gulftown, 2010)
+  assert.strictEqual(v('i7980x').transistor, 1.17e9);
+  assert.ok(M.datiTransistor().filter((c) => c.transistor >= 1e9)[0].id === 'i7980x');
+  // «arriverà a» del Pentium 4 coincide con il massimo della serie, il Prescott a 3,8 GHz
+  assert.strictEqual(v('pentium4').mhzMax, v('prescott').mhz);
   assert.strictEqual(M.trova('nessuno'), null);
 });
 

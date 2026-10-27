@@ -78,7 +78,7 @@
       spiega: 'Il dato è già in un <strong>registro</strong>, dentro il core: si usa nello stesso ciclo. È la nostra unità di misura: un ciclo, cioè un secondo.',
     },
     {
-      id: 'l1', nome: 'Cache L1', capacita: '32–64 KB per core', ns: 1,
+      id: 'l1', nome: 'Cache L1', capacita: 'decine di KB per core', ns: 1,
       spiega: 'La <strong>cache L1</strong> è accanto alle unità di calcolo e risponde in 3–5 cicli. In un programma ben scritto più di 9 accessi su 10 si fermano qui.',
     },
     {

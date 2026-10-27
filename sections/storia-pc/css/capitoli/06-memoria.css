@@ -82,9 +82,7 @@
 .mem-supera-area { fill: var(--ill-led); opacity: .22; }
 .mem-fig-soglia { fill: var(--ill-led); font-size: 12.5px; }
 .mem-riflesso { animation: mem-ruota 2.6s linear infinite; }
-
-/* Fuori dallo schermo le animazioni delle figure restano ferme (classe messa da soloInVista). */
-.mem-fermo .mem-corrente, .mem-fermo .mem-alone, .mem-fermo .mem-giro, .mem-fermo .mem-riflesso { animation-play-state: paused; }
+/* Fuori dallo schermo queste animazioni si fermano da sole: app.js mette .fuori sulla figura. */
 @keyframes mem-scorre { to { stroke-dashoffset: -21; } }
 @keyframes mem-pulsa { from { opacity: .12; } to { opacity: .5; } }
 @keyframes mem-ruota { to { transform: rotate(360deg); } }
@@ -112,7 +110,6 @@
   --mem-tenue: #7f9a90;
 }
 .mem-tabs { justify-self: start; max-width: 100%; }
-.mem-lab .lab-seg button { min-height: 40px; }
 .mem-lab .lab-seg button:focus-visible, .mem-lab .lab-btn:focus-visible, .mem-lab input:focus-visible { outline: 2px solid var(--trace-3); outline-offset: 2px; }
 .mem-pan { display: grid; gap: 12px; min-width: 0; }
 .mem-pan[hidden] { display: none; }
@@ -123,9 +120,6 @@
 .mem-descr { min-height: 3em; }
 .mem-lab .lab-note { min-height: 4.7em; transition: opacity var(--dur-fast) var(--ease-smooth); }
 .mem-lab .lab-note.mem-vecchia { opacity: .5; }
-/* La cornice comune taglia gli angoli con overflow: hidden, che però impedirebbe all'orologio
- * di restare adesivo sui telefoni: clip taglia allo stesso modo senza creare un'area di scorrimento. */
-#lab-memoria { overflow: clip; }
 .mem-nota-dati, .mem-nota-passo { font-family: var(--mono); font-size: .86em; color: var(--trace-2); }
 .mem-nota-passo { color: var(--mem-tenue); }
 
@@ -212,7 +206,7 @@
    * spiegazione sotto la scala. */
   .mem-scala-lato { display: contents; }
   .mem-orologio {
-    order: -1; position: sticky; top: calc(var(--mem-cima, 0px) + 6px); z-index: 4;
+    order: -1; position: sticky; top: calc(var(--spc-cima, 0px) + 12px); z-index: 4;
     box-shadow: 0 14px 22px -16px rgba(0, 0, 0, .95);
   }
   .mem-scala-lato > .lab-note { order: 1; }
@@ -306,6 +300,9 @@
 .mem-kv-mancati dd { color: var(--mem-manc); }
 
 @container (max-width: 560px) {
+  /* Scelte in colonna, opzioni a due a due: niente pulsante rimasto da solo su una riga. */
+  .mem-campo { display: grid; width: 100%; }
+  .mem-campo .lab-seg { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .mem-tabs { justify-self: stretch; }
   .mem-tabs button { flex: 1 1 auto; }
   .mem-kv { grid-template-columns: repeat(3, minmax(0, 1fr)); }

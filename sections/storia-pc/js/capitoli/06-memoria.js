@@ -27,17 +27,8 @@
 
   function ripeti(n, fn) { let s = ''; for (let i = 0; i < n; i++) s += fn(i); return s; }
 
-  // Le piccole animazioni delle figure (piatto che gira, correnti, nuclei) girano solo quando la
-  // figura è sullo schermo: fuori vista si mettono in pausa e non consumano batteria.
-  function soloInVista(markup) {
-    const el = P.svgDaTesto(markup);
-    if (el && typeof IntersectionObserver !== 'undefined') {
-      el.classList.add('mem-fermo');
-      const io = new IntersectionObserver((voci) => voci.forEach((v) => el.classList.toggle('mem-fermo', !v.isIntersecting)));
-      io.observe(el);
-    }
-    return el;
-  }
+  // Le piccole animazioni delle figure (piatto che gira, correnti, nuclei) sono animazioni CSS:
+  // app.js le mette in pausa quando la figura è lontana dallo schermo (classe .fuori).
 
   function oggettoRegistri() {
     // Un frammento di processore con il banco dei registri (alcuni bit accesi).
@@ -142,7 +133,7 @@
       '<path class="mem-asse" d="M612 52V150M606 60l6-9 6 9M606 142l6 9 6-9"/>' +
       '<text x="630" y="170" text-anchor="end">più capiente</text><text x="630" y="186" text-anchor="end">ed economica</text>' +
       '</g>';
-    return soloInVista('<svg class="mem-ill mem-piramide" viewBox="0 0 640 438" xmlns="http://www.w3.org/2000/svg">' + g + freccia + '</svg>');
+    return ('<svg class="mem-ill mem-piramide" viewBox="0 0 640 438" xmlns="http://www.w3.org/2000/svg">' + g + freccia + '</svg>');
   }
 
   /* ======================================================================
@@ -222,7 +213,7 @@
     const correnti = impulso(282, 12, 'X') + impulso(322, 12, 'Y') + impulso(366, 24, 'X+Y') +
       '<text class="mem-fig-det mem-fig-soglia" x="632" y="257" text-anchor="end">soglia</text>';
 
-    return soloInVista('<svg class="mem-ill mem-nuclei" viewBox="0 0 640 380" xmlns="http://www.w3.org/2000/svg">' +
+    return ('<svg class="mem-ill mem-nuclei" viewBox="0 0 640 380" xmlns="http://www.w3.org/2000/svg">' +
       '<rect class="mem-telaio" x="44" y="44" width="328" height="328" rx="8"/>' +
       '<rect class="mem-finestra" x="62" y="62" width="292" height="292" rx="4"/>' +
       fili + lettura + piazzole + selezione + nuclei +
@@ -300,7 +291,7 @@
     let giro = false;
 
     const intro = h('p', { class: 'mem-intro' },
-      'Un processore a circa 3,3 GHz compie un ciclo ogni 0,3 nanosecondi. Ingrandiamo il tempo: se un ciclo durasse ',
+      'Un processore a circa 3,3 GHz (3,3 miliardi di cicli al secondo) compie un ciclo ogni 0,3 nanosecondi. Ingrandiamo il tempo: se un ciclo durasse ',
       h('strong', null, 'un secondo'), ', quanto dovremmo aspettare un dato che sta più in basso nella scala? Tocca un livello.');
     const btnGiro = h('button', { type: 'button', class: 'lab-btn primary', 'aria-pressed': 'false', onclick: () => (giro ? fermaGiro() : avviaGiro()) }, 'Percorri tutta la scala');
 
@@ -353,22 +344,8 @@
     }
     let y0 = 0;
     let altezza = 1;
-    // Sui telefoni l'orologio resta in vista mentre si scorre la scala: si ferma sotto la
-    // barra in alto e sotto l'indice dei capitoli, quando sono adesivi.
-    function misuraCima() {
-      let cima = 0;
-      const barra = document.querySelector('.topbar');
-      const rail = document.querySelector('.spc-rail');
-      if (barra && getComputedStyle(barra).position === 'sticky') cima += barra.offsetHeight;
-      if (rail) {
-        const st = getComputedStyle(rail);
-        if (st.position === 'sticky' && st.display === 'flex') cima += rail.offsetHeight;
-      }
-      pan.style.setProperty('--mem-cima', cima + 'px');
-    }
     function misura() {
       if (!colonna.offsetParent) return;
-      misuraCima();
       const c0 = centro(icona(-1));
       const c1 = centro(icona(L.length - 1));
       y0 = c0.y;
@@ -443,7 +420,7 @@
           for (let j = 0; j < i; j++) {
             if (!passati.has(j) && y >= ys[j] - 1) {
               passati.add(j);
-              righe[j].classList.add('passa');
+              righe[j].classList.add('passa', 'passato');
               oroFase.textContent = L[j].nome + ': non c\'è, si scende.';
             }
           }
@@ -475,16 +452,19 @@
       if (scelto >= 0) finale(scelto);
     }
 
+    // Ogni giro ha il suo numero: un giro fermato e subito riavviato non lascia un vecchio ciclo vivo.
+    let nGiro = 0;
     async function avviaGiro() {
+      const mio = ++nGiro;
       giro = true;
       btnGiro.setAttribute('aria-pressed', 'true');
       btnGiro.textContent = 'Ferma il giro';
-      for (let i = 0; i < L.length && giro; i++) {
+      for (let i = 0; i < L.length && giro && mio === nGiro; i++) {
         await esegui(i);
-        if (!giro) return;
+        if (!giro || mio !== nGiro) return;
         await A.pausa(ctx.ridotto() ? 1800 : 650, true);
       }
-      fermaGiro();
+      if (mio === nGiro) fermaGiro();
     }
 
     function fermaGiro() {
@@ -919,14 +899,28 @@
       try {
         await animaAccesso(e, prima, g);
       } finally {
-        // Se è stata interrotta, chi ha interrotto ha già rimesso in ordine lo stato.
+        // Se è stata interrotta, chi ha interrotto ha già rimesso in ordine lo stato e la nota.
         if (g === A.gen) {
           occupato = false;
           sincronizza();
-          scriviNota(nota, '<span class="mem-nota-passo">Accesso ' + indice + ' di ' + accessi.length + '.</span> ' + M.spiegaAccesso(cache, e));
+          notaUltimo();
         }
       }
       return g === A.gen;
+    }
+
+    // La spiegazione dell'ultimo accesso fatto.
+    function notaUltimo() {
+      const e = esiti[esiti.length - 1];
+      if (e) scriviNota(nota, '<span class="mem-nota-passo">Accesso ' + esiti.length + ' di ' + accessi.length + '.</span> ' + M.spiegaAccesso(cache, e));
+    }
+
+    // Un'animazione interrotta da fuori (laboratorio fuori schermo, cambio di impaginazione):
+    // si salta allo stato finale dell'accesso, con la sua spiegazione o il riepilogo se era l'ultimo.
+    function chiudiInterrotto() {
+      sincronizza();
+      notaUltimo();
+      if (indice >= accessi.length && !corre) riepilogo();
     }
 
     function riepilogo() {
@@ -941,23 +935,28 @@
 
     function aggiornaBottoni() {
       const finito = indice >= accessi.length;
-      btnEsegui.textContent = corre ? 'Pausa' : (finito ? 'Da capo' : (indice > 0 ? 'Riprendi' : 'Esegui'));
+      btnEsegui.textContent = corre ? 'Pausa' : (finito ? 'Da capo' : (indice > 0 ? 'Continua' : 'Esegui'));
       btnEsegui.setAttribute('aria-pressed', String(corre));
       btnPasso.disabled = finito && !corre;
     }
 
+    // Ogni esecuzione ha il suo numero: Pausa e Continua in rapida successione (o il laboratorio che
+    // esce e rientra nello schermo durante l'attesa fra due passi) non lasciano due cicli a correre insieme.
+    let nCorsa = 0;
     async function esegui() {
       if (corre) return;
       if (indice >= accessi.length) ricomincia();
       corre = true;
+      const mia = ++nCorsa;
       nota.setAttribute('aria-live', 'off');
       aggiornaBottoni();
-      while (corre && indice < accessi.length) {
+      while (corre && mia === nCorsa && indice < accessi.length) {
         await passo();
-        if (!corre) break;
+        if (!corre || mia !== nCorsa) break;
         // Con il movimento ridotto niente moto, ma i passi restano distinti nel tempo.
         await A.pausa(ctx.ridotto() ? DURATE[stato.velocita - 1] : DURATE[stato.velocita - 1] * 0.22, true);
       }
+      if (mia !== nCorsa) return; // un'esecuzione più recente ha preso il comando
       const finito = indice >= accessi.length;
       corre = false;
       nota.setAttribute('aria-live', 'polite');
@@ -1021,12 +1020,12 @@
       if (nuovo === stretto) return;
       stretto = nuovo;
       if (!cache) return;
-      const g = A.gen;
+      // Un'animazione in corso salta allo stato finale; un'esecuzione avviata prosegue col passo seguente.
+      const interrotto = occupato;
       A.taglia();
       occupato = false;
       costruisci();
-      sincronizza();
-      if (g !== A.gen && corre) { /* il ciclo di esecuzione prosegue con il prossimo passo */ }
+      if (interrotto) chiudiInterrotto(); else sincronizza();
     }
 
     stretto = (stage.clientWidth || 800) - 32 < 700;
@@ -1040,9 +1039,9 @@
       sospendi() {
         eraInCorsa = corre;
         pausa();
-        if (occupato) { A.taglia(); occupato = false; sincronizza(); }
+        if (occupato) { A.taglia(); occupato = false; chiudiInterrotto(); }
       },
-      attiva() { if (eraInCorsa) { eraInCorsa = false; esegui(); } },
+      attiva() { if (eraInCorsa) { eraInCorsa = false; if (indice < accessi.length) esegui(); } },
       distruggi() { corre = false; A.taglia(); if (ro) ro.disconnect(); },
     };
   }
@@ -1133,13 +1132,13 @@
         tipo: 'figura',
         svg: figuraPiramide,
         alt: 'Piramide a gradini della gerarchia della memoria, disegnata con gli oggetti: in cima un frammento di processore con i registri, poi il chip con le matrici di cache, un modulo di RAM, un SSD M.2, un disco rigido aperto con il braccio e la testina sul piatto e, alla base, il mondo collegato a un armadio di server.',
-        didascalia: '<strong>La gerarchia della memoria di un PC di oggi.</strong> In cima i registri, dentro il core (l\'unità del processore che esegue le istruzioni); poi le cache L1, L2 e L3 (matrici di SRAM sul chip del processore), la RAM (moduli DIMM di DRAM), l\'SSD (qui una schedina M.2 NVMe), il disco rigido (aperto: si vedono il piatto e il braccio con la testina) e, alla base, la rete. Salendo la memoria è più veloce e più cara per byte; scendendo è più capiente ed economica. Latenze tipiche: da 0,3 ns (miliardesimi di secondo) per un registro a 100 ns per la RAM, 50 µs (milionesimi di secondo) per un SSD, 5–10 ms (millesimi di secondo) per un disco e 100–150 ms per un server in un altro continente.',
+        didascalia: '<strong>La gerarchia della memoria di un PC di oggi.</strong> In cima i registri, dentro il core (l\'unità del processore che esegue le istruzioni); poi le cache L1, L2 e L3 (matrici di SRAM sul chip del processore), la RAM (moduli DIMM di DRAM), l\'SSD (qui una schedina M.2 NVMe), il disco rigido (aperto: si vedono il piatto e il braccio con la testina) e, alla base, la rete. Salendo la memoria è più veloce e più cara per byte; scendendo è più capiente ed economica: dalle centinaia di byte dei registri ai terabyte (TB, migliaia di miliardi di byte) dei dischi. Latenze tipiche: da 0,3 ns (miliardesimi di secondo) per un registro a 100 ns per la RAM, 50 µs (milionesimi di secondo) per un SSD, 5–10 ms (millesimi di secondo) per un disco e 100–150 ms per un server in un altro continente.',
       },
       {
         tipo: 'testo',
         titolo: 'Dalle vasche di mercurio ai nuclei di ferrite',
         paragrafi: [
-          'L\'<strong>EDSAC</strong> (<em>Electronic Delay Storage Automatic Calculator</em>) di Cambridge, che eseguì il suo primo programma il 6 maggio 1949, usava <strong>linee di ritardo a mercurio</strong>, una tecnica nata per i radar e proposta da J. Presper Eckert. I bit diventavano impulsi sonori che viaggiavano in tubi d\'acciaio pieni di mercurio e, arrivati in fondo, venivano amplificati e rimandati all\'inizio. Ogni tubo (<em>tank</em>, vasca) conteneva 576 bit; con 32 vasche si arrivava a poco più di 2 kilobyte. Per leggere un dato bisognava aspettare che passasse, come un treno in stazione.',
+          'L\'<strong>EDSAC</strong> (<em>Electronic Delay Storage Automatic Calculator</em>) di Cambridge, che eseguì il suo primo programma il 6 maggio 1949, usava <strong>linee di ritardo a mercurio</strong>, una tecnica nata per i radar e adattata ai calcolatori da J. Presper Eckert. I bit diventavano impulsi sonori che viaggiavano in tubi d\'acciaio pieni di mercurio e, arrivati in fondo, venivano amplificati e rimandati all\'inizio. Ogni tubo (<em>tank</em>, vasca) conteneva 576 bit; con 32 vasche si arrivava a poco più di 2 kilobyte. Per leggere un dato bisognava aspettare che passasse, come un treno in stazione.',
           'A Manchester Frederic C. Williams e Tom Kilburn scelsero un\'altra strada: il <strong>tubo di Williams</strong> conservava i bit come puntini di carica sullo schermo di un normale tubo a raggi catodici, da rinfrescare di continuo prima che svanissero. Alla fine del 1947 un tubo da 6 pollici conservava 2.048 bit, e il 21 giugno 1948 la piccola Manchester Baby vi eseguì il primo programma memorizzato della storia. Il pregio decisivo: si poteva leggere qualsiasi bit in qualsiasi momento, senza aspettare il turno. È l\'<em>accesso casuale</em> che ancora oggi dà il nome alla RAM.',
           'Più economici e capienti erano i <strong>tamburi magnetici</strong>, cilindri magnetizzabili che giravano sotto file di testine fisse. L\'IBM 650 (1954) teneva programmi e dati su un tamburo da 12.500 giri al minuto, e i programmatori più abili disponevano le istruzioni in modo da non dover aspettare un giro intero.',
           'Nell\'estate del 1953, al MIT (<em>Massachusetts Institute of Technology</em>), il gruppo di Jay Forrester installò nel calcolatore Whirlwind la prima <strong>memoria a nuclei di ferrite</strong>: anellini magnetici di un paio di millimetri, infilati agli incroci di una griglia di fili. Ogni nucleo ricorda un bit nel verso in cui è magnetizzato e lo conserva anche senza corrente. Rispetto ai tubi elettrostatici usati prima, l\'accesso scese da circa 25 a circa 9 microsecondi e i guasti diminuirono di molto.',
@@ -1158,7 +1157,7 @@
         tipo: 'figura',
         svg: figuraNuclei,
         alt: 'Piano di memoria a nuclei di ferrite: una griglia di sei per sei anellini scuri, ciascuno all\'incrocio di un filo orizzontale e di uno verticale, attraversati in diagonale dal filo di lettura; il nucleo all\'incrocio dei due fili percorsi da mezza corrente è evidenziato in rosso. A destra due nuclei ingranditi, magnetizzati in senso orario (1) e antiorario (0), e un grafico: le due mezze correnti da sole restano sotto la soglia, sommate la superano.',
-        didascalia: '<strong>Un piano di memoria a nuclei di ferrite.</strong> Ogni anellino conserva un bit nel verso della sua magnetizzazione: orario per 1, antiorario per 0. Per scrivere, la macchina manda metà della corrente necessaria (½ I) su un filo X e metà su un filo Y: solo il nucleo all\'incrocio riceve la corrente piena, supera la soglia e si capovolge. Il filo di lettura (in blu) attraversa tutti i nuclei e raccoglie l\'impulso di quello che cambia verso; un quarto filo, di inibizione, qui non disegnato, impedisce la scrittura quando il bit deve restare 0. Più piani impilati, uno per ogni bit della parola, formano la memoria.',
+        didascalia: '<strong>Un piano di memoria a nuclei di ferrite.</strong> Ogni anellino conserva un bit nel verso della sua magnetizzazione: orario per 1, antiorario per 0. Per scrivere, la macchina manda metà della corrente necessaria (½ I) su un filo X e metà su un filo Y: solo il nucleo all\'incrocio riceve la corrente piena, supera la soglia (la linea rossa tratteggiata nel grafico) e si capovolge. Il filo di lettura (in blu) attraversa tutti i nuclei e raccoglie l\'impulso di quello che cambia verso; un quarto filo, di inibizione, qui non disegnato, impedisce la scrittura quando il bit deve restare 0. Più piani impilati, uno per ogni bit della parola, formano la memoria.',
       },
       {
         tipo: 'nota',
@@ -1168,9 +1167,9 @@
         tipo: 'testo',
         titolo: 'Il sorpasso del silicio: SRAM e DRAM',
         paragrafi: [
-          'Negli anni Sessanta i circuiti integrati (vedi la <a href="../porte-logiche/index.html#integrato">sezione 4</a>) permisero di mettere molti bit di memoria in un solo chip di silicio. Nel 1969 la neonata Intel mise in vendita il suo primo prodotto, il 3101: una SRAM da 64 bit. In una SRAM ogni bit è un piccolo circuito a due stati, un <em>flip-flop</em> (nelle SRAM di oggi di solito sei transistor), che conserva il valore finché c\'è alimentazione: è veloce e non richiede manutenzione, ma occupa spazio.',
+          'Negli anni Sessanta i circuiti integrati (vedi la <a href="../porte-logiche/index.html#integrato">sezione 4</a>) permisero di costruire intere memorie su un chip. Nel 1969 la neonata Intel mise in vendita il suo primo prodotto, il 3101: una SRAM da 64 bit. In una SRAM ogni bit è un piccolo circuito a due stati, un <em>flip-flop</em> (nelle SRAM di oggi di solito sei transistor), che conserva il valore finché c\'è alimentazione: è veloce e non richiede manutenzione, ma occupa spazio.',
           'Nel 1966 Robert Dennard, all\'IBM, ebbe l\'idea che avrebbe cambiato tutto: conservare un bit come carica elettrica in un minuscolo <a href="../elettronica-base/index.html#condensatore">condensatore</a>, comandato da un solo transistor. È la cella della <strong>DRAM</strong>, brevettata nel 1968. Il condensatore però si scarica lentamente, come un secchio bucato: ogni cella va letta e riscritta (<em>rinfrescata</em>) a intervalli regolari, di solito entro 64 millisecondi (32 nelle DDR5). Da qui l\'aggettivo «dinamica».',
-          'Il primo grande successo fu l\'<strong>Intel 1103</strong>, in commercio dall\'ottobre 1970: 1.024 bit in un chip, con celle a tre transistor nate da un progetto con la Honeywell. Costava circa un centesimo per bit, come i nuclei, ma era molto più piccolo: nel 1972 era il chip di memoria più venduto al mondo, e in pochi anni i nuclei uscirono di scena. Le celle a un transistor di Dennard si imposero con la generazione successiva, quella da 4 kbit.',
+          'Il primo grande successo fu l\'<strong>Intel 1103</strong>, in commercio dall\'ottobre 1970: 1.024 bit in un chip, con celle a tre transistor nate da un progetto con la Honeywell. Costava circa un centesimo per bit, come i nuclei, ma era molto più piccolo: nel 1972 era il chip di memoria più venduto al mondo, e in pochi anni i nuclei uscirono di scena. Le celle a un transistor di Dennard si imposero con la generazione successiva, quella da 4.096 bit.',
           'Da allora la SRAM fa da cache, oggi dentro il processore, e la DRAM è la memoria principale. La crescita è stata vertiginosa: un chip DDR5 da 16 gigabit contiene oltre 16 milioni di volte i bit dell\'Intel 1103.',
         ],
       },
@@ -1178,10 +1177,10 @@
         tipo: 'testo',
         titolo: 'Moduli, sincronia e doppia velocità',
         paragrafi: [
-          'Nell\'IBM PC del 1981 la RAM era fatta di chip DRAM inseriti uno per uno negli zoccoli della scheda madre. Alla fine degli anni Ottanta si diffusero i moduli <strong>SIMM</strong> (<em>Single In-line Memory Module</em>): piccole schede con i chip già saldati, da infilare in uno slot. I primi avevano 30 contatti e portavano 8 bit alla volta; negli anni Novanta, con il 486 e il Pentium, si diffusero i SIMM a 72 contatti, da 32 bit.',
+          'Nell\'IBM PC del 1981 la RAM era fatta di chip DRAM inseriti uno per uno negli zoccoli della scheda madre. Alla fine degli anni Ottanta si diffusero i moduli <strong>SIMM</strong> (<em>Single In-line Memory Module</em>): piccole schede con i chip già saldati, da infilare in uno slot. I primi avevano 30 contatti e portavano 8 bit alla volta; negli anni Novanta, con il 486 e il Pentium, arrivarono quelli a 72 contatti, da 32 bit.',
           'Nella seconda metà degli anni Novanta, con i moduli <strong>DIMM</strong> (<em>Dual In-line Memory Module</em>), da 168 contatti e 64 bit, si affermò la <strong>SDRAM</strong> (<em>Synchronous DRAM</em>), che lavora al ritmo del clock del bus invece di rispondere quando è pronta. Intorno al 2000 la <strong>DDR</strong> (<em>Double Data Rate</em>) raddoppiò i trasferimenti sfruttando entrambi i fronti del clock, in salita e in discesa. Seguirono DDR2, DDR3, DDR4 e DDR5 (2020), con tensioni sempre più basse e trasferimenti sempre più rapidi (vedi la tabella).',
           'Ogni modulo DIMM porta anche un piccolo chip, lo SPD (<em>Serial Presence Detect</em>), che all\'accensione comunica alla scheda madre capacità e tempi di risposta attraverso il bus <a href="../../index.html#/bus/smbus">SMBus</a>. Per i portatili esistono moduli compatti (SO-DIMM, da <em>Small Outline</em>), e sempre più spesso la memoria è saldata sulla scheda madre o nello stesso contenitore del processore.',
-          'C\'è però un numero cambiato poco: la <strong>latenza</strong>, cioè il tempo fra la richiesta e l\'arrivo del primo dato. Un chip DRAM di oggi impiega ancora 10–20 nanosecondi per rispondere a un comando di lettura, come venticinque anni fa, e il viaggio completo dal processore alla RAM e ritorno costa un centinaio di nanosecondi. Intanto i processori acceleravano: nel 1995 William Wulf e Sally McKee chiamarono questo divario «muro della memoria» (<em>memory wall</em>). Il rimedio sta dentro il processore: la cache.',
+          'C\'è però un numero cambiato poco: la <strong>latenza</strong>, cioè il tempo fra la richiesta e l\'arrivo del primo dato. Un chip DRAM di oggi impiega ancora 10–20 nanosecondi per rispondere a un comando di lettura, come venticinque anni fa, e l\'andata e ritorno fra processore e RAM costa un centinaio di nanosecondi. Intanto i processori acceleravano: nel 1995 William Wulf e Sally McKee chiamarono questo divario «muro della memoria» (<em>memory wall</em>). Il rimedio sta dentro il processore: la cache.',
         ],
       },
       {
@@ -1196,8 +1195,8 @@
         paragrafi: [
           'Una <strong>cache</strong> è una piccola memoria veloce che conserva da sola le copie dei dati usati più di recente. Il nome viene dal francese <em>cacher</em>, nascondere: i programmi non devono sapere che c\'è. L\'idea fu descritta nel 1965 da Maurice Wilkes, il costruttore dell\'EDSAC, con il nome di <em>slave memory</em> («memoria schiava»). Il primo calcolatore in commercio con una cache fu l\'<strong>IBM System/360 Model 85</strong>, annunciato nel 1968: 16 KB (kilobyte, migliaia di byte) di memoria veloce, fino a 32 in opzione, davanti a una memoria a nuclei molto più lenta.',
           'La cache non lavora a byte singoli ma a <strong>blocchi</strong>, o <em>linee</em>, oggi di solito di 64 byte. Quando un dato manca, dalla RAM arriva tutto il blocco che lo contiene: i vicini sono già pronti, ed è la località spaziale messa a frutto. Ogni riga conserva, oltre ai dati, un\'<em>etichetta</em> (<em>tag</em>) che dice da quale indirizzo vengono. In una cache a <strong>corrispondenza diretta</strong> ogni blocco della RAM può stare in una sola riga, decisa da una parte del suo indirizzo; in una cache <strong>associativa a più vie</strong> può scegliere fra più righe, e quando sono tutte occupate si sostituisce di solito quella usata meno di recente (LRU, <em>Least Recently Used</em>).',
-          'Alla fine degli anni Ottanta le schede madri per l\'Intel 386 più veloci montavano 32 o 64 KB di SRAM accanto al processore. Il 486 (1989) fu il primo processore x86 con la cache nel chip: 8 KB per istruzioni e dati. Il Pentium (1993) la divise in due, 8 KB per le istruzioni e 8 per i dati; il Pentium Pro (1995) mise la cache di secondo livello, la <strong>L2</strong>, nel suo stesso contenitore e alla sua stessa velocità; dalla fine degli anni Novanta la L2 è entrata nel chip.',
-          'Con i processori a più core (unità di calcolo indipendenti nello stesso chip) si è diffusa una cache di terzo livello, la <strong>L3</strong>, condivisa: ogni core ha la sua L1 (32–64 KB per i dati) e la sua L2 (da 1 a 3 MB), poi tutti attingono a una L3 da decine di megabyte. Alcuni processori AMD impilano perfino un secondo strato di SRAM (3D V-Cache) e arrivano a 96 o 128 MB di L3. In un programma ben scritto più del 90 per cento degli accessi trova il dato in L1. Il laboratorio qui sotto mostra perché.',
+          'Alla fine degli anni Ottanta le schede madri per l\'Intel 386 più veloci montavano 32 o 64 KB di SRAM accanto al processore. Il 486 (1989) fu il primo processore x86 (la famiglia nata con l\'8086) con la cache nel chip: 8 KB per istruzioni e dati. Il Pentium (1993) la divise in due, 8 KB per le istruzioni e 8 per i dati; il Pentium Pro (1995) mise la cache di secondo livello, la <strong>L2</strong>, nel suo stesso contenitore e alla sua stessa velocità; dalla fine degli anni Novanta la L2 è entrata nel chip.',
+          'Con i processori a più core (più unità di calcolo nello stesso chip) si è diffusa la <strong>L3</strong>, condivisa: ogni core ha la sua L1 (32–64 KB per i dati) e la sua L2 (da 1 a 3 MB), poi tutti attingono a una L3 da decine di megabyte. Alcuni processori AMD impilano perfino un secondo strato di SRAM (3D V-Cache) e arrivano a 96 o 128 MB di L3. In un programma ben scritto più del 90 per cento degli accessi trova il dato in L1. Il laboratorio qui sotto mostra perché.',
         ],
       },
       { tipo: 'lab' },
@@ -1205,9 +1204,9 @@
         tipo: 'testo',
         titolo: 'Dischi, dischetti e memorie flash',
         paragrafi: [
-          'Sotto la RAM c\'è la memoria di massa, che conserva i dati a computer spento. Il primo disco rigido fu l\'<strong>IBM 350</strong>, parte del sistema RAMAC (<em>Random Access Method of Accounting and Control</em>) annunciato nel 1956: cinquanta piatti da 24 pollici (61 cm) che giravano a 1.200 giri al minuto e contenevano circa 5 milioni di caratteri, cioè circa 3,75 MB. Con il suo compressore d\'aria pesava quasi una tonnellata, si noleggiava, e per trovare un dato impiegava in media meno di un secondo.',
+          'Sotto la RAM c\'è la memoria di massa. Il primo disco rigido fu l\'<strong>IBM 350</strong>, parte del sistema RAMAC (<em>Random Access Method of Accounting and Control</em>) annunciato nel 1956: cinquanta piatti da 24 pollici (61 cm) che giravano a 1.200 giri al minuto e contenevano circa 5 milioni di caratteri, cioè circa 3,75 MB. Con il suo compressore d\'aria pesava quasi una tonnellata, si noleggiava, e per trovare un dato impiegava in media meno di un secondo.',
           'I <strong>dischetti</strong> (<em>floppy disk</em>) misero i dati in tasca: IBM presentò quello da 8 pollici nel 1971 (circa 80 KB), Shugart Associates quello da 5,25 pollici nel 1976, Sony quello da 3,5 pollici, con il guscio rigido, nei primi anni Ottanta. Nel 1980 il Seagate ST-506 portò nei microcomputer il disco rigido da 5,25 pollici, con 5 MB, e nel 1983 il PC/XT dell\'IBM ebbe di serie un disco da 10 MB. A metà degli anni Ottanta arrivò il <strong>CD-ROM</strong> (<em>Compact Disc Read-Only Memory</em>, disco compatto a sola lettura): circa 650 MB letti da un laser.',
-          'Un disco rigido resta però un oggetto meccanico: il braccio deve spostare la testina sulla traccia giusta e aspettare che il settore le passi sotto, e servono millisecondi. La svolta è venuta dalla <strong>memoria flash</strong>, inventata negli anni Ottanta da Fujio Masuoka alla Toshiba: transistor con un elettrodo isolato (<em>floating gate</em>) che intrappola gli elettroni e conserva i bit senza alimentazione. Intorno al 2000 sono nate le <strong>chiavette USB</strong> (dal nome della porta, <em>Universal Serial Bus</em>), le prime da 8 MB; dalla fine degli anni Duemila gli <strong>SSD</strong>, senza parti in movimento, hanno preso il posto dei dischi in molti PC.',
+          'Un disco rigido resta però un oggetto meccanico: per portare la testina sulla traccia giusta e aspettare il settore servono millisecondi. La svolta è venuta dalla <strong>memoria flash</strong>, inventata negli anni Ottanta da Fujio Masuoka alla Toshiba: transistor con un elettrodo isolato (<em>floating gate</em>) che intrappola gli elettroni e conserva i bit senza alimentazione. Intorno al 2000 sono nate le <strong>chiavette USB</strong> (dal nome della porta, <em>Universal Serial Bus</em>), le prime da 8 MB; dalla fine degli anni Duemila gli <strong>SSD</strong>, senza parti in movimento, sono entrati nei PC.',
           'All\'inizio gli SSD usavano la stessa interfaccia dei dischi, il <a href="../../index.html#/bus/sata">SATA</a> (<em>Serial AT Attachment</em>); dal 2011 lo standard <strong>NVMe</strong> (<em>Non-Volatile Memory Express</em>) li collega direttamente alle linee <a href="../../index.html#/bus/pcie">PCI Express</a>, spesso in una schedina M.2 grande come una gomma da masticare. Un SSD NVMe legge un dato in qualche decina di microsecondi, più di cento volte prima di un disco rigido. Oggi un SSD domestico contiene da 1 a 4 TB, quelli per i centri dati superano i 100 TB e i dischi rigidi più grandi i 30 TB: milioni di volte il disco del PC/XT.',
           'Il sistema operativo, infine, usa la RAM libera come cache del disco e, quando la RAM finisce, parcheggia su disco le parti di memoria usate meno di recente: è la <strong>memoria virtuale</strong>, nata nel 1962 con il calcolatore Atlas di Manchester. Ecco perché un computer con poca RAM rallenta tanto: ogni dato che torna dal disco costa al processore l\'equivalente di giorni, o di mesi se il disco è meccanico.',
         ],
@@ -1235,7 +1234,7 @@
           { anno: 1970, nome: 'Intel 1103', luogo: 'Intel, Santa Clara (California)', testo: 'La prima DRAM di successo: 1.024 bit in un chip, celle a tre transistor, circa un centesimo per bit. Nel 1972 è il chip di memoria più venduto al mondo.' },
           { anno: 1971, nome: 'Il dischetto da 8 pollici', luogo: 'IBM, San Jose (California)', testo: 'Un disco flessibile da circa 80 KB, nato per caricare il microcodice dei grandi calcolatori IBM. Seguiranno il 5,25 pollici (1976) e il 3,5 pollici (primi anni Ottanta).' },
           { anno: 1980, nome: 'Seagate ST-506', luogo: 'Seagate, Scotts Valley (California)', testo: 'Il primo disco rigido da 5,25 pollici per microcomputer: 5 MB. La sua interfaccia diventa uno standard dei primi PC.' },
-          { anno: 1989, nome: 'La cache entra nel processore: Intel 486', luogo: 'Intel, Santa Clara (California)', testo: 'Il primo processore x86 con la cache nel chip: 8 KB per istruzioni e dati. Da qui in poi la cache diventa parte del processore.' },
+          { anno: 1984, nome: 'La memoria flash', luogo: 'Toshiba, Giappone', testo: 'Fujio Masuoka e il suo gruppo presentano una memoria che conserva i dati senza alimentazione e si cancella elettricamente a blocchi interi, in un colpo solo: il collega Shoji Ariizumi la chiama «flash», come il lampo di una macchina fotografica. Ne nasceranno chiavette, schede di memoria e SSD.' },
           { anno: 2000, nome: 'Le prime chiavette USB', luogo: 'M-Systems (Israele), Trek 2000 (Singapore) e altri', testo: 'Memoria flash e connettore USB in un oggetto da portachiavi. Fra le prime c\'è il DiskOnKey di M-Systems, venduto da IBM con 8 MB. Nel giro di pochi anni mandano in pensione il dischetto.' },
         ],
       },

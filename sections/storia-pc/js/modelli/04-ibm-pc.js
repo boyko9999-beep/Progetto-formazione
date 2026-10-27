@@ -20,7 +20,7 @@
     {
       id: 'convenzionale', da: 0x00000, a: 0x9FFFF, colore: 'trace-1',
       nome: 'Memoria convenzionale', breve: 'RAM',
-      testo: 'RAM per il sistema operativo e i programmi. All\'inizio ci sono i vettori di interruzione e l\'area dati del BIOS. Il 5150 ne montava da 16 a 64 KB sulla scheda madre; il resto si aggiungeva con le schede di espansione, fino a 640 KB.',
+      testo: 'RAM per il sistema operativo e i programmi. All\'inizio ci sono i vettori di interruzione e l\'area dati del BIOS. Il 5150 ne montava da 16 a 64 KB sulla scheda madre; altra memoria si aggiungeva con le schede di espansione, e la mappa le lasciava spazio fino a 640 KB.',
     },
     {
       id: 'video', da: 0xA0000, a: 0xBFFFF, colore: 'trace-3',
@@ -53,7 +53,7 @@
       testo: '256 indirizzi da 4 byte (segmento e offset): per ogni interruzione dicono al processore dove si trova il programma che la gestisce.' },
     { id: 'bda', regione: 'convenzionale', da: 0x00400, a: 0x004FF, usata: true, nome: 'Area dati del BIOS', breve: 'Dati BIOS',
       testo: 'Le variabili del BIOS: le porte installate, la modalità video, il buffer della tastiera, il contatore dell\'orologio.' },
-    { id: 'programmi', regione: 'convenzionale', da: 0x00500, a: 0x9FFFF, usata: true, nome: 'DOS e programmi', breve: 'DOS e programmi',
+    { id: 'programmi', regione: 'convenzionale', da: 0x00500, a: 0x9FFFF, usata: true, nome: 'DOS e programmi', breve: 'Programmi',
       testo: 'Qui si caricano il DOS, i programmi e i loro dati. Sul 5150 la RAM vera arrivava fin dove c\'erano chip: 16 KB nel modello base.' },
     { id: 'ega', regione: 'video', da: 0xA0000, a: 0xAFFFF, usata: false, nome: 'Riservata (poi EGA e VGA)', breve: 'EGA e VGA',
       testo: 'Vuota sul 5150: dal 1984 la userà la grafica della scheda EGA, poi quella della VGA.' },
@@ -190,7 +190,7 @@
       testo: 'Accanto al processore c\'è uno zoccolo vuoto: aspetta l\'Intel 8087, un coprocessore matematico che calcola in hardware con i numeri con la virgola (in virgola mobile). Si comprava a parte e serviva a chi usava fogli elettronici pesanti o programmi scientifici e di progettazione.',
       dati: [['Piedini', '40'], ['Calcola', 'virgola mobile a 32, 64 e 80 bit'], ['Prezzo', 'a parte, come opzione']] },
     { id: 'bios', nome: 'ROM del BIOS', gruppo: 'Firmware', mappa: 'reset',
-      testo: 'Una ROM da 8 KB con il BIOS. All\'accensione esegue il POST (<em>power-on self test</em>, l\'autodiagnosi) e poi carica il sistema operativo dal dischetto; dopo resta a disposizione dei programmi per tastiera, schermo, dischetti e stampante. Era l\'unico pezzo del PC protetto dal diritto d\'autore.',
+      testo: 'Una ROM da 8 KB con il BIOS. All\'accensione esegue il POST (<em>power-on self test</em>, l\'autodiagnosi) e poi carica il sistema operativo dal dischetto; dopo resta a disposizione dei programmi per tastiera, schermo, dischetti e stampante. Protetto dal diritto d\'autore, era il pezzo che i costruttori di cloni dovevano riscrivere da capo.',
       dati: [['Capacità', '8 KB'], ['Indirizzi', 'FE000–FFFFF'], ['Avvio', 'da FFFF0, con un salto al POST']] },
     { id: 'basic', nome: 'ROM del BASIC', gruppo: 'Linguaggio in ROM', mappa: 'basic',
       testo: 'Quattro ROM da 8 KB contengono il BASIC di Microsoft. Se all\'accensione non trova un dischetto il PC parte da qui: compare il BASIC e si può scrivere subito un programma, da salvare sulla cassetta. I cloni non potevano copiarlo e davano il BASIC su dischetto.',
@@ -214,7 +214,7 @@
       testo: 'Due drive Tandon da 5,25 pollici a una sola faccia: 40 tracce di 8 settori da 512 byte, cioè 160 KB per dischetto con il DOS 1.0. Dal 1982, con il DOS 1.1 e i drive a due facce, si arriverà a 320 KB; dal 1983, con il DOS 2.0, a 360 KB.',
       dati: [['Formato', '5,25 pollici'], ['Capacità', '160 KB, una faccia'], ['Tracce', '40 da 8 settori']] },
     { id: 'speaker', nome: 'Altoparlante', gruppo: 'Suono',
-      testo: 'Un piccolo altoparlante comandato dal timer 8253: produce solo onde quadre, cioè bip di altezza variabile. Un bip breve all\'accensione vuol dire che l\'autodiagnosi è andata bene; sequenze diverse segnalano un guasto.',
+      testo: 'Un piccolo altoparlante comandato dal timer 8253: riceve un\'onda quadra e produce bip di altezza variabile. Un bip breve all\'accensione vuol dire che l\'autodiagnosi è andata bene; sequenze diverse segnalano un guasto.',
       dati: [['Segnale', 'onda quadra'], ['Comandato da', '8253, canale 2'], ['All\'avvio', 'un bip breve se va tutto bene']] },
     { id: 'pit', nome: 'Timer 8253', gruppo: 'Chip di supporto',
       testo: 'Tre contatori che dividono un clock di 1,19 MHz. Il canale 0 produce 18,2 interruzioni al secondo, con cui il BIOS tiene l\'ora; il canale 1 ricorda al DMA di rinfrescare la memoria dinamica; il canale 2 fa suonare l\'altoparlante.',
@@ -229,7 +229,7 @@
       testo: 'Un chip con tre porte da 8 bit che fa da tuttofare: legge i codici dei tasti, legge gli interruttori DIP con cui si dichiarano memoria, scheda video e numero di drive (non esisteva ancora un programma di configurazione) e comanda altoparlante e motore del registratore.',
       dati: [['Porte', '3 da 8 bit'], ['Legge', 'tastiera e interruttori'], ['Comanda', 'altoparlante, registratore']] },
     { id: 'din', nome: 'Prese tastiera e cassette', gruppo: 'Connettori',
-      testo: 'Due prese DIN rotonde a 5 poli sul retro. Nella prima entra il cavo spiralato della tastiera Model F, che invia i codici dei tasti un bit alla volta. Nella seconda si collega un comune registratore a cassette: il PC registra i programmi come suoni, lentamente e con poca affidabilità.',
+      testo: 'Due prese DIN rotonde a 5 poli sul retro. Nella prima entra il cavo spiralato della tastiera Model F, che invia i codici dei tasti un bit alla volta. Nella seconda si collega un comune registratore a cassette: il PC registra i programmi come suoni, lentamente.',
       dati: [['Tastiera', 'Model F, 83 tasti'], ['Cassette', 'presa DIN a 5 poli'], ['Uso', 'programmi del BASIC']] },
   ];
 
