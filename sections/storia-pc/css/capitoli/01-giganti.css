@@ -103,6 +103,8 @@
 .gig-freccia[aria-disabled="true"] { opacity: .4; cursor: default; }
 .gig-freccia[aria-disabled="true"]:hover { color: var(--scope-text); border-color: var(--scope-grid); }
 .gig-tour { min-width: 12.5em; }
+.gig-tour-icona { font-size: .8em; }
+.gig-lab .gig-tour.in-corso { background: var(--trace-3); }
 
 /* palco */
 .gig-palco-box { position: relative; border-radius: 12px; overflow: hidden; border: 1px solid var(--scope-grid); background: var(--scope-bg); }
@@ -213,6 +215,8 @@
 .gig-quota { transition: opacity var(--dur-fast) var(--ease-smooth); }
 .gig-quota-linea { fill: none; stroke: var(--trace-2); stroke-width: 1.5; }
 .gig-quota-testo { fill: var(--trace-2); font: 700 12px var(--mono); text-anchor: middle; }
+.gig-largh-linea { fill: none; stroke: var(--trace-3); stroke-width: 1.5; }
+.gig-largh-testo { fill: var(--trace-3); font: 700 12px var(--mono); }
 .gig-et-nome { fill: #fff; font: 800 13.5px var(--font); }
 .gig-et-misura { fill: var(--scope-text); font: 600 12px var(--mono); }
 .gig-et-linea { fill: none; stroke: rgba(255, 255, 255, .35); stroke-width: 1; stroke-dasharray: 2 3; }
@@ -266,14 +270,26 @@
 /* schermi stretti */
 @media (max-width: 760px) {
   .gig-pannelli { grid-template-columns: minmax(0, 1fr); }
-  .gig-epoche { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  /* due righe piene: quattro epoche sopra, tre più larghe sotto (c'è posto per «Smartphone» anche a 360 px) */
+  .gig-epoche { grid-template-columns: repeat(12, minmax(0, 1fr)); }
+  .gig-epoche > button { grid-column: span 3; }
+  .gig-epoche > button:nth-child(n + 5) { grid-column: span 4; }
   .gig-nota { min-height: 0; }
 }
-@media (max-width: 480px) {
+@media (max-width: 640px) {
+  /* frecce e cursore in una riga, il viaggio nel tempo sotto, largo quanto il laboratorio */
+  .gig-cursore { flex-basis: 120px; }
   .gig-tour { flex: 1 1 100%; }
+}
+@media (max-width: 480px) {
   .gig-cursore span { display: none; }
   .gig-suggerimento { font-size: .8rem; }
   .gig-kv { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (max-width: 350px) {
+  .gig-lab .gig-epoche button { padding: 4px 2px; }
+  .gig-epoca-nome { font-size: .76rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -67,11 +67,11 @@
     { anno: 1988, id: 'inizio', titolo: 'Ogni funzione ha il suo chip',
       esempio: 'un PC con Intel 386 e coprocessore 387',
       cambi: [], evidenzia: [],
-      testo: 'Sulla scheda madre ci sono dieci pezzi principali: il processore, il coprocessore matematico in uno zoccolo accanto, i chip della cache, i due chip del chipset (che negli anni Novanta si chiameranno ponte nord e ponte sud), i moduli di RAM e quattro schede di espansione per video, audio, rete e modem. Molti PC dei primi anni Novanta erano ancora fatti così, e i dati correvano su piste di rame lunghe decine di centimetri.' },
+      testo: 'Sulla scheda madre ci sono dieci pezzi principali: il processore, il coprocessore matematico in uno zoccolo accanto, i chip della cache, il chipset (qui ridotto a due chip, che negli anni Novanta si chiameranno ponte nord e ponte sud), i moduli di RAM e quattro schede di espansione per video, audio, rete e modem. Molti PC dei primi anni Novanta erano ancora fatti così, e i dati correvano su piste di rame lunghe decine di centimetri.' },
     { anno: 1989, id: 'fpu', titolo: 'La matematica entra nel processore',
       esempio: 'Intel 486DX (aprile 1989)',
       cambi: [{ id: 'fpu', dove: 'die' }], evidenzia: ['fpu'],
-      testo: 'Il 486DX contiene sullo stesso pezzo di silicio l\'unità per i numeri con la virgola (FPU, floating point unit) e 8 KB di cache: lo zoccolo del coprocessore non serve più. Il 486SX del 1991, più economico, ne era privo.' },
+      testo: 'Il 486DX contiene sullo stesso pezzo di silicio l\'unità per i numeri con la virgola (FPU, floating point unit) e 8 KB di cache: lo zoccolo del coprocessore non serve più. Il 486SX del 1991, più economico, aveva l\'FPU disattivata.' },
     { anno: 1995, id: 'l2-package', titolo: 'La cache di secondo livello nel package',
       esempio: 'Intel Pentium Pro (novembre 1995)',
       cambi: [{ id: 'cache', dove: 'package' }], evidenzia: ['cache'],
@@ -79,7 +79,7 @@
     { anno: 1999, id: 'l2-die', titolo: 'La cache L2 sullo stesso die',
       esempio: 'AMD K6-III e Intel Pentium III «Coppermine» (1999)',
       cambi: [{ id: 'cache', dove: 'die' }], evidenzia: ['cache'],
-      testo: 'Con transistor sempre più piccoli la cache L2 trova posto sullo stesso pezzo di silicio del processore, il die: è più veloce, si monta più facilmente e consuma meno.' },
+      testo: 'Con transistor sempre più piccoli la cache L2 trova posto sullo stesso pezzo di silicio del processore, il die: è più veloce e costa meno da montare. Il primo era stato l\'economico Celeron «Mendocino» (1998); intanto il Pentium II (1997) aveva spostato la cache su una piccola scheda dentro la sua cartuccia, a metà velocità.' },
     { anno: 2000, id: 'chipset', titolo: 'Audio, modem e rete passano nel chipset',
       esempio: 'chipset Intel 810 con ICH (1999) e ICH2 (2000)',
       cambi: [{ id: 'audio', dove: 'sud' }, { id: 'modem', dove: 'sud' }, { id: 'rete', dove: 'sud' }], evidenzia: ['sud'],
@@ -95,9 +95,9 @@
     { anno: 2010, id: 'gpu-package', titolo: 'La grafica entra nel package',
       esempio: 'Intel Core «Clarkdale» e «Arrandale» (gennaio 2010)',
       cambi: [{ id: 'video', dove: 'package' }], evidenzia: ['video'],
-      testo: 'Accanto al processore, nello stesso contenitore, arriva un secondo pezzo di silicio con la grafica. Per i giochi più pesanti serve ancora una scheda video, ma per lavorare, navigare e guardare film basta quella integrata. Molti PC economici avevano già la grafica nel chipset, fin dal 1999.' },
+      testo: 'Accanto al processore, nello stesso contenitore, arriva un secondo pezzo di silicio con la grafica. Per i giochi più pesanti serve ancora una scheda video, ma per lavorare, navigare e guardare film basta quella integrata. Molti PC economici avevano già la grafica nel chipset, fin dalla fine degli anni Novanta.' },
     { anno: 2011, id: 'gpu-die', titolo: 'Processore e grafica sullo stesso die',
-      esempio: 'Intel «Sandy Bridge» (gennaio 2011) e AMD «Llano» (giugno 2011)',
+      esempio: 'Intel «Sandy Bridge» e le prime APU di AMD (2011)',
       cambi: [{ id: 'video', dove: 'die' }], evidenzia: ['video'],
       testo: 'CPU e GPU (graphics processing unit) condividono lo stesso silicio e una parte della cache. AMD chiama questi chip APU, accelerated processing unit.' },
     { anno: 2013, id: 'pch-package', titolo: 'Il chipset entra nel package',
@@ -223,7 +223,7 @@
     { id: 'osborne', nome: 'Osborne 1', anno: 1981,
       massaKg: 11.1, spessoreCm: 22.9, autonomiaOre: 0, transistor: 8500,
       processore: 'Zilog Z80A a 4 MHz (8 bit)',
-      dettagli: { massa: '24,5 libbre, con due unità per dischetti e lo schermo da 5 pollici', spessore: 'alto 9 pollici: è il suo lato più corto', autonomia: 'nessuna batteria interna: si collegava alla presa', transistor: 'circa 8.500 transistor nello Z80' } },
+      dettagli: { massa: '24,5 libbre, con due unità per dischetti e lo schermo da 5 pollici', spessore: 'alto 9 pollici: è il suo lato più corto', autonomia: 'nessuna batteria interna; un pacco esterno opzionale dava circa un\'ora', transistor: 'circa 8.500 transistor nello Z80' } },
     { id: 'air', nome: 'MacBook Air', anno: 2008,
       massaKg: 1.36, spessoreCm: 1.94, autonomiaOre: 5, transistor: 291e6,
       processore: 'Intel Core 2 Duo a 1,6 GHz (2 core)',
@@ -239,8 +239,8 @@
       spiega: 'La massa scende di quasi sessanta volte: l\'Osborne si portava con la maniglia, il telefono sta in una tasca.' },
     { id: 'spessore', nome: 'Spessore', campo: 'spessoreCm', unita: 'cm', scala: 'lineare',
       spiega: 'Spessore del lato più corto, a computer chiuso. Ventotto telefoni impilati sono alti quanto un Osborne 1.' },
-    { id: 'autonomia', nome: 'Autonomia', campo: 'autonomiaOre', unita: 'ore', scala: 'lineare',
-      spiega: 'Ore di funzionamento a batteria dichiarate dal costruttore, con usi diversi: valgono come ordine di grandezza. L\'Osborne 1 non aveva una batteria interna.' },
+    { id: 'autonomia', nome: 'Autonomia', campo: 'autonomiaOre', unita: 'ore', scala: 'lineare', max: 24,
+      spiega: 'Ore di funzionamento a batteria dichiarate dal costruttore, con usi diversi: valgono come ordine di grandezza. La barra intera è un giorno, 24 ore. L\'Osborne 1 non aveva una batteria interna.' },
     { id: 'transistor', nome: 'Transistor', campo: 'transistor', unita: 'transistor', scala: 'log', min: 1e3, max: 1e11,
       spiega: 'Transistor nel processore principale, su scala logaritmica: ogni tacca vale dieci volte la precedente. Non misurano la velocità, ma danno un\'idea di quanto lavoro il chip può fare.' },
   ];
@@ -249,8 +249,8 @@
     return METRICHE.find((m) => m.id === id) || null;
   }
 
-  // Frazione (0-1) della barra per un valore, su scala lineare (rispetto al massimo)
-  // o logaritmica (fra min e max della metrica).
+  // Frazione (0-1) della barra per un valore, su scala lineare (rispetto al massimo della
+  // metrica, o al più grande dei tre valori) o logaritmica (fra min e max della metrica).
   function frazione(m, valore) {
     const met = typeof m === 'string' ? metrica(m) : m;
     if (!met || !(valore > 0)) return 0;
@@ -258,7 +258,7 @@
       const lo = Math.log10(met.min), hi = Math.log10(met.max);
       return Math.min(1, Math.max(0, (Math.log10(valore) - lo) / (hi - lo)));
     }
-    const max = Math.max(...PORTATILI.map((p) => p[met.campo]));
+    const max = met.max || Math.max(...PORTATILI.map((p) => p[met.campo]));
     return Math.min(1, Math.max(0, valore / max));
   }
 

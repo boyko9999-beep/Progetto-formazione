@@ -42,6 +42,12 @@ test('i dati sono plausibili: valori positivi, intervalli ordinati, testi con le
     assert.ok(sc.scatola.w > 0 && sc.scatola.h > 0 && sc.vicino.w > 0 && sc.vicino.h > 0, m.id + ': scena senza misure');
     assert.ok(sc.personaX + M.LARGHEZZA_PERSONA / 2 < Math.min(sc.scatola.x, sc.scrivania ? M.SCRIVANIA.x : Infinity), m.id + ': la persona si sovrappone alla macchina');
     if (sc.scrivania) assert.ok(vicino(sc.scatola.y, M.SCRIVANIA.altezza), m.id + ': deve stare sopra la scrivania');
+    // la quota sul pavimento misura un pezzo della macchina, solo per le macchine a terra
+    if (sc.quota) {
+      assert.ok(!sc.scrivania && sc.quota.w > 0, m.id + ': quota non valida');
+      assert.ok(sc.quota.x >= sc.scatola.x - 1e-9 && sc.quota.x + sc.quota.w <= sc.scatola.x + sc.scatola.w + 1e-9, m.id + ': la quota esce dalla macchina');
+      assert.ok(sc.quota.testo.includes(M.testoLunghezza(sc.quota.w)), m.id + ': testo della quota diverso dalla misura');
+    }
   }
   // le cifre dei testi coincidono con i valori
   const eniac = M.trova('eniac');
@@ -105,9 +111,14 @@ test('confronti con l\'ENIAC: rapporti e frasi', () => {
   assert.strictEqual(M.fraseRapporto('ops', tel.ops, M.RIFERIMENTO.ops), '20 milioni di volte più veloce');
   assert.strictEqual(M.fraseRapporto('massa', tel.massa, M.RIFERIMENTO.massa), '140.000 volte più leggero');
   assert.strictEqual(M.fraseRapporto('potenza', tel.potenza, M.RIFERIMENTO.potenza), 'consuma 30.000 volte meno');
-  assert.strictEqual(M.fraseRapporto('superficie', tel.superficie, M.RIFERIMENTO.superficie), 'occupa 15.000 volte meno spazio');
+  // la sala dell'ENIAC è un intervallo (140-167 m²): il confronto usa la media geometrica, circa 153 m²
+  assert.strictEqual(M.fraseRapporto('superficie', tel.superficie, M.RIFERIMENTO.superficie), 'occupa 14.000 volte meno spazio');
+  assert.ok(vicino(M.rappresentativo(M.RIFERIMENTO.superficie), Math.sqrt(140 * 167)));
   // l'UNIVAC I era più lento dell'ENIAC nelle somme semplici
   assert.strictEqual(M.fraseRapporto('ops', univac.ops, M.RIFERIMENTO.ops), '2,6 volte più lento');
+  // differenze piccole a parole, niente "1,2 volte meno"
+  assert.strictEqual(M.fraseRapporto('potenza', univac.potenza, M.RIFERIMENTO.potenza), 'consuma un po\' meno');
+  assert.strictEqual(M.fraseRapporto('ops', { val: 6500 }, M.RIFERIMENTO.ops), 'un po\' più veloce');
   // per gli intervalli la frase dà entrambi gli estremi
   assert.strictEqual(M.fraseRapporto('massa', univac.massa, M.RIFERIMENTO.massa), 'da 2,1 a 3,6 volte più leggero');
   assert.strictEqual(M.fraseRapporto('ops', M.RIFERIMENTO.ops, M.RIFERIMENTO.ops), 'è il termine di paragone');

@@ -229,6 +229,28 @@ test('disposizioni: ogni nodo ha un posto dentro il disegno, ogni collegamento l
   });
 });
 
+test('schema stretto (telefono): le etichette con posizione fissa restano dentro il disegno', () => {
+  const d = M.DISPOSIZIONI.stretta;
+  // A 360 px il testo dello schema è di circa 13,2 unità; un carattere monospaziato è largo circa 0,6 em.
+  const car = 0.6 * 13.2;
+  let viste = 0;
+  Object.keys(d.epoche).forEach((ep) => {
+    Object.entries(d.epoche[ep].link).forEach(([id, spec]) => {
+      if (!spec.et) return;
+      const l = M.collegamento(ep, id);
+      if (!l || !l.sigla) return;
+      const banda = l.zeroCopia ? 'nessuna copia' : (l.stima ? '≈ ' : '') + M.formattaBanda(l.banda);
+      const righe = spec.et.riga ? [l.sigla + ' · ' + banda] : [l.sigla, banda];
+      const w = Math.max(...righe.map((r) => r.length)) * car;
+      const x0 = spec.et.a === 'end' ? spec.et.x - w : (spec.et.a === 'middle' ? spec.et.x - w / 2 : spec.et.x);
+      assert.ok(x0 >= 0 && x0 + w <= d.w, ep + ' ' + id + ': etichetta fuori dal disegno (' + x0.toFixed(0) + '–' + (x0 + w).toFixed(0) + ')');
+      assert.ok(spec.et.y > 10 && spec.et.y < d.h - 4, ep + ' ' + id + ': etichetta troppo in alto o in basso');
+      viste++;
+    });
+  });
+  assert.ok(viste >= 15, 'etichette controllate: ' + viste);
+});
+
 test('geometria: ancore, percorsi ad angolo retto, lunghezze e punti', () => {
   const G = M.geometria;
   const box = { x: 10, y: 20, w: 100, h: 40 };

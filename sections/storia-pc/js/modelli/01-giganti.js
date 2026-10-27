@@ -12,9 +12,10 @@
  *
  * Fonti dei numeri (controllate nell'ottobre 2026):
  *  - ENIAC: 17.468 valvole, circa 27 t (30 tonnellate corte), circa 150 kW (altre fonti
- *    fino a 174 kW), 1.800 piedi quadrati (167 m²), 40 pannelli a U lungo tre pareti di
- *    una sala di 15 × 9 m, circa 2,4 × 0,9 × 30 m, 5.000 addizioni al secondo,
- *    costo circa 487.000 dollari (Università della Pennsylvania, IEEE).
+ *    fino a 174 kW), 40 pannelli a U lungo tre pareti, circa 2,4 × 0,9 × 30 m,
+ *    5.000 addizioni al secondo, costo circa 487.000 dollari (Università della
+ *    Pennsylvania, IEEE). La sala: circa 30 × 50 piedi, cioè 1.500 piedi quadrati
+ *    (Smithsonian), oppure 1.800 piedi quadrati (molte altre fonti): da circa 140 a 167 m².
  *  - UNIVAC I: circa 5.200 valvole, 29.000 libbre (13 t) per il sistema completo,
  *    7,6 t secondo altre fonti, 125 kW, 1.905 operazioni al secondo, oltre 35,5 m²,
  *    unità centrale 4,3 × 2,4 × 2,6 m, da 1,25 a 1,5 milioni di dollari, 46 esemplari.
@@ -55,7 +56,8 @@
    *   personaX  centro della persona;
    *   scatola   ingombro della macchina (sulla scrivania, se scrivania è vero);
    *   vicino    zona da inquadrare «da vicino»;
-   *   piccola   la telecamera, dopo aver mostrato la persona, si avvicina da sola.
+   *   piccola   la telecamera, dopo aver mostrato la persona, si avvicina da sola;
+ *   quota     larghezza da misurare sul pavimento, sotto la macchina (solo per le macchine a terra).
    */
   const MACCHINE = [
     {
@@ -70,14 +72,15 @@
       ops: { val: 5000, testo: 'circa 5.000 addizioni al secondo' },
       massa: { val: 27000, testo: 'circa 27 t' },
       potenza: { val: 150000, testo: 'circa 150 kW' },
-      superficie: { val: 167, testo: 'circa 167 m² (una sala di 15 × 9 m)' },
+      superficie: { min: 140, max: 167, testo: 'da circa 140 a 167 m² secondo le fonti (una sala di circa 9 × 15 m)' },
       scena: {
         personaX: -1.1,
         scatola: { x: 0, y: 0, w: 30, h: 2.4 },
         vicino: { x: 12, y: 0, w: 6, h: 2.4 },
         misura: '40 pannelli messi in fila: circa 30 m',
+        quota: { x: 0, w: 30, testo: 'circa 30 m' },
       },
-      racconto: '<strong>ENIAC, 1946.</strong> I suoi 40 pannelli stavano a U lungo tre pareti di una sala di 15 × 9 metri: qui li vedi messi in fila, una parete lunga circa 30 m e alta 2,4. Dentro c\'erano 17.468 valvole accese come lampadine. Per cambiare programma si ricollegavano a mano cavi e commutatori.',
+      racconto: '<strong>ENIAC, 1946.</strong> I suoi 40 pannelli stavano a U lungo tre pareti di una sala di circa 9 × 15 metri: qui li vedi messi in fila, una parete lunga circa 30 m e alta 2,4. Dentro c\'erano 17.468 valvole accese come lampadine. Per cambiare programma si ricollegavano a mano cavi e commutatori.',
     },
     {
       id: 'univac',
@@ -97,6 +100,7 @@
         scatola: { x: 0, y: 0, w: 7.5, h: 2.6 },
         vicino: { x: 1.9, y: 0, w: 5.7, h: 2.6 },
         misura: 'unità centrale: circa 4,3 × 2,6 m',
+        quota: { x: 2.0, w: 4.3, testo: '4,3 m' },
         indicativa: 'console e unità a nastro sono indicative',
       },
       racconto: '<strong>UNIVAC I, 1951.</strong> L\'unità centrale da sola è grande come una stanzetta, eppure nelle somme semplici è più lenta dell\'ENIAC: circa 1.900 operazioni al secondo contro 5.000. Ma il programma sta in memoria e i dati arrivano da nastri magnetici: il computer diventa un prodotto da comprare, non un esperimento da costruire.',
@@ -141,6 +145,7 @@
         scatola: { x: 0, y: 0, w: 0.61, h: 1.57 },
         vicino: { x: 0, y: 1.0, w: 0.61, h: 0.57 },
         misura: 'armadio alto circa 1,57 m',
+        quota: { x: 0, w: 0.61, testo: '61 cm' },
       },
       racconto: '<strong>PDP-8, 1965.</strong> Il primo minicomputer di successo: un armadio grande come un piccolo frigorifero, da circa 18.000 dollari. Un laboratorio poteva averne uno tutto per sé, senza fare la fila al centro di calcolo. Nelle addizioni è già quasi 70 volte più veloce dell\'ENIAC. La sua massa non ha una fonte affidabile, quindi qui manca.',
     },
@@ -152,7 +157,7 @@
       luogo: 'IBM, Boca Raton (Florida)',
       tecnologia: 'microprocessore Intel 8088 a 4,77 MHz',
       prezzo: 'da 1.565 dollari (senza dischi né monitor)',
-      diffusione: 'il capostipite di centinaia di milioni di PC compatibili',
+      diffusione: 'il capostipite dei PC compatibili, venduti a miliardi',
       ops: { val: 330000, testo: 'circa 330.000 istruzioni al secondo' },
       massa: { val: 20.4, testo: 'circa 20 kg (unità centrale con due floppy e monitor)' },
       potenza: { val: 63.5, testo: '63,5 W, il massimo dell\'alimentatore' },
@@ -164,7 +169,7 @@
         vicino: { x: 0.33, y: 0.75, w: 0.51, h: 0.44 },
         misura: 'unità centrale larga 51 cm',
       },
-      racconto: '<strong>IBM PC, 1981.</strong> Il computer arriva sulla scrivania: con il monitor pesa circa 20 kg e il suo alimentatore eroga al massimo 63,5 W, quanto una lampadina di allora. Esegue circa 330.000 istruzioni al secondo, come un PDP-8, ma costa più di dieci volte meno. Lo racconta il capitolo 4.',
+      racconto: '<strong>IBM PC, 1981.</strong> Il computer arriva sulla scrivania: con il monitor pesa circa 20 kg e il suo alimentatore eroga al massimo 63,5 W, quanto una lampadina di allora. Esegue circa 330.000 istruzioni al secondo, come un PDP-8, ma costa meno di un decimo. Lo racconta il capitolo 4.',
     },
     {
       id: 'portatile',
@@ -174,7 +179,7 @@
       luogo: 'ovunque',
       tecnologia: 'un sistema su chip con miliardi di transistor',
       prezzo: 'circa 1.000 dollari (fascia media)',
-      diffusione: 'centinaia di milioni venduti ogni anno',
+      diffusione: 'oltre 150 milioni venduti ogni anno',
       ops: { val: 2e11, testo: 'circa 200 miliardi di operazioni al secondo (stima, solo processore)' },
       massa: { val: 1.3, testo: 'circa 1,3 kg' },
       potenza: { val: 30, testo: 'circa 30 W sotto sforzo, pochi watt a riposo' },
@@ -187,7 +192,7 @@
         vicino: { x: 0.5, y: 0.75, w: 0.3, h: 0.215 },
         misura: 'largo circa 30 cm',
       },
-      racconto: '<strong>Un portatile di oggi.</strong> Circa 1,3 kg e una trentina di watt sotto sforzo. Il processore ha più nuclei di calcolo (core) che lavorano insieme e fa centinaia di miliardi di operazioni al secondo: circa 40 milioni di volte l\'ENIAC, su una superficie circa 2.700 volte più piccola.',
+      racconto: '<strong>Un portatile di oggi.</strong> Circa 1,3 kg e una trentina di watt sotto sforzo. Il processore ha più nuclei di calcolo (core) che lavorano insieme e fa centinaia di miliardi di operazioni al secondo: circa 40 milioni di volte l\'ENIAC, su una superficie migliaia di volte più piccola.',
     },
     {
       id: 'smartphone',
@@ -317,7 +322,8 @@
     return a / b;
   }
 
-  // Frase del confronto: "20 milioni di volte più veloce", "da 2,1 a 3,6 volte più leggero".
+  // Frase del confronto: "20 milioni di volte più veloce", "da 2,1 a 3,6 volte più leggero";
+  // sotto 1,5 volte "un po' più lento", "consuma un po' meno" (meglio di "1,2 volte meno").
   function fraseRapporto(chiave, v, rif) {
     if (!v || !rif) return null;
     const g = GRANDEZZE[chiave];
@@ -330,6 +336,7 @@
     const piu = lo > 1;
     const a = piu ? lo : 1 / hi;
     const b = piu ? hi : 1 / lo;
+    if (b < 1.5) return g.prima + 'un po\' ' + (piu ? g.piu : g.meno);
     const quante = (Math.abs(a - b) / b < 0.02) ? volte(a) : 'da ' + grande(a) + ' a ' + volte(b);
     return g.prima + quante + ' ' + (piu ? g.piu : g.meno);
   }

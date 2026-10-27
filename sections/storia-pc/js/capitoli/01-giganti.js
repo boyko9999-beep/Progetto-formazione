@@ -365,13 +365,20 @@
     /* ----- comandi ----- */
 
     const bottoni = M.MACCHINE.map((m, i) => h('button', { type: 'button', class: 'gig-epoca', 'aria-pressed': 'false', onclick: () => { fermaTour(); scegli(i); } },
-      h('span', { class: 'gig-epoca-anno' }, m.epoca), h('span', { class: 'gig-epoca-nome' }, m.nome)));
+      h('span', { class: 'gig-epoca-anno' }, m.epoca), ' ', h('span', { class: 'gig-epoca-nome' }, m.nome)));
     const epoche = h('div', { class: 'lab-seg gig-epoche', role: 'group', 'aria-label': 'Scegli la macchina' }, bottoni);
-    const cursore = h('input', { type: 'range', min: '0', max: String(N - 1), step: '1', value: '0', id: id + '-cursore',
+    // aria-label: sui telefoni la scritta «Epoca» dell'etichetta è nascosta
+    const cursore = h('input', { type: 'range', min: '0', max: String(N - 1), step: '1', value: '0', id: id + '-cursore', 'aria-label': 'Epoca',
       oninput: (e) => { fermaTour(); scegli(Number(e.target.value)); } });
     const prec = h('button', { type: 'button', class: 'lab-btn gig-freccia', 'aria-label': 'Macchina precedente', onclick: () => { if (st.i > 0) { fermaTour(); scegli(st.i - 1); } } }, '←');
     const succ = h('button', { type: 'button', class: 'lab-btn gig-freccia', 'aria-label': 'Macchina successiva', onclick: () => { if (st.i < N - 1) { fermaTour(); scegli(st.i + 1); } } }, '→');
-    const tour = h('button', { type: 'button', class: 'lab-btn primary gig-tour', 'aria-pressed': 'false', onclick: () => (st.tour ? fermaTour(true) : avviaTour()) }, '▶ Viaggio nel tempo');
+    // pulsante avvia/ferma: cambia la scritta (non è un interruttore con aria-pressed); l'icona è decorativa
+    const tour = h('button', { type: 'button', class: 'lab-btn primary gig-tour', onclick: () => (st.tour ? fermaTour() : avviaTour()) });
+    function scrittaTour(inCorso) {
+      tour.classList.toggle('in-corso', inCorso);
+      tour.replaceChildren(h('span', { class: 'gig-tour-icona', 'aria-hidden': 'true' }, inCorso ? '❚❚' : '▶'), inCorso ? 'Ferma il viaggio' : 'Viaggio nel tempo');
+    }
+    scrittaTour(false);
     const btnLargo = h('button', { type: 'button', 'aria-pressed': 'true', onclick: () => { fermaTour(); inquadra('largo'); } }, 'Con la persona');
     const btnVicino = h('button', { type: 'button', 'aria-pressed': 'false', onclick: () => { fermaTour(); inquadra('vicino'); } }, 'Da vicino');
 
@@ -401,6 +408,10 @@
     const quotaLinea = s('path', { class: 'gig-quota-linea' });
     const quotaTesto = s('text', { class: 'gig-quota-testo' }, '1,75 m');
     const quota = s('g', { class: 'gig-quota' }, quotaLinea, quotaTesto);
+    // quota orizzontale sul pavimento: quanto è larga la macchina (ENIAC, UNIVAC I, PDP-8)
+    const larghLinea = s('path', { class: 'gig-largh-linea' });
+    const larghTesto = s('text', { class: 'gig-largh-testo', 'text-anchor': 'middle' });
+    const larghezza = s('g', { class: 'gig-quota' }, larghLinea, larghTesto);
     const etNome = s('text', { class: 'gig-et-nome', 'text-anchor': 'middle' });
     const etMisura = s('text', { class: 'gig-et-misura', 'text-anchor': 'middle' });
     const etLinea = s('path', { class: 'gig-et-linea' });
@@ -408,7 +419,7 @@
     const scalaBarra = s('path', { class: 'gig-scala-barra' });
     const scalaTesto = s('text', { class: 'gig-scala-testo' });
     const campo = s('text', { class: 'gig-campo' });
-    svg.append(defs, sfondo, grFine, grGrossa, anno, terra, lineaTerra, mondo, quota, etichetta, s('g', null, scalaBarra, scalaTesto), campo);
+    svg.append(defs, sfondo, grFine, grGrossa, anno, terra, lineaTerra, mondo, quota, larghezza, etichetta, s('g', null, scalaBarra, scalaTesto), campo);
     // sugli schermi stretti nome e misura della macchina stanno in una riga sotto la scena
     const didascalia = h('p', { class: 'gig-didascalia', 'aria-hidden': 'true' });
     const palco = h('div', { class: 'gig-palco-box' }, svg, didascalia);
@@ -521,6 +532,24 @@
         quotaTesto.setAttribute('y', r2(testaY - 8));
       }
 
+      // larghezza della macchina, misurata nella fascia del pavimento (se c'è posto)
+      const qm = m.scena.quota;
+      const fascia = H - yTerra;
+      let vedeL = false;
+      if (qm && fascia >= 20) {
+        const xa = aSchermo(qm.x, 0)[0], xb = aSchermo(qm.x + qm.w, 0)[0];
+        const vuoto = (st.qW || 40) / 2 + 6;
+        vedeL = xb - xa >= 2 * vuoto + 24 && xa > -1 && xb < W + 1;
+        if (vedeL) {
+          const yq = r2(yTerra + Math.min(14, fascia / 2)), xm = (xa + xb) / 2;
+          larghLinea.setAttribute('d', 'M' + r2(xa) + ' ' + r2(yq - 5) + 'V' + r2(yq + 5) + 'M' + r2(xb) + ' ' + r2(yq - 5) + 'V' + r2(yq + 5) +
+            'M' + r2(xa) + ' ' + yq + 'H' + r2(xm - vuoto) + 'M' + r2(xm + vuoto) + ' ' + yq + 'H' + r2(xb));
+          larghTesto.setAttribute('x', r2(xm));
+          larghTesto.setAttribute('y', r2(yq + 4));
+        }
+      }
+      larghezza.setAttribute('opacity', vedeL ? '1' : '0');
+
       // etichetta della macchina, sopra la sua sagoma (tenuta dentro il quadro)
       const b = m.scena.scatola;
       const a1 = aSchermo(b.x, b.y + b.h), a2 = aSchermo(b.x + b.w, b.y + b.h);
@@ -590,6 +619,7 @@
       const m = M.MACCHINE[st.i];
       const nome = m.nome + (m.epoca === 'oggi' ? ', oggi' : ' · ' + m.anno);
       const misura = m.scena.misura + (m.scena.indicativa ? ' (' + m.scena.indicativa + ')' : '');
+      larghTesto.textContent = m.scena.quota ? m.scena.quota.testo : '';
       etNome.textContent = nome;
       etMisura.textContent = st.W >= 640 ? misura : m.scena.misura;
       didascalia.replaceChildren(h('strong', null, nome), ' · ' + misura);
@@ -597,6 +627,7 @@
       // larghezza vera delle scritte, per tenerle dentro il quadro
       let w = 0;
       try { w = Math.max(etNome.getComputedTextLength(), etMisura.getComputedTextLength()); } catch (e) { w = 0; }
+      try { st.qW = m.scena.quota ? larghTesto.getComputedTextLength() || 0 : 0; } catch (e) { st.qW = 0; }
       st.etW = w || Math.max(nome.length * 8, etMisura.textContent.length * 7.3);
     }
 
@@ -773,8 +804,7 @@
 
     function avviaTour() {
       st.tour = true;
-      tour.setAttribute('aria-pressed', 'true');
-      tour.textContent = '❚❚ Ferma il viaggio';
+      scrittaTour(true);
       scegli(st.i >= N - 1 ? 0 : st.i + 1);
       prossimaTappa();
     }
@@ -797,8 +827,7 @@
       clearTimeout(st.timer);
       if (!st.tour) return;
       st.tour = false;
-      tour.setAttribute('aria-pressed', 'false');
-      tour.textContent = '▶ Viaggio nel tempo';
+      scrittaTour(false);
     }
 
     /* ----- avvio ----- */
@@ -862,14 +891,14 @@
     periodo: '1937–1965',
     colore: 'var(--era-1)',
     sommario: 'Dai calcolatori umani alle macchine a relè, a valvole e a transistor: Zuse Z3, Colossus, ENIAC, UNIVAC I, IBM 1401, System/360, PDP-8, e il filo italiano della CEP e dell\'Elea 9003.',
-    intro: 'Prima di stare su una scrivania, il computer occupava una stanza intera. Tra la fine degli anni Trenta e la metà degli anni Sessanta passò dai relè, interruttori elettromeccanici che scattavano qualche volta al secondo, alle valvole termoioniche, migliaia di volte più rapide, e infine ai transistor. In meno di trent\'anni smise di essere un esperimento unico, costruito per la guerra o per la scienza, e diventò un prodotto che aziende, banche e università potevano comprare o noleggiare.',
+    intro: 'Prima di stare su una scrivania, il computer occupava una stanza intera. Tra la fine degli anni Trenta e la metà degli anni Sessanta passò dai relè, interruttori elettromeccanici che impiegano qualche millesimo di secondo a scattare, alle valvole termoioniche, migliaia di volte più rapide, e infine ai transistor. In meno di trent\'anni smise di essere un esperimento unico, costruito per la guerra o per la scienza, e diventò un prodotto che aziende, banche e università potevano comprare o noleggiare.',
     blocchi: [
       {
         tipo: 'testo',
         titolo: 'Quando i computer erano persone',
         paragrafi: [
           'Per secoli la parola inglese <em>computer</em> ha indicato una persona: chi faceva calcoli di mestiere. Osservatori astronomici, uffici di statistica ed eserciti impiegavano squadre di calcolatori, e molto spesso di calcolatrici, che con carta, matita, tavole dei logaritmi e macchine da calcolo meccaniche compilavano lunghe tabelle di numeri. Durante la Seconda guerra mondiale, all\'Università della Pennsylvania, decine di giovani donne calcolavano a mano le traiettorie dei proiettili d\'artiglieria: per una sola traiettoria servivano decine di ore di lavoro.',
-          'L\'idea di una macchina che eseguisse da sola una sequenza di calcoli è però più antica. Nel 1834 l\'inglese Charles Babbage cominciò a progettare la sua <strong>macchina analitica</strong>: un «mulino» per fare le operazioni, un «magazzino» per conservare i numeri e schede perforate, prese in prestito dai telai Jacquard, per darle le istruzioni. Non fu mai costruita, ma nel 1840 Babbage la presentò a Torino e l\'ingegnere militare Luigi Federico Menabrea, futuro presidente del Consiglio, ne pubblicò una descrizione in francese.',
+          'L\'idea di una macchina che eseguisse da sola una sequenza di calcoli è però più antica. Nel 1834 l\'inglese Charles Babbage cominciò a progettare la sua <strong>macchina analitica</strong>: un «mulino» per fare le operazioni, un «magazzino» per conservare i numeri e schede perforate, prese in prestito dai telai Jacquard, per darle le istruzioni. Non fu mai costruita, ma nel 1840 Babbage la presentò a Torino, e nel 1842 l\'ingegnere militare Luigi Federico Menabrea, futuro presidente del Consiglio, ne pubblicò una descrizione in francese.',
           'Nel 1843 <strong>Ada Lovelace</strong> tradusse quell\'articolo in inglese e lo arricchì di note più lunghe del testo stesso. In una spiegava passo per passo come la macchina avrebbe calcolato i numeri di Bernoulli, ed è per questo che viene spesso considerata la prima programmatrice; in un\'altra intuiva che una macchina simile avrebbe potuto trattare non solo numeri ma qualunque simbolo, perfino le note musicali. Dopo Babbage passò quasi un secolo di calcolatrici meccaniche e di macchine a <a href="../programmazione/index.html#schede">schede perforate</a> per i censimenti, finché alla fine degli anni Trenta ingegneri di Paesi diversi, quasi sempre senza sapere gli uni degli altri, cominciarono a costruire calcolatori automatici con componenti elettrici.',
         ],
       },
@@ -877,9 +906,11 @@
         tipo: 'testo',
         titolo: 'Il tempo dei relè',
         paragrafi: [
-          'Il <a href="../elettronica-base/index.html#rele">relè</a> è un interruttore comandato da una calamita: quando la corrente passa nella bobina, una lamella metallica scatta e chiude, o apre, un contatto. Collegando migliaia di relè si costruiscono circuiti che contano e confrontano numeri. Il limite è la velocità: una lamella impiega qualche millesimo di secondo per muoversi, e una macchina a relè fa al massimo qualche operazione al secondo.',
-          'A Berlino il giovane ingegnere Konrad Zuse aveva costruito una prima macchina, meccanica, nel soggiorno dei genitori: la Z1, del 1938. Il 12 maggio 1941 presentò lo <strong>Z3</strong>: circa 2.600 relè, aritmetica binaria in virgola mobile (il modo di rappresentare numeri molto grandi e molto piccoli che usano anche i computer di oggi) e un programma letto da una pellicola cinematografica perforata. Faceva un\'addizione in meno di un secondo e una moltiplicazione in circa tre. Fu il primo calcolatore programmabile e completamente automatico a funzionare davvero, anche se non sapeva fare salti condizionati, cioè scegliere da solo che cosa fare in base a un risultato. Lo Z3 andò distrutto in un bombardamento nel 1943; una copia costruita negli anni Sessanta è al Deutsches Museum di Monaco di Baviera.',
-          'Negli Stati Uniti Howard Aiken, dell\'Università di Harvard, convinse l\'IBM a costruire l\'<strong>Harvard Mark I</strong>, che per l\'IBM si chiamava ASCC (<em>Automatic Sequence Controlled Calculator</em>). Entrato in servizio nel 1944, era lungo circa 15 metri, aveva 765.000 componenti e centinaia di chilometri di fili, e faceva circa tre addizioni al secondo seguendo le istruzioni di un nastro di carta perforato; lavorò per quindici anni. Intanto all\'Iowa State College John Atanasoff e Clifford Berry avevano costruito, tra il 1939 e il 1942, l\'<strong>ABC</strong> (<em>Atanasoff-Berry Computer</em>): usava già circa 300 valvole e i numeri binari, ma risolveva un solo tipo di problema, i sistemi di equazioni lineari, e non era programmabile.',
+          'Il <a href="../elettronica-base/index.html#rele">relè</a> è un interruttore comandato da un elettromagnete: quando la corrente passa nella bobina, una lamella metallica viene attirata e chiude, o apre, un contatto. Collegando migliaia di relè si costruiscono circuiti che contano e confrontano numeri. Il limite è la velocità: una lamella impiega qualche millesimo di secondo per muoversi, e una macchina a relè fa al massimo qualche operazione al secondo.',
+          'A Berlino il giovane ingegnere Konrad Zuse aveva costruito una prima macchina, meccanica, nel soggiorno dei genitori: la Z1, del 1938. Il 12 maggio 1941 presentò lo <strong>Z3</strong>: circa 2.600 relè, aritmetica binaria in virgola mobile (il modo di rappresentare numeri molto grandi e molto piccoli che usano anche i computer di oggi) e un programma letto da una pellicola cinematografica perforata. Faceva un\'addizione in meno di un secondo e una moltiplicazione in circa tre.',
+          'Lo Z3 è considerato il primo calcolatore programmabile e completamente automatico a entrare davvero in funzione, anche se non sapeva fare salti condizionati, cioè scegliere da solo che cosa fare in base a un risultato. Andò distrutto in un bombardamento nel 1943; una copia costruita all\'inizio degli anni Sessanta dall\'azienda di Zuse è al Deutsches Museum di Monaco di Baviera.',
+          'Negli Stati Uniti Howard Aiken, dell\'Università di Harvard, convinse l\'IBM a costruire l\'<strong>Harvard Mark I</strong>, che per l\'IBM si chiamava ASCC (<em>Automatic Sequence Controlled Calculator</em>). Entrato in servizio nel 1944, era lungo circa 15 metri, aveva 765.000 componenti e centinaia di chilometri di fili, e faceva circa tre addizioni al secondo seguendo le istruzioni di un nastro di carta perforato; lavorò per quindici anni.',
+          'Qualche anno prima, tra il 1939 e il 1942, all\'Iowa State College John Atanasoff e Clifford Berry avevano costruito l\'<strong>ABC</strong> (<em>Atanasoff-Berry Computer</em>): usava già circa 300 valvole e i numeri binari, ma risolveva un solo tipo di problema, i sistemi di equazioni lineari, e non era programmabile.',
         ],
       },
       {
@@ -888,8 +919,8 @@
         paragrafi: [
           'Una valvola termoionica è un tubo di vetro sotto vuoto: un filamento caldo emette elettroni e una griglia, con una piccola tensione, decide se lasciarli passare. Non ha parti in movimento e può commutare in un milionesimo di secondo, migliaia di volte più in fretta di un relè. In compenso scalda, consuma molta corrente e prima o poi si brucia, come una lampadina.',
           'La prima grande macchina a valvole nacque in segreto. Nel 1943 Tommy Flowers, ingegnere delle poste britanniche, progettò il <strong>Colossus</strong> per aiutare i crittoanalisti di Bletchley Park a forzare il cifrario Lorenz, usato dall\'alto comando tedesco. Il primo esemplare, con circa 1.600 valvole, lavorava già all\'inizio del 1944; il secondo, con 2.400, entrò in servizio il 1º giugno 1944, pochi giorni prima dello sbarco in Normandia. Leggeva un nastro perforato a 5.000 caratteri al secondo e si configurava con spine e interruttori, ma sapeva fare solo il suo lavoro di decrittazione. Alla fine della guerra ce n\'erano dieci; quasi tutti furono smontati e la loro esistenza restò segreta fino alla metà degli anni Settanta.',
-          'Negli Stati Uniti l\'esercito aveva bisogno di tavole di tiro. Alla Moore School of Electrical Engineering dell\'Università della Pennsylvania, a Filadelfia, John Mauchly e J. Presper Eckert proposero un calcolatore elettronico e nel 1943 ottennero il contratto. L\'<strong>ENIAC</strong> (<em>Electronic Numerical Integrator and Computer</em>) fu completato alla fine del 1945 e presentato al pubblico nel febbraio 1946. Aveva circa 17.468 valvole, pesava circa 27 tonnellate, assorbiva circa 150 kilowatt (kW) e riempiva una sala di circa 167 metri quadrati con 40 pannelli disposti a U lungo tre pareti. Faceva circa 5.000 addizioni al secondo: alla dimostrazione per la stampa calcolò la traiettoria di un proiettile in meno tempo di quanto il proiettile impiegasse a volare.',
-          'L\'ENIAC però non conservava il programma in memoria. Per fargli cambiare problema bisognava ricollegare a mano centinaia di cavi e regolare migliaia di commutatori seguendo schemi su carta: un lavoro che richiedeva giorni. Lo fecero sei giovani donne scelte tra le calcolatrici umane: Kay McNulty, Betty Jennings, Betty Snyder, Marlyn Wescoff, Fran Bilas e Ruth Lichterman. Senza manuali, studiando gli schemi elettrici, impararono a scomporre i problemi in passi che la macchina potesse eseguire, ma alla presentazione del 1946 non furono nemmeno presentate alla stampa: il loro ruolo è stato riconosciuto solo decenni dopo. Il passo successivo, mettere le istruzioni nella memoria insieme ai dati, è la storia del <a href="#von-neumann">capitolo 2</a>.',
+          'Negli Stati Uniti l\'esercito aveva bisogno di tavole di tiro. Alla Moore School of Electrical Engineering dell\'Università della Pennsylvania, a Filadelfia, John Mauchly e J. Presper Eckert proposero un calcolatore elettronico e nel 1943 ottennero il contratto. L\'<strong>ENIAC</strong> (<em>Electronic Numerical Integrator and Computer</em>) fu completato alla fine del 1945 e presentato al pubblico nel febbraio 1946. Aveva circa 17.468 valvole, pesava circa 27 tonnellate, assorbiva circa 150 kilowatt (kW) e riempiva una sala di circa 9 × 15 metri con 40 pannelli disposti a U lungo tre pareti. Faceva circa 5.000 addizioni al secondo: alla dimostrazione per la stampa calcolò la traiettoria di un proiettile in meno tempo di quanto il proiettile impiegasse a volare.',
+          'L\'ENIAC però non conservava il programma in memoria. Per fargli cambiare problema bisognava ricollegare a mano centinaia di cavi e regolare migliaia di commutatori seguendo schemi su carta: un lavoro che richiedeva giorni. Lo fecero sei giovani donne scelte tra le calcolatrici umane: Kay McNulty, Betty Jennings, Betty Snyder, Marlyn Wescoff, Fran Bilas e Ruth Lichterman. Senza manuali, studiando gli schemi elettrici, impararono a scomporre i problemi in passi che la macchina potesse eseguire, ma alla dimostrazione del 1946 nessuno le presentò alla stampa: il loro ruolo è stato riconosciuto solo decenni dopo. Il passo successivo, mettere le istruzioni nella memoria insieme ai dati, è la storia del <a href="#von-neumann">capitolo 2</a>.',
         ],
       },
       {
@@ -897,7 +928,7 @@
         larga: true,
         svg: figuraEniac,
         alt: 'Disegno di una sala con i pannelli dell\'ENIAC disposti a U su tre pareti, pieni di valvole, luci, commutatori e cavi colorati; al centro una persona stilizzata, più bassa dei pannelli.',
-        didascalia: '<strong>La sala dell\'ENIAC</strong> alla Moore School (ricostruzione schematica). I 40 pannelli, alti circa 2,4 m, correvano a U lungo tre pareti di una sala di circa 15 × 9 m: in alto le luci al neon che mostravano i numeri, al centro le file di valvole, in basso i commutatori e le prese dove si inserivano i cavi del «programma». La persona, alta 1,75 m, dà la scala.',
+        didascalia: '<strong>La sala dell\'ENIAC</strong> alla Moore School (ricostruzione schematica). I 40 pannelli, alti circa 2,4 m, correvano a U lungo tre pareti di una sala di circa 9 × 15 m: in alto le luci al neon che mostravano i numeri, al centro le file di valvole, in basso i commutatori e le prese dove si inserivano i cavi del «programma». La persona, alta 1,75 m, dà la scala.',
       },
       {
         tipo: 'numeri',
@@ -905,14 +936,14 @@
           { valore: 17468, unita: 'valvole', etichetta: 'nell\'ENIAC, accese tutte insieme come lampadine' },
           { valore: 27, unita: 't', etichetta: 'il peso dell\'ENIAC, quanto quattro o cinque elefanti' },
           { valore: 12000, prefisso: 'oltre', unita: 'esemplari', etichetta: 'di IBM 1401 prodotti dal 1959: il computer più diffuso della sua epoca' },
-          { valore: 40, prefisso: 'circa', unita: 'Elea 9003', etichetta: 'venduti dall\'Olivetti ad aziende, banche ed enti pubblici' },
+          { valore: 40, prefisso: 'circa', unita: 'Elea 9003', etichetta: 'installati dall\'Olivetti in aziende, banche, università ed enti pubblici' },
         ],
       },
       {
         tipo: 'nota',
         paragrafi: [
           'Il 9 settembre 1947 i tecnici dell\'Harvard Mark II, il successore del Mark I, trovarono una falena incastrata in un relè. La attaccarono con il nastro adesivo sul registro della macchina, con la scritta «First actual case of bug being found», cioè «primo caso reale di <em>bug</em> trovato». La battuta funziona proprio perché <em>bug</em>, «insetto», indicava già da decenni i difetti delle macchine: lo usava Thomas Edison nell\'Ottocento. Grace Hopper, che lavorava in quel gruppo, amava raccontare l\'episodio; la pagina con la falena è conservata allo Smithsonian di Washington.',
-          'Un\'altra leggenda racconta che, quando accendevano l\'ENIAC, le luci di Filadelfia si abbassavano. Non è vero: 150 kW sono tantissimi per una macchina, ma una goccia nei consumi di una grande città.',
+          'Un\'altra leggenda racconta che, quando accendevano l\'ENIAC, le luci di Filadelfia si abbassavano. Lo stesso Eckert la definì un\'invenzione giornalistica: 150 kW sono tantissimi per una macchina, ma una goccia nei consumi di una grande città.',
         ],
       },
       {
@@ -920,7 +951,7 @@
         titolo: 'Il computer diventa un prodotto',
         paragrafi: [
           'All\'inizio degli anni Cinquanta il calcolatore diventò qualcosa da vendere. Le nuove macchine avevano il programma in memoria e memorie più capienti, come le linee di ritardo a mercurio e i tubi di Williams (le racconta il <a href="#memoria">capitolo 6</a>). Nel febbraio 1951 la britannica Ferranti consegnò all\'Università di Manchester il <strong>Ferranti Mark 1</strong>, considerato il primo computer elettronico per usi generali messo in vendita. Una versione migliorata arrivò nel 1955 a Roma, all\'Istituto Nazionale per le Applicazioni del Calcolo, dove fu battezzata FINAC.',
-          'Negli Stati Uniti Eckert e Mauchly avevano fondato una loro azienda, poi comprata dalla Remington Rand. Il 31 marzo 1951 il Census Bureau, l\'ufficio del censimento americano, accettò il primo <strong>UNIVAC I</strong> (<em>Universal Automatic Computer</em>): circa 5.200 valvole, una memoria di 1.000 parole e, novità decisiva, nastri magnetici per leggere e scrivere i dati; ne furono costruiti 46. La sera delle elezioni presidenziali del 4 novembre 1952 la rete televisiva CBS lo usò per prevedere il risultato. Con una piccola parte delle schede scrutinate, l\'UNIVAC indicò una vittoria schiacciante di Dwight Eisenhower, 438 grandi elettori contro 93: i responsabili della trasmissione, increduli, all\'inizio non diedero la notizia. Eisenhower ne ottenne 442.',
+          'Negli Stati Uniti Eckert e Mauchly avevano fondato una loro azienda, poi comprata dalla Remington Rand. Il 31 marzo 1951 il Census Bureau, l\'ufficio del censimento americano, accettò il primo <strong>UNIVAC I</strong> (<em>Universal Automatic Computer</em>): circa 5.200 valvole, una memoria di 1.000 parole e, novità decisiva, nastri magnetici per leggere e scrivere i dati; ne furono costruiti 46. La sera delle elezioni presidenziali del 4 novembre 1952 la rete televisiva CBS lo usò per prevedere il risultato. Con appena una piccola parte dei voti scrutinati, l\'UNIVAC indicò una vittoria schiacciante di Dwight Eisenhower, 438 grandi elettori contro 93: i responsabili della trasmissione, increduli, all\'inizio non diedero la notizia. Eisenhower ne ottenne 442.',
           'Nello stesso 1951 un\'azienda inglese di sale da tè e prodotti alimentari, la J. Lyons &amp; Co., costruì un computer tutto suo, il <strong>LEO I</strong> (<em>Lyons Electronic Office</em>), ispirato all\'EDSAC di Cambridge. In novembre eseguì il primo lavoro d\'ufficio di routine della storia, i conti della produzione delle panetterie, e poi passò alle buste paga. L\'IBM, che dominava il mercato delle macchine a schede perforate, rispose nel 1952 con l\'<strong>IBM 701</strong>, il suo primo computer elettronico commerciale: ne costruì 19, quasi tutti noleggiati a laboratori governativi e industrie aeronautiche. Era l\'inizio di un predominio che sarebbe durato decenni.',
         ],
       },
@@ -954,8 +985,8 @@
         tipo: 'italia',
         titolo: 'Pisa e Ivrea: la CEP e l\'Elea 9003',
         paragrafi: [
-          'Nel 1954 l\'Università di Pisa poteva contare su 150 milioni di lire, stanziati dagli enti locali per un acceleratore di particelle che alla fine fu costruito a Frascati. Enrico Fermi, in Italia quell\'estate, consigliò in una lettera al rettore di usarli per una calcolatrice elettronica, utile a tutta la ricerca italiana. Nacque così la <strong>CEP, Calcolatrice Elettronica Pisana</strong>. Un primo prototipo, la «macchina ridotta», funzionò nel 1957: fu il primo computer progettato e costruito interamente in Italia. La CEP completa, che occupava circa 70 metri quadrati, fu inaugurata nel 1961 dal presidente della Repubblica Giovanni Gronchi e lavorò fino al 1969.',
-          'Al progetto pisano collaborava l\'Olivetti di Adriano Olivetti, che nel 1955 aprì a Barbaricina, vicino a Pisa, un laboratorio di ricerche elettroniche guidato da Mario Tchou, ingegnere romano di famiglia cinese che aveva insegnato alla Columbia University di New York. Il gruppo si trasferì poi a Borgolombardo, alle porte di Milano, e nel 1959 presentò alla Fiera di Milano l\'<strong>Elea 9003</strong>, tra i primi grandi calcolatori commerciali al mondo interamente a transistor. Il primo esemplare andò nel 1960 alla Marzotto di Valdagno; in tutto ne furono venduti una quarantina.',
+          'Nel 1954 l\'Università di Pisa poteva contare su 150 milioni di lire, stanziati dagli enti locali per un acceleratore di particelle che alla fine fu costruito a Frascati. Enrico Fermi, in Italia quell\'estate, consigliò in una lettera al rettore di usarli per una calcolatrice elettronica, utile a tutta la ricerca italiana. Nacque così la <strong>CEP, Calcolatrice Elettronica Pisana</strong>. Un primo prototipo, la «macchina ridotta», funzionò nel 1957: fu il primo calcolatore elettronico progettato e costruito in Italia. La CEP completa, a valvole e transistor, fu inaugurata nel 1961 dal presidente della Repubblica Giovanni Gronchi e lavorò fino al 1969.',
+          'Al progetto pisano collaborava l\'Olivetti di Adriano Olivetti, che nel 1955 aprì a Barbaricina, vicino a Pisa, un laboratorio di ricerche elettroniche guidato da Mario Tchou, ingegnere romano di famiglia cinese che aveva insegnato alla Columbia University di New York. Il gruppo si trasferì poi a Borgolombardo, alle porte di Milano, e nel 1959 presentò alla Fiera di Milano l\'<strong>Elea 9003</strong>, tra i primi grandi calcolatori commerciali al mondo interamente a transistor. Il primo esemplare fu installato nel 1960 alla Marzotto di Valdagno; in tutto ne entrarono in funzione una quarantina.',
           'Ettore Sottsass disegnò armadi modulari a misura d\'uomo, invece dei soliti armadi dal pavimento al soffitto, con strisce colorate che indicavano il contenuto di ciascuno, e fece correre i cavi in alto, dentro condotti sospesi, anziché sotto il pavimento: il progetto gli valse il Compasso d\'Oro. Poi la storia si interruppe. Adriano Olivetti morì il 27 febbraio 1960, Mario Tchou il 9 novembre 1961 in un incidente stradale, a 37 anni, e nel 1964 la divisione elettronica fu ceduta all\'americana General Electric. Dal piccolo gruppo rimasto a Ivrea nacque l\'anno dopo la Programma 101, raccontata nel <a href="#primi-pc">capitolo 3</a>.',
         ],
       },
@@ -970,7 +1001,7 @@
         titolo: 'Macchine, persone, date',
         items: [
           { anno: 1843, nome: 'Le note di Ada Lovelace', luogo: 'Londra, Regno Unito', testo: 'Traducendo l\'articolo di Luigi Federico Menabrea sulla macchina analitica di Babbage, Ada Lovelace descrive passo per passo il calcolo dei numeri di Bernoulli.' },
-          { anno: 1941, nome: 'Zuse Z3', luogo: 'Berlino, Germania', testo: 'Circa 2.600 relè, aritmetica binaria in virgola mobile e programma su pellicola perforata: il primo calcolatore programmabile completamente automatico. Distrutto in un bombardamento nel 1943.' },
+          { anno: 1941, nome: 'Zuse Z3', luogo: 'Berlino, Germania', testo: 'Circa 2.600 relè, aritmetica binaria in virgola mobile e programma su pellicola perforata: è considerato il primo calcolatore programmabile completamente automatico. Distrutto in un bombardamento nel 1943.' },
           { anno: 1944, nome: 'Colossus', luogo: 'Bletchley Park, Regno Unito', testo: 'Le valvole di Tommy Flowers aiutano a decrittare il cifrario Lorenz dell\'alto comando tedesco. La sua esistenza resta segreta per trent\'anni.' },
           { anno: 1946, nome: 'ENIAC', luogo: 'Filadelfia, Stati Uniti', testo: 'Presentato in febbraio: 17.468 valvole, circa 27 tonnellate, 5.000 addizioni al secondo. Si programma ricollegando cavi e commutatori.' },
           { anno: 1951, nome: 'Ferranti Mark 1', luogo: 'Manchester, Regno Unito', testo: 'Consegnato in febbraio all\'Università di Manchester: il primo computer elettronico per usi generali messo in vendita.' },
@@ -992,8 +1023,8 @@
     punti: [
       '<em>Computer</em> era un mestiere: persone che calcolavano a mano. Le prime macchine nacquero per sostituirle nei calcoli lunghi e ripetitivi, come tavole di tiro, censimenti e cifrari.',
       'I relè (Z3, Harvard Mark I) facevano poche operazioni al secondo; le valvole (Colossus, ENIAC) migliaia, in cambio di macchine enormi, assetate di corrente e programmate a mano con cavi e interruttori.',
-      'Dal 1951 il computer diventa un prodotto (Ferranti Mark 1, UNIVAC I, LEO I, IBM 701), con il programma in memoria e i nastri magnetici.',
-      'Il transistor rende i computer più piccoli, affidabili ed economici: l\'IBM 1401 entra in migliaia di aziende e in Italia nascono la CEP e l\'Elea 9003.',
+      'Dal 1951 il computer esce dai laboratori: si vende (Ferranti Mark 1, UNIVAC I, IBM 701) e lavora negli uffici (LEO I), con il programma in memoria e i primi nastri magnetici.',
+      'Il transistor rende i computer più piccoli, affidabili ed economici: l\'IBM 1401 entra in migliaia di aziende; in Italia, accanto alla CEP di Pisa, l\'Olivetti costruisce l\'Elea 9003, tutto a transistor.',
       'Con il System/360 (1964) nasce l\'idea di architettura, una famiglia di modelli diversi che esegue gli stessi programmi, e si afferma il byte di 8 bit; il PDP-8 (1965) apre l\'era dei minicomputer.',
     ],
     collegamenti: [

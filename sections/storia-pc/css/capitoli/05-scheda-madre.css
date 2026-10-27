@@ -117,6 +117,62 @@
 .sm-fig .sm-num text { fill: var(--ill-tela); font: 800 10.5px var(--font); font-variant-numeric: tabular-nums; }
 .sm-fig .sm-num text.due { font-size: 9.8px; letter-spacing: -.3px; }
 
+/* Legenda e richiami si cercano a vicenda: passando su una voce il suo numero nel disegno si accende e cresce,
+   passando su un numero la sua voce si colora. */
+.sm-fig .sm-num { transition: opacity var(--dur-fast) var(--ease-smooth); }
+.sm-fig .sm-num-disco, .sm-fig .sm-num text { transform-box: fill-box; transform-origin: center; transition: transform var(--dur-normal) var(--ease-bounce); }
+.sm-legenda li { transition: color var(--dur-fast) var(--ease-smooth); }
+.sm-legenda li::before { transition: transform var(--dur-normal) var(--ease-bounce); }
+#scheda-madre .spc-figura:has(.sm-legenda li:hover) .sm-num { opacity: .3; }
+#scheda-madre .spc-figura:has(.sm-legenda li:nth-child(1):hover) .sm-num-1,
+#scheda-madre .spc-figura:has(.sm-legenda li:nth-child(2):hover) .sm-num-2,
+#scheda-madre .spc-figura:has(.sm-legenda li:nth-child(3):hover) .sm-num-3,
+#scheda-madre .spc-figura:has(.sm-legenda li:nth-child(4):hover) .sm-num-4,
+#scheda-madre .spc-figura:has(.sm-legenda li:nth-child(5):hover) .sm-num-5,
+#scheda-madre .spc-figura:has(.sm-legenda li:nth-child(6):hover) .sm-num-6,
+#scheda-madre .spc-figura:has(.sm-legenda li:nth-child(7):hover) .sm-num-7,
+#scheda-madre .spc-figura:has(.sm-legenda li:nth-child(8):hover) .sm-num-8,
+#scheda-madre .spc-figura:has(.sm-legenda li:nth-child(9):hover) .sm-num-9,
+#scheda-madre .spc-figura:has(.sm-legenda li:nth-child(10):hover) .sm-num-10,
+#scheda-madre .spc-figura:has(.sm-legenda li:nth-child(11):hover) .sm-num-11,
+#scheda-madre .spc-figura:has(.sm-legenda li:nth-child(12):hover) .sm-num-12 { opacity: 1; }
+#scheda-madre .spc-figura:has(.sm-legenda li:nth-child(1):hover) .sm-num-1 :is(.sm-num-disco, text),
+#scheda-madre .spc-figura:has(.sm-legenda li:nth-child(2):hover) .sm-num-2 :is(.sm-num-disco, text),
+#scheda-madre .spc-figura:has(.sm-legenda li:nth-child(3):hover) .sm-num-3 :is(.sm-num-disco, text),
+#scheda-madre .spc-figura:has(.sm-legenda li:nth-child(4):hover) .sm-num-4 :is(.sm-num-disco, text),
+#scheda-madre .spc-figura:has(.sm-legenda li:nth-child(5):hover) .sm-num-5 :is(.sm-num-disco, text),
+#scheda-madre .spc-figura:has(.sm-legenda li:nth-child(6):hover) .sm-num-6 :is(.sm-num-disco, text),
+#scheda-madre .spc-figura:has(.sm-legenda li:nth-child(7):hover) .sm-num-7 :is(.sm-num-disco, text),
+#scheda-madre .spc-figura:has(.sm-legenda li:nth-child(8):hover) .sm-num-8 :is(.sm-num-disco, text),
+#scheda-madre .spc-figura:has(.sm-legenda li:nth-child(9):hover) .sm-num-9 :is(.sm-num-disco, text),
+#scheda-madre .spc-figura:has(.sm-legenda li:nth-child(10):hover) .sm-num-10 :is(.sm-num-disco, text),
+#scheda-madre .spc-figura:has(.sm-legenda li:nth-child(11):hover) .sm-num-11 :is(.sm-num-disco, text),
+#scheda-madre .spc-figura:has(.sm-legenda li:nth-child(12):hover) .sm-num-12 :is(.sm-num-disco, text) { transform: scale(1.4); }
+#scheda-madre .spc-figura:has(.sm-num-1:hover) .sm-legenda li:nth-child(1),
+#scheda-madre .spc-figura:has(.sm-num-2:hover) .sm-legenda li:nth-child(2),
+#scheda-madre .spc-figura:has(.sm-num-3:hover) .sm-legenda li:nth-child(3),
+#scheda-madre .spc-figura:has(.sm-num-4:hover) .sm-legenda li:nth-child(4),
+#scheda-madre .spc-figura:has(.sm-num-5:hover) .sm-legenda li:nth-child(5),
+#scheda-madre .spc-figura:has(.sm-num-6:hover) .sm-legenda li:nth-child(6),
+#scheda-madre .spc-figura:has(.sm-num-7:hover) .sm-legenda li:nth-child(7),
+#scheda-madre .spc-figura:has(.sm-num-8:hover) .sm-legenda li:nth-child(8),
+#scheda-madre .spc-figura:has(.sm-num-9:hover) .sm-legenda li:nth-child(9),
+#scheda-madre .spc-figura:has(.sm-num-10:hover) .sm-legenda li:nth-child(10),
+#scheda-madre .spc-figura:has(.sm-num-11:hover) .sm-legenda li:nth-child(11),
+#scheda-madre .spc-figura:has(.sm-num-12:hover) .sm-legenda li:nth-child(12) { color: var(--cap); }
+#scheda-madre .spc-figura:has(.sm-num-1:hover) .sm-legenda li:nth-child(1)::before,
+#scheda-madre .spc-figura:has(.sm-num-2:hover) .sm-legenda li:nth-child(2)::before,
+#scheda-madre .spc-figura:has(.sm-num-3:hover) .sm-legenda li:nth-child(3)::before,
+#scheda-madre .spc-figura:has(.sm-num-4:hover) .sm-legenda li:nth-child(4)::before,
+#scheda-madre .spc-figura:has(.sm-num-5:hover) .sm-legenda li:nth-child(5)::before,
+#scheda-madre .spc-figura:has(.sm-num-6:hover) .sm-legenda li:nth-child(6)::before,
+#scheda-madre .spc-figura:has(.sm-num-7:hover) .sm-legenda li:nth-child(7)::before,
+#scheda-madre .spc-figura:has(.sm-num-8:hover) .sm-legenda li:nth-child(8)::before,
+#scheda-madre .spc-figura:has(.sm-num-9:hover) .sm-legenda li:nth-child(9)::before,
+#scheda-madre .spc-figura:has(.sm-num-10:hover) .sm-legenda li:nth-child(10)::before,
+#scheda-madre .spc-figura:has(.sm-num-11:hover) .sm-legenda li:nth-child(11)::before,
+#scheda-madre .spc-figura:has(.sm-num-12:hover) .sm-legenda li:nth-child(12)::before { transform: translateY(5px) scale(1.2); }
+
 /* ======================================================================
  * Laboratorio «Quattro epoche di schede madri» (sempre scuro, come gli strumenti di BusLab)
  * ====================================================================== */
@@ -205,7 +261,8 @@
 .sm-card-nav { display: flex; gap: 6px; }
 .sm-card-tit { margin: 0; color: #fff; font-size: 1.05rem; line-height: 1.25; }
 .sm-card-tag { margin: 0; font: 600 .78rem var(--mono); color: #7f9a90; }
-.sm-card-banda { margin: 0; font-size: 1.25rem; font-weight: 800; color: var(--trace-2); }
+.sm-card-banda { margin: 0; font-size: 1.25rem; font-weight: 800; color: var(--trace-2); line-height: 1.25; }
+.sm-card-banda small { display: block; margin-top: 2px; font-size: .74rem; font-weight: 600; color: var(--scope-text); }
 .sm-card-formula { margin: 0; font-size: .78rem; color: var(--scope-text); background: #0a1310; border: 1px solid var(--scope-grid); border-radius: 8px; padding: 7px 9px; overflow-wrap: anywhere; }
 .sm-card-testo, .sm-card-tempo { margin: 0; font-size: .9rem; line-height: 1.5; color: var(--scope-text); }
 .sm-card-tempo strong { color: #fff; }
@@ -213,6 +270,8 @@
 
 .sm-viaggio-scelte { display: flex; flex-wrap: wrap; gap: 8px; }
 .sm-seg-flusso button, .sm-seg-dim button { min-height: 40px; display: inline-flex; align-items: center; gap: 7px; }
+.sm-dim-byte { font: 700 .76rem var(--mono); font-variant-numeric: tabular-nums; color: #9fb8ae; }
+.sm-seg-dim button[aria-pressed="true"] .sm-dim-byte { color: var(--trace-1); }
 .sm-pallino { width: 10px; height: 10px; border-radius: 50%; background: var(--sm-c); box-shadow: 0 0 0 2px rgba(0, 0, 0, .45); }
 .sm-kv { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .sm-kv .sm-kv-largo { grid-column: 1 / -1; }
@@ -241,11 +300,13 @@
 @media (max-width: 640px) {
   .sm-seg-epoca { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); width: 100%; }
   .sm-seg-epoca button { min-width: 0; padding: 4px 2px; }
-  .sm-avanti, .sm-pausa { flex: 1 1 40%; }
+  .sm-avanti, .sm-pausa { flex: 1 1 auto; white-space: nowrap; padding: 0 10px; }
   .sm-spazio { display: none; }
   .sm-seg-flusso { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; }
   .sm-seg-dim { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); width: 100%; }
   .sm-seg-flusso button, .sm-seg-dim button { justify-content: center; padding: 0 6px; }
+  /* sul telefono nome e dimensione del file vanno su due righe, come gli anni del selettore delle epoche */
+  .sm-seg-dim button { display: grid; justify-items: center; align-content: center; gap: 1px; min-height: 46px; line-height: 1.15; }
   .sm-kv { grid-template-columns: minmax(0, 1fr); }
   .sm-conf-riga { grid-template-columns: 40px minmax(0, 1fr) auto; gap: 8px; padding: 4px 6px; }
   .sm-conf-tempo { min-width: 6.6em; }
@@ -253,6 +314,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .sm-fig .sm-num-disco, .sm-fig .sm-num text, .sm-legenda li::before { transition: none; }
   .sm-conf-barra i, .sm-link-alone, .sm-link-filo, .sm-link-luce, .sm-pacchetti, .sm-link-et { transition: none; }
 }
 .sm-link-et.sm-et-dentro { fill: #04150d; stroke: none; }

@@ -129,11 +129,29 @@ test('le barre del confronto stanno fra 0 e 1', () => {
     const righe = M.confronto(m.id);
     assert.strictEqual(righe.length, 3);
     righe.forEach((r) => assert.ok(r.frazione >= 0 && r.frazione <= 1, m.id + ' ' + r.id));
-    if (m.scala === 'lineare') assert.strictEqual(Math.max(...righe.map((r) => r.frazione)), 1);
+    if (m.scala === 'lineare' && !m.max) assert.strictEqual(Math.max(...righe.map((r) => r.frazione)), 1);
+    if (m.max) assert.ok(righe.every((r) => r.valore <= m.max), m.id + ': un valore supera il fondo scala');
   }
   const t = M.confronto('transistor').map((r) => r.frazione);
   assert.ok(t[0] < t[1] && t[1] < t[2]);
   assert.ok(Math.abs(M.frazione('transistor', 1e7) - 0.5) < 1e-9, 'su scala logaritmica 10 milioni sta a metà fra mille e cento miliardi');
   assert.strictEqual(M.frazione('massa', 0), 0);
+  assert.ok(Math.abs(M.frazione('autonomia', 12) - 0.5) < 1e-9, 'la barra dell\'autonomia è un giorno di 24 ore');
   assert.deepStrictEqual(M.confronto('nessuna'), []);
+});
+
+test('il laboratorio può contare su percorsi senza giri e su un package ordinato', () => {
+  // ogni pista, seguendo i ponti («via»), arriva al processore in pochi passi
+  for (const c of M.COMPONENTI) {
+    let x = c.id, passi = 0;
+    while (x && x !== 'cpu' && passi < 5) { x = M.componente(x).via; passi++; }
+    assert.ok(c.via === null || x === 'cpu', c.id + ': il percorso non arriva al processore');
+  }
+  for (let a = M.ANNO_MIN; a <= M.ANNO_MAX; a++) {
+    const pos = M.statoAnno(a).posizioni;
+    assert.strictEqual(pos.cpu, 'scheda', a + ': il processore resta sulla scheda (è il package)');
+    const separati = Object.keys(pos).filter((id) => pos[id] === 'package' && id !== 'ram');
+    assert.ok(separati.length <= 1, a + ': accanto al die al più un pezzo di silicio separato, non ' + separati);
+    ['audio', 'rete', 'modem'].forEach((id) => assert.ok(pos[id] !== 'sud' || pos.sud !== 'assente', a + ': ' + id + ' dentro un ponte sud che non c\'è'));
+  }
 });
