@@ -27,7 +27,7 @@ Dalla pagina di una sezione il percorso è `../quiz/index.html#<slug>`.
 | `app.js` | pagina del quiz: scelta della sezione, modalità, progressi |
 | `quiz.css` | stile (riusa i colori di `css/style.css`) |
 | `section.js` | registrazione della sezione 8 nell'hub dell'enciclopedia |
-| `banks/<slug>.js` | una banca di domande per ogni sezione; `bus.js` ricava la sua dalle lezioni di BusLab (`js/buses.js`) e `bus-extra.js` la completa |
+| `banks/<slug>.js` | una banca di domande per ogni sezione; `bus.js` ricava la sua dalle lezioni di BusLab (`js/buses.js`), `bus-extra.js` ne ritocca le domande e la completa |
 | `tools/check-banks.js` | controlla tutte le banche (`node sections/quiz/tools/check-banks.js --hints`) |
 | `tools/browser-check.js` | prova la pagina in Chromium: tre larghezze, chiaro e scuro, e ogni domanda risolta dall'interfaccia |
 | `../../tests/quiz.test.js` | test automatici (`node --test`) |
@@ -50,7 +50,7 @@ Dalla pagina di una sezione il percorso è `../quiz/index.html#<slug>`.
 
 Una sezione può aggiungere domande alla propria banca con un suo file
 `sections/<slug>/quiz.js` (va poi incluso in `quiz/index.html`, come già
-`elettronica-avanzata/quiz.js`):
+`elettronica-avanzata/quiz.js` e `chip-programmabili/quiz.js`):
 
 ```js
 (function (root) {
@@ -149,12 +149,12 @@ Ogni figura è un oggetto `figure: { kind, ... }` con una `caption` facoltativa.
 | `gate` | `gate`: AND, OR, NOT, NAND, NOR, XOR, XNOR, BUF | `{ kind: 'gate', gate: 'NOR' }` |
 | `logic` | `expr`: espressione logica | `{ kind: 'logic', expr: 'OR(AND(A,B),C)' }` |
 | `wave` | `shape`: sine, square, triangle, sawtooth, pwm, dc, half-wave, full-wave, sampled, am, fm, clock-data, differential; `cycles` 1-8; `duty` 0.05-0.95 (pwm); `label` | `{ kind: 'wave', shape: 'pwm', duty: 0.25, label: '5 V · 1 kHz' }` |
-| `circuit` | `topo`: series / parallel (`values`), divider (`vin`, `r1`, `r2`), led (`v`, `r`), rc (`v`, `r`, `c`), switches-series, switches-parallel | `{ kind: 'circuit', topo: 'divider', vin: '12 V', r1: '10 kΩ', r2: '10 kΩ' }` |
+| `circuit` | `topo`: series / parallel (`values`), divider (`vin`, `r1`, `r2`), led (`v`, `r`), rc (`v`, `r`, `c`), switches-series, switches-parallel. Il disegno scrive già «R = » e «C = » davanti ai valori (`r: '?'` diventa «R = ?»); rc ha un interruttore aperto | `{ kind: 'circuit', topo: 'divider', vin: '12 V', r1: '10 kΩ', r2: '10 kΩ' }` |
 | `chip` | `pins` pari 8-64, `label`, `note`, `package` dip o qfp | `{ kind: 'chip', pins: 16, label: 'Intel 4004', note: '1971' }` |
 | `code` | `lang`, `text` (max 14 righe da 56 caratteri) | `{ kind: 'code', lang: 'BASIC', text: '10 PRINT "CIAO"\n20 GOTO 10' }` |
 | `bits` | `value`, `width` 4, 8 o 16 | `{ kind: 'bits', value: 65, width: 8 }` |
 | `card` | `text`: 1-24 caratteri A-Z, 0-9 e spazio (scheda perforata IBM) | `{ kind: 'card', text: 'HELLO 1964' }` |
-| `block` | `name`: von-neumann, harvard, fetch-cycle, memory-pyramid, cpu | `{ kind: 'block', name: 'harvard' }` |
+| `block` | `name`: von-neumann, harvard, fetch-cycle, memory-pyramid, cpu. fetch-cycle scrive il nome italiano di ogni fase: non va usato se la domanda chiede che cosa fa una fase | `{ kind: 'block', name: 'harvard' }` |
 
 ## Regole per scrivere le domande
 
@@ -164,7 +164,9 @@ Ogni figura è un oggetto `figure: { kind, ... }` con una `caption` facoltativa.
 - L'etichetta (`topic`) e la figura si vedono prima di rispondere: non devono
   nominare la risposta (per "Che componente è?" l'etichetta è `Simboli`, non `Induttore`).
 - Date, nomi e numeri solo se consolidati; i calcoli si verificano due volte.
-- La spiegazione insegna qualcosa: la formula, la data, il perché.
+- La spiegazione insegna qualcosa: la formula, la data, il perché. Non deve però
+  dare la risposta di un'altra domanda della stessa banca: il quiz mette le domande
+  in ordine di livello, e quelle dello stesso livello in ordine casuale.
 - Le domande interattive e le figure servono a far *usare* l'argomento, non a decorare.
 
 Prima di aprire una PR: `node sections/quiz/tools/check-banks.js` e `node --test`.

@@ -173,6 +173,18 @@ test('l\'etichetta della domanda non deve svelare la risposta', () => {
   // Se la parola è già nella domanda o in un'altra opzione, l'etichetta non aggiunge niente.
   assert.ok(!giveaway(C.lintQuestion(q('Induttore', { q: 'Che cosa immagazzina un induttore?' }), 'x')));
   assert.ok(!giveaway(C.lintQuestion(q('Induttore', { options: ['Un induttore', 'Un induttore variabile', 'Un resistore'] }), 'x')));
+  // Le sigle corte si confrontano intere.
+  const fft = { type: 'choice', topic: 'FFT', q: 'Che cosa rese possibile lo spettro in tempo reale?', options: ['L\'algoritmo FFT', 'L\'oscilloscopio', 'La macchina di Kelvin'], answer: 0, why: 'La FFT riduce il calcolo da N² a N·log N operazioni.' };
+  assert.ok(giveaway(C.lintQuestion(fft, 'x')));
+  assert.ok(!giveaway(C.lintQuestion(Object.assign({}, fft, { topic: 'Spettro in tempo reale' }), 'x')));
+});
+
+test('una domanda logic non si risolve con gli interruttori fermi a 0', () => {
+  const still = (w) => w.some((m) => /tutti gli ingressi a 0/.test(m));
+  const q = (expr, target) => ({ type: 'logic', expr: expr, target: target, q: 'Accendi la lampada.', why: 'Serve almeno un interruttore chiuso.' });
+  assert.ok(still(C.lintQuestion(q('OR(A,B)', 0), 'x')));
+  assert.ok(!still(C.lintQuestion(q('OR(A,B)', 1), 'x')));
+  assert.ok(still(C.lintQuestion(q('NAND(A,B)', 1), 'x')));
 });
 
 test('un elenco da riordinare non parte mai già in ordine', () => {

@@ -608,11 +608,12 @@
         break;
       }
       case 'differential': {
+        // Due fasce, come CLK e DATA: sugli stessi livelli i fronti di D− coprirebbero quelli di D+.
         const bits = [1, 0, 0, 1, 0, 1, 1, 0];
-        traces.push({ d: bitsPath(bits, 52, 98), cls: '' });
-        traces.push({ d: bitsPath(bits.map((b) => 1 - b), 52, 98), cls: 'ch2' });
-        text(svg, 8, 56, 'D+', { class: 'qz-ch' });
-        text(svg, 8, 102, 'D−', { class: 'qz-ch ch2' });
+        traces.push({ d: bitsPath(bits, 22, 50), cls: '' });
+        traces.push({ d: bitsPath(bits.map((b) => 1 - b), 98, 126), cls: 'ch2' });
+        text(svg, 8, 41, 'D+', { class: 'qz-ch' });
+        text(svg, 8, 117, 'D−', { class: 'qz-ch ch2' });
         break;
       }
       default: break;
@@ -682,7 +683,7 @@
       }
       case 'divider': {
         place(g, 'battery', 40, 30, 40, 140);
-        label(g, 24, 90, f.vin, 'end');
+        label(g, 64, 90, f.vin, 'start');
         wireLine(g, 'M40 30 H180 M40 140 H180 M180 85 H250 M180 140 H250');
         place(g, 'resistor', 180, 30, 180, 85);
         place(g, 'resistor', 180, 85, 180, 140);
@@ -700,7 +701,7 @@
       }
       case 'led': {
         place(g, 'battery', 40, 40, 40, 130);
-        label(g, 24, 90, f.v, 'end');
+        label(g, 64, 90, f.v, 'start');
         place(g, 'resistor', 40, 40, 260, 40);
         label(g, 150, 24, 'R = ' + f.r);
         place(g, 'led', 260, 40, 260, 130);
@@ -709,7 +710,7 @@
       }
       case 'rc': {
         place(g, 'battery', 36, 40, 36, 130);
-        label(g, 20, 90, f.v, 'end');
+        label(g, 60, 90, f.v, 'start');
         place(g, 'switch', 36, 40, 130, 40);
         place(g, 'resistor', 130, 40, 260, 40);
         label(g, 195, 24, 'R = ' + f.r);
@@ -812,15 +813,32 @@
     'IDENTIFICATION DIVISION PROCEDURE DISPLAY STOP RUN MOVE ADD PERFORM ' +
     'defun setq car cdr cons ' +
     'public static System out println String ' +
-    'MOV ADD SUB INC DEC JMP JZ JNZ CMP CALL RET LD LDA STA ADC SBC BEQ BNE JSR RTS NOP HLT PUSH POP AND ORA EOR').split(' '));
+    'MOV ADD SUB INC DEC JMP JZ JNZ CMP CALL RET LD LDA STA ADC SBC BEQ BNE JSR RTS NOP HLT PUSH POP AND ORA EOR ' +
+    'CLC SEC LDX LDY STX STY INX INY DEX DEY TAX TXA BCC BCS DJNZ OR XOR ' +
+    'module endmodule assign input output wire reg always posedge').split(' '));
+
+  // Commento su tutta la riga (REM, ;, //, #, *> del COBOL, C del FORTRAN) oppure in coda al
+  // codice: // ovunque fuori dalle stringhe, ; e "# " dopo almeno due spazi (assembly, Python).
+  const LINE_COMMENT = /^(\s*)(REM\b.*|;.*|\/\/.*|#(?!include|define).*|\*>.*|C\s.*)$/;
+  const TAIL_COMMENT = /("[^"]*"?|'[^']*'?)|(\/\/.*|\s{2,}(?:;|#\s).*)$/g;
+
+  function splitComment(line) {
+    const cm = LINE_COMMENT.exec(line);
+    if (cm) return [cm[1], cm[2]];
+    TAIL_COMMENT.lastIndex = 0;
+    let m;
+    while ((m = TAIL_COMMENT.exec(line))) {
+      if (m[2]) {
+        const at = m.index + m[2].search(/[;#/]/);
+        return [line.slice(0, at), line.slice(at)];
+      }
+    }
+    return [line, ''];
+  }
 
   function highlight(line, codeEl) {
     const re = /("[^"]*"?|'[^']*'?)|(\b\d+(\.\d+)?\b|#?\$[0-9A-Fa-f]+\b|\b0x[0-9A-Fa-f]+\b)|(\b[A-Za-z_][A-Za-z0-9_]*\b)/g;
-    const comment = /^(\s*)(REM\b.*|;.*|\/\/.*|#(?!include|define).*|\*>.*|C\s.*)$/;
-    const cm = comment.exec(line);
-    let body = line;
-    let tail = '';
-    if (cm) { body = cm[1]; tail = cm[2]; }
+    const [body, tail] = splitComment(line);
     let last = 0;
     let m;
     while ((m = re.exec(body))) {

@@ -434,9 +434,20 @@
       // L'etichetta si legge prima di rispondere: non deve nominare la risposta giusta.
       const stems = (s) => String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
         .split(/[^a-z0-9]+/).filter((x) => x.length > 3).map((x) => x.slice(0, 7));
-      const inRight = new Set(stems(q.options[q.answer]));
-      const known = new Set(stems(q.q).concat(q.options.filter((o, i) => i !== q.answer).flatMap(stems)));
-      if (isText(q.topic) && stems(q.topic).some((s) => inRight.has(s) && !known.has(s))) w.push(where + ': l\'etichetta (topic) rivela la risposta giusta');
+      // Le sigle corte (AM, FFT, LED, C#) sfuggono al confronto delle radici: si confrontano intere.
+      const caps = (s) => (String(s).match(/[A-Za-z0-9#+]+/g) || []).filter((x) => /^[A-Z][A-Z0-9#+]{1,2}$/.test(x));
+      const wrong = q.options.filter((o, i) => i !== q.answer);
+      const inRight = new Set(stems(q.options[q.answer]).concat(caps(q.options[q.answer])));
+      const known = new Set(stems(q.q).concat(wrong.flatMap(stems), caps(q.q), wrong.flatMap(caps)));
+      if (isText(q.topic) && stems(q.topic).concat(caps(q.topic)).some((s) => inRight.has(s) && !known.has(s))) w.push(where + ': l\'etichetta (topic) rivela la risposta giusta');
+    }
+    // Gli interruttori partono tutti da 0: se così l'uscita vale già target, basta premere "Prova".
+    if (type === 'logic') {
+      try {
+        const t = truthRows(q.expr);
+        const start = t.rows.find((r) => t.names.every((n) => r.inputs[n] === 0));
+        if (start && start.out === q.target) w.push(where + ': con tutti gli ingressi a 0 l\'uscita vale già ' + q.target + ', la domanda si risolve senza toccare nulla');
+      } catch (x) { /* l'espressione sbagliata la segnala validateQuestion */ }
     }
     if (isText(q.why) && q.why.trim().length < 25) w.push(where + ': spiegazione troppo corta');
     return w;
