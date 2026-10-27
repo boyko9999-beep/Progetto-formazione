@@ -94,7 +94,7 @@
         h('span', { class: 'numero-val' },
           it.prefisso ? h('span', { class: 'numero-pre' }, it.prefisso) : null,
           typeof it.valore === 'number'
-            ? h('span', { class: 'numero-cifra', 'data-to': it.valore, 'data-dec': it.decimali || 0 }, P.formato(it.valore, it.decimali || 0))
+            ? h('span', { class: 'numero-cifra', 'data-to': it.valore, 'data-dec': it.decimali || 0 }, P.cifra(it.valore, it.decimali || 0))
             : h('span', { class: 'numero-cifra' }, String(it.valore)),
           it.unita ? h('span', { class: 'numero-unita' }, it.unita) : null),
         h('span', { class: 'numero-etichetta', html: it.etichetta }))));
@@ -322,13 +322,13 @@
     const avvia = (el) => {
       const to = Number(el.dataset.to);
       const dec = Number(el.dataset.dec) || 0;
-      P.tween({ from: 0, to: to, dur: P.motion.dur.crawl * 1.4, ease: 'smooth', update: (v) => { el.textContent = P.formato(v, dec); } });
+      P.tween({ from: 0, to: to, dur: P.motion.dur.crawl * 1.4, ease: 'smooth', update: (v) => { el.textContent = P.cifra(v, dec); } });
     };
     if (!('IntersectionObserver' in window) || P.ridotto()) return;
     const io = new IntersectionObserver((entries) => entries.forEach((e) => {
       if (e.isIntersecting) { avvia(e.target); io.unobserve(e.target); }
     }), { threshold: 0.6 });
-    cifre.forEach((c) => { c.textContent = P.formato(0, Number(c.dataset.dec) || 0); io.observe(c); });
+    cifre.forEach((c) => { c.textContent = P.cifra(0, Number(c.dataset.dec) || 0); io.observe(c); });
   }
 
   /* ---------- comparsa dolce dei blocchi ---------- */

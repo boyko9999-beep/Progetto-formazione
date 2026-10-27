@@ -81,6 +81,7 @@ delle figure si fermano da sole quando la figura è lontana dallo schermo (class
 
 Strumenti in `ctx`: `h()` e `s()` per creare elementi HTML e SVG, `svgDaTesto()`, `loop()`, `tween()`,
 `curve`, `motion` (durate e curve), `ridotto()` (movimento ridotto), `puntoSu(path, t)`, `formato(n, dec)`,
+`cifra(n, dec)` (come `formato` ma 1.024 anche a quattro cifre, mai per gli anni),
 `uid()`, `cssVar()`, `annuncia(el, testo)`, `clamp()`, `lerp()`.
 
 ### Regole

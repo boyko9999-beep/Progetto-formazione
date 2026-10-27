@@ -354,7 +354,7 @@ html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
 .lab-readout, .lab-kv dd { font: 700 .86rem var(--mono); font-variant-numeric: tabular-nums; color: var(--trace-2); }
 .lab-kv { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 1px; margin: 0; background: var(--scope-grid); border: 1px solid var(--scope-grid); border-radius: 10px; overflow: hidden; }
 .lab-kv div { background: var(--lab-panel); padding: 8px 10px; }
-.lab-kv dt { font: 700 .66rem var(--mono); text-transform: uppercase; letter-spacing: .1em; color: #7f9a90; }
+.lab-kv dt { font: 700 .7rem var(--mono); text-transform: uppercase; letter-spacing: .1em; color: #7f9a90; }
 .lab-kv dd { margin: 2px 0 0; }
 .lab-note { margin: 0; font-size: .95rem; line-height: 1.55; color: var(--scope-text); min-height: 3.1em; }
 .lab-note strong { color: #fff; }

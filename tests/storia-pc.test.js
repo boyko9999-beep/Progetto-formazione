@@ -115,4 +115,6 @@ test('le curve di accelerazione partono da 0 e arrivano a 1', () => {
   assert.ok(P.curve.smooth(0.5) > 0.7, 'smooth deve rallentare alla fine');
   assert.strictEqual(P.formato(17468), '17.468');
   assert.strictEqual(P.formato(4.77, 2), '4,77');
+  assert.strictEqual(P.cifra(1024), '1.024');
+  assert.strictEqual(P.cifra(666.66, 2), '666,66');
 });

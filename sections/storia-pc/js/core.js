@@ -75,6 +75,15 @@
     return nf[d].format(n);
   }
 
+  // Come formato(), ma con il punto delle migliaia anche a 4 cifre (1.024 e non 1024, che per Intl
+  // in italiano è facoltativo): per le cifre dei blocchi «numeri», che non sono mai anni.
+  const nfg = {};
+  function cifra(n, decimali) {
+    const d = decimali || 0;
+    if (!nfg[d]) nfg[d] = new Intl.NumberFormat('it-IT', { minimumFractionDigits: d, maximumFractionDigits: d, useGrouping: 'always' });
+    return nfg[d].format(n);
+  }
+
   function cssVar(nome, el) {
     return getComputedStyle(el || document.documentElement).getPropertyValue(nome).trim();
   }
@@ -215,6 +224,7 @@
     ridotto: ridotto,
     uid: uid,
     formato: formato,
+    cifra: cifra,
     cssVar: cssVar,
     h: h,
     s: s,
