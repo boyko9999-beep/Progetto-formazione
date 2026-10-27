@@ -1433,7 +1433,7 @@
               body: 'Pensa al canale come a un tubo dell\'acqua e al gate come alla mano che lo strozza. Premere con un dito da una parte sola, come nel transistor piatto, lascia passare qualche goccia; stringere con tre dita, come la pinna, funziona molto meglio; chiudere tutta la mano intorno, come nel gate-all-around, lo chiude davvero.',
             })),
           ui.keyIdea('Dentro un chip ci sono decine di miliardi di MOSFET, interruttori comandati da una tensione, raggruppati in celle standard messe in fila e collegati da un grattacielo di fili di rame. Per continuare a rimpicciolirli, il transistor è diventato tridimensionale: prima la pinna, poi i fogli avvolti dal gate, domani forse un transistor sopra l\'altro.'),
-          ui.crossLink({ href: '#moore', kicker: 'Capitolo 9', title: 'La legge di Moore e oltre', text: 'Perché i transistor raddoppiano da sessant\'anni, che cosa vogliono dire davvero i «nanometri» e che cosa succede ora che rimpicciolirli è sempre più difficile.' })));
+          ui.crossLink({ href: '#moore', kicker: 'Capitolo 9', title: 'La legge di Moore e il futuro', text: 'Perché i transistor raddoppiano da sessant\'anni, che cosa vogliono dire davvero i «nanometri» e che cosa succede ora che rimpicciolirli è sempre più difficile.' })));
     },
   });
 })();

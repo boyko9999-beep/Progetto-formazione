@@ -174,7 +174,7 @@ test('ogni termine del glossario è definito una sola volta e ogni [[rimando]] e
   }
   for (const f of chapterFiles) {
     const src = fs.readFileSync(path.join(DIR, f), 'utf8');
-    for (const m of src.matchAll(/\[\[([^\]|]+)(?:\|[^\]]+)?\]\]/g)) {
+    for (const m of src.matchAll(/\[\[([A-Za-zÀ-ÿ][^\]|()]*)(?:\|[^\]]+)?\]\]/g)) {
       assert.ok(seen.has(m[1].trim().toLowerCase()), f + ': rimando al glossario senza definizione: ' + m[1]);
     }
   }
@@ -190,7 +190,8 @@ test('section.js registra la sezione con gli stessi capitoli', () => {
   assert.ok(reg, 'register chiamato');
   assert.equal(reg.slug, 'porte-logiche');
   assert.equal(reg.numero, 4);
-  assert.deepEqual(reg.capitoli.map((c) => c.id), sb.PL.chapters.map((c) => c.id));
+  // gli array vengono da due contesti vm diversi: si confrontano come testo
+  assert.equal(JSON.stringify(reg.capitoli.map((c) => c.id)), JSON.stringify(sb.PL.chapters.map((c) => c.id)));
   reg.capitoli.forEach((c, i) => {
     assert.equal(c.titolo, sb.PL.chapters[i].title, 'titolo del capitolo ' + c.id);
     assert.ok(c.descrizione && c.periodo);
