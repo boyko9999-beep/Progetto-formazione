@@ -1,0 +1,346 @@
+/* Capitolo 8 · Dentro il chip */
+
+/* laboratorio: dal contenitore agli atomi */
+.cap-struttura .z1-wrap { position: relative; }
+.cap-struttura .z1-art { overflow: hidden; border-radius: 10px; background: #0b1214; }
+.cap-struttura .z1-art .ns { vector-effect: non-scaling-stroke; }
+.cap-struttura .z1-hud { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 2px 16px; margin-top: 8px; font-size: .84rem; line-height: 1.45; color: #cfe0d9; }
+.cap-struttura .z1-hud p { margin: 0; }
+.cap-struttura .z1-hud b { color: #fff; }
+.cap-struttura .z1-hud .pl-mono { font-size: .76rem; font-variant-numeric: tabular-nums; }
+.cap-struttura .z1-win { fill: none; stroke: #ffd36b; stroke-width: 1.5; stroke-dasharray: 5 4; }
+
+/* la scheda */
+.cap-struttura .z0-pcb { fill: #0d2a21; }
+.cap-struttura .z0-traces path { fill: none; stroke: #b07a3a; stroke-opacity: .5; stroke-width: 2.2; stroke-linejoin: round; }
+.cap-struttura .z0-ic { fill: #111617; stroke: #2c3436; stroke-width: 1.5; }
+.cap-struttura .z0-ind { fill: #3a4045; stroke: #59616a; stroke-width: 1.5; }
+.cap-struttura .z0-xtal { fill: #aeb8c0; stroke: #dfe6ea; stroke-width: 1; }
+.cap-struttura .z0-conn { fill: #171c1d; stroke: #2c3436; stroke-width: 1.5; }
+.cap-struttura .z0-gold { fill: #d9a94a; }
+.cap-struttura .z0-sub { fill: #1c2a26; stroke: #33463f; stroke-width: 1.5; }
+.cap-struttura .z0-mem { fill: #0a0e0f; stroke: #273133; stroke-width: 1.5; }
+.cap-struttura .z0-caps rect { fill: #a88f62; }
+.cap-struttura .z0-die { stroke: #5f8494; stroke-width: .8; }
+
+/* la pianta: blocchi e trame */
+.cap-struttura .zf-base { stroke: #0b1214; stroke-width: 1.4; }
+.cap-struttura .zf-blk.is-pcore .zf-base { fill: #213a50; }
+.cap-struttura .zf-blk.is-ecore .zf-base { fill: #1d4038; }
+.cap-struttura .zf-blk.is-sram .zf-base { fill: #1d3346; }
+.cap-struttura .zf-blk.is-npu .zf-base { fill: #3f2f21; }
+.cap-struttura .zf-blk.is-gpu .zf-base { fill: #2e2744; }
+.cap-struttura .zf-blk.is-phy .zf-base { fill: #312f1e; }
+.cap-struttura .zf-blk.is-logic .zf-base { fill: #243a32; }
+.cap-struttura .zf-blk.is-logic2 .zf-base { fill: #2a3328; }
+.cap-struttura .zf-core { fill: #16283a; }
+.cap-struttura .zf-ecore { fill: #15322b; }
+.cap-struttura .zf-gcore { fill: #221d36; stroke: #3d3460; stroke-width: .8; }
+.cap-struttura .zf-pads rect { fill: #c9a54a; }
+.cap-struttura .zt-sram-bg { fill: #182a3b; }
+.cap-struttura .zt-sram { fill: #2f4e69; }
+.cap-struttura .zt-sram2-bg { fill: #1b2d39; }
+.cap-struttura .zt-sram2 { fill: #36536b; }
+.cap-struttura .zt-reg-bg { fill: #1e263b; }
+.cap-struttura .zt-reg { fill: #3c4b7c; }
+.cap-struttura .zt-logic-bg { fill: #15211c; }
+.cap-struttura .zt-logic { fill: #2b4137; }
+.cap-struttura .zt-logic-cut { fill: #0f1713; }
+.cap-struttura .zt-logic2-bg { fill: #1a1828; }
+.cap-struttura .zt-logic2 { fill: #362f55; }
+.cap-struttura .zt-phy-bg { fill: #22221a; }
+.cap-struttura .zt-phy { fill: #5f5a35; }
+.cap-struttura .zt-npu-bg { fill: #281e16; }
+.cap-struttura .zt-npu { fill: #604632; }
+.cap-struttura .z1-fillet { fill: #2a3a36; }
+.cap-struttura .z1-die { fill: #121e26; stroke: #3d5664; stroke-width: 1; }
+.cap-struttura .z2-unit { fill: none; stroke: #0b1214; stroke-width: 2.5; }
+
+/* le celle standard: verde le zone attive, rosso i gate, azzurro il metallo */
+.cap-struttura .z3-bg { fill: #111a1e; }
+.cap-struttura .z3-well rect { fill: #4fd1e0; opacity: .06; }
+.cap-struttura .z3-act .is-p { fill: #3d9a62; }
+.cap-struttura .z3-act .is-n { fill: #2f8668; }
+.cap-struttura .z3-poly { fill: #d8574a; opacity: .88; }
+.cap-struttura .z3-ct rect { fill: #e9eff1; stroke: #0b1214; stroke-width: .6; }
+.cap-struttura .z3-m1 rect { fill: #4f8fd8; opacity: .8; }
+.cap-struttura .z3-bound rect { fill: #0b1214; opacity: .65; }
+.cap-struttura .z3-rail rect { fill: #5a9be4; }
+.cap-struttura .z3-m2 rect { fill: #b06ad8; opacity: .6; }
+.cap-struttura .z3-m2 .is-via { fill: #f3e6ff; opacity: .95; }
+.cap-struttura .z3-cut { stroke: #ffd36b; stroke-width: 1.5; stroke-dasharray: 6 4; }
+
+/* il transistor in sezione */
+.cap-struttura .z4-ild { fill: #16232a; }
+.cap-struttura .z4-sub { fill: #3a4954; }
+.cap-struttura .z4-epi { fill: #2f5e95; stroke: #4f7fb8; stroke-width: 1.2; }
+.cap-struttura .z4-gate { fill: #b89b5a; }
+.cap-struttura .z4-cap { fill: #56656e; }
+.cap-struttura .z4-spacer { fill: #3f505b; }
+.cap-struttura .z4-hk { fill: #59c6d9; }
+.cap-struttura .z4-sheet { fill: #a3b6c4; }
+.cap-struttura .z4-atom { fill: #637a8a; }
+.cap-struttura .z4-ct { stroke: #5d666e; stroke-width: 1; }
+.cap-struttura .z4-sil { fill: #c08a3a; }
+.cap-struttura .z1-e { fill: #5cc8ff; opacity: 0; }
+.cap-struttura .z1-art.is-live .z1-e { opacity: .95; animation: z1-flow 2.1s linear infinite; }
+@keyframes z1-flow { from { transform: translateX(228px); } to { transform: translateX(412px); } }
+
+/* gli atomi */
+.cap-struttura .z5-bg { fill: #0e171c; }
+.cap-struttura .z5-bonds line { stroke: #4b6876; stroke-width: 7; stroke-linecap: round; }
+
+/* etichette e scala */
+.cap-struttura .z1-t { font: 700 13px var(--font); fill: #eef6f2; paint-order: stroke; stroke: #071010; stroke-width: 4px; stroke-linejoin: round; }
+.cap-struttura .z1-l.is-small .z1-t { font-size: 11.5px; }
+.cap-struttura .z1-l.is-hop .z1-t { fill: #ffd36b; }
+.cap-struttura .z1-t.is-bar { font: 700 12px var(--mono); }
+.cap-struttura .z1-lead { stroke: #b9d2c8; stroke-width: 1; }
+.cap-struttura .z1-dot { fill: #ffd36b; }
+.cap-struttura .z1-quota { fill: none; stroke: #ffd36b; stroke-width: 1.5; }
+.cap-struttura .z1-bar { fill: none; stroke: #fff; stroke-width: 2; }
+
+/* laboratorio: il transistor MOS */
+.cap-struttura .z2-art { max-height: 380px; }
+.cap-struttura .z2-p { fill: #2e2233; }
+.cap-struttura .z2-n { fill: #1f4466; stroke: #3f6f9c; stroke-width: 1.2; }
+.cap-struttura .z2-holes path { fill: none; stroke: var(--trace-4); stroke-width: 1.8; stroke-linecap: round; opacity: .8; transition: opacity .35s ease; }
+.cap-struttura .z2-dep { fill: #120c16; fill-opacity: .6; stroke: var(--trace-4); stroke-opacity: .55; stroke-width: 1; stroke-dasharray: 4 3; transition: height .3s ease; }
+.cap-struttura .z2-e circle { fill: var(--trace-3); opacity: .8; }
+.cap-struttura .z2-ch { fill: var(--trace-3); opacity: 0; transition: opacity .3s ease; }
+.cap-struttura .z2-art.is-on .z2-ch { filter: drop-shadow(0 0 4px var(--trace-3)); }
+.cap-struttura .z2-flow { opacity: 0; transition: opacity .3s ease; }
+.cap-struttura .z2-flow circle { fill: #c9f0ff; }
+.cap-struttura .z2-fox { fill: #2b4a52; }
+.cap-struttura .z2-ox { fill: #8fd3e0; opacity: .75; }
+.cap-struttura .z2-gate { fill: #c4554a; }
+.cap-struttura .z2-metal { fill: #8b9ca6; }
+.cap-struttura .z2-term line { stroke: #cfe0d9; stroke-width: 2; }
+.cap-struttura .z2-term circle { fill: var(--scope-bg); stroke: #cfe0d9; stroke-width: 2; }
+.cap-struttura .z2-t { font: 700 14px var(--font); fill: #eef6f2; }
+.cap-struttura .z2-v { font: 700 13px var(--mono); fill: var(--trace-2); font-variant-numeric: tabular-nums; }
+.cap-struttura .z2-lbl { font: 700 15px var(--font); fill: #cfe0d9; paint-order: stroke; stroke: var(--scope-bg); stroke-width: 4px; stroke-linejoin: round; }
+.cap-struttura .z2-lbl.is-small { font-size: 12px; font-weight: 600; }
+.cap-struttura .z2-lbl.is-ox { fill: #8fd3e0; }
+.cap-struttura .z2-lbl.is-ch { fill: var(--trace-3); font-size: 12.5px; opacity: 0; transition: opacity .3s ease; }
+.cap-struttura .z2-dl { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 12px; margin: 0; font-size: .86rem; }
+.cap-struttura .z2-dl dt { color: var(--scope-text); }
+.cap-struttura .z2-dl dd { margin: 0; color: #fff; text-align: right; font-variant-numeric: tabular-nums; }
+.cap-struttura .z2-kick { margin: 14px 0 6px; font: 800 .7rem var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--scope-text); }
+.cap-struttura .z2-meter { height: 10px; border-radius: 5px; background: #1d2b27; overflow: hidden; }
+.cap-struttura .z2-meter span { display: block; height: 100%; width: 0; border-radius: 5px; background: linear-gradient(90deg, #2a7fb0, var(--trace-3)); transition: width .3s ease; }
+.cap-struttura .z2-panel small { display: block; margin-top: 6px; font-size: .8rem; color: #cfe0d9; min-height: 2.4em; }
+
+/* laboratorio: la porta NAND, dal disegno al silicio */
+.cap-struttura .z3c-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+.cap-struttura .z3c-pane { min-width: 0; }
+.cap-struttura .z3c-pt { margin: 0 0 8px; font: 800 .7rem var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--trace-3); }
+.cap-struttura .z3c-lay, .cap-struttura .z3c-sch { max-width: 320px; margin: 0 auto; }
+.cap-struttura .z3c-lay { background: #101a1d; border-radius: 10px; }
+.cap-struttura .z3c-layer { transition: opacity .3s ease; }
+.cap-struttura .z3c-layer.is-off { opacity: 0; }
+.cap-struttura .z3c-layer.is-well rect { fill: #4fd1e0; fill-opacity: .07; stroke: #4fd1e0; stroke-opacity: .4; stroke-width: 1.2; stroke-dasharray: 6 4; }
+.cap-struttura .z3c-layer.is-act .is-p { fill: #3d9a62; }
+.cap-struttura .z3c-layer.is-act .is-n { fill: #2f8668; }
+.cap-struttura .z3c-layer.is-poly rect { fill: #d8574a; opacity: .9; }
+.cap-struttura .z3c-layer.is-m1 rect, .cap-struttura .z3c-layer.is-m1 path { fill: #4f8fd8; opacity: .8; transition: fill .3s ease; }
+.cap-struttura .z3c-layer.is-m1 .is-rail { fill: #5a9be4; opacity: .9; }
+.cap-struttura .z3c-layer.is-m1.is-y1 .is-out { fill: var(--trace-2); }
+.cap-struttura .z3c-layer.is-ct rect { fill: #e9eff1; stroke: #0b1214; stroke-width: 1; }
+.cap-struttura .z3c-tr { fill: transparent; stroke: transparent; stroke-width: 2; cursor: pointer; transition: fill .25s ease, stroke .25s ease; }
+.cap-struttura .z3c-tr.is-on { fill: rgb(62 224 143 / 18%); stroke: var(--trace-1); stroke-dasharray: 4 3; }
+.cap-struttura .z3c-tr.is-hot { fill: rgb(255 255 255 / 22%); stroke: #fff; stroke-dasharray: none; stroke-width: 2.5; }
+.cap-struttura .z3c-tr:focus { outline: none; }
+.cap-struttura .z3c-tr:focus-visible { stroke: #fff; stroke-width: 3; }
+.cap-struttura .z3c-t { font: 700 13px var(--font); fill: #eef6f2; paint-order: stroke; stroke: #0b1214; stroke-width: 4px; stroke-linejoin: round; }
+.cap-struttura .z3c-t.is-in { font-family: var(--mono); fill: var(--trace-3); }
+.cap-struttura .z3c-t.is-out { font-family: var(--mono); fill: var(--trace-2); font-size: 15px; }
+.cap-struttura .z3c-t.is-ours { fill: var(--trace-2); font-size: 11px; }
+.cap-struttura .z3c-w { fill: none; stroke: #8fa69d; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: stroke .3s ease; }
+.cap-struttura .z3c-w.is-vdd { stroke: #cfe0d9; stroke-width: 2.5; }
+.cap-struttura .z3c-chan { stroke: #4a5d57; stroke-width: 3.5; stroke-dasharray: 5 4; stroke-linecap: round; transition: stroke .25s ease; }
+.cap-struttura .z3c-g { stroke: #cfe0d9; stroke-width: 3; stroke-linecap: round; }
+.cap-struttura .z3c-bub { fill: var(--scope-bg); stroke: #cfe0d9; stroke-width: 2; }
+.cap-struttura .z3c-str { cursor: pointer; }
+.cap-struttura .z3c-str:focus { outline: none; }
+.cap-struttura .z3c-str.is-on .z3c-chan { stroke: var(--trace-1); stroke-dasharray: none; }
+.cap-struttura .z3c-str.is-hot .z3c-g, .cap-struttura .z3c-str.is-hot .z3c-w, .cap-struttura .z3c-str:focus-visible .z3c-g { stroke: #fff; }
+.cap-struttura .z3c-str.is-hot .z3c-chan { filter: drop-shadow(0 0 5px #fff); }
+.cap-struttura .z3c-node { fill: #8fa69d; }
+.cap-struttura .z3c-out { fill: #23362f; stroke: #8fa69d; stroke-width: 2; transition: fill .3s ease; }
+.cap-struttura .z3c-sch.is-y1 .z3c-ynode { stroke: var(--trace-2); }
+.cap-struttura .z3c-sch.is-y1 .z3c-out { fill: var(--trace-2); stroke: var(--trace-2); }
+.cap-struttura .z3c-hint { margin: 10px 0 0; min-height: 1.5em; font-size: .86rem; color: #cfe0d9; text-align: center; }
+.cap-struttura .z3c-y { display: inline-flex; align-items: center; gap: 8px; font: 800 .95rem var(--mono); color: var(--trace-2); }
+.cap-struttura .z3c-layers { display: flex; flex-wrap: wrap; gap: 6px; }
+.cap-struttura .z3c-lb { display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 999px; font: 700 .78rem var(--font); color: #e8f2ee; background: #15211e; border: 1px solid var(--scope-grid); cursor: pointer; transition: opacity .2s ease, border-color .2s ease; }
+.cap-struttura .z3c-lb:hover { border-color: var(--trace-1); }
+.cap-struttura .z3c-lb[aria-pressed="false"] { opacity: .55; text-decoration: line-through; }
+.cap-struttura .z3c-sw { width: 12px; height: 12px; border-radius: 3px; border: 1.5px solid transparent; }
+.cap-struttura .z3c-lb.is-well .z3c-sw { border: 1.5px dashed #4fd1e0; }
+.cap-struttura .z3c-lb.is-act .z3c-sw { background: #3d9a62; }
+.cap-struttura .z3c-lb.is-poly .z3c-sw { background: #d8574a; }
+.cap-struttura .z3c-lb.is-ct .z3c-sw { background: #e9eff1; }
+.cap-struttura .z3c-lb.is-m1 .z3c-sw { background: #4f8fd8; }
+.cap-struttura .z3c-lb[aria-pressed="false"] .z3c-sw { background: transparent; border-color: #5d6f69; }
+.cap-struttura .z3c-pl { margin-top: 16px; padding-top: 14px; border-top: 1px dashed var(--scope-grid); }
+.cap-struttura .z3c-plh { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+.cap-struttura .z3c-plh .z3c-pt { margin: 0; }
+.cap-struttura .z3c-place { background: #101a1d; border-radius: 10px; }
+.cap-struttura .z3c-prail rect { fill: #5a9be4; opacity: .75; }
+.cap-struttura .z3c-pcb { fill: #1c3a30; stroke: #2f8668; stroke-width: 1; }
+.cap-struttura .z3c-pcs { fill: #d8574a; opacity: .85; }
+.cap-struttura .z3c-pc.is-ours .z3c-pcb { fill: #2c5e47; stroke: var(--trace-2); stroke-width: 2; }
+.cap-struttura .z3c-via rect { fill: #f3e6ff; }
+.cap-struttura .z3c-via { transition: opacity .2s ease; }
+.cap-struttura .z3c-wires path { fill: none; stroke: #b06ad8; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 100; stroke-dashoffset: 100; }
+
+/* laboratorio: il grattacielo dei collegamenti */
+.cap-struttura .z5-art { max-height: 540px; }
+.cap-struttura .z5-layer { cursor: pointer; transition: opacity .3s ease; }
+.cap-struttura .z5-layer.is-dim { opacity: .28; }
+.cap-struttura .z5-top { fill: #1b3036; stroke: #2f4c54; stroke-width: .8; stroke-linejoin: round; }
+.cap-struttura .z5-side.is-l { fill: #142429; }
+.cap-struttura .z5-side.is-r { fill: #0f1c20; }
+.cap-struttura .z5-layer.is-si .z5-top { fill: #303d46; stroke: #44545e; }
+.cap-struttura .z5-layer.is-si .z5-side.is-l { fill: #27323a; }
+.cap-struttura .z5-layer.is-si .z5-side.is-r { fill: #1f282e; }
+.cap-struttura .z5-layer.is-bump .z5-top { fill: #182023; }
+.cap-struttura .z5-layer.is-retro .z5-top { fill: #2b2620; stroke: #4a3f30; }
+.cap-struttura .z5-layer.is-retro .z5-side.is-l { fill: #221e19; }
+.cap-struttura .z5-layer.is-retro .z5-side.is-r { fill: #1a1713; }
+.cap-struttura .z5-layer.is-sel .z5-top { stroke: var(--trace-2); stroke-width: 1.8; }
+.cap-struttura .z5-wires { fill: #c98a4b; }
+.cap-struttura .z5-layer.is-m0 .z5-wires { fill: #e0a66b; }
+.cap-struttura .z5-layer.is-m12 .z5-wires { fill: #d39555; }
+.cap-struttura .z5-wires.is-power { fill: var(--trace-2); opacity: .8; }
+.cap-struttura .z5-act { fill: #2f8668; }
+.cap-struttura .z5-gates { fill: #d8574a; }
+.cap-struttura .z5-tr { fill: rgb(62 224 143 / 25%); stroke: var(--trace-1); stroke-width: 1.6; }
+.cap-struttura .z5-bump-base { fill: #5c4d28; }
+.cap-struttura .z5-bump { fill: #e0b75a; stroke: #f6dea0; stroke-width: .8; }
+.cap-struttura .z5-pad.is-sig { fill: var(--trace-1); }
+.cap-struttura .z5-pad.is-pow { fill: var(--trace-2); }
+.cap-struttura .z5-sig { fill: none; stroke: var(--trace-1); stroke-width: 3; stroke-linecap: round; stroke-dasharray: 6 6; animation: z5-flow .9s linear infinite; }
+.cap-struttura .z5-pow { stroke: var(--trace-2); stroke-width: 5; stroke-linecap: round; stroke-dasharray: 8 4; animation: z5-flow .9s linear infinite; }
+.cap-struttura .z5-pow, .cap-struttura .z5-pad.is-pow, .cap-struttura .z5-layer.is-retro { transition: opacity .35s ease; }
+@keyframes z5-flow { to { stroke-dashoffset: -12; } }
+.cap-struttura .z5-art.is-back .is-front, .cap-struttura .z5-art:not(.is-back) .is-back { opacity: 0; }
+.cap-struttura .z5-art:not(.is-back) .z5-layer.is-retro { opacity: 0; pointer-events: none; }
+.cap-struttura .z5-lbl { opacity: var(--z5-lbl, 1); }
+.cap-struttura .z5-lead { stroke: #8fa69d; stroke-width: 1; }
+.cap-struttura .z5-t { font: 700 12.5px var(--font); fill: #eef6f2; }
+.cap-struttura .z5-t.is-tag { font-weight: 500; font-size: 11px; fill: var(--scope-text); }
+.cap-struttura .z5-layer.is-sel .z5-t { fill: var(--trace-2); }
+.cap-struttura .z5-list { display: grid; gap: 4px; }
+.cap-struttura .z5-lb { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; width: 100%; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--scope-grid); background: #15211e; color: #e8f2ee; font: 600 .82rem var(--font); text-align: left; cursor: pointer; transition: border-color .2s ease, background-color .2s ease; }
+.cap-struttura .z5-lb[hidden] { display: none; }
+.cap-struttura .z5-lb b { font-family: var(--mono); font-size: .8rem; white-space: nowrap; }
+.cap-struttura .z5-lb span { color: var(--scope-text); font-weight: 500; font-size: .78rem; text-align: right; }
+.cap-struttura .z5-lb:hover { border-color: var(--trace-1); }
+.cap-struttura .z5-lb[aria-pressed="true"] { border-color: var(--trace-2); background: color-mix(in srgb, var(--trace-2) 14%, #15211e); }
+.cap-struttura .z5-lb[aria-pressed="true"] b { color: var(--trace-2); }
+.cap-struttura .z5-key { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; margin: 12px 0 0; font-size: .8rem; color: var(--scope-text); }
+.cap-struttura .z5-key-sig, .cap-struttura .z5-key-pow { display: inline-block; width: 22px; border-top: 3px dashed var(--trace-1); }
+.cap-struttura .z5-key-pow { margin-left: 8px; border-top: 4px dashed var(--trace-2); }
+
+/* laboratorio: dal transistor piatto ai nanosheet */
+.cap-struttura .z6-art { max-height: 420px; }
+.cap-struttura .z6-scene { opacity: 0; transition: opacity .35s ease; }
+.cap-struttura .z6-scene.is-on { opacity: 1; }
+.cap-struttura .z6-gate { transform: translateY(-30px); opacity: 0; transition: transform .6s cubic-bezier(.2, .8, .2, 1) .12s, opacity .3s ease .12s; }
+.cap-struttura .z6-scene.is-on .z6-gate { transform: none; opacity: 1; }
+.cap-struttura .z6-f { stroke: rgb(0 0 0 / 28%); stroke-width: .6; stroke-linejoin: round; }
+.cap-struttura .z6-box.is-si .is-t { fill: #4d5d68; }
+.cap-struttura .z6-box.is-si .is-l { fill: #3e4b54; }
+.cap-struttura .z6-box.is-si .is-r { fill: #333e46; }
+.cap-struttura .z6-box.is-sti .is-t { fill: #24414a; }
+.cap-struttura .z6-box.is-sti .is-l { fill: #1d353d; }
+.cap-struttura .z6-box.is-sti .is-r { fill: #182c33; }
+.cap-struttura .z6-box.is-ch .is-t { fill: #b4c6d3; }
+.cap-struttura .z6-box.is-ch .is-l { fill: #91a3b1; }
+.cap-struttura .z6-box.is-ch .is-r { fill: #7a8a96; }
+.cap-struttura .z6-box.is-chp .is-t { fill: #e2b3c4; }
+.cap-struttura .z6-box.is-chp .is-l { fill: #c595a8; }
+.cap-struttura .z6-box.is-chp .is-r { fill: #aa7f90; }
+.cap-struttura .z6-box.is-sd .is-t { fill: #4a8bcb; }
+.cap-struttura .z6-box.is-sd .is-l { fill: #356fa8; }
+.cap-struttura .z6-box.is-sd .is-r { fill: #2b5d8e; }
+.cap-struttura .z6-box.is-sdp .is-t { fill: #c4628a; }
+.cap-struttura .z6-box.is-sdp .is-l { fill: #a14e70; }
+.cap-struttura .z6-box.is-sdp .is-r { fill: #88425e; }
+.cap-struttura .z6-box.is-ox .is-t { fill: #9fdce8; }
+.cap-struttura .z6-box.is-ox .is-l { fill: #7cc0cc; }
+.cap-struttura .z6-box.is-ox .is-r { fill: #66a7b3; }
+.cap-struttura .z6-box.is-gate .is-t { fill: #e2c27a; }
+.cap-struttura .z6-box.is-gate .is-l { fill: #c2a35e; }
+.cap-struttura .z6-box.is-gate .is-r { fill: #a5894d; }
+.cap-struttura .z6-lbl line { stroke: #8fa69d; stroke-width: 1; }
+.cap-struttura .z6-lbl text { font: 700 13px var(--font); fill: #eef6f2; paint-order: stroke; stroke: var(--scope-bg); stroke-width: 4px; stroke-linejoin: round; }
+.cap-struttura .z6-lbl.is-side text { font: 800 14px var(--mono); }
+.cap-struttura .z6-pt { margin: 0 0 6px; font: 800 .7rem var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--trace-3); }
+.cap-struttura .z6-sec { max-width: 230px; margin: 0 auto 12px; background: #101a1d; border-radius: 8px; }
+.cap-struttura .z6-s-si { fill: #3e4b54; }
+.cap-struttura .z6-s-sti { fill: #1d353d; }
+.cap-struttura .z6-s-gate { fill: #c2a35e; }
+.cap-struttura .z6-s-ox { fill: #9fdce8; }
+.cap-struttura .z6-s-hk { fill: #59c6d9; }
+.cap-struttura .z6-s-ch { fill: var(--trace-3); }
+.cap-struttura .z6-s-ch2 { fill: #b4c6d3; }
+.cap-struttura .z6-s-chp { fill: #e2b3c4; }
+.cap-struttura .z6-s-iso { fill: #1d353d; }
+.cap-struttura .z6-s-t { font: 800 14px var(--mono); fill: #10211d; }
+.cap-struttura .z6-ar line { stroke: #0b1a1f; stroke-width: 2.4; }
+.cap-struttura .z6-ar path { fill: #0b1a1f; }
+.cap-struttura .z6-dl { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2px; margin: 0; font-size: .86rem; }
+.cap-struttura .z6-dl dt { color: var(--scope-text); }
+.cap-struttura .z6-dl dd { margin: 0 0 6px; color: #fff; }
+.cap-struttura .z6-kick { margin: 8px 0 6px; font: 800 .7rem var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--scope-text); }
+.cap-struttura .z6-meter { height: 10px; border-radius: 5px; background: #1d2b27; overflow: hidden; }
+.cap-struttura .z6-meter span { display: block; height: 100%; width: 0; border-radius: 5px; background: linear-gradient(90deg, #ffb35c, #ff6b5e); transition: width .45s ease; }
+.cap-struttura .z6-panel small { display: block; margin-top: 6px; font-size: .8rem; color: #cfe0d9; }
+
+/* figura: la pianta di un system on a chip */
+.cap-struttura .z7-art .zf-blk { cursor: pointer; transition: opacity .25s ease; }
+.cap-struttura .z7-art.has-sel .zf-blk:not(.is-sel) { opacity: .45; }
+.cap-struttura .z7-art .zf-blk.is-sel .zf-base { stroke: var(--trace-2); stroke-width: 2.5; }
+.cap-struttura .z7-art .zf-blk:focus { outline: none; }
+.cap-struttura .z7-art .zf-blk:focus-visible .zf-base { stroke: #fff; stroke-width: 3; }
+.cap-struttura .z7-t { font: 700 13px var(--font); fill: #eef6f2; paint-order: stroke; stroke: #071010; stroke-width: 4px; stroke-linejoin: round; pointer-events: none; }
+.cap-struttura .z7-info { margin: 12px 4px 0; min-height: 3em; font-size: .92rem; line-height: 1.5; color: #cfe0d9; }
+.cap-struttura .z7-info strong { color: var(--trace-2); }
+
+@media (max-width: 900px) {
+  .cap-struttura .z5-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .cap-struttura .z6-panel { display: grid; grid-template-columns: minmax(0, 200px) minmax(0, 1fr); gap: 0 18px; align-items: start; }
+  .cap-struttura .z6-panel .z6-pt { grid-column: 1 / -1; }
+  .cap-struttura .z6-sec { grid-row: span 4; margin: 0; }
+}
+
+@media (max-width: 640px) {
+  .cap-struttura .z1-t { font-size: 21px; stroke-width: 6px; }
+  .cap-struttura .z1-l.is-small { display: none; }
+  .cap-struttura .z1-t.is-bar { font-size: 19px; }
+  .cap-struttura .z1-hud { font-size: .78rem; }
+  .cap-struttura .z2-t { font-size: 20px; }
+  .cap-struttura .z2-v { font-size: 18px; }
+  .cap-struttura .z2-lbl { font-size: 21px; stroke-width: 5px; }
+  .cap-struttura .z2-lbl.is-small, .cap-struttura .z2-lbl.is-ch { font-size: 17px; }
+  .cap-struttura .z3c-grid { grid-template-columns: minmax(0, 1fr); }
+  .cap-struttura .z3c-t.is-ours { font-size: 20px; }
+  .cap-struttura .z5-lbl { display: none; }
+  .cap-struttura .z5-list { grid-template-columns: minmax(0, 1fr); }
+  .cap-struttura .z6-lbl text { font-size: 16px; }
+  .cap-struttura .z6-panel { display: block; }
+  .cap-struttura .z6-sec { margin: 0 auto 12px; }
+  .cap-struttura .z7-t { font-size: 20px; stroke-width: 5px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cap-struttura .z1-art.is-live .z1-e { animation: none; opacity: 0; }
+  .cap-struttura .z2-dep, .cap-struttura .z2-ch, .cap-struttura .z2-flow, .cap-struttura .z2-holes path, .cap-struttura .z2-meter span { transition: none; }
+  .cap-struttura .z3c-layer, .cap-struttura .z3c-tr, .cap-struttura .z3c-chan { transition: none; }
+  .cap-struttura .z5-sig, .cap-struttura .z5-pow { animation: none; }
+  .cap-struttura .z6-scene, .cap-struttura .z6-meter span { transition: none; }
+  .cap-struttura .z6-gate { transform: none; transition: none; }
+}
