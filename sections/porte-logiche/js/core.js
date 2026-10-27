@@ -73,10 +73,11 @@
   const $ = (sel, rootEl) => (rootEl || document).querySelector(sel);
   const $$ = (sel, rootEl) => Array.from((rootEl || document).querySelectorAll(sel));
 
-  /** Numeri all'italiana: 17468 → "17.468", 0.5 → "0,5". */
+  /** Numeri all'italiana: 17468 → "17.468", 1414 → "1.414", 0.5 → "0,5". */
   function fmt(n, decimals) {
     const d = decimals == null ? (Number.isInteger(n) ? 0 : 1) : decimals;
-    return Number(n).toLocaleString('it-IT', { minimumFractionDigits: d, maximumFractionDigits: d });
+    // 'always': il punto anche nei numeri di quattro cifre, come nei testi (senza, it-IT scrive 1414)
+    return Number(n).toLocaleString('it-IT', { minimumFractionDigits: d, maximumFractionDigits: d, useGrouping: 'always' });
   }
 
   Object.assign(PL, { h, s, svg, frag, uid, $, $$, fmt, SVG_NS });
