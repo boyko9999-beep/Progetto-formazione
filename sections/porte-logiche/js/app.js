@@ -243,7 +243,7 @@
         h('ul', { class: 'pl-hero-facts' },
           h('li', null, h('strong', null, String(chapters.length)), h('span', null, 'capitoli')),
           labs ? h('li', null, h('strong', null, String(labs)), h('span', null, 'laboratori interattivi')) : null,
-          h('li', null, h('strong', null, '1847 → oggi'), h('span', null, 'da Boole ai 2 nanometri')))),
+          h('li', null, h('strong', null, '1847 → oggi'), h('span', null, 'da Boole ai chip di oggi')))),
       h('figure', { class: 'pl-die-wrap' }, dieMap(caption), caption));
 
     const acts = h('div', { class: 'pl-acts' }, ACTS.map((act) => {
@@ -391,7 +391,7 @@
       h('nav', { class: 'crumbs', 'aria-label': 'Percorso' }, h('a', { href: '../index.html' }, 'Enciclopedia'), ' / ', h('a', { href: '#indice' }, SECTION_TITLE), ' / ', h('span', null, 'Linea del tempo')),
       h('header', { class: 'page-head' },
         h('h1', null, 'Linea del tempo'),
-        h('p', { class: 'lead' }, 'Da un libro di logica del 1847 ai transistor di due nanometri: ' + all.length + ' tappe, raccolte da tutti i capitoli. Ogni invenzione risolve un limite di quella precedente.')),
+        h('p', { class: 'lead' }, 'Da un libro di logica del 1847 ai chip con decine di miliardi di transistor: ' + all.length + ' tappe, raccolte da tutti i capitoli. Ogni invenzione risolve un limite di quella precedente.')),
       filters, list);
   }
 

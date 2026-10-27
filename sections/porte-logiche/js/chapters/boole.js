@@ -620,7 +620,7 @@
           labDeMorgan(),
           ui.person({
             name: 'Augustus De Morgan', years: '1806 – 1871', role: 'matematico',
-            body: 'Nato in India, a Madurai, a ventidue anni è il primo professore di matematica della neonata University College di Londra. Corrisponde a lungo con Boole e lo incoraggia a pubblicare.',
+            body: 'Nato in India, a Madurai, a ventidue anni è il primo professore di matematica della neonata Università di Londra (oggi University College London). Corrisponde a lungo con Boole e lo incoraggia a pubblicare.',
           })),
 
         ui.section({ id: 'una-operazione', title: 'Basta una sola operazione', kicker: '1880 – 1913' },
@@ -671,7 +671,7 @@
         ui.section({ id: 'due-valori', title: 'Perché proprio 1 e 0', lead: 'Shannon usa interruttori aperti o chiusi, i computer di oggi tensioni alte o basse: sempre due stati soli. Non è un caso.' },
           ui.prose(
             'Un filo non trasporta numeri ma tensioni, e ogni tensione arriva un po\' sporca: disturbi elettrici, cavi lunghi, interferenze. Se un segnale potesse valere dieci livelli diversi, basterebbe un piccolo disturbo per confondere un 6 con un 7.',
-            'Con due soli valori il ricevitore deve solo decidere se la tensione sta sopra o sotto una [[Soglia|soglia]]. Un [[Segnale digitale|segnale digitale]] così resiste a disturbi grandi quasi quanto metà della tensione di lavoro, e si può ripulire e ritrasmettere senza perdere nulla. È per questo che, da Shannon in poi, tutta l\'elettronica del calcolo parla in binario.'),
+            'Con due soli valori il ricevitore deve solo decidere se la tensione sta sopra o sotto una [[Soglia|soglia]]. Un [[Segnale digitale|segnale digitale]] così resiste a disturbi grandi quasi quanto metà della tensione di lavoro, e si può ripulire e ritrasmettere senza perdere nulla. È per questo che oggi tutta l\'elettronica del calcolo parla in binario.'),
           labNoise(),
           ui.keyIdea('Boole ha dato alla logica due valori e tre operazioni; Shannon ha mostrato che gli interruttori sanno calcolarle; il binario rende il tutto robusto. Nel prossimo capitolo le tre operazioni diventano oggetti fisici: le porte logiche.'),
           ui.crossLink({ href: '#porte', kicker: 'Capitolo 2', title: 'Le porte logiche', text: 'NOT, AND, OR e le loro sorelle: i mattoni di ogni circuito digitale.' })));

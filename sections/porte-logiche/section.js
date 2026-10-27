@@ -3,7 +3,7 @@ window.Enciclopedia && Enciclopedia.register({
   slug: 'porte-logiche',
   numero: 4,
   titolo: 'Porte logiche e chip',
-  sottotitolo: 'Dall\'algebra di Boole ai transistor di pochi nanometri: come la logica è diventata silicio.',
+  sottotitolo: 'Dall\'algebra di Boole ai chip con miliardi di transistor: come la logica è diventata silicio.',
   periodo: '1847 – oggi',
   colore: 'var(--c-chip)',
   capitoli: [
