@@ -152,7 +152,6 @@
 .ei-plot { margin: 0; background: var(--scope-bg); padding: 10px 12px 12px; min-width: 0; }
 .ei-plot figcaption { display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: center; margin-bottom: 6px; }
 .ei-plot-title { font: 800 .72rem var(--mono); letter-spacing: .03em; color: var(--scope-text); }
-.ei-lab .ei-sym { text-transform: none; }
 .ei-legend { display: flex; flex-wrap: wrap; gap: 4px 14px; }
 .ei-legend-item { display: inline-flex; align-items: center; gap: 7px; color: var(--lab-ink); font: 600 .78rem var(--mono); }
 .ei-legend-item::before { content: ""; width: 16px; height: 3px; border-radius: 2px; background: var(--lc); box-shadow: 0 0 6px var(--lc); }

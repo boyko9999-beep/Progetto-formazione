@@ -11,10 +11,10 @@ Pagina autonoma dell'enciclopedia BusLab, senza build: si apre `index.html` con 
 | `section.js` | registrazione nell'hub (`Enciclopedia.register`) ed elenco ordinato dei capitoli |
 | `style.css` | colori della sezione, banco del laboratorio, pagine |
 | `js/core.js` | strumenti condivisi: DOM, numeri all'italiana, grafici, simboli dei circuiti, cariche animate, laboratorio |
-| `js/storia.js` | epoche e tappe della linea del tempo che non appartengono a un solo capitolo |
+| `js/storia.js` | epoche e tappe della linea del tempo che non appartengono a un solo capitolo; banco della valvola nella pagina Storia (`EI.storia.model`, `EI.historyDemo`) |
 | `js/app.js` | pagine (panoramica, capitolo, storia, glossario) e navigazione con l'hash |
 | `chapters/<id>.js` | un file per capitolo: testi, figure, storia, glossario, modello fisico e laboratorio |
-| `tests/` | test dei modelli fisici e del contratto dei capitoli (`node --test tests/*.test.js` dalla radice) |
+| `tests/` | test dei modelli fisici, del banco della valvola e del contratto dei capitoli (`node --test tests/*.test.js` dalla radice) |
 
 Indirizzi: `index.html` (panoramica), `index.html#diodo` (un capitolo), `#storia`, `#glossario`, `#glossario/lacuna`.
 
@@ -59,6 +59,8 @@ Titolo, sottotitolo e periodo del capitolo vengono da `section.js`.
 ### Testi
 
 - Italiano semplice e preciso, frasi brevi, tono da buon libro di divulgazione. Numeri con la virgola (`4,7 kΩ`).
+  Nel codice: `EI.si(0.0047, 'A')` → `4,70 mA` (prefissi da G a f, sotto 0,5 fA scrive 0; opzioni `sig`, `trim`,
+  `prefix`, `signed`) e `EI.num(x, cifre)`.
 - `[[id]]` o `[[id|testo]]` diventa un termine del glossario con la definizione al passaggio del mouse.
   Ogni id usato deve esistere nel glossario di un capitolo (lo controllano i test).
 - Collegamenti ad altre sezioni sempre con `index.html` esplicito: `../porte-logiche/index.html#famiglie`.
@@ -72,9 +74,9 @@ Titolo, sottotitolo e periodo del capitolo vengono da `section.js`.
 | Metodo | A cosa serve |
 | --- | --- |
 | `lab.svg`, `lab.view(w, h)` | il disegno del circuito o del cristallo |
-| `lab.readout({ label, unit, color, max, fmt })` | strumento digitale; `.set(v)`, `.state('warn' \| 'danger' \| 'ok')` |
+| `lab.readout({ label, unit, color, max, fmt })` | strumento digitale; `.set(v)`, `.state('warn' \| 'danger' \| 'ok')`. L'etichetta appare come è scritta, senza maiuscolo automatico (`τ`, `ms`, `Rds(on)` restano intatti) |
 | `lab.explain(html)` | "Cosa succede": spiegazione che cambia con lo stato |
-| `lab.plot({ title, height, x, y, y2, legend })` | grafico da oscilloscopio (`EI.Plot`): `clear()`, `line()`, `point()`, `hline()`, `vline()`, `band()` |
+| `lab.plot({ title, height, x, y, y2, legend })` | grafico da oscilloscopio (`EI.Plot`): `clear()`, `line()`, `point()`, `hline()`, `vline()`, `band()`. Anche il titolo resta com'è scritto; le etichette dell'asse x che si sovrapporrebbero vengono saltate |
 | `lab.slider({ label, min, max, value, unit, log, series: 'E12', onInput })` | cursore; `series` usa i valori commerciali |
 | `lab.choice({ label, options, value, onChange })` | pulsanti a scelta |
 | `lab.toggle({ label, on, off, value, onChange })` | interruttore |
