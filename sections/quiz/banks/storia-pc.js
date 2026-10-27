@@ -10,19 +10,19 @@
     slug: 'storia-pc',
     number: 6,
     title: 'Architettura e storia dei PC',
-    subtitle: 'Dai giganti a valvole ai portatili di oggi',
+    subtitle: 'Dai giganti a valvole al chip unico',
     chapters: [
       { id: 'giganti', title: 'I giganti' },
-      { id: 'von-neumann', title: 'Von Neumann' },
+      { id: 'von-neumann', title: 'Il programma memorizzato' },
       { id: 'primi-pc', title: 'I primi personal computer' },
-      { id: 'ibm-pc', title: 'L\'IBM PC e i cloni' },
-      { id: 'scheda-madre', title: 'La scheda madre' },
-      { id: 'memoria', title: 'La memoria' },
-      { id: 'avvio', title: 'L\'avvio' },
-      { id: 'grafica', title: 'Grafica e suono' },
-      { id: 'prestazioni', title: 'Prestazioni' },
-      { id: 'oggi', title: 'Oggi' },
-      { id: 'linea-del-tempo', title: 'Linea del tempo' },
+      { id: 'ibm-pc', title: 'IBM PC e l\'architettura aperta' },
+      { id: 'scheda-madre', title: 'Com\'è fatto un PC' },
+      { id: 'memoria', title: 'La gerarchia della memoria' },
+      { id: 'avvio', title: 'Accendere un PC' },
+      { id: 'grafica', title: 'Pixel, finestre e multimedia' },
+      { id: 'prestazioni', title: 'La corsa alle prestazioni' },
+      { id: 'oggi', title: 'Il PC di oggi' },
+      { id: 'linea-del-tempo', title: 'La linea del tempo' },
     ],
     questions: [
       // ------------------------------------------------------------ I giganti
@@ -54,7 +54,7 @@
         why: 'Dal modello più piccolo al più grande eseguivano tutti gli stessi programmi: un\'azienda poteva crescere senza riscrivere il software. Il System/360 rese standard anche il byte da 8 bit.',
       },
 
-      // ------------------------------------------------------------ Von Neumann
+      // ------------------------------------------------------------ Il programma memorizzato
       {
         id: 'pc-05', level: 1, topic: 'Architettura di von Neumann', chapter: 'von-neumann', type: 'choice',
         q: 'Nell\'architettura descritta da von Neumann nel 1945, dove si trovano le istruzioni del programma mentre il computer lavora?',
@@ -96,9 +96,9 @@
       },
       {
         id: 'pc-10', level: 2, topic: 'Programma 101', chapter: 'primi-pc', type: 'truefalse',
-        q: 'La Programma 101 di Olivetti poteva registrare un programma su una cartolina magnetica e ricaricarlo in un secondo momento.',
+        q: 'La Programma 101 di Olivetti poteva registrare un programma su una scheda magnetica e ricaricarlo in un secondo momento.',
         answer: true,
-        why: 'Vero: i programmi si registravano su cartoline magnetiche da inserire nella macchina, e i risultati uscivano stampati su un rotolo di carta. Non c\'era uno schermo.',
+        why: 'Vero: i programmi si registravano su schede magnetiche da inserire nella macchina, e i risultati uscivano stampati su un rotolo di carta. Non c\'era uno schermo.',
       },
       {
         id: 'pc-11', level: 2, topic: 'Linguaggi dei primi PC', chapter: 'primi-pc', type: 'choice',
@@ -115,7 +115,7 @@
         why: 'L\'Altair 8800 (1975) era un kit senza tastiera né schermo, comandato da levette. Nel 1977 arrivarono tre computer già pronti: l\'Apple II con la grafica a colori, il Commodore PET tutto in un corpo e il TRS-80 dei negozi RadioShack.',
       },
 
-      // ------------------------------------------------------------ L'IBM PC e i cloni
+      // ------------------------------------------------------------ IBM PC e l'architettura aperta
       {
         id: 'pc-13', level: 1, topic: 'Intel 8088', chapter: 'ibm-pc', type: 'choice',
         q: 'Il processore in figura era il cuore del primo IBM PC, il modello 5150. A quale frequenza di clock lavorava?',
@@ -129,14 +129,14 @@
         q: 'Quale azienda fornì a IBM il sistema operativo del suo PC del 1981, venduto da IBM con il nome PC DOS?',
         options: ['Microsoft', 'Digital Research', 'Intel', 'Apple'],
         answer: 0,
-        why: 'Microsoft comprò 86-DOS dalla Seattle Computer Products, lo adattò per IBM e si tenne il diritto di venderlo ad altri come MS-DOS: così ogni clone poteva avere lo stesso sistema operativo.',
+        why: 'Microsoft prese in licenza l\'86-DOS, scritto da Tim Paterson della Seattle Computer Products, assunse Paterson per adattarlo al PC e nel luglio 1981 ne comprò tutti i diritti. Restò libera di venderlo anche agli altri costruttori come MS-DOS: così i cloni ebbero lo stesso sistema operativo dell\'originale.',
       },
       {
         id: 'pc-14', level: 2, topic: 'I cloni dell\'IBM PC', chapter: 'ibm-pc', type: 'choice',
         q: 'Per costruire un computer compatibile con l\'IBM PC, quale parte dovette rifare da zero un produttore come Compaq?',
         options: ['Il BIOS, perché il suo codice era di IBM', 'Il processore, perché lo aveva progettato IBM', 'Il sistema operativo, perché lo aveva scritto IBM', 'La scheda video, perché l\'aveva brevettata IBM'],
         answer: 0,
-        why: 'Processore e chip si compravano sul mercato e Microsoft vendeva MS-DOS a tutti, ma il BIOS era codice protetto di IBM. Compaq lo riscrisse «in camera bianca», senza copiarlo: il suo Portable (1983) fu uno dei primi compatibili e fece scuola.',
+        why: 'Processore e chip si compravano sul mercato e Microsoft vendeva MS-DOS a tutti, ma il BIOS era codice protetto di IBM. Compaq lo riscrisse «in camera bianca», senza copiarlo: il suo Portable, annunciato nel 1982 e in vendita dal 1983, fu uno dei primi compatibili e fece scuola.',
       },
       {
         id: 'pc-15', level: 2, topic: 'Mappa della memoria', chapter: 'ibm-pc', type: 'number',
@@ -153,7 +153,7 @@
         why: 'Vero: l\'8086 a 8 MHz dell\'M24 scambiava 16 bit alla volta con la memoria, mentre l\'8088 dell\'IBM PC andava a 4,77 MHz con un bus dati esterno di 8 bit. Negli Stati Uniti l\'M24 fu venduto anche come AT&T 6300.',
       },
 
-      // ------------------------------------------------------------ La scheda madre
+      // ------------------------------------------------------------ Com'è fatto un PC
       {
         id: 'pc-17', level: 1, topic: 'Il chipset', chapter: 'scheda-madre', type: 'choice',
         q: 'Nelle schede madri dei PC con Pentium 4, quale chip collegava la CPU alla RAM e alla scheda video?',
@@ -172,10 +172,10 @@
         q: 'Nei PC di oggi non c\'è più un northbridge separato. Dov\'è finito il controller della RAM che si trovava al suo interno?',
         options: ['Dentro la CPU stessa', 'Dentro il southbridge', 'Dentro i moduli di RAM', 'Dentro la scheda video'],
         answer: 0,
-        why: 'AMD lo portò nella CPU nel 2003 e Intel nel 2008: così la RAM risponde prima. Le altre funzioni del chipset stanno in un solo chip, che Intel chiama PCH (Platform Controller Hub).',
+        why: 'AMD lo portò nella CPU nel 2003, Intel con i Core i7 tra il 2008 e il 2009: così la RAM risponde prima. Le altre funzioni del chipset stanno in un solo chip, che Intel chiama PCH (Platform Controller Hub).',
       },
 
-      // ------------------------------------------------------------ La memoria
+      // ------------------------------------------------------------ La gerarchia della memoria
       {
         id: 'pc-20', level: 1, topic: 'Gerarchia di memoria', chapter: 'memoria', type: 'choice',
         q: 'Nella gerarchia della memoria di un PC (registri, cache, RAM, SSD e dischi), come cambia la memoria man mano che ci si avvicina alla CPU?',
@@ -196,7 +196,7 @@
         why: 'Ogni accesso costa almeno 1 ns, e un accesso su dieci aggiunge 100 ns: 1 + 0,1 × 100 = 11 ns. Senza cache ogni accesso costerebbe circa 100 ns, nove volte tanto; se i dati trovati scendessero all\'80%, la media salirebbe a 21 ns.',
       },
 
-      // ------------------------------------------------------------ L'avvio
+      // ------------------------------------------------------------ Accendere un PC
       {
         id: 'pc-23', level: 1, topic: 'Sequenza di avvio', chapter: 'avvio', type: 'order',
         q: 'Metti in ordine quello che succede quando si accende un PC con il BIOS.',
@@ -216,7 +216,7 @@
         q: 'Un PC che si avvia in modalità UEFI non esegue il codice del settore MBR. Dove trova sul disco il programma da avviare?',
         options: ['In un file di una partizione dedicata all\'avvio', 'Nel primo settore di ogni partizione', 'Nella tabella delle partizioni GPT', 'In un\'area nascosta prima della prima partizione'],
         answer: 0,
-        why: 'In modalità UEFI il firmware legge la partizione di sistema EFI (ESP), formattata FAT, e lancia un programma .efi, per esempio BOOTX64.EFI. Il BIOS invece eseguiva i 446 byte di codice all\'inizio del settore MBR.',
+        why: 'In modalità UEFI il firmware legge la partizione di sistema EFI (ESP), formattata FAT, e lancia un programma .efi, come bootmgfw.efi di Windows o GRUB di Linux. Il BIOS invece eseguiva i 446 byte di codice all\'inizio del settore MBR.',
       },
       {
         id: 'pc-26', level: 2, topic: 'UEFI e GPT', chapter: 'avvio', type: 'choice',
@@ -226,7 +226,7 @@
         why: 'L\'MBR numera i settori con 32 bit: 2³² settori × 512 byte ≈ 2,2 TB al massimo, e ha posto per 4 partizioni principali (le altre solo come logiche dentro una estesa). GPT usa numeri a 64 bit e di solito 128 partizioni.',
       },
 
-      // ------------------------------------------------------------ Grafica e suono
+      // ------------------------------------------------------------ Pixel, finestre e multimedia
       {
         id: 'pc-27', level: 1, topic: 'Interfaccia grafica', chapter: 'grafica', type: 'truefalse',
         q: 'Il Macintosh di Apple, nel 1984, fu il primo computer in vendita con mouse, finestre e icone.',
@@ -268,7 +268,7 @@
         why: 'Un\'immagine richiede gli stessi calcoli su milioni di pixel: la GPU li divide tra migliaia di piccoli core, mentre la CPU ne ha pochi ma potenti. Per lo stesso motivo oggi le GPU servono anche all\'intelligenza artificiale.',
       },
 
-      // ------------------------------------------------------------ Prestazioni
+      // ------------------------------------------------------------ La corsa alle prestazioni
       {
         id: 'pc-31', level: 1, topic: 'MHz e GHz', chapter: 'prestazioni', type: 'choice',
         q: 'Un processore degli anni \'80 lavorava a 8 MHz, uno di oggi lavora a 4 GHz. Quante volte più alta è la frequenza di oggi?',
@@ -296,7 +296,7 @@
         why: 'La metà sequenziale non accelera: il tempo scende da 1 a 0,5 + 0,5 / 8 = 0,5625, e 1 / 0,5625 ≈ 1,78 (legge di Amdahl). Anche con infiniti core non si arriverebbe a 2.',
       },
 
-      // ------------------------------------------------------------ Oggi
+      // ------------------------------------------------------------ Il PC di oggi
       {
         id: 'pc-35', level: 1, topic: 'Arduino', chapter: 'oggi', type: 'truefalse',
         q: 'Il chip in figura è il microcontrollore della classica scheda Arduino Uno. Come il Raspberry Pi, fa girare un sistema operativo come Linux.',
@@ -318,7 +318,7 @@
         why: 'Posta, musica e attività in sottofondo girano sui core piccoli ed efficienti, e quelli veloci si attivano solo quando serve. Così il MacBook Air con M1 (2020) dura a lungo a batteria e non ha nemmeno la ventola.',
       },
 
-      // ------------------------------------------------------------ Linea del tempo
+      // ------------------------------------------------------------ La linea del tempo
       {
         id: 'pc-38', level: 1, topic: 'Linea del tempo', chapter: 'linea-del-tempo', type: 'order',
         q: 'Metti in ordine queste tappe della storia dei computer, dalla più antica.',
@@ -331,7 +331,7 @@
         q: 'Ordina queste novità dalla più antica alla più recente.',
         items: ['Xerox Alto', 'Apple II', 'Olivetti M24', 'Primi processori dual core per PC', 'Raspberry Pi'],
         ends: ['Più antica', 'Più recente'],
-        why: 'Xerox Alto (1973), Apple II (1977), Olivetti M24 (1983-84), primi dual core per PC (2005) e Raspberry Pi (2012): dalle finestre sovrapposte dei laboratori Xerox ai computer da poche decine di euro.',
+        why: 'Xerox Alto (1973), Apple II (1977), Olivetti M24 (1984), primi dual core per PC (2005) e Raspberry Pi (2012): dalle finestre sovrapposte dei laboratori Xerox ai computer da poche decine di euro.',
       },
       {
         id: 'pc-40', level: 3, topic: 'Linea del tempo', chapter: 'linea-del-tempo', type: 'order',
