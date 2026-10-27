@@ -1,7 +1,8 @@
 /*
  * Laboratorio "L'esperimento di Faraday" (capitolo 7).
  * Banco di Faraday: una calamita scorre sull'asse di una bobina collegata a un galvanometro
- * a zero centrale e a un LED. La tensione indotta è ε = −N · ΔΦ/Δt, con il flusso di un
+ * a zero centrale e a un LED bicolore (due LED in versi opposti nello stesso involucro:
+ * giallo con la tensione positiva, rosso con quella negativa). La tensione indotta è ε = −N · ΔΦ/Δt, con il flusso di un
  * dipolo in asse con le spire (EBFisica.flussoRelativo) sommato lungo tutta la bobina.
  * Banco di Ørsted: un filo verticale percorso da corrente e sei bussole che seguono la
  * somma del campo del filo (B = μ₀ · I / 2πr) e della parte orizzontale di quello terrestre.
@@ -37,7 +38,7 @@
   const PX = 240;
   const PY = 172;
   const SQ = 0.55;
-  const B_TERRA = 25e-6;     // T, parte orizzontale del campo terrestre in Italia (circa)
+  const B_TERRA = 25e-6;     // T, parte orizzontale del campo terrestre: in Italia da circa 22 µT (Alpi) a 27 µT (Sicilia)
   const BUSSOLE = [[85, -85], [-85, -85], [60, 0], [-60, 0], [85, 85], [-85, 85]];   // [verso nord, verso est]
   const CERCHI = [24, 36, 54, 81, 121];   // in progressione geometrica: le linee si infittiscono come 1/r
   const SP = ' ';
@@ -77,6 +78,7 @@
         s('linearGradient', { id: uid + '-n', x1: 0, y1: 0, x2: 0, y2: 1 }, stop(0, 'mag-n1'), stop(0.45, 'mag-n2'), stop(1, 'mag-n3')),
         s('linearGradient', { id: uid + '-s', x1: 0, y1: 0, x2: 0, y2: 1 }, stop(0, 'mag-s1'), stop(0.45, 'mag-s2'), stop(1, 'mag-s3')),
         s('radialGradient', { id: uid + '-luce' }, stop(0, 'mag-l1', 0.95), stop(0.35, 'mag-l1', 0.4), stop(1, 'mag-l1', 0)),
+        s('radialGradient', { id: uid + '-luce2' }, stop(0, 'mag-l2', 0.95), stop(0.35, 'mag-l2', 0.4), stop(1, 'mag-l2', 0)),
         s('radialGradient', { id: uid + '-sf', gradientUnits: 'userSpaceOnUse', cx: 0, cy: 0, r: 175, gradientTransform: 'scale(1 0.7)' },
           stop(0, 'mag-m1'), stop(0.5, 'mag-m1'), stop(1, 'mag-m1', 0)),
         s('mask', { id: uid + '-m', maskUnits: 'userSpaceOnUse', x: -200, y: -130, width: 400, height: 260 },
@@ -85,7 +87,8 @@
       // Fondo: asse della corsa, linee di campo della calamita (si muovono con lei), righello, circuito, LED, galvanometro.
       const campo = s('g', { class: 'mag-campo', mask: 'url(#' + uid + '-m)', 'aria-hidden': 'true' });
       tracciaCampo().forEach((l) => campo.append(s('path', { d: l.d }), s('path', { d: 'M3.5 0L-3 -3L-3 3Z', class: 'mag-campo-f', transform: l.freccia })));
-      const ledLuce = s('circle', { cx: 240, cy: 149, r: 30, fill: 'url(#' + uid + '-luce)', class: 'mag-led-luce', opacity: 0 });
+      // LED bicolore: un alone giallo per le tensioni positive, uno rosso per le negative
+      const ledLuce = ['-luce', '-luce2'].map((g) => s('circle', { cx: 240, cy: 149, r: 30, fill: 'url(#' + uid + g + ')', class: 'mag-led-luce', opacity: 0 }));
       const ledCupola = s('path', { d: 'M232 157V148A8 8 0 0 1 248 148V157Z', class: 'mag-led' });
       const tacche = [0, 0.1, 0.3, 1, 3].flatMap((e) => (e ? [e, -e] : [0])).map((e) => {
         const a = angolo(e) * Math.PI / 180;
@@ -101,7 +104,7 @@
         s('path', { d: 'M187.5 127V176M292.5 127V176M187.5 157H228M252 157H292.5', class: 'mag-filo' }),
         s('path', { d: 'M187.5 127V176M292.5 127V176M187.5 157H228M252 157H292.5', class: 'mag-filo-rame' }),
         s('circle', { cx: 187.5, cy: 157, r: 3.2, class: 'mag-nodo' }), s('circle', { cx: 292.5, cy: 157, r: 3.2, class: 'mag-nodo' }),
-        ledLuce,
+        ...ledLuce,
         s('rect', { x: 229, y: 156, width: 22, height: 4, rx: 1.5, class: 'mag-led-base' }), ledCupola,
         s('text', { x: 256, y: 153, class: 'mag-t' }, 'LED'),
         s('rect', { x: 168, y: 176, width: 144, height: 88, rx: 12, class: 'mag-g-cassa' }),
@@ -262,21 +265,22 @@
       const banco = h('div', { class: 'mag-banco' }, svgF, svgO);
       const voce = (cls, testo) => h('span', { class: 'mag-leg' }, h('span', { class: 'mag-leg-i ' + cls, 'aria-hidden': 'true' }), testo);
       const legF = h('p', { class: 'mag-legenda' }, voce('mag-leg-campo', 'linee del campo della calamita'), voce('mag-leg-corr', 'corrente indotta'),
-        voce('mag-leg-polo', 'poli della bobina mentre passa corrente'), voce('mag-leg-g', 'galvanometro a zero centrale, scala compressa'));
+        voce('mag-leg-polo', 'poli della bobina mentre passa corrente'), voce('mag-leg-g', 'galvanometro a zero centrale, scala compressa'),
+        voce('mag-leg-led', 'LED bicolore: due LED in versi opposti, giallo con la tensione positiva, rosso con la negativa'));
       const legO = h('p', { class: 'mag-legenda mag-nascosto' }, voce('mag-leg-anello', 'campo del filo: più fitto e intenso vicino al filo'),
-        voce('mag-leg-ago', 'punta rossa: nord dell\'ago'), voce('mag-leg-nord', 'campo terrestre, circa 25 µT verso nord'));
+        voce('mag-leg-ago', 'punta rossa: nord dell\'ago'), voce('mag-leg-nord', 'campo terrestre verso nord: parte orizzontale, in Italia circa 25' + SP + 'µT'));
       const modo = ctx.ui.scelta({ etichetta: 'Esperimento', opzioni: [{ valore: 'faraday', etichetta: 'Faraday' }, { valore: 'oersted', etichetta: 'Ørsted' }], valore: 'faraday', cambia: cambiaModo });
       modo.el.classList.add('mag-modo');
       ctx.scena.append(modo.el, banco, legF, legO);
 
       const lFem = ctx.ui.lettura({ etichetta: 'Tensione indotta', grandezza: 'v' });
       const lPhi = ctx.ui.lettura({ etichetta: 'Flusso in una spira', grandezza: 'b' });
-      const lPicco = ctx.ui.lettura({ etichetta: 'Ultimo picco', grandezza: 'v', nota: 'il LED si accende oltre 1,8 V' });
+      const lPicco = ctx.ui.lettura({ etichetta: 'Ultimo picco', grandezza: 'v', nota: 'il LED si accende oltre 1,8' + SP + 'V' });
       const formulaF = ctx.ui.formulaViva();
       const lI = ctx.ui.lettura({ etichetta: 'Corrente nel filo', grandezza: 'i' });
-      const lB = ctx.ui.lettura({ etichetta: 'Campo del filo a 3 cm', grandezza: 'b' });
-      const lT = ctx.ui.lettura({ etichetta: 'Campo terrestre', grandezza: 'b', nota: 'parte orizzontale, in Italia', valore: '≈' + SP + '25' + SP + 'µT' });
-      const lDev = ctx.ui.lettura({ etichetta: 'Ago a 3 cm dal filo', grandezza: 't' });
+      const lB = ctx.ui.lettura({ etichetta: 'Campo del filo a 3' + SP + 'cm', grandezza: 'b' });
+      const lT = ctx.ui.lettura({ etichetta: 'Campo terrestre', grandezza: 'b', nota: 'parte orizzontale; in Italia tra 22 e 27' + SP + 'µT', valore: '≈' + SP + '25' + SP + 'µT' });
+      const lDev = ctx.ui.lettura({ etichetta: 'Ago a 3' + SP + 'cm dal filo', grandezza: 't' });
       const formulaO = ctx.ui.formulaViva();
       formulaF.el.classList.add('mag-formula');
       formulaO.el.classList.add('mag-formula');
@@ -297,7 +301,7 @@
       ctx.comandi.append(...comandiF, ...comandiO);
 
       /* ===== fisica e disegno: Faraday ===== */
-      const F = { xt: RIPOSO, xv: RIPOSO, m: 1, sx: 1, phi: flusso(RIPOSO, 1), fem: 0, ago: 0, vAgo: 0, luce: 0, off: 0, quiete: 0, giro: null, auto: null, presa: null, tLett: 0, timer: 0, timerAuto: 0, tEv: 0 };
+      const F = { xt: RIPOSO, xv: RIPOSO, m: 1, sx: 1, phi: flusso(RIPOSO, 1), fem: 0, ago: 0, vAgo: 0, luce: [0, 0], off: 0, quiete: 0, giro: null, auto: null, presa: null, tLett: 0, timer: 0, timerAuto: 0, tEv: 0 };
       let partenza = { x: F.xv, phi: F.phi };
       let imp = null;
       let ultimoPicco = null;
@@ -317,8 +321,9 @@
         tS.setAttribute('x', f1(-19 * F.sx));
         etCal.setAttribute('opacity', Math.abs(F.sx).toFixed(2));
         ago.setAttribute('transform', 'rotate(' + F.ago.toFixed(2) + ' ' + PERNO[0] + ' ' + PERNO[1] + ')');
-        ledLuce.setAttribute('opacity', F.luce.toFixed(3));
-        ledCupola.classList.toggle('acceso', F.luce > 0.3);
+        ledLuce.forEach((c, k) => c.setAttribute('opacity', F.luce[k].toFixed(3)));
+        ledCupola.classList.toggle('acceso', F.luce[0] > 0.3 && F.luce[0] >= F.luce[1]);
+        ledCupola.classList.toggle('acceso2', F.luce[1] > 0.3 && F.luce[1] > F.luce[0]);
         const forte = Math.min(1, Math.abs(F.fem) / 0.25);
         const su = F.fem < 0;   // tensione negativa: corrente verso l'alto davanti alle spire
         corr.setAttribute('opacity', (rid ? (Math.abs(F.fem) >= SOGLIA ? 0.9 : 0) : Math.sqrt(forte) * 0.95).toFixed(3));
@@ -353,7 +358,7 @@
       function ariaF() {
         const x = Math.round(Math.abs(F.xv));
         const dove = Math.abs(F.xv) <= DENTRO ? 'dentro la bobina' : 'fuori dalla bobina, a ' + x + ' cm dal centro';
-        svgF.setAttribute('aria-label', 'Esperimento di Faraday: una bobina di ' + stato.n + ' spire collegata a un galvanometro a zero centrale e a un LED. La calamita, con il polo ' + poloVerso(F.xv, F.m) + ' verso la bobina, è ferma ' + dove + '.');
+        svgF.setAttribute('aria-label', 'Esperimento di Faraday: una bobina di ' + stato.n + ' spire collegata a un galvanometro a zero centrale e a un LED bicolore. La calamita, con il polo ' + poloVerso(F.xv, F.m) + ' verso la bobina, è ferma ' + dove + '.');
       }
 
       // Ogni tensione abbastanza grande fa parte di un impulso; le sfide si riconoscono qui.
@@ -381,28 +386,33 @@
         const p = imp;
         imp = null;
         if (!p) return;
-        const V = (e) => '**' + conSegno(e, 2) + ' V**';
+        const V = (e) => '**' + conSegno(e, 2) + SP + 'V**';
         const mWb = (f) => num(Math.abs(f) * 1000, 2);
         let t;
         const tratti = p.tratti.filter(Boolean);
         if (p.auto && tratti.length >= 2) {
           const dentro = tratti.find((x) => x.entra) || tratti[0];
           const fuori = tratti.slice().reverse().find((x) => !x.entra) || tratti[tratti.length - 1];
-          t = 'Dentro e fuori, movimento ' + (stato.vel === 'rapida' ? 'rapido' : 'lento') + ': entrando l\'ago segna ' + V(dentro.e) + ', uscendo ' + V(fuori.e) + '. Stesso cambiamento di flusso, verso opposto: la tensione cambia segno.';
+          t = 'Dentro e fuori, movimento ' + (stato.vel === 'rapida' ? 'rapido' : 'lento') + ': entrando l\'ago segna ' + V(dentro.e) + ', uscendo ' + V(fuori.e) + '. Entrando il flusso cresce, uscendo cala: la tensione cambia segno.';
         } else if (p.giro) {
-          t = 'Hai capovolto la calamita vicino alle spire: il flusso in una spira passa da **' + conSegno(p.phi0 * 1000, 2) + '** a **' + conSegno(F.phi * 1000, 2) + ' mWb** e l\'ago segna ' + V(p.picco) + '. Anche ruotare il magnete cambia il flusso, e quindi induce tensione.';
+          t = 'Hai capovolto la calamita' + (Math.abs(F.xv) <= DENTRO ? ' dentro la bobina' : '') + ': il flusso in una spira passa da **' + conSegno(p.phi0 * 1000, 2) + '** a **' + conSegno(F.phi * 1000, 2) + SP + 'mWb** e l\'ago segna ' + V(p.picco) + '. Anche ruotare il magnete cambia il flusso, e quindi induce tensione.';
         } else if (Math.sign(F.xv) !== Math.sign(p.x0) && Math.abs(F.xv) > 8 && Math.abs(p.x0) > 8) {
           t = 'La calamita ha attraversato la bobina: entrando l\'ago devia da una parte, uscendo dall\'altra (' + V(p.neg) + ' e ' + V(p.pos) + '). Il flusso prima cresce, poi cala.';
         } else if (Math.abs(F.xv) < Math.abs(p.x0)) {
           const polo = poloVerso(p.x0, F.m);
-          t = 'Avvicini il polo **' + polo + '**: il flusso in una spira sale da **' + mWb(p.phi0) + '** a **' + mWb(F.phi) + ' mWb** e l\'ago arriva a ' + V(p.picco) + '. La bobina diventa una calamita con un polo ' + polo + ' verso la calamita e la respinge (legge di Lenz). Ora è ferma: niente cambiamento, niente tensione, anche dentro la bobina.';
+          t = 'Avvicini il polo **' + polo + '**: il flusso in una spira sale da **' + mWb(p.phi0) + '** a **' + mWb(F.phi) + SP + 'mWb** e l\'ago arriva a ' + V(p.picco) + '. Mentre passa la corrente indotta, la bobina diventa una calamita con il polo ' + polo + ' rivolto verso quello che si avvicina, e lo respinge (legge di Lenz). Ora la calamita è ferma: niente cambiamento, niente tensione, anche dentro la bobina.';
         } else {
           const polo = poloVerso(F.xv, F.m);
-          t = 'Allontani il polo **' + polo + '**: il flusso cala da **' + mWb(p.phi0) + '** a **' + mWb(F.phi) + ' mWb**, la tensione cambia segno (' + V(p.picco) + ') e l\'ago devia dall\'altra parte. La bobina ora mostra un polo ' + (polo === 'N' ? 'S' : 'N') + ' che trattiene la calamita (legge di Lenz).';
+          t = 'Allontani il polo **' + polo + '**: il flusso cala da **' + mWb(p.phi0) + '** a **' + mWb(F.phi) + SP + 'mWb**, la tensione cambia segno (' + V(p.picco) + ') e l\'ago devia dall\'altra parte. Mentre la calamita si allontana, la bobina le mostra un polo ' + (polo === 'N' ? 'S' : 'N') + ' che la trattiene (legge di Lenz).';
         }
-        const max = Math.max(Math.abs(p.pos), Math.abs(p.neg));
-        if (max >= SOGLIA_LED) t += ' Oltre 1,8 V: il **LED** si accende.';
-        else if (max >= 0.2) t += ' Per il LED servono circa 1,8 V: muovi più in fretta' + (stato.n < 1000 ? ' o aumenta le spire.' : '.');
+        const piu = p.pos >= SOGLIA_LED;
+        const meno = -p.neg >= SOGLIA_LED;
+        if (piu || meno) t += ' Oltre 1,8' + SP + 'V il **LED** si accende: ' + (piu && meno ? 'giallo con la tensione positiva, rosso con quella negativa.' : piu ? 'giallo, perché la tensione è positiva.' : 'rosso, perché la tensione è negativa.');
+        else if (Math.max(p.pos, -p.neg) >= 0.2) {
+          const spire = stato.n < 1000 ? 'aumenta le spire' : '';
+          const consiglio = !p.giro ? 'muovi più in fretta' + (spire ? ' o ' + spire : '') : Math.abs(F.xv) > DENTRO ? 'capovolgi la calamita dentro la bobina' : spire;
+          if (consiglio) t += ' Per accendere il LED servono circa 1,8' + SP + 'V: ' + consiglio + '.';
+        }
         nota(t);
         ariaF();
       }
@@ -430,14 +440,15 @@
         F.phi = flusso(xb, mb);
         F.fem = Math.abs(e) >= SOGLIA ? e : 0;
         F.ago = angolo(F.fem);
-        F.luce = Math.abs(e) >= SOGLIA_LED ? 1 : 0;
+        F.luce[0] = e >= SOGLIA_LED ? 1 : 0;
+        F.luce[1] = e <= -SOGLIA_LED ? 1 : 0;
         registra(e, xa, xb);
         aggiornaPicco();
         disegnaF();
         aggiornaLetture();
         clearTimeout(F.timer);
         F.timer = setTimeout(() => {
-          F.fem = 0; F.ago = 0; F.luce = 0;
+          F.fem = 0; F.ago = 0; F.luce[0] = F.luce[1] = 0;
           disegnaF();
           aggiornaLetture();
           if (!F.timerAuto) { chiudiImpulso(); partenza = { x: F.xv, phi: F.phi }; }
@@ -565,7 +576,10 @@
           F.ago += F.vAgo * dt / n;
         }
         const luce = Math.abs(F.fem) >= SOGLIA_LED ? Math.min(1, 0.6 + (Math.abs(F.fem) - SOGLIA_LED) / 2) : 0;
-        F.luce += (luce - F.luce) * (1 - Math.exp(-dt * (luce > F.luce ? 30 : 7)));
+        for (let k = 0; k < 2; k++) {
+          const meta = (k === 0) === (F.fem > 0) ? luce : 0;   // 0: giallo, tensione positiva; 1: rosso, negativa
+          F.luce[k] += (meta - F.luce[k]) * (1 - Math.exp(-dt * (meta > F.luce[k] ? 30 : 7)));
+        }
         F.off -= F.fem * 50 * dt;
         registra(F.fem, xa, F.xv);
         const fermo = !F.auto && !F.giro && F.xv === F.xt;
@@ -577,11 +591,11 @@
         aggiornaPicco();
         disegnaF();
         F.tLett += dt;
-        const finito = fermo && !imp && Math.abs(F.fem) < 1e-4 && Math.abs(F.ago) < 0.03 && Math.abs(F.vAgo) < 0.05 && F.luce < 0.004;
+        const finito = fermo && !imp && Math.abs(F.fem) < 1e-4 && Math.abs(F.ago) < 0.03 && Math.abs(F.vAgo) < 0.05 && Math.max(F.luce[0], F.luce[1]) < 0.004;
         if (F.tLett > 0.1 || finito) { F.tLett = 0; aggiornaLetture(); }
         ctx.box.classList.toggle('mag-vivo', !finito);
         if (finito) {
-          F.fem = 0; F.ago = 0; F.vAgo = 0; F.luce = 0;
+          F.fem = 0; F.ago = 0; F.vAgo = 0; F.luce[0] = F.luce[1] = 0;
           disegnaF();
           aggiornaLetture();
         }
@@ -661,12 +675,12 @@
         const dev = num(deviazione(), 0);
         if (origine === 'acceso') {
           nota(stato.acceso
-            ? 'Passano **' + ctx.fmt(stato.i, 'A') + ' ' + (stato.verso > 0 ? 'verso l\'alto' : 'verso il basso') + '**: a 3 cm il filo crea **' + bw + ' µT**, ' + (campoFilo(3) > B_TERRA ? 'più' : 'meno') + ' dei 25 µT del campo terrestre, e l\'ago lì ruota di **' + dev + '°**. Il campo forma cerchi intorno al filo e cala con la distanza: gli aghi più lontani ruotano meno.'
+            ? 'Passano **' + ctx.fmt(stato.i, 'A') + ' ' + (stato.verso > 0 ? 'verso l\'alto' : 'verso il basso') + '**: a 3' + SP + 'cm il campo del filo vale **' + bw + SP + 'µT**, ' + (campoFilo(3) > B_TERRA ? 'più' : 'meno') + ' dei circa 25' + SP + 'µT del campo terrestre, e l\'ago lì ruota di **' + dev + '°**. Il campo forma cerchi intorno al filo e cala con la distanza: gli aghi più lontani ruotano meno.'
             : 'Corrente spenta: resta solo il campo terrestre e tutti gli aghi tornano verso nord.');
         } else if (origine === 'verso') {
           nota(stato.acceso
             ? 'Corrente invertita, ora **' + (stato.verso > 0 ? 'verso l\'alto' : 'verso il basso') + '**: i cerchi del campo girano nell\'altro senso e gli aghi ruotano dalla parte opposta.'
-            : 'Verso scelto: ' + (stato.verso > 0 ? 'verso l\'alto' : 'verso il basso') + '. Accendi la corrente per vedere dove ruotano gli aghi.');
+            : 'Corrente impostata ' + (stato.verso > 0 ? 'verso l\'alto' : 'verso il basso') + ': accendila per vedere da che parte ruotano gli aghi.');
         } else if (origine === 'i') {
           const vecchio = O.prima === null ? prima : O.prima;
           if (O.prima === null) O.prima = prima;
@@ -676,7 +690,7 @@
             if (vecchio === stato.i) return;
             const bw0 = campoFilo(3) * vecchio / stato.i;
             const dev0 = Math.atan(bw0 / B_TERRA) * 180 / Math.PI;
-            nota('Da **' + ctx.fmt(vecchio, 'A') + '** a **' + ctx.fmt(stato.i, 'A') + '**: il campo a 3 cm passa da ' + num(bw0 * 1e6, 0) + ' a **' + bw + ' µT** (' + fattore(stato.i / vecchio, num) + '), ma la deviazione solo da ' + num(dev0, 0) + '° a **' + dev + '°**: l\'ago segue la somma con il campo terrestre.');
+            nota('Da **' + ctx.fmt(vecchio, 'A') + '** a **' + ctx.fmt(stato.i, 'A') + '**: il campo a 3' + SP + 'cm passa da ' + num(bw0 * 1e6, 0) + ' a **' + bw + SP + 'µT** (' + fattore(stato.i / vecchio, num) + '), ma la deviazione solo da ' + num(dev0, 0) + '° a **' + dev + '°**: l\'ago segue la somma con il campo terrestre.');
           }, 350);
         }
       }
@@ -711,7 +725,7 @@
           clearTimeout(F.timer);
           if (F.giro) { F.m = F.sx = -F.giro.da; F.giro = null; }
           imp = null;
-          Object.assign(F, { xv: F.xt, fem: 0, ago: 0, vAgo: 0, luce: 0, phi: flusso(F.xt, F.m) });
+          Object.assign(F, { xv: F.xt, fem: 0, ago: 0, vAgo: 0, luce: [0, 0], phi: flusso(F.xt, F.m) });
           partenza = { x: F.xv, phi: F.phi };
           disegnaF();
           aggiornaLetture();

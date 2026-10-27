@@ -106,15 +106,22 @@
   // **grassetto**, *corsivo*, `formula`, [[voce]] o [[testo|voce]] del glossario.
   const TOKEN = /(\*\*[^*]+\*\*|\*[^*\s][^*]*\*|`[^`]+`|\[\[[^\]]+\]\])/g;
 
+  // Spazi che non vanno a capo: nelle migliaia (10 000) e tra un numero e la sua unità (9 V, 50 Hz, 25 µT).
+  const MIGLIAIA = /(^|\D)(\d{1,3}(?: \d{3})+)(?!\d)/g;
+  const UNITA = /(\d) (?=(?:°C|[pnµμmckMG]?(?:Ω|Wh|Wb|Hz|VA|Ah|eV|Pa|V|A|W|J|C|F|H|T|S|N|s|m|g))[²³]?(?![\p{L}\p{N}]))/gu;
+  EB.tipografia = (s) => String(s)
+    .replace(MIGLIAIA, (m, prima, n) => prima + n.replace(/ /g, '\u00a0'))
+    .replace(UNITA, '$1\u00a0');
+
   EB.testo = function (str, ctx) {
     const frag = document.createDocumentFragment();
     String(str).split(TOKEN).forEach((parte) => {
       if (!parte) return;
-      if (parte.startsWith('**')) frag.append(EB.h('strong', null, parte.slice(2, -2)));
+      if (parte.startsWith('**')) frag.append(EB.h('strong', null, EB.tipografia(parte.slice(2, -2))));
       else if (parte.startsWith('`')) frag.append(EB.formula(parte.slice(1, -1), { inline: true }));
       else if (parte.startsWith('[[')) frag.append(voce(parte.slice(2, -2), ctx));
-      else if (parte.startsWith('*')) frag.append(EB.h('em', null, parte.slice(1, -1)));
-      else frag.append(parte);
+      else if (parte.startsWith('*')) frag.append(EB.h('em', null, EB.tipografia(parte.slice(1, -1))));
+      else frag.append(EB.tipografia(parte));
     });
     return frag;
   };
@@ -231,7 +238,10 @@
     contenitore.append(canvas);
     const t = { canvas: canvas, ctx: canvas.getContext('2d'), w: 0, h: 0, dpr: 1, alRidimensiona: null };
     function misura() {
-      const w = Math.max(200, contenitore.clientWidth);
+      // La tela è larga quanto il contenuto: il padding del contenitore non conta.
+      const cs = root.getComputedStyle ? root.getComputedStyle(contenitore) : null;
+      const pad = cs ? (parseFloat(cs.paddingLeft) || 0) + (parseFloat(cs.paddingRight) || 0) : 0;
+      const w = Math.max(200, contenitore.clientWidth - pad);
       const hh = EB.clamp(Math.round(w / o.rapporto), o.min, o.max);
       const dpr = Math.min(2.5, root.devicePixelRatio || 1);
       if (w === t.w && hh === t.h && dpr === t.dpr) return;
@@ -526,6 +536,7 @@
   };
 
   // Formula che mostra i numeri del momento: [['I', 'i'], ' = ', ['12 V', 'v'], ...]; '\n' va a capo.
+  // ['k'] senza grandezza è una variabile neutra (costanti, distanze, velocità).
   ui.formulaViva = function () {
     const el = EB.h('p', { class: 'eb-f eb-f-viva', 'aria-live': 'off' });
     return {
@@ -533,7 +544,7 @@
       imposta(parti) {
         el.innerHTML = '';
         parti.forEach((p) => {
-          if (Array.isArray(p)) el.append(EB.h('var', { class: 'q-' + p[1] }, p[0]));
+          if (Array.isArray(p)) el.append(EB.h('var', p[1] ? { class: 'q-' + p[1] } : null, p[0]));
           else if (p === '\n') el.append(EB.h('br'));
           else el.append(p);
         });

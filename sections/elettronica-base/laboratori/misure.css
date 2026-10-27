@@ -66,14 +66,14 @@
 .mis-lcd-cifre, .mis-lcd-fantasma { font: 700 34px var(--mono); fill: #18210f; transform: skewX(-7deg); transform-box: fill-box; transform-origin: 50% 100%; }
 .mis-lcd-fantasma { opacity: .08; }
 .mis-lcd-unita { font: 800 14px var(--mono); fill: #18210f; }
-.mis-lcd-ind { font: 800 10px var(--mono); fill: #18210f; letter-spacing: .08em; }
+.mis-lcd-ind { font: 800 11px var(--mono); fill: #18210f; letter-spacing: .08em; }
 .mis-buio { animation: mis-buio 1.1s ease-out; }
 @keyframes mis-buio { 0% { opacity: 1; } 12% { opacity: .08; } 55% { opacity: .08; } 100% { opacity: 1; } }
 
 .mis-ghiera { fill: #0e1513; stroke: #2f3f39; stroke-width: 2; }
 .mis-tacca { stroke: #5d756c; stroke-width: 2; stroke-linecap: round; }
-.mis-pos { font: 800 13px var(--mono); fill: var(--qc, var(--lab-text)); opacity: .5; transition: opacity .2s ease; pointer-events: bounding-box; }
-.mis-pos:hover { opacity: .85; }
+.mis-pos { font: 800 13px var(--mono); fill: var(--qc, var(--lab-text)); opacity: .78; transition: opacity .2s ease; pointer-events: bounding-box; }
+.mis-pos:hover { opacity: .92; }
 .mis-pos.attiva { opacity: 1; filter: drop-shadow(0 0 5px color-mix(in srgb, var(--qc, #fff) 60%, transparent)); }
 .mis-manopola { transform-box: fill-box; transform-origin: center; transform: rotate(-90deg); transition: transform .55s cubic-bezier(.34, 1.56, .64, 1); }
 .mis-manopola-base { fill: #222b28; stroke: #3f4e49; stroke-width: 1.5; filter: drop-shadow(0 5px 6px rgb(0 0 0 / 55%)); }
@@ -88,7 +88,7 @@ circle.mis-fus-rotto { fill: #2b201a; opacity: 0; }
 .mis-fusibile.rotto .mis-fus-vetro { fill: rgb(70 48 34 / 55%); }
 .mis-fusibile.rotto .mis-fus-filo { opacity: 0; }
 .mis-fusibile.rotto .mis-fus-rotto { opacity: 1; }
-.mis-fus-t { font: 600 11px var(--font); fill: var(--lab-dim); }
+.mis-fus-t { font: 600 12px var(--font); fill: var(--lab-dim); }
 .mis-fus-t.rotto { fill: var(--lab-pos); font-weight: 700; }
 .mis-scintilla { fill: var(--lab-luce); opacity: 0; transform-box: fill-box; transform-origin: center; filter: drop-shadow(0 0 8px var(--lab-luce)); }
 .mis-scintilla.mis-lampo { animation: mis-lampo .7s ease-out; }
@@ -98,7 +98,7 @@ circle.mis-fus-rotto { fill: #2b201a; opacity: 0; }
 .mis-boccola.rossa { stroke: #e0483e; }
 .mis-boccola.nera { stroke: #5f6a66; }
 .mis-boccola-foro { fill: #040706; stroke: #2a3330; }
-.mis-boc-t { font: 800 11px var(--mono); fill: var(--lab-text); }
+.mis-boc-t { font: 800 12px var(--mono); fill: var(--lab-text); }
 .mis-spina > circle:first-child { stroke-width: 1.5; }
 .mis-spina.rossa > circle:first-child { fill: #d9463c; stroke: #8f241d; }
 .mis-spina.nera > circle:first-child { fill: #2d3431; stroke: #75817c; }

@@ -27,7 +27,7 @@
     { id: 'ma', nome: 'mA⎓', ang: 30, q: 'i', voce: 'amperometro', aria: 'milliampere in continua' },
     { id: 'ohm', nome: 'Ω', ang: 90, q: 'r', voce: 'ohmmetro', aria: 'ohm' },
   ];
-  const FUNZIONE = { off: 'gira il selettore', v: 'in parallelo · 10 MΩ', ma: 'in serie · circa 1 Ω', ohm: 'a pila staccata · 1 mA di prova' };
+  const FUNZIONE = { off: 'gira il selettore', v: 'in parallelo · 10 MΩ', ma: 'in serie · circa 1 Ω', ohm: 'a pila staccata · 1 mA di prova' };
   const BOCCOLE = { ma: [46, 296], com: [100, 296], vo: [154, 296] };
   const DISPOSIZIONI = {
     largo: { box: '0 0 800 420', basetta: [10, 30], metro: [584, 34], riposo: { rosso: [508, 236], nero: [540, 258] } },
@@ -87,13 +87,15 @@
     const x = risolvi(G, J);
     const V = (p) => (p === 'C' ? 0 : x[NODI[p]]);
     const vm = due ? V(st.rosso) - V(st.nero) : 0;
+    // Le perdite da 1 pS che tengono risolvibile il sistema non devono apparire come corrente (9 pA a circuito aperto).
+    const netta = (i) => (Math.abs(i) < 1e-9 ? 0 : i);
     return {
       V: V, su: su, due: due, vm: vm,
-      iPila: st.pila ? (VP - V('A')) / R_PILA : 0,
-      iPonte: st.ponte ? (V('A') - V('D')) / R_PONTE : 0,
-      iR1: (V('D') - V('B')) / R1,
-      iR2: V('B') / R2,
-      iMetro: vm * gm,
+      iPila: netta(st.pila ? (VP - V('A')) / R_PILA : 0),
+      iPonte: netta(st.ponte ? (V('A') - V('D')) / R_PONTE : 0),
+      iR1: netta((V('D') - V('B')) / R1),
+      iR2: netta(V('B') / R2),
+      iMetro: netta(vm * gm),
       ohm: due ? vm / I_PROVA : su ? 0 : Infinity,
     };
   }
@@ -129,8 +131,8 @@
         '<text class="mis-segno neg" x="113" y="198" text-anchor="middle">−</text>' +
         '<circle class="mis-morsetto" cx="128" cy="164" r="4.5"/>' +
         '<path class="mis-morsetto" d="M122.5 192 L125.3 187.2 H130.7 L133.5 192 L130.7 196.8 H125.3 Z"/>' +
-        '<text class="mis-et mis-et-r1" x="346" y="106" text-anchor="middle">R1 <tspan class="mis-r">1 kΩ</tspan></text>' +
-        '<text class="mis-et mis-et-r2" x="410" y="171" text-anchor="end">R2 <tspan class="mis-r">2 kΩ</tspan></text>' +
+        '<text class="mis-et mis-et-r1" x="346" y="106" text-anchor="middle">R₁ <tspan class="mis-r">1 kΩ</tspan></text>' +
+        '<text class="mis-et mis-et-r2" x="410" y="171" text-anchor="end">R₂ <tspan class="mis-r">2 kΩ</tspan></text>' +
         '<text class="mis-leg" x="456" y="' + (ridotto ? 318 : 302) + '" text-anchor="end"><tspan class="mis-i">' + (ridotto ? '▸' : '●') + '</tspan> corrente, verso convenzionale</text>' +
         (ridotto ? '' : '<text class="mis-leg" x="456" y="318" text-anchor="end">velocità non in scala</text>');
       const hex = (nome) => (nome === 'oro' ? '#c9a227' : F.COLORI.find((c) => c.nome === nome).hex);
@@ -434,33 +436,33 @@
           return 'Voltmetro ' + tra + ': ' + lett + '. ' + (coppia === 'AD' ? 'A e D sono uniti dal ponticello, un filo: tra i suoi capi la tensione è praticamente zero.' : 'Il circuito è aperto e non passa corrente: senza corrente, sui resistori non cade tensione.');
         }
         const cosa = !st.ponte && coppia !== 'AC' && coppia.includes('A') ? 'con il circuito aperto, tutta la tensione della pila si ritrova ai capi dell\'interruzione.' : {
-          BC: 'la tensione ai capi di **R2**: 2 kΩ × 3 mA = 6 V.',
-          AB: 'la tensione ai capi di **R1**: 1 kΩ × 3 mA = 3 V.',
-          BD: 'la tensione ai capi di **R1**: 1 kΩ × 3 mA = 3 V.',
-          AC: 'la tensione della pila' + (st.ponte ? ': 3 V su R1 più 6 V su R2.' : '.'),
-          CD: 'la tensione su R1 e R2 insieme: 3 V + 6 V.',
+          BC: 'la tensione ai capi di **R₂**: 2 kΩ × 3 mA = 6 V.',
+          AB: 'la tensione ai capi di **R₁**: 1 kΩ × 3 mA = 3 V.',
+          BD: 'la tensione ai capi di **R₁**: 1 kΩ × 3 mA = 3 V.',
+          AC: 'la tensione della pila' + (st.ponte ? ': 3 V su R₁ più 6 V su R₂.' : '.'),
+          CD: 'la tensione su R₁ e R₂ insieme: 3 V + 6 V.',
         }[coppia];
-        return 'Voltmetro ' + tra + ': ' + lett + ', ' + cosa + (m.vm < 0 ? ' Il segno meno vuol dire che il rosso tocca il punto a potenziale più basso: scambia i puntali.' : ' Il voltmetro sta **in parallelo** e, con 10 MΩ, quasi non ruba corrente al circuito.');
+        return 'Voltmetro ' + tra + ': ' + lett + ', ' + cosa + (m.vm < 0 ? ' Il segno meno vuol dire che il rosso tocca il punto a potenziale più basso: scambia i puntali.' : ' Il voltmetro sta **in parallelo** e, con 10 MΩ, quasi non ruba corrente al circuito.');
       }
       function notaMilli(tra, lett, coppia) {
         if (st.fuso) return 'Il fusibile è bruciato: su mA lo strumento non misura più finché non lo sostituisci. Volt e ohm funzionano ancora, perché non passano dal fusibile.';
         if (!st.pila) return 'Amperometro ' + tra + ': ' + lett + '. Senza pila non passa corrente.';
         if (coppia === 'AD') {
-          if (!st.ponte) return 'Amperometro **in serie**, al posto del ponticello: tutta la corrente del circuito lo attraversa e leggi ' + lett + ', cioè 9 V / 3 kΩ. Con circa 1 Ω di resistenza, lo strumento non cambia quasi nulla.' + (m.iMetro < 0 ? ' Il segno meno vuol dire che la corrente entra dal puntale nero.' : '');
+          if (!st.ponte) return 'Amperometro **in serie**, al posto del ponticello: tutta la corrente del circuito lo attraversa e leggi ' + lett + ', cioè 9 V / 3 kΩ. Con circa 1 Ω di resistenza, lo strumento non cambia quasi nulla.' + (m.iMetro < 0 ? ' Il segno meno vuol dire che la corrente entra dal puntale nero.' : '');
           return 'Il ponticello è ancora al suo posto: la corrente preferisce il filo e lo strumento ne vede solo ' + lett + '. Togli il ponticello e fai passare tutta la corrente dentro l\'amperometro.';
         }
         if (Math.abs(m.iMetro) < 1e-6) return 'Amperometro ' + tra + ': ' + lett + '. Il circuito è aperto e non passa corrente: chiudilo con lo strumento, tra **A** e **D**.';
-        return 'Amperometro **in parallelo** a ' + (coppia === 'BC' ? 'R2' : 'R1') + ' (' + lett + '): con la sua resistenza minuscola la mette in cortocircuito. Ora nel circuito passano **' + fmt(m.iPila, 'A') + '** invece di 3 mA: stai misurando un circuito diverso da quello di partenza.';
+        return 'Amperometro **in parallelo** a ' + (coppia === 'BC' ? 'R₂' : 'R₁') + ' (' + lett + '): con la sua resistenza minuscola la mette in cortocircuito. Ora nel circuito passano **' + fmt(m.iPila, 'A') + '** invece di 3 mA: stai misurando un circuito diverso da quello di partenza.';
       }
       function notaOhm(tra, lett) {
-        if (st.pila) return '**Attenzione**: la pila è collegata. L\'ohmmetro manda una sua piccola corrente (1 mA) e misura la tensione che ne risulta, ma la pila ci aggiunge la sua: la lettura, ' + lett + ', non ha senso. Stacca la pila prima di misurare una resistenza.';
+        if (st.pila) return '**Attenzione**: la pila è collegata. L\'ohmmetro manda una sua piccola corrente (1 mA) e misura la tensione che ne risulta, ma la pila ci aggiunge la sua: la lettura, ' + lett + ', non ha senso. Stacca la pila prima di misurare una resistenza.';
         const r = m.ohm;
         let cosa = '.';
         if (!(r < 4e7)) cosa = ': **circuito aperto**, la corrente di prova non trova una strada tra i puntali.';
         else if (r < 1) cosa = ': tra i due punti c\'è solo un filo.';
-        else if (Math.abs(r - 3000) < 60) cosa = ', cioè R1 + R2 = 1 kΩ + 2 kΩ. Lo strumento manda 1 mA e misura 3 V: `R = V / I`.';
-        else if (Math.abs(r - 2000) < 40) cosa = ', la resistenza di **R2**.';
-        else if (Math.abs(r - 1000) < 20) cosa = ', la resistenza di **R1**.';
+        else if (Math.abs(r - 3000) < 60) cosa = ', cioè R₁ + R₂ = 1 kΩ + 2 kΩ. Lo strumento manda 1 mA e misura 3 V: `R = V / I`.';
+        else if (Math.abs(r - 2000) < 40) cosa = ', la resistenza di **R₂**.';
+        else if (Math.abs(r - 1000) < 20) cosa = ', la resistenza di **R₁**.';
         return 'Ohmmetro ' + tra + ': ' + lett + cosa;
       }
       function spiega(motivo) {
@@ -470,12 +472,12 @@
         const tra = 'tra **' + r + '** (rosso) e **' + n + '** (nero)';
         const coppia = [r, n].sort().join('');
         let t = {
-          pila: st.pila ? 'Pila collegata: nel circuito passano **' + fmt(m.iPila, 'A') + '**. ' : 'Pila staccata: il circuito non è più alimentato. ',
+          pila: !st.pila ? 'Pila staccata: il circuito non è più alimentato. ' : m.iPila ? 'Pila collegata: nel circuito passano **' + fmt(m.iPila, 'A') + '**. ' : 'Pila collegata, ma il circuito è aperto: non passa corrente. ',
           ponte: st.ponte ? 'Ponticello rimesso: il circuito è di nuovo chiuso. ' : 'Ponticello tolto: il circuito è **aperto** e la corrente si ferma. ',
-          ricambio: 'Fusibile nuovo da 200 mA. Per cambiarlo hai spento lo strumento e staccato i puntali, come si fa davvero. ',
+          ricambio: 'Fusibile nuovo da 200 mA. Per cambiarlo hai spento lo strumento e staccato i puntali, come si fa davvero. ',
         }[motivo] || '';
         if (motivo === 'fuso') {
-          t = '**Fusibile bruciato.** Con i puntali ' + tra + ', l\'amperometro (circa 1 Ω) si è trovato **in parallelo alla pila**: avrebbe tirato diversi ampere, oltre dieci volte i 200 mA del fusibile, che si è fuso in un istante e ha salvato lo strumento. Ecco perché l\'amperometro non va mai messo in parallelo.';
+          t = '**Fusibile bruciato.** Con i puntali ' + tra + ', l\'amperometro (circa 1 Ω) si è trovato **in parallelo alla pila**: avrebbe assorbito diversi ampere, oltre dieci volte i 200 mA del fusibile, che si è fuso in un istante e ha salvato lo strumento. Ecco perché l\'amperometro non va mai messo in parallelo.';
         } else if (st.modo === 'off') {
           t += motivo === 'ricambio' ? 'Riaccendilo con il selettore.' : 'Il multimetro è spento: gira il selettore su **V⎓**, **mA⎓** o **Ω**.';
         } else if (st.modo === 'ma' && st.fuso) {
@@ -518,7 +520,7 @@
       const dove = (p) => (p === 'riposo' ? 'a riposo' : 'sul punto ' + p);
       function descrivi() {
         const modo = MODI.find((x) => x.id === st.modo);
-        svg.setAttribute('aria-label', 'Basetta con una pila da 9 V ' + (st.pila ? 'collegata' : 'staccata') + ', R1 da 1 kΩ e R2 da 2 kΩ in serie, ponticello tra A e D ' + (st.ponte ? 'inserito' : 'tolto') +
+        svg.setAttribute('aria-label', 'Basetta con una pila da 9 V ' + (st.pila ? 'collegata' : 'staccata') + ', R₁ da 1 kΩ e R₂ da 2 kΩ in serie, ponticello tra A e D ' + (st.ponte ? 'inserito' : 'tolto') +
           '. Multimetro ' + (st.modo === 'off' ? 'spento' : 'su ' + modo.aria) + ', puntale rosso ' + dove(st.rosso) + ', puntale nero ' + dove(st.nero) +
           '. Display: ' + display(lcd.meta).testo + (st.fuso ? '. Fusibile bruciato.' : '.'));
         puntali.forEach((p) => p.g.setAttribute('aria-label', 'Puntale ' + p.nome + ', ' + dove(p.posto) + '. Frecce: punto successivo o precedente.'));
@@ -575,7 +577,7 @@
       function ricambio() {
         st.fuso = false;
         fusibile.classList.remove('rotto');
-        fusT.textContent = 'fusibile 200 mA';
+        fusT.textContent = 'fusibile 200 mA';
         fusT.classList.remove('rotto');
         bFus.disabled = true;
         puntali.forEach((p) => { p.posto = 'riposo'; st[p.colore] = 'riposo'; p.scelta.imposta('riposo', true); });
@@ -649,7 +651,7 @@
       dopo('avvio');
       clearTimeout(timer);
       etichette[0].classList.add('attiva');
-      ultimaNota = 'Una pila da **9 V** spinge **' + fmt(F.corrente(VP, F.serie([R1, R2])), 'A') + '** attraverso R1 e R2. Il multimetro è spento: gira il selettore su **V⎓** e appoggia i puntali sui punti A, B, C o D. Puoi trascinarli, spostarli con le frecce o sceglierli qui sotto.';
+      ultimaNota = 'Una pila da **9 V** spinge **' + fmt(F.corrente(VP, F.serie([R1, R2])), 'A') + '** attraverso R₁ e R₂. Il multimetro è spento: gira il selettore su **V⎓** e appoggia i puntali sui punti A, B, C o D. Puoi trascinarli, spostarli con le frecce o sceglierli qui sotto.';
       ctx.nota(ultimaNota);
     },
   });

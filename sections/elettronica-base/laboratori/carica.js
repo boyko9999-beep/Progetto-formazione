@@ -187,7 +187,7 @@
       lTipo.el.classList.add('car-tipo');
       const formula = ui.formulaViva();
       formula.el.classList.add('car-formula');
-      ctx.pannello.append(lR.el, lF.el, lTipo.el, formula.el, h('p', { class: 'car-k' }, 'k ≈ 8,99·10⁹ N·m²/C²'));
+      ctx.pannello.append(lR.el, lF.el, lTipo.el, formula.el, h('p', { class: 'car-k' }, 'k ≈ 8,99·10⁹ N·m²/C²', h('br'), 'F < 0: attrazione', h('br'), 'F > 0: repulsione'));
 
       const schede = h('div', { class: 'car-comandi' });
       const comandiCarica = stato.cariche.map((c, i) => {
@@ -508,7 +508,7 @@
         lF.imposta(N(f));
         lTipo.imposta(f > 0 ? 'respingono' : 'attirano');
         formula.imposta([
-          ['F', 'f'], ' = ', ['k', 't'], ' · ', ['q₁', 'q'], ' · ', ['q₂', 'q'], ' / ', ['r', 't'], '²', h('br'),
+          ['F', 'f'], ' = ', ['k'], ' · ', ['q₁', 'q'], ' · ', ['q₂', 'q'], ' / ', ['r'], '²', h('br'),
           '= 8,99·10⁹ · ', ['(' + conSegno(a.q) + ')', 'q'], ' · ', ['(' + conSegno(b.q) + ')', 'q'], ' / (' + num(r / 100, 3) + NBSP + 'm)²', h('br'),
           '= ', [(f < 0 ? '−' : '') + N(f), 'f'],
         ]);
@@ -546,18 +546,26 @@
         const cambiate = [0, 1].filter((i) => prima.q[i] !== ora.q[i]);
         const stesseCariche = cambiate.length === 0;
         const segniCambiati = Math.sign(prima.q[0]) !== Math.sign(qa) || Math.sign(prima.q[1]) !== Math.sign(qb);
-        const spostate = Math.abs(ora.r - prima.r) > 0.04;
+        const spostate = CM(ora.r) !== CM(prima.r);
         if (dimezzata) {
           const fPrima = coulomb(qa, qb, dimezzata.da);
           const fDopo = coulomb(qa, qb, dimezzata.a);
           testo = 'Hai **dimezzato la distanza**, da **' + CM(dimezzata.da) + '** a **' + CM(dimezzata.a) + '**: la forza è diventata circa **4 volte** più grande, da **' + N(fPrima) + '** a **' + N(fDopo) + '** (×' + num(fDopo / fPrima, 1) + '). È la legge dell\'inverso del quadrato: `F = k · q₁ · q₂ / r²`.';
         } else if (stesseCariche && spostate) {
-          const kr = ora.r / prima.r;
-          const kf = Math.abs(ora.f / prima.f);
-          testo = 'Distanza da **' + CM(prima.r) + '** a **' + CM(ora.r) + '** (×' + num(kr, 2) + '): la forza passa da **' + N(prima.f) + '** a **' + N(ora.f) + '** (×' + num(kf, kf >= 10 ? 1 : 2) + ', cioè 1 / ' + num(kr, 2) + '²). ' + (kr < 1 ? 'Più vicine, molto più forte.' : 'Più lontane, molto più debole.');
+          // rapporto tra le distanze come si leggono: il suo quadrato è il fattore della forza
+          const r0 = Math.round(prima.r * 10) / 10;
+          const r1 = Math.round(ora.r * 10) / 10;
+          const vicine = r1 < r0;
+          const fattore = Math.pow(Math.max(r0, r1) / Math.min(r0, r1), 2);
+          testo = 'Distanza da **' + CM(prima.r) + '** a **' + CM(ora.r) + '**: la forza passa da **' + N(prima.f) + '** a **' + N(ora.f) + '**, cioè (' +
+            num(Math.max(r0, r1), 1) + ' / ' + num(Math.min(r0, r1), 1) + ')² = ' + num(fattore, 2) + ' volte ' + (vicine ? 'più grande.' : 'più piccola.');
+          if (fattore >= 1.1) testo += (vicine ? ' Più vicine, ' : ' Più lontane, ') + (fattore >= 1.5 ? 'molto ' : '') + (vicine ? 'più forte.' : 'più debole.');
         } else if (segniCambiati && !spostate) {
-          if (qa * qb < 0) testo = 'Segni **opposti**: le cariche si **attirano**, con **' + N(ora.f) + '**. Le linee del campo partono dalla carica positiva e finiscono su quella negativa.';
-          else if (qa < 0) testo = 'Due cariche **negative** si respingono proprio come due positive, con **' + N(ora.f) + '**: conta solo se i segni sono uguali o diversi. Ora le linee arrivano da lontano ed entrano nelle cariche.';
+          if (qa * qb < 0) {
+            testo = 'Segni **opposti**: le cariche si **attirano**, con **' + N(ora.f) + '**. ';
+            testo += Math.abs(qa) === Math.abs(qb) ? 'Le linee del campo partono dalla carica positiva e finiscono su quella negativa.'
+              : 'Molte linee del campo vanno dalla carica positiva a quella negativa; le altre, dovute alla carica più grande, si perdono lontano.';
+          } else if (qa < 0) testo = 'Due cariche **negative** si respingono proprio come due positive, con **' + N(ora.f) + '**: conta solo se i segni sono uguali o diversi. Ora le linee arrivano da lontano ed entrano nelle cariche.';
           else testo = 'Due cariche **positive** si respingono, con **' + N(ora.f) + '**. Le linee del campo escono da entrambe e si allontanano.';
         } else if (cambiate.length === 1 && !spostate) {
           const i = cambiate[0];
@@ -597,10 +605,9 @@
           const k = r / r0;
           if (k >= 0.475 && k <= 0.525 && (migliore === null || Math.abs(k - 0.5) < Math.abs(r / migliore - 0.5))) migliore = r0;
         });
-        if (migliore !== null) {
-          ctx.completa('quadruplo');
-          dimezzata = { da: migliore, a: r };
-        }
+        // vale solo l'ultimo movimento: un dimezzamento superato con altri passi non resta nella nota
+        dimezzata = migliore === null ? null : { da: migliore, a: r };
+        if (dimezzata) ctx.completa('quadruplo');
         storico.push(r);
         if (storico.length > 80) storico.shift();
         controllaNewton();

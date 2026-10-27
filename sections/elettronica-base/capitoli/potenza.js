@@ -117,7 +117,7 @@ EB.capitolo({
     {
       titolo: 'Potenza o energia? Il contatore e la bolletta',
       paragrafi: [
-        'Potenza ed energia si confondono spesso, ma sono due cose diverse. Il contratto fissa la potenza, cioè quanti apparecchi puoi usare **nello stesso momento**: nella maggior parte delle case italiane è di 3 kW, e il contatore stacca la corrente se si superano i 3,3 kW. La bolletta invece conta l\'energia, cioè **quanta** ne hai usata in tutto. Un forno da 2500 W acceso per 24 minuti e un televisore da 100 W acceso per 10 ore consumano la stessa energia, 1 kWh; ma solo il forno può far saltare il contatore, se intanto accendi anche il bollitore.',
+        'Potenza ed energia si confondono spesso, ma sono due cose diverse. Il contratto fissa la potenza, cioè quanti apparecchi puoi usare **nello stesso momento**: nella maggior parte delle case italiane è di 3 kW. Il contatore tollera fino a 3,3 kW senza limiti di tempo e stacca la corrente se li si supera troppo a lungo, tanto prima quanto più si va oltre. La bolletta invece conta l\'energia, cioè **quanta** ne hai usata in tutto. Un forno da 2500 W acceso per 24 minuti e un televisore da 100 W acceso per 10 ore consumano la stessa energia, 1 kWh; ma solo il forno può far saltare il contatore, se intanto accendi anche il bollitore.',
         'Una famiglia tipo, con 3 kW di contratto, consuma circa 2700 kWh in un anno: poco più di 7 kWh al giorno, come se in casa restassero sempre accesi 300 W. Un\'ultima avvertenza: si scrive kWh, non kW/h. Il kilowattora è una potenza moltiplicata per un tempo, non divisa.',
       ],
     },

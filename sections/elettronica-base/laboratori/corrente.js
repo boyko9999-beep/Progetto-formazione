@@ -637,7 +637,7 @@
         fI.imposta(stato.chiuso
           ? [['I', 'i'], ' = ', ['V', 'v'], ' / ', ['R', 'r'], ' = ', [fmt(vT, 'V'), 'v'], ' / ', ['3' + NB + 'Ω', 'r'], ' = ', [fmt(i, 'A'), 'i']]
           : [['I', 'i'], ' = 0 (circuito aperto)']);
-        fV.imposta([['v', 't'], ' = ', ['I', 'i'], ' / (', ['n', 't'], ' · ', ['e', 'q'], ' · ', ['S', 't'], ')', '\n', '= ', [mmS(v), 't']]);
+        fV.imposta([['v'], ' = ', ['I', 'i'], ' / (', ['n'], ' · ', ['e', 'q'], ' · ', ['S'], ')', '\n', '= ', [mmS(v)]]);
         pilaTesto.textContent = stato.pile === 1 ? '1 pila da 1,5' + NB + 'V' : stato.pile + NB + '×' + NB + '1,5' + NB + 'V = ' + fmt(vT, 'V');
         svg.setAttribute('aria-label', descriviCircuito());
         tela.canvas.setAttribute('aria-label', descriviLente());
