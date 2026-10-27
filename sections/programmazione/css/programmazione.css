@@ -189,7 +189,7 @@ html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; -moz-osx-fo
 .pg-elenco li { margin-bottom: .4em; }
 .pg-elenco li::marker { color: var(--cap); font-weight: 800; }
 .pg-cap-corpo > .pg-testo:first-child > p:first-of-type::first-letter {
-  float: left; font: 800 3.5em/0.86 var(--font); color: var(--cap);
+  float: left; font: 700 3.6em/0.86 var(--pg-serif); color: var(--cap);
   margin: 6px 10px 0 0;
 }
 .pg-cap code { font: .9em var(--mono); background: color-mix(in srgb, var(--cap) 9%, var(--surface)); border: 1px solid color-mix(in srgb, var(--cap) 18%, transparent); padding: 0 5px; border-radius: 5px; overflow-wrap: anywhere; }
@@ -250,7 +250,8 @@ html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; -moz-osx-fo
     radial-gradient(farthest-side at 100% 50%, rgba(0, 0, 0, .3), transparent) right / 18px 100% no-repeat scroll,
     var(--surface);
 }
-.pg-tabella table { min-width: 560px; font-size: .93rem; }
+/* larga quanto serve alle sue colonne: sul telefono una tabella di tre colonne non scorre */
+.pg-tabella table { min-width: min(560px, calc(var(--colonne, 5) * 7rem)); font-size: .93rem; }
 .pg-tabella thead th { position: static; background: transparent; }
 .pg-tabella tbody th { border-left: 0; font-weight: 700; }
 .pg-tabella tbody tr:hover { background: color-mix(in srgb, var(--cap) 5%, transparent); }

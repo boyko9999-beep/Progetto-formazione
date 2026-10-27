@@ -490,7 +490,7 @@
     tabella(b) {
       return h('figure', { class: 'pg-tabella' },
         h('div', { class: 'pg-tabella-wrap', tabindex: '0' },
-          h('table', null,
+          h('table', { style: '--colonne: ' + Math.max(1, (b.intestazioni || []).length) },
             h('thead', null, h('tr', null, (b.intestazioni || []).map((x) => h('th', { scope: 'col' }, inline(x))))),
             h('tbody', null, (b.righe || []).map((r) => h('tr', null, r.map((c, i) => (i === 0 ? h('th', { scope: 'row' }, inline(c)) : h('td', null, inline(c))))))))),
         b.didascalia ? h('figcaption', null, inline(b.didascalia)) : null);

@@ -108,7 +108,7 @@ ProgStoria.capitolo({
       tipo: 'testo',
       titolo: 'Dove finiscono quei bit',
       paragrafi: [
-        'Assemblatore, interprete o compilatore: alla fine, a girare è sempre una fila di parole binarie in memoria (con un interprete, sono quelle dell\'interprete stesso). Dentro il processore le aspetta il decodificatore di istruzioni, una rete di [porte logiche](../porte-logiche/index.html) che legge i bit del codice operativo e attiva i circuiti giusti: nella CPU giocattolo, con `011` l\'addizionatore, con `110` il salto. È il seguito del viaggio cominciato con gli ordini iniziali: Wheeler traduceva lettere in bit, il decodificatore traduce bit in segnali elettrici, a ogni {{ciclo di istruzione}} ([capitolo 3](#cavi)). Nella sezione sui [chip programmabili](../chip-programmabili/index.html) puoi vedere come circuiti di questo tipo si descrivono e si costruiscono.',
+        'Assemblatore, interprete o compilatore: alla fine, a girare è sempre una fila di parole binarie in memoria (con un interprete, sono quelle dell\'interprete stesso). Dentro il processore le aspetta il decodificatore di istruzioni, una rete di [porte logiche](../porte-logiche/index.html) che legge i bit del codice operativo e attiva i circuiti giusti: nella CPU giocattolo, con `011` l\'addizionatore, con `110` il salto. È il seguito del viaggio cominciato con gli ordini iniziali: Wheeler traduceva lettere in bit, il decodificatore traduce bit in segnali elettrici, a ogni {{ciclo di istruzione}} ([capitolo 3](#cavi)). Nella sezione sui [chip programmabili](../chip-programmabili/index.html#logica-programmabile) puoi vedere come circuiti di questo tipo si descrivono e si costruiscono.',
       ],
     },
     {

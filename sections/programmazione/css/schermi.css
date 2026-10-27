@@ -31,6 +31,7 @@
 .pg-sc-strato > * { grid-area: 1 / 1; min-width: 0; }
 .pg-sc-fantasma { visibility: hidden; }
 .pg-sc-nascosto { visibility: hidden; }
+.pg-sc-cursore[hidden] { display: none; }
 .pg-sc-cursore { display: inline-block; width: .6em; height: 1.08em; margin-left: 1px; vertical-align: text-bottom; background: currentColor; animation: pg-sc-blink 1.06s steps(1) infinite; }
 .pg-sc-entra { animation: pg-sc-entra var(--pg-dur-normale) var(--pg-ease-smooth); }
 @keyframes pg-sc-blink { 50% { opacity: 0; } }
