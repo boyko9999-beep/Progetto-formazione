@@ -1,0 +1,249 @@
+/* Storia del PC · capitolo 8 (grafica). */
+
+/* =====================================================================
+ * Illustrazioni: il Macintosh del 1984 e una scheda VGA per bus ISA.
+ * Tutte le classi stanno sotto .gfx-fig, così i nomi brevi non escono dal capitolo.
+ * ===================================================================== */
+
+.gfx-fig {
+  --gfx-carta: #f3f1ea;   /* bianco dello schermo acceso */
+  --gfx-nero: #16181b;    /* pixel neri */
+  --gfx-accento: var(--cap, var(--era-8));
+}
+
+.gfx-fig .l { stroke: var(--ill-linea); stroke-width: 2; stroke-linejoin: round; }
+.gfx-fig .ombra { fill: #000; opacity: .14; }
+.gfx-fig .be { fill: var(--ill-beige); }
+.gfx-fig .be2 { fill: var(--ill-beige-2); }
+.gfx-fig .be2.sottile { stroke-width: 1.5; }
+.gfx-fig .sch { fill: var(--ill-scuro); }
+.gfx-fig .sc { fill: var(--ill-scuro); }
+.gfx-fig .carta { fill: var(--gfx-carta); }
+.gfx-fig .nero { fill: var(--gfx-nero); }
+.gfx-fig .tratto-nero { stroke: var(--gfx-nero); stroke-width: .9; }
+.gfx-fig .tratto-nero.sottile, .gfx-fig .sottile .tratto-nero, .gfx-fig .tratto-nero .sottile { stroke-width: .6; }
+.gfx-fig path.tratto-nero:not(.carta), .gfx-fig g.tratto-nero path { fill: none; }
+.gfx-fig .riflesso { fill: #fff; opacity: .1; }
+.gfx-fig .solco { fill: none; stroke: var(--ill-beige-3); stroke-width: 1.5; }
+.gfx-fig .filo { fill: none; stroke: var(--ill-linea); stroke-width: 2.4; stroke-linecap: round; }
+.gfx-fig .evidenzia { fill: none; stroke: var(--gfx-accento); stroke-width: 1.6; }
+.gfx-fig .guida { fill: none; stroke: var(--gfx-accento); stroke-width: 1.5; stroke-dasharray: 4 4; }
+.gfx-fig .griglia { fill: none; stroke: #8b939b; stroke-width: .75; opacity: .55; }
+.gfx-fig .anello { fill: none; stroke: var(--gfx-accento); stroke-width: 3; }
+
+.gfx-fig text { font-family: var(--font); }
+.gfx-fig .t { fill: var(--ink); font: 800 25px var(--mono); letter-spacing: -.02em; }
+.gfx-fig .t2 { fill: var(--muted); font-size: 24.5px; font-weight: 600; }
+.gfx-fig .t3 { fill: var(--gfx-accento); font: 800 24px var(--mono); }
+
+/* scheda VGA */
+.gfx-fig .gr { fill: var(--ill-grigio); }
+.gfx-fig .gr2 { fill: var(--ill-grigio-2); }
+.gfx-fig .pcb { fill: var(--ill-pcb); }
+.gfx-fig .oro { fill: var(--ill-oro); }
+.gfx-fig .pista { fill: none; stroke: var(--ill-rame); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; opacity: .6; }
+.gfx-fig .chip { fill: var(--ill-chip); }
+.gfx-fig .piedino { fill: none; stroke: var(--ill-grigio); stroke-width: 2; }
+.gfx-fig .blu { fill: var(--ill-blu); }
+.gfx-fig .etichetta-bios { fill: var(--gfx-carta); stroke: var(--ill-linea); stroke-width: 1; }
+.gfx-fig .lucido { fill: none; stroke: #fff; stroke-width: 2; stroke-linecap: round; opacity: .35; }
+.gfx-fig .piccoli { fill: var(--ill-beige-2); stroke: var(--ill-linea); stroke-width: 1.5; }
+.gfx-fig .chipt { fill: #c4d3cc; font: 800 26px var(--mono); letter-spacing: .08em; }
+.gfx-fig .chipt.piccolo { font-size: 24.5px; letter-spacing: .02em; }
+.gfx-fig .tela { fill: var(--ill-tela-2); }
+.gfx-fig .foro { fill: #0b0d0f; stroke: var(--ill-grigio-2); stroke-width: 1.5; }
+.gfx-fig .pin-r { fill: var(--ill-led); }
+.gfx-fig .pin-g { fill: var(--ill-fosforo); }
+.gfx-fig .pin-b { fill: #4f7fd6; }
+.gfx-fig .pin-sync { fill: var(--ill-ambra); }
+.gfx-fig .pin-ddc { fill: var(--era-6); }
+.gfx-fig .pin-r, .gfx-fig .pin-g, .gfx-fig .pin-b, .gfx-fig .pin-sync, .gfx-fig .pin-ddc { stroke: var(--ill-linea); stroke-width: 1.5; }
+.gfx-fig .legenda .t2 { fill: var(--ink); }
+
+/* Sui telefoni i testi restano sopra gli 11 px effettivi; sugli schermi larghi si rimpiccioliscono un poco. */
+@media (min-width: 700px) {
+  .gfx-fig .t { font-size: 21px; }
+  .gfx-fig .t2 { font-size: 19px; }
+  .gfx-fig .t3 { font-size: 20px; }
+  .gfx-fig .legenda .t2 { font-size: 16px; }
+  .gfx-fig .leg2 { transform: translateX(-50px); }
+  .gfx-fig .leg3 { transform: translateX(-85px); }
+}
+
+/* =====================================================================
+ * Laboratorio: lo stesso disegno in cinque epoche (sempre scuro)
+ * ===================================================================== */
+
+.gfx {
+  container-type: inline-size;
+  display: grid; gap: 14px; min-width: 0;
+  --gfx-tenue: #7f9a90;
+  --gfx-fondo: #0a100e;
+}
+
+/* ---------- scelta dell'epoca: cinque pulsanti con una pillola che scorre ---------- */
+
+.gfx-epoche {
+  position: relative; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px;
+  padding: 4px; border-radius: 13px; background: var(--gfx-fondo); border: 1px solid var(--scope-grid);
+}
+.gfx-pillola {
+  position: absolute; top: 4px; bottom: 4px; left: 4px; z-index: 0;
+  width: calc((100% - 24px) / 5); border-radius: 9px;
+  background: #17241f;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--acc, var(--trace-1)) 70%, transparent), 0 0 22px -8px var(--acc, var(--trace-1));
+  transform: translateX(calc(var(--i, 4) * (100% + 4px)));
+  transition: transform var(--dur-normal) var(--ease-smooth);
+}
+.gfx-epoca {
+  position: relative; z-index: 1; display: grid; justify-items: center; align-content: center; gap: 3px;
+  min-height: 58px; min-width: 0; padding: 6px 4px 8px; border: 0; border-radius: 9px; cursor: pointer;
+  background: transparent; color: var(--scope-text); font: 700 .9rem/1.15 var(--font);
+  transition-property: color; transition-duration: var(--dur-fast);
+}
+.gfx-epoca:hover { color: #fff; }
+.gfx-epoca:focus-visible { outline: 2px solid var(--trace-1); outline-offset: -2px; }
+.gfx-epoca[aria-pressed="true"] { color: #fff; }
+.gfx-epoca-anno { font: 700 .7rem var(--mono); letter-spacing: .06em; color: var(--gfx-tenue); font-variant-numeric: tabular-nums; }
+.gfx-epoca[aria-pressed="true"] .gfx-epoca-anno { color: var(--scope-text); }
+.gfx-epoca-nome { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gfx-corto { display: none; }
+.gfx-epoca-tav {
+  width: min(72%, 76px); height: 4px; margin-top: 3px; border-radius: 2px; opacity: .55;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, .08);
+  transition-property: opacity, transform; transition-duration: var(--dur-fast);
+}
+.gfx-epoca[aria-pressed="true"] .gfx-epoca-tav { opacity: 1; transform: scaleY(1.25); }
+
+/* ---------- corpo: schermo a sinistra, letture a destra ---------- */
+
+.gfx-corpo { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; align-items: start; }
+.gfx-monitor { display: grid; gap: 10px; min-width: 0; }
+.gfx-lato { display: grid; gap: 12px; align-content: start; min-width: 0; }
+
+.gfx-schermo {
+  position: relative; aspect-ratio: 16 / 10; overflow: hidden; border-radius: 12px;
+  background: #000; border: 1px solid #22322c; cursor: crosshair;
+  /* col dito: un tocco o un trascinamento di lato spostano la lente, uno in verticale fa scorrere la pagina */
+  touch-action: pan-y pinch-zoom; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent;
+  box-shadow: 0 0 0 4px #050807, 0 18px 36px -24px rgba(0, 0, 0, .9);
+}
+.gfx-schermo.senza-lente { cursor: default; touch-action: auto; }
+.gfx-schermo:focus-visible { outline: 2px solid var(--trace-1); outline-offset: 5px; }
+.gfx-tela { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
+
+.gfx-lente {
+  position: absolute; left: 0; top: 0; z-index: 3; width: 136px; height: 136px;
+  border-radius: 50%; overflow: hidden; pointer-events: none; opacity: 0;
+  box-shadow: 0 0 0 2px #fff, 0 0 0 4px rgba(0, 0, 0, .55), 0 14px 30px -6px rgba(0, 0, 0, .85);
+  will-change: transform; transition: opacity var(--dur-fast) var(--ease-smooth);
+}
+.gfx-lente.on { opacity: 1; }
+.gfx-lente canvas { display: block; width: 100%; height: 100%; }
+
+.gfx-osd {
+  position: absolute; left: 10px; bottom: 10px; z-index: 2; max-width: calc(100% - 20px);
+  padding: 5px 9px 4px; border-radius: 6px; pointer-events: none;
+  font: 700 .72rem/1.3 var(--mono); letter-spacing: .02em; color: #e3fff0;
+  background: rgba(3, 8, 6, .72); box-shadow: inset 0 0 0 1px rgba(110, 255, 190, .22);
+  opacity: 0; transform: translateY(6px);
+  transition: opacity var(--dur-normal) var(--ease-smooth), transform var(--dur-normal) var(--ease-smooth);
+}
+.gfx-osd.on { opacity: 1; transform: none; }
+
+.gfx-carico {
+  position: absolute; inset: 0; z-index: 4; display: grid; place-content: center; justify-items: center; gap: 10px;
+  pointer-events: none; color: var(--scope-text); font: 700 .8rem var(--mono);
+  background: rgba(4, 8, 7, .62); opacity: 0;
+  transition: opacity var(--dur-fast) var(--ease-smooth);
+}
+.gfx-carico.on { opacity: 1; }
+.gfx-carico-barra { display: block; width: 150px; height: 4px; border-radius: 2px; overflow: hidden; background: #1d2b27; }
+.gfx-carico-barra i { display: block; height: 100%; background: var(--trace-1); transform-origin: 0 50%; transform: scaleX(0); transition: transform 120ms linear; }
+
+.gfx-pixel {
+  display: flex; align-items: center; gap: 10px; min-height: 54px; padding: 6px 6px 6px 10px;
+  border-radius: 10px; background: var(--lab-panel); border: 1px solid var(--scope-grid);
+}
+.gfx-pixel p { flex: 1; min-width: 0; margin: 0; font-size: .8rem; line-height: 1.35; color: #d6e6df; }
+.gfx-pixel .gfx-btn-lente { flex: none; }
+.gfx-campione { flex: none; width: 24px; height: 24px; border-radius: 6px; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .28), 0 0 0 1px rgba(0, 0, 0, .6); }
+.gfx-pixel-testo { overflow-wrap: anywhere; }
+.gfx-aiuto { margin: -4px 2px 0; font-size: .8rem; line-height: 1.45; color: var(--gfx-tenue); }
+
+.gfx-kv { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.gfx-kv dd { overflow-wrap: anywhere; }
+
+.gfx-pannello { background: var(--lab-panel); border: 1px solid var(--scope-grid); border-radius: 12px; padding: 10px 12px 12px; min-width: 0; }
+.gfx-mini-tit {
+  display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin: 0 0 8px;
+  font: 700 .66rem var(--mono); text-transform: uppercase; letter-spacing: .1em; color: var(--gfx-tenue);
+}
+.gfx-mini-dx { font: 700 .78rem var(--mono); text-transform: none; letter-spacing: 0; color: var(--trace-2); text-align: right; font-variant-numeric: tabular-nums; }
+.gfx-tav { display: block; width: 100%; height: 64px; border-radius: 6px; background: #050807; }
+.gfx-dida { margin: 8px 0 0; font-size: .78rem; line-height: 1.45; color: #8fa9a0; }
+
+.gfx-mem { display: flex; align-items: baseline; flex-wrap: wrap; gap: 6px; margin: 0; }
+.gfx-mem-num { font: 800 1.6rem/1.1 var(--mono); color: #fff; font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+.gfx-mem-unita { font-size: .82rem; color: var(--scope-text); }
+.gfx-mem-formula { margin: 2px 0 10px; font-size: .74rem; color: var(--gfx-tenue); }
+.gfx-griglia { display: block; width: 100%; }
+
+/* ---------- comandi ---------- */
+
+.gfx-controlli { gap: 10px 14px; }
+.gfx-gruppo { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.gfx-etichetta { font: 700 .66rem var(--mono); text-transform: uppercase; letter-spacing: .1em; color: var(--gfx-tenue); }
+.gfx-freccia { min-width: 44px; padding: 0 12px; font-size: 1.1rem; }
+.gfx-seg button { min-height: 40px; }
+.gfx-seg button:focus-visible, .gfx .lab-btn:focus-visible { outline: 2px solid var(--trace-1); outline-offset: 2px; }
+.gfx-seg button:disabled { cursor: default; }
+.gfx-seg.spento { opacity: .45; }
+.gfx-seg.spento button:hover { color: var(--scope-text); }
+.gfx-btn-lente::before {
+  content: ""; width: 10px; height: 10px; margin-right: 2px; border-radius: 50%;
+  border: 2px solid currentColor; box-shadow: 4px 4px 0 -2px currentColor;
+}
+
+.gfx-nota { min-height: 4.7em; }
+
+/* ---------- ascolto ---------- */
+
+.gfx-audio {
+  display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; align-items: center;
+  padding: 12px; border-radius: 12px; background: var(--lab-panel); border: 1px solid var(--scope-grid);
+}
+.gfx-audio-testa { display: grid; gap: 4px; }
+.gfx-audio-testa .gfx-mini-tit { margin: 0; }
+.gfx-btn-audio > span { color: var(--trace-2); font-size: 1rem; }
+.gfx-btn-audio[aria-pressed="true"] > span { color: inherit; }
+.gfx-onda { display: block; width: 100%; height: 56px; border-radius: 8px; background: #050807; border: 1px solid var(--scope-grid); }
+
+/* ---------- larghezze: si adatta al laboratorio, non alla finestra ---------- */
+
+@container (min-width: 720px) {
+  .gfx-corpo { grid-template-columns: minmax(0, 1.65fr) minmax(250px, 1fr); }
+  .gfx-audio { grid-template-columns: auto minmax(0, 1fr); gap: 18px; }
+}
+
+@container (max-width: 520px) {
+  /* sul telefono lo schermo è 4:3, come quattro epoche su cinque: l'immagine è più grande */
+  .gfx-schermo { aspect-ratio: 4 / 3; }
+  .gfx-lungo { display: none; }
+  .gfx-corto { display: inline; }
+  .gfx-epoca { min-height: 54px; padding: 6px 2px 8px; font-size: .84rem; }
+  .gfx-epoca-anno { font-size: .66rem; letter-spacing: .02em; }
+  .gfx-pixel p { font-size: .76rem; }
+  .gfx-mem-num { font-size: 1.4rem; }
+}
+
+@container (max-width: 380px) {
+  .gfx-epoca { font-size: .78rem; }
+  .gfx-gruppo-ret { width: 100%; }
+  .gfx-seg { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); width: 100%; }
+  .gfx-seg button { padding: 0 4px; font-size: .78rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gfx-pillola, .gfx-epoca-tav, .gfx-lente, .gfx-osd, .gfx-carico, .gfx-carico-barra i { transition: none; }
+}

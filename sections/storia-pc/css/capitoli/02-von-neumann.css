@@ -1,0 +1,442 @@
+/* Storia del PC · capitolo 2 (von-neumann). */
+
+/* =====================================================================
+ * Illustrazioni: lo schema a blocchi del «First Draft» e il confronto
+ * von Neumann / Harvard. Tutte le classi brevi stanno sotto .vn-fig,
+ * così non escono dal capitolo.
+ * ===================================================================== */
+
+.vn-fig {
+  --vn-fig-istr: #5cc8ff;   /* istruzioni: lo stesso azzurro del laboratorio */
+  --vn-fig-dato: #3ee08f;   /* dati: lo stesso verde del laboratorio */
+  font-family: var(--font);
+}
+.vn-fig .l { stroke: var(--ill-linea); stroke-width: 2; stroke-linejoin: round; }
+.vn-fig .ls { stroke: var(--ill-linea); stroke-width: 1.5; stroke-linejoin: round; }
+.vn-fig .ombra { fill: #000; opacity: .14; }
+.vn-fig .rame { fill: var(--ill-rame); }
+.vn-fig .fili { fill: none; stroke: var(--ill-linea); stroke-width: 1.5; stroke-linecap: round; opacity: .35; }
+.vn-fig .freccia { fill: var(--ill-linea); }
+.vn-fig .scuro { fill: var(--ill-scuro); }
+.vn-fig .scuro2 { fill: var(--ill-scuro-2); }
+.vn-fig .ambra { fill: var(--ill-ambra); }
+.vn-fig .schermo { fill: var(--ill-schermo); }
+.vn-fig .bagliore { fill: var(--ill-fosforo); opacity: .07; }
+.vn-fig .pcb { fill: var(--ill-pcb); }
+.vn-fig .chip { fill: var(--ill-chip); }
+.vn-fig .oro { fill: var(--ill-oro); }
+.vn-fig .beige { fill: var(--ill-beige); }
+.vn-fig .beige2 { fill: var(--ill-beige-2); }
+.vn-fig .beige3 { fill: var(--ill-beige-3); }
+.vn-fig .tela2 { fill: var(--ill-tela-2); }
+.vn-fig .foro { fill: var(--ill-linea); opacity: .75; }
+.vn-fig .led { fill: var(--ill-led); }
+.vn-fig .cella-i { fill: var(--vn-fig-istr); stroke: var(--ill-linea); stroke-width: 1.2; }
+.vn-fig .cella-d { fill: var(--vn-fig-dato); stroke: var(--ill-linea); stroke-width: 1.2; }
+.vn-fig .cella-v { fill: rgba(255, 255, 255, .06); stroke: rgba(255, 255, 255, .22); stroke-width: 1.2; }
+.vn-fig .bit { fill: none; stroke: var(--ill-linea); stroke-width: 2.6; stroke-linecap: round; opacity: .55; }
+.vn-fig .divisore { fill: none; stroke: var(--line); stroke-width: 1.5; stroke-dasharray: 4 6; }
+.vn-fig text { font-weight: 700; }
+.vn-fig .t { fill: var(--ink); font-size: 17px; font-weight: 800; }
+.vn-fig .t2 { fill: var(--muted); font-size: 14px; font-weight: 600; }
+.vn-fig .tl { fill: #f3efe4; font-size: 15px; }
+.vn-fig .td { fill: #2a1b00; font-size: 15px; font-weight: 800; letter-spacing: .04em; }
+.vn-fig .tf { fill: var(--ill-fosforo); font: 700 14px var(--mono); }
+.vn-fig .tf-grande { font-size: 30px; }
+
+/* Confronto: i gettoni salgono dalla memoria alla CPU (solo transform e opacità).
+ * --y0 è la posizione da fermi, uguale al primo fotogramma dell'animazione. */
+.vn-fig .vn-tok { transform: translateY(var(--y0, 0px)); }
+.vn-fig.vn-anima .vn-tok { animation: vn-sale 4.8s linear infinite; }
+@keyframes vn-sale {
+  0% { transform: translateY(0); opacity: 0; }
+  8%, 92% { opacity: 1; }
+  100% { transform: translateY(-94px); opacity: 0; }
+}
+
+/* Sui telefoni la figura si rimpicciolisce a circa metà: etichette più grandi,
+ * perché restino intorno agli 11 px anche a 360 px di larghezza. */
+@media (max-width: 560px) {
+  .vn-fig .t { font-size: 24px; }
+  .vn-fig .t2 { font-size: 23px; }
+  .vn-fig .tl { font-size: 23px; }
+  .vn-fig .td { font-size: 23px; }
+  .vn-fig .tf { font-size: 23.5px; }
+  .vn-fig .tf-grande { font-size: 38px; }
+}
+
+/* =====================================================================
+ * Laboratorio «Un computer in miniatura»
+ * ===================================================================== */
+
+/* La cornice comune .lab usa già overflow: clip, quindi la barra dei comandi
+ * può restare adesiva (sticky) dentro il laboratorio. */
+
+.vn-lab {
+  --vn-ind: var(--trace-2);      /* indirizzi: ambra */
+  --vn-istr: var(--trace-3);     /* istruzioni: azzurro */
+  --vn-dato: var(--trace-1);     /* dati: verde */
+  --vn-leggi: #b69cff;           /* linea di controllo LEGGI */
+  --vn-scrivi: var(--trace-4);   /* linea di controllo SCRIVI */
+  --vn-int: #dbe8e3;             /* passaggi interni alla CPU */
+  --vn-box: #111c19;
+  --vn-bordo: #26382f;
+  --vn-tenue: #8fa99f;
+  --vn-spento: #5f776e;
+  display: grid; gap: 14px; min-width: 0;
+}
+.vn-lab [hidden] { display: none !important; }
+.vn-sr {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; border: 0;
+}
+.vn-lato { display: contents; }
+
+/* ---------- scelte in alto ---------- */
+
+.vn-barra { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: flex-end; }
+.vn-gruppo { display: grid; gap: 5px; min-width: 0; }
+.vn-etichetta { font: 700 .68rem var(--mono); text-transform: uppercase; letter-spacing: .12em; color: var(--vn-tenue); }
+.vn-lab .lab-seg button { min-height: 40px; padding: 0 11px; }
+.vn-lab .lab-seg button:focus-visible,
+.vn-lab .lab-btn:focus-visible,
+.vn-lab select:focus-visible,
+.vn-lab input:focus-visible { outline: 2px solid var(--trace-3); outline-offset: 2px; }
+.vn-descr { margin: 0; font-size: .92rem; line-height: 1.5; color: var(--scope-text); max-width: 82ch; }
+.vn-descr strong { color: #fff; }
+
+/* ---------- lo schema ---------- */
+
+.vn-macchina { position: relative; min-width: 0; width: 100%; }
+.vn-stretto .vn-macchina { max-width: 460px; margin-inline: auto; }
+.vn-celle { position: absolute; inset: 0; pointer-events: none; }
+.vn-cella-btn {
+  position: absolute; pointer-events: auto; margin: 0; padding: 0; border: 0; border-radius: 8px;
+  background: transparent; cursor: pointer; -webkit-tap-highlight-color: transparent;
+  transition: background-color var(--dur-fast) var(--ease-smooth);
+}
+.vn-cella-btn:hover { background: rgba(255, 255, 255, .06); }
+.vn-cella-btn:focus-visible { outline: 2px solid var(--trace-3); outline-offset: 0; }
+
+.vn-svg { font-family: var(--mono); -webkit-user-select: none; user-select: none; }
+.vn-svg text { fill: var(--scope-text); }
+
+/* dimensioni dei testi: 960 unità di base nel formato largo, 320 nello stretto
+ * (a 360 px di schermo lo schema stretto è largo circa 310 px: 11 unità ≈ 10,7 px) */
+.vn-largo .vn-etich { font-size: 14px; }
+.vn-stretto .vn-etich { font-size: 11.5px; }
+.vn-largo .vn-mem-sotto, .vn-largo .vn-bus-tit { font-size: 13px; }
+.vn-stretto .vn-mem-sotto { font-size: 11px; }
+.vn-largo .vn-pillola-testo { font-size: 12.5px; }
+.vn-stretto .vn-pillola-testo { font-size: 11px; }
+.vn-largo .vn-mnem { font-size: 20px; }
+.vn-stretto .vn-mnem { font-size: 15px; }
+.vn-largo .vn-rtl { font-size: 15px; }
+.vn-stretto .vn-rtl { font-size: 11.5px; }
+.vn-chip-testo { font-size: 12px; }
+.vn-largo .vn-reg-val { font-size: 22px; }
+.vn-stretto .vn-reg-val { font-size: 15px; }
+.vn-largo .vn-reg-dec, .vn-largo .vn-flag-lettera { font-size: 13px; }
+.vn-stretto .vn-reg-dec, .vn-stretto .vn-flag-lettera { font-size: 11.5px; }
+.vn-largo .vn-cap { font-size: 11.5px; }
+.vn-stretto .vn-cap { font-size: 11px; }
+.vn-largo .vn-piu { font-size: 14px; }
+.vn-stretto .vn-piu { font-size: 11.5px; }
+.vn-largo .vn-alu-op { font-size: 14px; }
+.vn-stretto .vn-alu-op { font-size: 11.5px; }
+.vn-largo .vn-storia { font-size: 13px; }
+.vn-stretto .vn-storia, .vn-stretto .vn-info { font-size: 11px; }
+.vn-largo .vn-ind { font-size: 12px; }
+.vn-stretto .vn-ind { font-size: 10.8px; }
+.vn-largo .vn-int { font-size: 12.5px; }
+.vn-stretto .vn-int { font-size: 11px; }
+.vn-largo .vn-val { font-size: 17px; }
+.vn-largo[data-modo="harvard"] .vn-val { font-size: 16px; }
+.vn-stretto .vn-val { font-size: 12px; }
+.vn-largo .vn-dec text { font-size: 12px; }
+.vn-stretto .vn-dec text { font-size: 11px; }
+.vn-stretto .vn-svg .vn-pillola-testo { letter-spacing: .03em; }
+.vn-largo .vn-gettone text { font-size: 15px; }
+.vn-stretto .vn-gettone text { font-size: 12px; }
+
+/* contenitori */
+.vn-cpu { fill: #0a1311; stroke: #23362f; stroke-width: 1.5; }
+.vn-svg .vn-cpu-tit { fill: var(--vn-spento); letter-spacing: .14em; }
+.vn-svg .vn-etich { font-weight: 700; letter-spacing: .06em; fill: var(--vn-tenue); }
+.vn-uscita-box, .vn-info-box { fill: #070d0c; stroke: #23362f; stroke-width: 1.5; }
+.vn-mem { fill: #0b1412; stroke: #22342d; stroke-width: 1.5; }
+.vn-mem-riga { fill: none; stroke: #1d2c27; stroke-width: 1.5; }
+.vn-svg .vn-mem-tit { fill: var(--vn-tenue); }
+.vn-svg .vn-mem-sotto, .vn-svg .vn-bus-tit { fill: var(--vn-spento); font-weight: 600; }
+.vn-svg .vn-bus-tit { letter-spacing: .04em; }
+
+/* piste */
+.vn-pista { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.vn-pista.indirizzo { stroke: color-mix(in srgb, var(--vn-ind) 32%, #13201c); stroke-width: 5; }
+.vn-pista.dati { stroke: color-mix(in srgb, var(--vn-dato) 28%, #13201c); stroke-width: 7; }
+.vn-pista.dati.istr { stroke: color-mix(in srgb, var(--vn-istr) 30%, #13201c); }
+.vn-pista.interno { stroke: #2a3b35; stroke-width: 3; }
+.vn-pista.mem { stroke: #1c2b26; stroke-width: 2; }
+.vn-stretto .vn-pista.indirizzo { stroke-width: 3.5; }
+.vn-stretto .vn-pista.dati { stroke-width: 4.5; }
+.vn-stretto .vn-pista.interno { stroke-width: 2.2; }
+.vn-stretto .vn-pista.mem { stroke-width: 1.5; }
+.vn-nodo { fill: color-mix(in srgb, var(--vn-dato) 45%, #13201c); }
+.vn-mux { fill: #182521; stroke: color-mix(in srgb, var(--vn-ind) 50%, #13201c); stroke-width: 1.5; }
+
+/* linee di controllo */
+.vn-ctrl-linea { fill: none; stroke: #2e3e38; stroke-width: 2; stroke-dasharray: 5 4; stroke-linecap: round; stroke-linejoin: round; }
+.vn-ctrl-fine { fill: #2e3e38; }
+.vn-stretto .vn-ctrl-linea { stroke-width: 1.6; stroke-dasharray: 4 3; }
+.vn-ctrl.on .vn-ctrl-linea { stroke-dasharray: none; stroke-width: 2.6; }
+.vn-stretto .vn-ctrl.on .vn-ctrl-linea { stroke-width: 2; }
+.vn-ctrl.leggi.on .vn-ctrl-linea { stroke: var(--vn-leggi); }
+.vn-ctrl.leggi.on .vn-ctrl-fine { fill: var(--vn-leggi); }
+.vn-ctrl.scrivi.on .vn-ctrl-linea { stroke: var(--vn-scrivi); }
+.vn-ctrl.scrivi.on .vn-ctrl-fine { fill: var(--vn-scrivi); }
+
+/* unità di controllo */
+.vn-box { fill: var(--vn-box); stroke: var(--vn-bordo); stroke-width: 1.5; }
+.vn-cu-box { fill: #0e1916; }
+.vn-pillola-fondo { fill: #0b1412; stroke: #2a3d36; stroke-width: 1.2; }
+.vn-svg .vn-pillola-testo { fill: var(--vn-spento); font-weight: 800; letter-spacing: .08em; }
+.vn-pillola.on .vn-pillola-fondo { fill: color-mix(in srgb, var(--vn-ind) 24%, #0b1412); stroke: var(--vn-ind); }
+.vn-svg .vn-pillola.on .vn-pillola-testo { fill: #fff; }
+.vn-svg .vn-mnem { fill: #fff; font-weight: 800; }
+.vn-svg .vn-rtl { fill: var(--vn-istr); font-weight: 600; }
+.vn-chip { transform-box: fill-box; transform-origin: center; }
+.vn-chip-fondo { fill: #0b1412; stroke: #1f2f29; stroke-width: 1.2; }
+.vn-svg .vn-chip-testo { fill: var(--vn-spento); font-weight: 700; }
+.vn-chip.on .vn-chip-fondo { fill: color-mix(in srgb, var(--vn-istr) 22%, #0b1412); stroke: var(--vn-istr); }
+.vn-svg .vn-chip.on .vn-chip-testo { fill: #fff; }
+.vn-clock { fill: var(--vn-ind); opacity: .45; transform-box: fill-box; transform-origin: center; }
+.vn-clock.fermo { fill: #3a4a44; opacity: 1; }
+
+/* registri, ALU e flag */
+.vn-alone { fill: none; stroke: var(--vn-int); stroke-width: 3; opacity: 0; }
+.vn-svg .vn-reg-val { fill: #fff; font-weight: 800; }
+.vn-svg .vn-reg-dec { fill: var(--vn-tenue); font-weight: 600; }
+.vn-svg .vn-cap { fill: var(--vn-spento); font-weight: 600; }
+.vn-ir-campo { fill: #0c1513; stroke: #1f2f29; stroke-width: 1; }
+.vn-reg.decod .vn-ir-cod .vn-ir-campo { fill: color-mix(in srgb, var(--vn-istr) 20%, #0c1513); stroke: var(--vn-istr); }
+.vn-svg .vn-ir-cod-val { fill: var(--vn-istr); }
+.vn-svg .vn-piu { fill: var(--vn-ind); font-weight: 800; opacity: 0; }
+.vn-alu-box { fill: color-mix(in srgb, var(--vn-ind) 10%, #0e1715); stroke: color-mix(in srgb, var(--vn-ind) 45%, #26382f); }
+.vn-svg .vn-alu-tit { fill: var(--vn-ind); }
+.vn-svg .vn-alu-op { fill: #fff; font-weight: 800; }
+.vn-flag { transform-box: fill-box; transform-origin: center; }
+.vn-flag circle { fill: #18221f; stroke: #2e423b; stroke-width: 1.5; }
+.vn-flag.on circle { fill: var(--vn-dato); stroke: color-mix(in srgb, var(--vn-dato) 60%, #fff); }
+.vn-svg .vn-flag-lettera { fill: var(--vn-tenue); font-weight: 800; }
+.vn-svg .vn-flag.on .vn-flag-lettera { fill: #fff; }
+.vn-svg .vn-info { fill: var(--trace-2); font-weight: 700; }
+
+/* decodificatori degli indirizzi */
+.vn-dec rect { fill: #0f1a17; stroke: color-mix(in srgb, var(--vn-ind) 45%, #13201c); stroke-width: 1.5; }
+.vn-svg .vn-dec text { fill: var(--vn-tenue); font-weight: 800; }
+.vn-dec.on rect { fill: color-mix(in srgb, var(--vn-ind) 30%, #0f1a17); stroke: var(--vn-ind); }
+.vn-svg .vn-dec.on text { fill: #fff; }
+
+/* celle della memoria */
+.vn-cella { transform-box: fill-box; transform-origin: center; }
+.vn-cella-fondo { fill: #111c19; stroke: #22332d; stroke-width: 1.5; }
+.vn-cella.istruzione .vn-cella-fondo { stroke: color-mix(in srgb, var(--vn-istr) 40%, #22332d); }
+.vn-cella.dato .vn-cella-fondo { stroke: color-mix(in srgb, var(--vn-dato) 40%, #22332d); }
+.vn-cella.corrente .vn-cella-fondo { fill: color-mix(in srgb, var(--vn-istr) 11%, #111c19); }
+.vn-cella.pc .vn-cella-fondo { stroke: color-mix(in srgb, var(--vn-ind) 75%, #22332d); }
+.vn-cella.letta-istruzione .vn-cella-fondo { fill: color-mix(in srgb, var(--vn-istr) 24%, #111c19); }
+.vn-cella.letta-dato .vn-cella-fondo { fill: color-mix(in srgb, var(--vn-dato) 20%, #111c19); }
+.vn-cella.sel .vn-cella-fondo { stroke: var(--vn-ind); stroke-width: 2.5; }
+.vn-cella.scelta .vn-cella-fondo { stroke: #fff; stroke-width: 2; stroke-dasharray: 5 3; }
+.vn-pc-segno { fill: var(--vn-ind); opacity: 0; }
+.vn-cella.pc .vn-pc-segno { opacity: 1; }
+.vn-svg .vn-ind { fill: var(--vn-spento); font-weight: 600; }
+.vn-svg .vn-int { fill: var(--vn-tenue); font-weight: 700; }
+.vn-svg .vn-cella.istruzione .vn-int { fill: var(--vn-istr); }
+.vn-svg .vn-cella.dato .vn-int { fill: var(--vn-dato); }
+.vn-svg .vn-val { fill: #e9f3ef; font-weight: 800; }
+.vn-svg .vn-cella.istruzione .vn-val.diviso tspan:first-child { fill: var(--vn-istr); }
+.vn-svg .vn-cella.vuota .vn-val { fill: #50675e; }
+.vn-uso { opacity: 0; }
+.vn-uso.i { fill: var(--vn-istr); }
+.vn-uso.d { fill: var(--vn-dato); }
+.vn-uso.on { opacity: 1; }
+
+/* display a sette segmenti e ultime uscite */
+.vn-seg { fill: #1b2420; }
+.vn-seg.on { fill: var(--trace-stuff); }
+.vn-svg .vn-storia { fill: var(--scope-text); font-weight: 700; }
+
+/* gettoni in viaggio e scie */
+.vn-gettone rect { stroke: rgba(0, 0, 0, .4); stroke-width: 1; }
+.vn-svg .vn-gettone text { fill: #04150d; font-weight: 800; }
+.vn-gettone.indirizzo rect { fill: var(--vn-ind); }
+.vn-gettone.istruzione rect { fill: var(--vn-istr); }
+.vn-gettone.dato rect { fill: var(--vn-dato); }
+.vn-gettone.interno rect { fill: var(--vn-int); }
+.vn-scia, .vn-scia-alone { fill: none; stroke-linecap: round; stroke-linejoin: round; transition: opacity var(--dur-normal) var(--ease-smooth); }
+.vn-scia { stroke-width: 3; }
+.vn-scia-alone { stroke-width: 11; opacity: .22; }
+.vn-stretto .vn-scia { stroke-width: 2.2; }
+.vn-stretto .vn-scia-alone { stroke-width: 7; }
+.vn-scia.resto { opacity: .6; }
+.vn-scia-alone.resto { opacity: .1; }
+.vn-scia.indirizzo, .vn-scia-alone.indirizzo { stroke: var(--vn-ind); }
+.vn-scia.istruzione, .vn-scia-alone.istruzione { stroke: var(--vn-istr); }
+.vn-scia.dato, .vn-scia-alone.dato { stroke: var(--vn-dato); }
+.vn-scia.interno, .vn-scia-alone.interno { stroke: var(--vn-int); }
+
+/* lampi: solo opacità e trasformazioni */
+.vn-reg.lampo .vn-alone { animation: vn-lampo var(--dur-slow) var(--ease-smooth); }
+.vn-clock.lampo { animation: vn-tick 320ms var(--ease-sharp); }
+.vn-svg .vn-piu.lampo { animation: vn-piu 700ms var(--ease-smooth); }
+.vn-chip.lampo, .vn-flag.lampo, .vn-cella.scritta { animation: vn-pulsa 520ms var(--ease-bounce); }
+.vn-svg .vn-nuovo { animation: vn-nuovo var(--dur-slow) var(--ease-smooth); }
+
+@keyframes vn-lampo { from { opacity: .9; } to { opacity: 0; } }
+@keyframes vn-tick { from { opacity: 1; transform: scale(1.4); } to { opacity: .45; transform: scale(1); } }
+@keyframes vn-piu {
+  0% { opacity: 0; transform: translateY(5px); }
+  30% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-7px); }
+}
+@keyframes vn-pulsa { 0%, 100% { transform: scale(1); } 40% { transform: scale(1.08); } }
+@keyframes vn-nuovo { from { opacity: .2; } to { opacity: 1; } }
+
+/* ---------- legenda, spiegazione, comandi ---------- */
+
+.vn-legenda { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 0; padding: 0; list-style: none; font-size: .8rem; line-height: 1.3; color: var(--vn-tenue); }
+.vn-legenda li { display: inline-flex; align-items: center; gap: 7px; }
+.vn-legenda i { flex: none; width: 18px; height: 8px; border-radius: 4px; }
+.vn-leg-indirizzo i { background: var(--vn-ind); }
+.vn-leg-istruzione i { background: var(--vn-istr); }
+.vn-leg-dato i { background: var(--vn-dato); }
+.vn-leg-leggi i, .vn-leg-scrivi i { height: 0; border-radius: 0; border-top: 3px solid var(--vn-leggi); }
+.vn-leg-scrivi i { border-top-color: var(--vn-scrivi); }
+.vn-leg-pc i { width: 4px; height: 14px; border-radius: 2px; background: var(--vn-ind); }
+.vn-leg-uso i {
+  width: 20px;
+  background:
+    radial-gradient(circle at 5px 50%, var(--vn-istr) 3px, transparent 3.5px),
+    radial-gradient(circle at 15px 50%, var(--vn-dato) 3px, transparent 3.5px);
+}
+.vn-leg-libero i { background: #18231f; box-shadow: inset 0 0 0 1px #2a3b35; }
+
+.vn-stato { min-width: 0; }
+.vn-nota { min-height: 4.7em; overflow-wrap: break-word; }
+.vn-nota code { font: 700 .92em var(--mono); color: #fff; }
+
+.vn-trasporto { gap: 8px; }
+.vn-fase {
+  flex: 1 1 100%; margin: 0; min-height: 1.3em; font: 700 .8rem var(--mono); color: var(--trace-2);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.vn-icona { flex: none; width: 16px; height: 16px; fill: currentColor; }
+.vn-icona.tratto { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.vn-corri-icona { display: inline-flex; }
+.vn-corri { min-width: 112px; }
+.vn-vel input[type="range"] { width: 118px; min-height: 40px; margin: 0; }
+.vn-vel-testo { min-width: 6.5em; color: #fff; font-weight: 700; }
+.vn-conta { margin-left: auto; }
+
+/* ---------- editor della memoria e traffico sui bus ---------- */
+
+.vn-sotto { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr); gap: 14px; align-items: start; }
+.vn-pan-tit { margin: 0 0 8px; font: 800 .74rem var(--mono); text-transform: uppercase; letter-spacing: .1em; color: var(--vn-tenue); }
+.vn-aiuto { margin: 0; font-size: .88rem; line-height: 1.5; }
+.vn-ed-form { display: grid; gap: 10px; }
+.vn-campi { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 8px 10px; align-items: center; }
+.vn-campi label { font-size: .84rem; color: var(--scope-text); }
+.vn-lab select,
+.vn-lab input[type="number"] {
+  width: 100%; min-width: 0; min-height: 40px; padding: 0 10px; border-radius: 8px;
+  border: 1px solid var(--scope-grid); background: #0a100e; color: #fff; font: 600 .9rem var(--font);
+}
+.vn-lab select:disabled { opacity: .5; }
+.vn-anteprima { margin: 0; font-size: .82rem; line-height: 1.45; color: var(--trace-2); overflow-wrap: anywhere; }
+.vn-ed-azioni { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.vn-tr-righe { display: grid; gap: 8px; }
+.vn-tr-riga {
+  display: grid; grid-template-columns: 9.5em minmax(0, 1fr) 6.5em; gap: 10px; align-items: center;
+  opacity: .6; transition: opacity var(--dur-normal) var(--ease-smooth);
+}
+.vn-tr-riga.attiva { opacity: 1; }
+.vn-tr-nome { display: grid; font-size: .76rem; line-height: 1.25; color: var(--vn-tenue); }
+.vn-tr-nome b { color: #fff; font-size: .82rem; }
+.vn-tr-barra { display: grid; gap: 1px; height: 18px; }
+.vn-tr-barra span { border-radius: 2px; background: #17221f; }
+.vn-tr-barra .istruzione { background: color-mix(in srgb, var(--vn-istr) 45%, #17221f); }
+.vn-tr-barra .dato { background: color-mix(in srgb, var(--vn-dato) 45%, #17221f); }
+.vn-tr-barra .vuoto { background: transparent; }
+.vn-tr-barra .fatto.istruzione { background: var(--vn-istr); }
+.vn-tr-barra .fatto.dato { background: var(--vn-dato); }
+.vn-tr-barra .fatto.libero { background: #2b3c36; }
+.vn-tr-tot { font: 700 .8rem var(--mono); font-variant-numeric: tabular-nums; color: var(--trace-2); text-align: right; }
+.vn-tr-leg { margin-top: 10px; }
+.vn-tr-sintesi { margin: 10px 0 0; font-size: .86rem; line-height: 1.5; }
+.vn-tr-sintesi strong { color: #fff; }
+
+/* ---------- formato medio: lo schema verticale con i comandi accanto ---------- */
+
+.vn-medio { grid-template-columns: minmax(0, 1fr) minmax(230px, 300px); align-items: start; }
+.vn-medio > .vn-barra, .vn-medio > .vn-descr, .vn-medio > .vn-sotto { grid-column: 1 / -1; }
+.vn-medio > .vn-macchina { grid-column: 1; }
+.vn-medio > .vn-lato {
+  grid-column: 2; display: grid; gap: 14px; align-content: start;
+  position: sticky; top: calc(var(--spc-cima, 52px) + 12px);
+}
+.vn-medio .vn-legenda { flex-direction: column; }
+.vn-medio .vn-conta { margin-left: 0; }
+
+/* ---------- formato stretto (telefoni) ---------- */
+
+.vn-stretto .vn-sotto { grid-template-columns: minmax(0, 1fr); }
+.vn-stretto .vn-tr-riga { grid-template-columns: minmax(0, 1fr) auto; gap: 4px 10px; }
+.vn-stretto .vn-tr-barra { grid-column: 1 / -1; grid-row: 2; }
+.vn-stretto .vn-tr-nome { grid-template-columns: auto auto; justify-content: start; gap: 6px; align-items: baseline; }
+.vn-stretto:not(.vn-medio) .vn-trasporto {
+  position: sticky; bottom: 0; z-index: 3;
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px;
+  margin: 0 -8px; padding: 8px 8px calc(8px + env(safe-area-inset-bottom, 0px));
+  background: var(--scope-bg);
+  border-top: 1px solid var(--scope-grid);
+  box-shadow: 0 -14px 24px -18px rgba(0, 0, 0, .8);
+}
+.vn-stretto:not(.vn-medio) .vn-fase { grid-column: 1 / -1; }
+.vn-stretto:not(.vn-medio) .vn-trasporto .lab-btn {
+  flex-direction: column; gap: 3px; min-width: 0; min-height: 48px; padding: 4px 2px;
+  font-size: .72rem; line-height: 1.1;
+}
+.vn-stretto:not(.vn-medio) .vn-corri { min-width: 0; }
+.vn-stretto:not(.vn-medio) .vn-vel { grid-column: 1 / -1; justify-content: space-between; }
+.vn-stretto:not(.vn-medio) .vn-vel input[type="range"] { flex: 1 1 auto; width: auto; }
+.vn-stretto:not(.vn-medio) .vn-conta { display: none; }
+
+@media (max-width: 640px) {
+  #lab-von-neumann .lab-stage { padding: 12px 8px; }
+  .vn-barra { gap: 10px 14px; }
+}
+
+/* Telefoni: i cinque programmi in una griglia di tre colonne uguali, invece di 4 + 1 */
+@media (max-width: 440px) {
+  .vn-barra > .vn-gruppo:first-child { flex: 1 1 100%; }
+  .vn-barra > .vn-gruppo:first-child .lab-seg { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .vn-barra > .vn-gruppo:first-child .lab-seg button { padding: 0 4px; }
+}
+
+/* Telefoni più stretti (360 px): lo strumento si allarga di 8 px nei margini della pagina e
+ * stringe la cornice interna, così lo schema guadagna circa 20 px e i testi più piccoli
+ * restano intorno agli 11 px effettivi. */
+@media (max-width: 400px) {
+  #lab-von-neumann.lab { margin-inline: -8px; }
+  #lab-von-neumann .lab-stage { padding: 12px 6px; }
+  .vn-stretto:not(.vn-medio) .vn-trasporto { margin: 0 -6px; padding-inline: 6px; }
+}
+
+/* ---------- movimento ridotto ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .vn-lab *, .vn-lab *::before, .vn-lab *::after { animation: none !important; transition: none !important; }
+  .vn-fig.vn-anima .vn-tok { animation: none; }
+}

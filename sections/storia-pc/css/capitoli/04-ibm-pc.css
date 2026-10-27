@@ -1,0 +1,336 @@
+/* Storia del PC · capitolo 4 (ibm-pc): illustrazioni e laboratorio "Dentro l'IBM PC 5150". Prefisso: .ibm- */
+
+/* ---------- illustrazioni (tela chiara, colori dalle variabili --ill-*) ---------- */
+
+.ibm-fig .l { stroke: var(--ill-linea); stroke-width: 1.6; stroke-linejoin: round; }
+.ibm-fig .l1 { stroke: var(--ill-linea); stroke-width: 1.1; }
+.ibm-fig .be { fill: var(--ill-beige); }
+.ibm-fig .be2 { fill: var(--ill-beige-2); }
+.ibm-fig .be3 { fill: var(--ill-beige-3); }
+.ibm-fig .sc { fill: var(--ill-scuro); }
+.ibm-fig .sc2 { fill: var(--ill-scuro-2); }
+.ibm-fig .ch { fill: var(--ill-chip); }
+.ibm-fig .gr { fill: var(--ill-grigio); }
+.ibm-fig-luce { fill: #fff; opacity: .24; }
+.ibm-fig-ombra { fill: #000; opacity: .14; }
+.ibm-fig-solco { fill: none; stroke: var(--ill-beige-3); stroke-width: 1.4; stroke-linecap: round; }
+.ibm-fig-interruttore { fill: var(--ill-led); }
+.ibm-fig-targa { fill: none; stroke: var(--ill-grigio); stroke-width: 1.6; stroke-linecap: round; }
+.ibm-fig-led { fill: var(--ill-led); }
+.ibm-fig-schermo { fill: var(--ill-schermo); }
+.ibm-fig-bagliore { fill: var(--ill-fosforo); opacity: .07; }
+.ibm-fig-riga { fill: var(--ill-fosforo); opacity: .82; }
+.ibm-fig-prompt { fill: var(--ill-fosforo); font: 700 15px var(--mono); }
+.ibm-fig-cursore { fill: var(--ill-fosforo); }
+.ibm-fig-cavo { fill: none; stroke: var(--ill-beige-3); stroke-width: 2.2; stroke-linejoin: round; }
+.ibm-fig-fessure path { fill: none; stroke: var(--ill-beige-3); stroke-width: 1.4; stroke-linecap: round; }
+.ibm-fig .ka { fill: var(--ill-beige); stroke: var(--ill-beige-3); stroke-width: .9; }
+.ibm-fig .km { fill: var(--ill-grigio); stroke: var(--ill-grigio-2); stroke-width: .9; }
+.ibm-fig .kf { fill: var(--ill-grigio); stroke: var(--ill-grigio-2); stroke-width: .9; }
+@media (prefers-reduced-motion: no-preference) {
+  .ibm-fig-cursore { animation: ibm-lampeggio 1.06s steps(1, end) infinite; }
+}
+@keyframes ibm-lampeggio { 50% { opacity: 0; } }
+
+/* il BIOS come contratto */
+.ibm-c-prog { fill: var(--ill-blu); }
+.ibm-c-dos { fill: var(--ill-scuro-2); }
+.ibm-c-sportello { fill: var(--ill-beige); }
+.ibm-c-int { fill: #2a2f35; font: 800 21px var(--mono); text-anchor: middle; }
+.ibm-c-bios { fill: var(--ill-ambra); }
+.ibm-c-bios2 { fill: color-mix(in srgb, var(--ill-ambra) 55%, var(--ill-beige)); }
+.ibm-c-pcb { fill: var(--ill-pcb); }
+.ibm-c-t { font: 800 23px var(--font); text-anchor: middle; letter-spacing: -.01em; }
+.ibm-c-s { font: 600 21px var(--font); text-anchor: middle; }
+.ibm-c-uguale { font: 800 34px var(--font); text-anchor: middle; }
+.ibm-fig .scuro { fill: #2a2f35; }
+.ibm-fig .chiaro { fill: #fff; }
+.ibm-fig .inchiostro { fill: var(--ink); }
+.ibm-c-freccia { fill: none; stroke: var(--ink); stroke-width: 2.5; }
+.ibm-c-punta { fill: var(--ink); }
+
+/* ---------- laboratorio: struttura ---------- */
+
+.ibm-lab { display: grid; gap: 14px; }
+/* anello di fuoco brillante: il laboratorio è sempre scuro */
+.ibm-lab :focus-visible { outline: 3px solid var(--trace-1); outline-offset: 2px; }
+.ibm-viste { justify-self: start; }
+.ibm-viste button { min-height: 40px; }
+.ibm-vista { display: grid; gap: 14px; min-width: 0; }
+.ibm-nota { min-height: 4.7em; }
+.ibm-passi { display: inline-flex; align-items: center; gap: 6px; }
+.ibm-contatore { min-width: 4.4em; text-align: center; }
+.ibm-passo span { font-size: .8rem; }
+
+.ibm-case-griglia { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 14px; align-items: start; }
+.ibm-case-sx { display: grid; gap: 10px; min-width: 0; }
+
+/* il case visto dall'alto, con i numeri sovrapposti (in percentuale del disegno) */
+.ibm-tavolo {
+  position: relative; border-radius: 12px; overflow: hidden;
+  background: radial-gradient(120% 90% at 50% 40%, #13201c 0%, #0a110f 70%);
+  border: 1px solid var(--scope-grid);
+  -webkit-tap-highlight-color: transparent;
+}
+.ibm-tavolo.punta { cursor: pointer; }
+.ibm-case-svg { display: block; width: 100%; height: auto; }
+
+.ibm-marca {
+  position: absolute; width: 26px; height: 26px; pointer-events: none;
+  transform: translate(-50%, -50%) scale(0); opacity: 0;
+}
+.ibm-marca-num {
+  position: relative; z-index: 1; display: grid; place-items: center; width: 100%; height: 100%; border-radius: 50%;
+  background: rgba(6, 12, 10, .9); border: 2px solid var(--trace-1); color: #fff;
+  font: 800 12px/1 var(--mono); font-variant-numeric: tabular-nums;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .55);
+  transition-property: background-color, color, transform; transition-duration: var(--dur-fast); transition-timing-function: var(--ease-smooth);
+}
+.ibm-marca.sopra .ibm-marca-num { transform: scale(1.14); }
+.ibm-marca.on { z-index: 2; }
+.ibm-marca.on .ibm-marca-num { background: var(--trace-1); color: #04150d; transform: scale(1.16); }
+.ibm-marca-onda { position: absolute; inset: 0; border-radius: 50%; border: 2px solid var(--trace-1); opacity: 0; }
+.ibm-orient {
+  position: absolute; left: 8px; pointer-events: none; padding: 3px 6px 3px 7px; border-radius: 5px;
+  font: 700 11px/1 var(--mono); text-transform: uppercase; letter-spacing: .14em; color: #9ab5aa;
+  background: rgba(6, 12, 10, .82);
+}
+.ibm-orient-retro { top: 6px; }
+.ibm-orient-fronte { bottom: 6px; }
+
+/* disegno del case */
+.ibm-k-telaio { fill: var(--ill-grigio); stroke: #0b0e10; stroke-width: 2; }
+.ibm-k-fondo { fill: var(--ill-grigio-2); }
+.ibm-k-borchia { fill: var(--ill-grigio); stroke: #0b0e10; stroke-width: 1; }
+.ibm-k-pcb { fill: var(--ill-pcb); stroke: #062118; stroke-width: 1.5; }
+.ibm-k-piste { fill: none; stroke: var(--ill-pcb-2); stroke-width: 1.3; stroke-linecap: round; stroke-linejoin: round; }
+.ibm-k-foro { fill: var(--ill-grigio-2); stroke: var(--ill-oro); stroke-width: 1.6; }
+.ibm-k-slot { fill: var(--ill-chip); stroke: #000; stroke-width: 1; }
+.ibm-k-contatti { fill: none; stroke: var(--ill-oro); stroke-width: 3; stroke-dasharray: 1.2 1.6; }
+.ibm-k-chip { fill: var(--ill-chip); stroke: #000; stroke-width: 1; }
+.ibm-k-chip.parita { fill: #262b31; }
+.ibm-k-chip.bios { fill: #2c2622; }
+.ibm-k-pin { fill: none; stroke: #c9ced2; stroke-width: 2.2; stroke-dasharray: 1.5 1.55; }
+.ibm-k-tacca { fill: none; stroke: #4b535a; stroke-width: 1; }
+.ibm-k-sigla { fill: #cfd8d3; font: 700 13px var(--mono); text-anchor: middle; letter-spacing: .04em; }
+.ibm-k-zoccolo { fill: var(--ill-scuro-2); stroke: #000; stroke-width: 1; }
+.ibm-k-fori { fill: none; stroke: var(--ill-oro); stroke-width: 2; stroke-linecap: round; }
+.ibm-k-quarzo { fill: #c3c9ce; stroke: #6b747c; stroke-width: 1; }
+.ibm-k-dip { fill: var(--ill-blu); stroke: #142f57; stroke-width: 1; }
+.ibm-k-leva { fill: #f1f1ee; }
+.ibm-k-din { fill: var(--ill-scuro-2); stroke: #000; stroke-width: 1; }
+.ibm-k-din-foro { fill: var(--ill-grigio); stroke: #000; stroke-width: 1; }
+.ibm-k-connettore { fill: var(--ill-beige); stroke: var(--ill-beige-3); stroke-width: 1; }
+.ibm-k-cond { fill: var(--ill-blu); stroke: #142f57; stroke-width: .8; }
+.ibm-k-piattina { fill: none; stroke: #b9bcc0; stroke-width: 9; }
+.ibm-k-piattina-righe { fill: none; stroke: #8f959a; stroke-width: 6; stroke-dasharray: .8 1.6; }
+.ibm-k-fili path { fill: none; stroke-width: 2.2; stroke-linecap: round; }
+.ibm-k-fili .f1 { stroke: var(--ill-rame); }
+.ibm-k-fili .f2 { stroke: var(--ill-led); }
+.ibm-k-fili .f3 { stroke: #101316; }
+.ibm-k-fili .f4 { stroke: var(--ill-oro); }
+.ibm-k-ombra { fill: #000; }
+.ibm-k-staffa { fill: #c3c9ce; stroke: #5d656c; stroke-width: 1; }
+.ibm-k-scheda { fill: var(--ill-pcb-2); stroke: #062118; stroke-width: 1; }
+.ibm-k-scheda-bordo { fill: #3f8f69; }
+.ibm-k-comp { fill: var(--ill-chip); }
+.ibm-k-guida { fill: var(--ill-beige-2); stroke: var(--ill-beige-3); stroke-width: 1; }
+.ibm-k-interruttore { fill: #d0362e; stroke: #6d1611; stroke-width: 1.2; }
+.ibm-k-ali { fill: #a9b1b8; stroke: #0b0e10; stroke-width: 1.6; }
+.ibm-k-ali-piano { fill: #b9c0c6; }
+.ibm-k-feritoie { fill: none; stroke: #5d656c; stroke-width: 3.2; stroke-linecap: round; }
+.ibm-k-etichetta { fill: #ebe6d8; stroke: #9aa3ab; stroke-width: 1; }
+.ibm-k-etichetta-righe { fill: none; stroke: #8a8f94; stroke-width: 2.4; stroke-linecap: round; }
+.ibm-k-vite-ali { fill: #d3d8dc; stroke: #5d656c; stroke-width: 1; }
+.ibm-k-drive { fill: #8d969d; stroke: #0b0e10; stroke-width: 1.6; }
+.ibm-k-drive-pcb { fill: var(--ill-pcb-2); stroke: #062118; stroke-width: 1; }
+.ibm-k-motore { fill: #6f787f; stroke: #454d54; stroke-width: 1.5; }
+.ibm-k-motore-centro { fill: #c3c9ce; stroke: #454d54; stroke-width: 1; }
+.ibm-k-testina { fill: #5d656c; stroke: #3a4148; stroke-width: 1; }
+.ibm-k-frontalino { fill: var(--ill-scuro); }
+.ibm-k-leva-drive { fill: #9aa3ab; }
+.ibm-k-led { fill: var(--ill-led); }
+.ibm-k-staffa-cassa { fill: #9aa3ab; stroke: #5d656c; stroke-width: 1; }
+.ibm-k-cassa { fill: var(--ill-scuro-2); stroke: #000; stroke-width: 1.2; }
+.ibm-k-cono { fill: #5d656c; }
+.ibm-k-cono-anello { fill: none; stroke: #464e57; stroke-width: 2; }
+.ibm-k-cupola { fill: var(--ill-scuro); }
+.ibm-k-fuoco-alone { fill: none; stroke: color-mix(in srgb, var(--trace-1) 32%, transparent); stroke-width: 8; }
+.ibm-k-fuoco-linea { fill: color-mix(in srgb, var(--trace-1) 9%, transparent); stroke: var(--trace-1); stroke-width: 2.4; }
+.ibm-k-coperchio { fill: var(--ill-beige); stroke: #0b0e10; stroke-width: 2; }
+.ibm-k-coperchio-luce { fill: #fff; opacity: .35; }
+.ibm-k-coperchio-piega { fill: none; stroke: var(--ill-beige-3); stroke-width: 1.5; }
+.ibm-k-vite { fill: #c3c9ce; stroke: #5d656c; stroke-width: 1.2; }
+.ibm-k-vite-taglio { fill: none; stroke: #4b535a; stroke-width: 1.6; }
+.ibm-k-frontale { fill: var(--ill-beige-2); stroke: #0b0e10; stroke-width: 1.6; }
+.ibm-k-frontale-buco { fill: var(--ill-scuro); }
+
+/* legenda dei pezzi */
+.ibm-legenda { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 4px; }
+.ibm-chip {
+  display: flex; align-items: center; gap: 8px; min-height: 40px; padding: 4px 10px 4px 6px; border-radius: 9px; cursor: pointer;
+  font: 600 .82rem/1.2 var(--font); text-align: left; color: var(--scope-text);
+  background: #101916; border: 1px solid var(--scope-grid);
+  transition-property: color, background-color, border-color, transform; transition-duration: var(--dur-fast); transition-timing-function: var(--ease-smooth);
+}
+.ibm-chip:hover { color: #fff; border-color: color-mix(in srgb, var(--trace-1) 60%, var(--scope-grid)); }
+.ibm-chip:active { transform: scale(.97); }
+.ibm-chip-num {
+  flex: none; display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%;
+  font: 800 .72rem/1 var(--mono); color: #fff; border: 1.5px solid var(--trace-1);
+  transition-property: background-color, color; transition-duration: var(--dur-fast);
+}
+.ibm-chip[aria-pressed="true"] { color: #fff; background: #1d2d28; border-color: color-mix(in srgb, var(--trace-1) 55%, transparent); }
+.ibm-chip[aria-pressed="true"] .ibm-chip-num { background: var(--trace-1); color: #04150d; }
+
+/* scheda del pezzo scelto */
+.ibm-scheda { position: sticky; top: calc(var(--spc-cima, 52px) + 12px); }
+.ibm-scheda-corpo { transition-property: opacity, transform; transition-duration: var(--dur-fast); transition-timing-function: var(--ease-smooth); }
+.ibm-scheda-corpo.cambio { opacity: 0; transform: translateY(6px); }
+.ibm-scheda-testa { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+.ibm-scheda-num {
+  flex: none; display: grid; place-items: center; width: 42px; height: 42px; border-radius: 12px;
+  background: var(--trace-1); color: #04150d; font: 800 1.05rem/1 var(--mono);
+}
+.ibm-scheda-gruppo { margin: 0; font: 700 .7rem/1.3 var(--mono); text-transform: uppercase; letter-spacing: .12em; color: #7f9a90; }
+.ibm-scheda-nome { margin: 2px 0 0; font-size: 1.14rem; line-height: 1.2; color: #fff; text-wrap: balance; }
+.ibm-scheda-testo { margin: 0 0 12px; font-size: .93rem; line-height: 1.55; color: var(--scope-text); text-wrap: pretty; }
+.ibm-scheda-testo em { color: #dbe7e1; }
+.ibm-scheda-dati { margin-bottom: 12px; }
+.ibm-scheda-dati:empty { display: none; }
+.ibm-vai-mappa { width: 100%; }
+
+/* ---------- laboratorio: la mappa della memoria ---------- */
+
+.ibm-mappa-legenda { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: .84rem; color: var(--scope-text); }
+.ibm-mappa-legenda li { display: inline-flex; align-items: center; gap: 6px; }
+.ibm-sw { width: 16px; height: 11px; border-radius: 3px; background: var(--c); }
+.ibm-mappa-legenda .c-grigio .ibm-sw { background: repeating-linear-gradient(45deg, #5b6b65 0 2px, transparent 2px 5px); box-shadow: inset 0 0 0 1px #6b7a74; }
+.ibm-kb { font: 600 .74rem var(--mono); color: #7f9a90; }
+.c-trace-1 { --c: var(--trace-1); }
+.c-trace-2 { --c: var(--trace-2); }
+.c-trace-3 { --c: var(--trace-3); }
+.c-trace-4 { --c: var(--trace-4); }
+.c-grigio { --c: #6b7a74; }
+
+.ibm-mappa-griglia { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; align-items: start; }
+.ibm-mappa-tela { min-width: 0; border-radius: 12px; background: #0a110f; border: 1px solid var(--scope-grid); overflow: hidden; }
+.ibm-mappa-svg { display: block; max-width: 100%; }
+.ibm-m-z { fill: var(--c); opacity: .36; }
+.ibm-m-z.usata { opacity: .62; }
+.ibm-m-z.giro { opacity: .26; }
+.ibm-m-z.hma { fill: #7b8b85; opacity: .55; }
+.ibm-m-usata { fill: var(--c); opacity: .95; }
+.ibm-m-libera { opacity: .6; }
+.ibm-m-trat-linea { stroke: rgba(255, 255, 255, .2); stroke-width: 2; }
+.ibm-m-oltre { stroke: #6b7a74; stroke-width: 1.2; stroke-dasharray: 3 3; }
+.ibm-m-cornice { fill: none; stroke: #4a5d56; stroke-width: 1.2; }
+.ibm-m-cornice.lente { stroke: #5d756c; }
+.ibm-m-tacca { stroke: #4a5d56; stroke-width: 1; }
+.ibm-m-ind { fill: #9ab5aa; font: 600 11px var(--mono); text-anchor: end; }
+.ibm-m-tit { fill: #c4d3cc; font: 700 12px var(--font); }
+.ibm-m-ponte { fill: color-mix(in srgb, var(--trace-3) 9%, transparent); stroke: color-mix(in srgb, var(--trace-3) 40%, transparent); stroke-width: 1; }
+.ibm-m-banda { fill: color-mix(in srgb, var(--trace-3) 22%, transparent); stroke: var(--trace-3); stroke-width: 1.5; }
+.ibm-m-banda.copia { stroke-dasharray: 3 2; }
+.ibm-m-confine { stroke: rgba(0, 0, 0, .55); stroke-width: 1; }
+.ibm-m-mega { stroke: #fff; stroke-width: 1.5; stroke-dasharray: 4 3; }
+.ibm-m-et-sw { fill: var(--c); }
+.ibm-m-et-t { fill: #d4e2dc; font: 600 12px var(--font); }
+.ibm-m-et-ind { fill: #8fa9a0; font: 600 11px var(--mono); }
+.ibm-m-pill { fill: #fff; }
+.ibm-m-pill-t { fill: #04150d; font: 800 12px var(--mono); }
+.ibm-m-ptr-linea { stroke: #fff; stroke-width: 2; }
+.ibm-m-ptr-punta { fill: #fff; }
+.ibm-m-onda { fill: none; stroke: #fff; stroke-width: 1.5; opacity: 0; }
+
+/* calcolatore */
+.ibm-calc { display: grid; gap: 12px; }
+.ibm-campi { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
+.ibm-campo { display: grid; gap: 4px; min-width: 0; }
+.ibm-campo label { font: 700 .7rem var(--mono); text-transform: uppercase; letter-spacing: .12em; color: #7f9a90; }
+.ibm-campo-riga { display: flex; align-items: baseline; gap: 4px; }
+.ibm-esa {
+  width: 100%; min-width: 0; min-height: 44px; padding: 4px 10px; border-radius: 9px;
+  border: 1px solid var(--scope-grid); background: #060b0a; color: #fff;
+  font: 800 1.35rem var(--mono); letter-spacing: .08em; text-transform: uppercase;
+  transition-property: border-color; transition-duration: var(--dur-fast);
+}
+.ibm-esa:hover { border-color: #3c5249; }
+.ibm-esa:focus-visible { outline: 3px solid var(--trace-1); outline-offset: 1px; }
+.ibm-esa[aria-invalid="true"] { border-color: var(--trace-4); }
+.ibm-h { font: 700 .9rem var(--mono); color: #7f9a90; }
+.ibm-range { width: 100%; height: 40px; margin: 0; accent-color: var(--trace-3); cursor: pointer; }
+.ibm-errore { margin: -6px 0 0; color: var(--trace-4); font-size: .84rem; }
+.ibm-errore:empty { display: none; }
+/* nome e stato non si spezzano: se non c'è posto, lo stato va a capo tutto intero */
+.ibm-a20 { justify-self: start; flex-wrap: wrap; justify-content: flex-start; gap: 2px 8px; padding: 6px 14px; text-align: left; }
+.ibm-a20-nome, .ibm-a20-stato { white-space: nowrap; }
+.ibm-a20-led { flex: none; width: 10px; height: 10px; border-radius: 50%; background: #26332f; box-shadow: inset 0 0 0 1px #3c5249; transition-property: background-color, box-shadow; transition-duration: var(--dur-fast); }
+.ibm-a20[aria-pressed="true"] .ibm-a20-led { background: #fff; box-shadow: 0 0 0 2px rgba(4, 21, 13, .3), 0 0 8px rgba(255, 255, 255, .9); }
+.ibm-a20-stato { font-weight: 600; opacity: .85; }
+.ibm-giro-icona { font-size: .72rem; line-height: 1; }
+
+.ibm-somma { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.ibm-somma th { padding: 4px 8px 4px 6px; border: 0; text-align: left; white-space: nowrap; font: 600 .82rem var(--font); color: #9ab5aa; }
+.ibm-somma td { padding: 4px 6px 4px 0; border: 0; text-align: right; }
+.ibm-somma tr.tot th, .ibm-somma tr.tot td { border-top: 2px solid #4a5d56; }
+.ibm-somma tr.fin th { color: var(--trace-4); }
+.ibm-somma tr.fin.a20 th { color: var(--trace-3); }
+.ibm-cifre { display: inline-grid; grid-template-columns: repeat(6, 1.05em); justify-items: center; font: 800 1.18rem/1.2 var(--mono); color: #fff; }
+.ibm-cifra.zero { color: var(--trace-2); }
+.ibm-cifra.riporto { color: var(--trace-4); }
+.ibm-cifra.persa { color: var(--trace-4); text-decoration: line-through; text-decoration-thickness: 2px; }
+.ibm-cifra.tenuta { color: var(--trace-3); }
+
+.ibm-esito { border-top: 1px solid var(--scope-grid); padding-top: 10px; }
+.ibm-esito-riga { margin: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 6px; }
+.ibm-esito-ind { font: 800 1.9rem/1 var(--mono); color: var(--trace-1); letter-spacing: .02em; font-variant-numeric: tabular-nums; }
+.ibm-esito-dec { font: 600 .82rem var(--mono); color: #9ab5aa; }
+.ibm-esito-dove { margin: 8px 0 2px; font-weight: 800; font-size: .95rem; color: #fff; }
+.ibm-esito-testo { margin: 0; font-size: .9rem; line-height: 1.5; color: var(--scope-text); }
+
+.ibm-esempi-tit { margin: 0 0 -6px; font: 700 .7rem var(--mono); text-transform: uppercase; letter-spacing: .12em; color: #7f9a90; }
+.ibm-esempi { display: flex; flex-wrap: wrap; gap: 6px; }
+.ibm-esempio {
+  display: grid; gap: 1px; min-height: 44px; padding: 5px 12px; border-radius: 10px; cursor: pointer; text-align: left;
+  background: #101916; border: 1px solid var(--scope-grid); color: var(--scope-text);
+  transition-property: border-color, background-color, transform; transition-duration: var(--dur-fast); transition-timing-function: var(--ease-smooth);
+}
+.ibm-esempio:hover { border-color: var(--trace-3); background: #13201c; }
+.ibm-esempio:active { transform: scale(.97); }
+.ibm-esempio-nome { font: 700 .84rem/1.2 var(--font); color: #fff; }
+.ibm-esempio-cod { font: 600 .76rem/1.2 var(--mono); color: var(--trace-3); }
+
+/* ---------- schermi stretti ---------- */
+
+@media (max-width: 860px) {
+  .ibm-case-griglia, .ibm-mappa-griglia { grid-template-columns: minmax(0, 1fr); }
+  .ibm-scheda { position: static; }
+}
+
+@media (max-width: 640px) {
+  .ibm-viste { justify-self: stretch; }
+  .ibm-viste button { flex: 1 1 auto; }
+  /* striscia che scorre di lato: margini per l'anello di fuoco e bordi sfumati che invitano a scorrere */
+  .ibm-legenda {
+    display: flex; overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x proximity; scrollbar-width: thin;
+    margin: -5px -5px 0; padding: 5px 5px 9px; scroll-padding-inline: 16px;
+    --ibm-fs: 0px; --ibm-fd: 0px;
+    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 var(--ibm-fs), #000 calc(100% - var(--ibm-fd)), transparent 100%);
+    mask-image: linear-gradient(90deg, transparent 0, #000 var(--ibm-fs), #000 calc(100% - var(--ibm-fd)), transparent 100%);
+  }
+  .ibm-legenda.a-sinistra { --ibm-fs: 22px; }
+  .ibm-legenda.a-destra { --ibm-fd: 22px; }
+  .ibm-chip { flex: none; scroll-snap-align: center; }
+  .ibm-marca { width: 12px; height: 12px; }
+  .ibm-marca-num { font-size: 0; border-width: 2px; box-shadow: none; }
+  .ibm-marca.on { width: 24px; height: 24px; }
+  .ibm-marca.on .ibm-marca-num { font-size: 11px; }
+  .ibm-k-sigla { display: none; }
+  .ibm-esito-ind { font-size: 1.6rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ibm-scheda-corpo, .ibm-chip, .ibm-marca-num, .ibm-esempio, .ibm-a20-led { transition: none; }
+  .ibm-marca.on .ibm-marca-onda { opacity: .5; transform: scale(1.5); }
+}

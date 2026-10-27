@@ -1,0 +1,273 @@
+/* Storia del PC · capitolo 10 (oggi). */
+
+/* =====================================================================
+ * Illustrazioni: tre computer in scala, la scheda Arduino Uno.
+ * Tutte le classi stanno sotto .oggi-fig, così i nomi brevi non escono dal capitolo.
+ * ===================================================================== */
+
+.oggi-fig {
+  --oggi-al: #d3d8dc;        /* alluminio, piano superiore */
+  --oggi-al-2: #aab1b7;      /* alluminio, fianco */
+  --oggi-al-3: #8e969d;      /* alluminio, bordo frontale */
+  --oggi-arduino: #12858b;   /* il verde acqua delle schede Arduino */
+  --oggi-arduino-2: #0d6b70;
+  --oggi-accento: var(--cap, var(--era-10));
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .oggi-fig {
+    --oggi-al: #b4bbc1;
+    --oggi-al-2: #8f979e;
+    --oggi-al-3: #737b82;
+    --oggi-arduino: #0f7277;
+    --oggi-arduino-2: #0a5559;
+  }
+}
+:root[data-theme="dark"] .oggi-fig {
+  --oggi-al: #b4bbc1;
+  --oggi-al-2: #8f979e;
+  --oggi-al-3: #737b82;
+  --oggi-arduino: #0f7277;
+  --oggi-arduino-2: #0a5559;
+}
+
+.oggi-fig .l { stroke: var(--ill-linea); stroke-width: 2; stroke-linejoin: round; }
+.oggi-fig .l1 { stroke: var(--ill-linea); stroke-width: 1.5; stroke-linejoin: round; }
+.oggi-fig .be { fill: var(--ill-beige); }
+.oggi-fig .be2 { fill: var(--ill-beige-2); }
+.oggi-fig .be3 { fill: var(--ill-beige-3); }
+.oggi-fig .gr2 { fill: var(--ill-grigio-2); }
+.oggi-fig .sc { fill: var(--ill-scuro); }
+.oggi-fig .sc2 { fill: var(--ill-scuro-2); }
+.oggi-fig .al { fill: var(--oggi-al); }
+.oggi-fig .al2 { fill: var(--oggi-al-2); }
+.oggi-fig .al3 { fill: var(--oggi-al-3); }
+
+.oggi-fig .oggi-ombra { fill: #000; opacity: .13; }
+.oggi-fig .oggi-pavimento { fill: none; stroke: var(--ill-linea); stroke-width: 2; opacity: .55; }
+.oggi-fig .oggi-righello { fill: none; stroke: var(--muted); stroke-width: 1.5; stroke-linecap: round; }
+.oggi-fig .oggi-fig-misura { fill: var(--muted); font: 700 22px var(--font); text-anchor: middle; }
+.oggi-fig .oggi-fig-anno { fill: var(--oggi-accento); font: 800 24px var(--mono); text-anchor: middle; letter-spacing: -0.02em; }
+.oggi-fig .oggi-fessura { fill: none; stroke: var(--ill-beige-2); stroke-width: 2; stroke-linecap: round; }
+.oggi-fig .oggi-solco { fill: none; stroke: var(--ill-beige-3); stroke-width: 1.5; stroke-linecap: round; }
+.oggi-fig .oggi-maniglia { fill: none; stroke: var(--ill-scuro); stroke-width: 7; stroke-linecap: round; stroke-linejoin: round; }
+.oggi-fig .oggi-maniglia-luce { fill: none; stroke: var(--ill-grigio-2); stroke-width: 2; stroke-linecap: round; }
+.oggi-fig .oggi-giunto { fill: none; stroke: var(--ill-linea); stroke-width: 1; opacity: .55; }
+.oggi-fig .oggi-riflesso { fill: none; stroke: #fff; stroke-width: 2; stroke-linecap: round; opacity: .5; }
+.oggi-fig .oggi-schermo { fill: var(--ill-schermo); }
+.oggi-fig .oggi-schermo-luce { fill: var(--ill-blu); opacity: .35; }
+.oggi-fig .oggi-app { opacity: .9; }
+.oggi-fig .oggi-app.t1 { fill: var(--ill-fosforo); }
+.oggi-fig .oggi-app.t2 { fill: var(--ill-ambra); }
+.oggi-fig .oggi-app.t3 { fill: #8fb7ff; }
+.oggi-fig .oggi-app.t4 { fill: #ff8fb1; }
+
+/* richiami numerati */
+.oggi-fig .oggi-guida { fill: none; stroke: var(--oggi-accento); stroke-width: 2; }
+.oggi-fig .oggi-guida-punto { fill: var(--oggi-accento); }
+.oggi-fig .oggi-richiamo circle { fill: var(--oggi-accento); stroke: var(--ill-tela); stroke-width: 2.5; }
+.oggi-fig .oggi-richiamo text { fill: var(--bg); font: 800 23px var(--font); text-anchor: middle; }
+
+/* Arduino Uno */
+.oggi-fig .ard-pcb { fill: var(--oggi-arduino); }
+.oggi-fig .ard-pista { fill: none; stroke: var(--oggi-arduino-2); stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
+.oggi-fig .ard-foro { fill: var(--ill-tela); stroke: var(--ill-oro); stroke-width: 3; }
+.oggi-fig .ard-serigrafia-fondo { fill: none; stroke: #f4f7f6; stroke-width: 1.5; opacity: .7; }
+.oggi-fig .ard-header { fill: var(--ill-chip); }
+.oggi-fig .ard-pin { fill: var(--ill-oro); }
+.oggi-fig .ard-metallo { fill: var(--ill-grigio); }
+.oggi-fig .ard-costola { fill: none; stroke: var(--ill-grigio-2); stroke-width: 1.5; }
+.oggi-fig .ard-polo { fill: var(--ill-scuro-2); opacity: .75; }
+.oggi-fig .ard-croce { fill: none; stroke: var(--ill-scuro); stroke-width: 1.5; stroke-linecap: round; }
+.oggi-fig .ard-chip { fill: var(--ill-chip); }
+.oggi-fig .ard-piedino-qfn { fill: none; stroke: var(--ill-grigio); stroke-width: 2; }
+.oggi-fig .ard-pulsante { fill: var(--ill-beige-2); }
+.oggi-fig .ard-led-ambra { fill: var(--ill-ambra); }
+.oggi-fig .ard-led-verde { fill: var(--ill-fosforo); }
+.oggi-fig .ard-bagliore-ambra { fill: var(--ill-ambra); opacity: .3; }
+.oggi-fig .ard-bagliore-verde { fill: var(--ill-fosforo); opacity: .3; }
+.oggi-fig .ard-zoccolo { fill: var(--ill-scuro-2); }
+.oggi-fig .ard-gamba { fill: var(--ill-grigio); }
+.oggi-fig .ard-tacca { fill: var(--ill-scuro-2); }
+.oggi-fig .ard-punto { fill: var(--ill-scuro-2); }
+
+/* =====================================================================
+ * Laboratorio «Dal PC a un solo chip» (prefisso ogl-). Sempre scuro, come gli strumenti.
+ * Ogni pezzo ha un colore (--c) che lo segue dalla scheda madre fino al die.
+ * ===================================================================== */
+
+.ogl-c-cpu { --c: #a5b4fc; }
+.ogl-c-fpu { --c: #d0a6ff; }
+.ogl-c-cache { --c: var(--trace-3); }
+.ogl-c-nord { --c: #2dd4bf; }
+.ogl-c-ram { --c: var(--trace-1); }
+.ogl-c-sud { --c: var(--trace-4); }
+.ogl-c-audio { --c: #ffb3cf; }
+.ogl-c-rete { --c: #f472b6; }
+.ogl-c-modem { --c: #fb7185; }
+.ogl-c-video { --c: var(--trace-2); }
+.ogl-c-npu { --c: var(--trace-stuff); }
+
+.ogl { display: grid; gap: 14px; }
+/* il laboratorio è sempre scuro: l'anello del focus usa la traccia chiara anche nel tema chiaro */
+.ogl :focus-visible { outline-color: var(--trace-1); }
+.ogl-schede, .ogl-metriche { justify-self: start; }
+.ogl-pan { display: grid; gap: 14px; container-type: inline-size; min-width: 0; }
+
+/* disposizione: scheda, comandi e spiegazione; affiancati quando il laboratorio è largo */
+.ogl-corpo { display: grid; gap: 14px; grid-template-columns: minmax(0, 1fr); grid-template-areas: "tela" "comandi" "lato"; }
+.ogl-tela { grid-area: tela; border-radius: 12px; overflow: hidden; background: #07110d; border: 1px solid var(--scope-grid); }
+.ogl-comandi { grid-area: comandi; display: grid; gap: 8px; }
+.ogl-lato { grid-area: lato; display: grid; gap: 12px; align-content: start; min-width: 0; }
+@container (min-width: 880px) {
+  .ogl-corpo { grid-template-columns: minmax(0, 1.75fr) minmax(250px, 1fr); grid-template-areas: "tela lato" "comandi lato"; align-items: start; }
+}
+
+/* --- la scheda madre in SVG --- */
+.ogl-svg { display: block; width: 100%; height: auto; }
+.ogl-pcb { fill: #0c261d; stroke: #1c4535; stroke-width: 2; }
+.ogl-punto { fill: rgba(255, 255, 255, .05); }
+.ogl-foro { fill: #07110d; stroke: #b9893a; stroke-width: 2.5; }
+.ogl-pista {
+  fill: none; stroke: #234236; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; opacity: .6;
+  transition-property: stroke, opacity; transition-duration: var(--dur-slow); transition-timing-function: var(--ease-smooth);
+}
+.ogl-pista.via { stroke: color-mix(in srgb, var(--ill-rame) 72%, #0c261d); opacity: .95; }
+.ogl-pista.on { stroke: color-mix(in srgb, var(--c) 72%, #0c261d); opacity: 1; }
+.ogl-impronta { fill: none; stroke: rgba(196, 211, 204, .22); stroke-width: 1.5; stroke-dasharray: 5 5; }
+.ogl-slot { fill: #06100c; stroke: #2c4038; stroke-width: 1.2; }
+.ogl-chip { fill: #15181b; stroke: #3a434b; stroke-width: 1.2; }
+.ogl-pin, .ogl-oro { fill: var(--ill-oro); }
+.ogl-tacca { fill: #2c343a; }
+.ogl-zoccolo { fill: #2a3036; stroke: #4d565e; stroke-width: 1.2; }
+.ogl-modulo { fill: #17573f; stroke: #23704f; stroke-width: 1; }
+.ogl-carta { fill: #1c3954; stroke: #2f5a82; stroke-width: 1.2; }
+.ogl-sigla { fill: #e6eeea; font: 700 14px var(--mono); text-anchor: middle; letter-spacing: .02em; }
+.ogl-sigla.piccola { font-size: 13.5px; fill: #f4f8f6; }
+.ogl-etichetta { fill: #9ab5aa; font: 700 13.5px var(--mono); text-anchor: middle; }
+/* sotto il package; l'alone del colore della scheda copre la pista che passa dietro la scritta */
+.ogl-etichetta-cpu { fill: #c7d0ff; font-size: 14px; paint-order: stroke; stroke: #0c261d; stroke-width: 5px; stroke-linejoin: round; }
+.ogl-pkg { fill: #1c2327; stroke: #4a545c; stroke-width: 1.5; }
+.ogl-pkg-pad { fill: color-mix(in srgb, var(--ill-oro) 65%, transparent); }
+.ogl-die { fill: #23274b; stroke: #6d76d6; stroke-width: 1.5; }
+.ogl-tile-r { fill: color-mix(in srgb, var(--c) 24%, #191c36); stroke: var(--c); stroke-width: 1.2; }
+.ogl-tile-t { fill: #fff; font-family: var(--mono); font-weight: 800; text-anchor: middle; }
+.ogl-assorbito { fill: var(--c); }
+.ogl-impulso circle { fill: var(--c); }
+.ogl-impulso .ogl-impulso-alone { opacity: .28; }
+/* alone dei pezzi di cui parla la tappa */
+.ogl-alone { fill: none; stroke: var(--c); stroke-width: 2.5; opacity: 0; transform-box: fill-box; transform-origin: center; }
+.ogl-acceso .ogl-alone { animation: ogl-alone 1.8s var(--ease-smooth) both; }
+@keyframes ogl-alone {
+  0% { opacity: 0; transform: scale(.92); }
+  25% { opacity: 1; transform: scale(1.05); }
+  60% { opacity: .85; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.1); }
+}
+
+/* --- comandi: anno, cursore con le tappe, pulsanti --- */
+.ogl-anni { display: flex; align-items: center; gap: 14px; }
+.ogl-anno { font: 800 1.9rem/1 var(--mono); color: #fff; letter-spacing: -0.03em; min-width: 4.1ch; font-variant-numeric: tabular-nums; }
+.ogl-pista-anni { position: relative; flex: 1; min-width: 0; padding-bottom: 16px; }
+.ogl-cursore { display: block; width: 100%; height: 40px; margin: 0; accent-color: var(--trace-1); cursor: pointer; }
+.ogl-tacche { position: absolute; left: 8px; right: 8px; top: 29px; height: 7px; pointer-events: none; }
+.ogl-tacche i { position: absolute; top: 0; width: 2px; height: 7px; margin-left: -1px; border-radius: 1px; background: #5b7a6f; }
+.ogl-estremi { position: absolute; left: 0; right: 0; bottom: 0; display: flex; justify-content: space-between; font: 600 .72rem var(--mono); color: #7f9a90; pointer-events: none; }
+.ogl-bottoni .lab-btn { min-width: 44px; }
+.ogl-gioca { min-width: 112px; }
+.lab-btn.ogl-gioca.ogl-in-corso { background: var(--trace-3); color: #04150d; }
+
+/* --- spiegazione e letture --- */
+.ogl-tappa { display: grid; gap: 4px; }
+.ogl-tappa-testa { margin: 0; display: flex; align-items: baseline; gap: 6px 10px; flex-wrap: wrap; }
+.ogl-tappa-anno { font-weight: 800; font-size: .8rem; color: #0d1130; background: #a5b4fc; border-radius: 6px; padding: 3px 7px 2px; }
+.ogl-tappa-tit { color: #fff; font-size: 1.05rem; line-height: 1.3; text-wrap: balance; }
+.ogl-esempio { margin: 0; font-size: .86rem; color: #8fb3a6; }
+.ogl-nota { min-height: 7.6em; }
+.ogl-letture { margin: 0; display: grid; gap: 1px; background: var(--scope-grid); border: 1px solid var(--scope-grid); border-radius: 10px; overflow: hidden; }
+.ogl-letture div { background: var(--lab-panel); padding: 9px 12px; display: grid; gap: 5px; }
+.ogl-letture dt { font: 700 .66rem var(--mono); text-transform: uppercase; letter-spacing: .1em; color: #7f9a90; }
+.ogl-letture dd { margin: 0; display: flex; align-items: center; gap: 12px; min-width: 0; }
+.ogl-num { font: 800 1.35rem/1 var(--mono); color: var(--trace-2); min-width: 4.6ch; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.ogl-pallini { display: flex; flex-wrap: wrap; gap: 4px; }
+.ogl-pallini i {
+  width: 10px; height: 10px; border-radius: 3px; background: #24362f; transform: scale(.7);
+  transition-property: transform, background-color; transition-duration: var(--dur-normal); transition-timing-function: var(--ease-bounce);
+}
+.ogl-pallini i.on { background: var(--trace-2); transform: scale(1); }
+.ogl-barra { flex: 1; min-width: 40px; height: 8px; border-radius: 4px; background: #1b2a25; overflow: hidden; }
+.ogl-barra i { display: block; height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--trace-3), var(--trace-1)); transform-origin: left; transition: transform var(--dur-slow) var(--ease-smooth); }
+
+/* --- dove sta ogni pezzo --- */
+.ogl-dove { border: 1px solid var(--scope-grid); border-radius: 12px; background: var(--lab-panel); }
+.ogl-dove summary { cursor: pointer; padding: 11px 14px; font-weight: 700; color: #dfe9e5; border-radius: 12px; }
+.ogl-dove summary:hover { color: #fff; }
+.ogl-dove-lista { list-style: none; margin: 0; padding: 0 10px 12px; display: grid; gap: 2px 18px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 270px), 1fr)); }
+.ogl-dove-lista li { display: grid; grid-template-columns: 12px minmax(0, 1fr) auto; column-gap: 9px; align-items: baseline; padding: 6px; border-radius: 8px; }
+.ogl-dove-pallino { grid-row: 1 / 3; align-self: center; width: 10px; height: 10px; border-radius: 3px; background: var(--c); }
+.ogl-dove-nome { grid-column: 2; font-size: .86rem; font-weight: 700; color: #e3ece8; }
+.ogl-dove-dove { grid-column: 2; font-size: .8rem; color: #8fb3a6; }
+.ogl-dove-strada { grid-column: 3; grid-row: 1 / 3; align-self: center; font-size: .8rem; color: var(--trace-2); }
+.ogl-dove-lista li.dentro .ogl-dove-dove { color: var(--c); }
+
+/* --- seconda scheda: in valigia o in tasca --- */
+.ogl-val-corpo { display: grid; gap: 14px; grid-template-columns: minmax(0, 1fr); }
+@container (min-width: 880px) { .ogl-val-corpo { grid-template-columns: minmax(0, 1.5fr) minmax(250px, 1fr); align-items: start; } }
+.ogl-righe { display: grid; gap: 16px; padding: 14px; background: var(--lab-panel); border: 1px solid var(--scope-grid); border-radius: 12px; }
+.ogl-riga { display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: 12px; align-items: center; }
+.ogl-icona svg { display: block; width: 56px; height: 40px; }
+.ogl-riga-testa { margin: 0 0 6px; display: flex; align-items: baseline; gap: 4px 8px; flex-wrap: wrap; }
+.ogl-riga-testa strong { color: #fff; font-size: .95rem; }
+.ogl-riga-anno { font-size: .78rem; color: #7f9a90; }
+.ogl-valore { margin-left: auto; color: var(--trace-2); font-weight: 800; font-size: .95rem; font-variant-numeric: tabular-nums; }
+.ogl-riga.zero .ogl-valore { color: #9ab5aa; }
+.ogl-traccia { display: block; height: 14px; border-radius: 7px; background: #15221d; overflow: hidden; }
+.ogl-traccia i { display: block; height: 100%; border-radius: 7px; transform-origin: left; transform: scaleX(0); transition: transform var(--dur-crawl) var(--ease-smooth); background: var(--trace-1); }
+.ogl-d-osborne .ogl-traccia i { background: var(--ill-beige-2); }
+.ogl-d-air .ogl-traccia i { background: #b4bbc1; transition-delay: 70ms; }
+.ogl-d-telefono .ogl-traccia i { background: var(--trace-3); transition-delay: 140ms; }
+.ogl-dettaglio { display: block; margin-top: 5px; font-size: .8rem; line-height: 1.4; color: #8fb3a6; }
+.ogl-asse { position: relative; height: 20px; margin-left: 68px; border-top: 1px solid var(--scope-grid); font: 600 .7rem var(--mono); color: #7f9a90; }
+.ogl-asse span { position: absolute; top: 4px; transform: translateX(-50%); white-space: nowrap; }
+.ogl-asse span.primo { transform: none; }
+.ogl-asse span.ultimo { transform: translateX(-100%); }
+.ogl-val-lato { display: grid; gap: 12px; }
+.ogl-fattore { padding: 14px; background: var(--lab-panel); border: 1px solid var(--scope-grid); border-radius: 12px; }
+.ogl-fattore-num { margin: 0; font: 800 2.1rem/1.05 var(--mono); color: #fff; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+.ogl-fattore-txt { margin: 6px 0 0; font-size: .92rem; color: var(--scope-text); }
+.ogl-pitto { padding: 10px; background: var(--lab-panel); border: 1px solid var(--scope-grid); border-radius: 12px; }
+.ogl-pitto-svg { display: block; width: 100%; height: auto; }
+.ogl-pitto-tel { fill: var(--trace-3); transform-box: fill-box; transform-origin: center; animation: ogl-pop var(--dur-normal) var(--ease-bounce) both; animation-delay: calc(var(--i) * 14ms); }
+.ogl-pitto-pila { fill: var(--trace-3); stroke: #07110d; stroke-width: .6; animation: ogl-cade var(--dur-normal) var(--ease-smooth) both; animation-delay: calc(var(--i) * 28ms); }
+@keyframes ogl-pop { from { opacity: 0; transform: scale(.3); } }
+@keyframes ogl-cade { from { opacity: 0; transform: translateY(-14px); } }
+.ogl-pitto-t { fill: #9ab5aa; font: 700 13px var(--font); text-anchor: middle; }
+.ogl-pitto-uguale { fill: #fff; font: 800 26px var(--mono); text-anchor: middle; }
+.ogl-pitto-base { fill: none; stroke: #3a5249; stroke-width: 1.5; }
+/* icone dei tre computer */
+.ogl-ic-beige { fill: var(--ill-beige-2); stroke: #0b0e10; stroke-width: 1.2; }
+.ogl-ic-beige2 { fill: var(--ill-beige-3); }
+.ogl-ic-riga { fill: none; stroke: var(--ill-beige); stroke-width: 1.5; stroke-linecap: round; opacity: .7; }
+.ogl-ic-maniglia { fill: none; stroke: #8a939b; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.ogl-ic-al { fill: #b4bbc1; }
+.ogl-ic-al2 { fill: #8f979e; }
+.ogl-ic-schermo { fill: #0b1210; }
+.ogl-ic-scuro { fill: #3e454d; stroke: #5d656c; stroke-width: 1; }
+.ogl-ic-app { fill: var(--trace-1); }
+.ogl-ic-app.b { fill: var(--trace-2); }
+.ogl-ic-app.c { fill: var(--trace-3); }
+
+@container (max-width: 520px) {
+  .ogl-anno { font-size: 1.55rem; }
+  /* icone più piccole: nome, anno e valore stanno sulla stessa riga anche a 360 px */
+  .ogl-riga { grid-template-columns: 40px minmax(0, 1fr); gap: 10px; }
+  .ogl-icona svg { width: 40px; height: 29px; }
+  .ogl-asse { margin-left: 50px; }
+  .ogl-metriche { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); justify-self: stretch; }
+  .ogl-fattore-num { font-size: 1.8rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ogl-pista, .ogl-pallini i, .ogl-barra i, .ogl-traccia i { transition: none; }
+  .ogl-pitto-tel, .ogl-pitto-pila, .ogl-acceso .ogl-alone { animation: none; }
+}

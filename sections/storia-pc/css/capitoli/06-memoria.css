@@ -1,0 +1,322 @@
+/* Storia del PC · capitolo 6 (memoria): illustrazioni e laboratorio «Quanto è lontano un dato?».
+ * Tutte le classi hanno il prefisso mem-. Colori dalle variabili della sezione (--ill-*, --trace-*, --scope-*). */
+
+/* ======================================================================
+ * Illustrazioni
+ * ====================================================================== */
+
+.mem-ill text { font-family: var(--font); }
+/* Ferrite dei nuclei: quasi nera sulla carta chiara, grigio ferro nel tema scuro (resta visibile sulla tela scura). */
+.mem-ill { --mem-ferrite: var(--ill-chip); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .mem-ill { --mem-ferrite: #66717b; } }
+:root[data-theme="dark"] .mem-ill { --mem-ferrite: #66717b; }
+.mem-fig-et { font-size: 15px; font-weight: 800; fill: var(--ink); letter-spacing: -0.01em; }
+.mem-fig-det { font-size: 12.5px; font-weight: 700; }
+
+/* piramide */
+.mem-gradino { fill: var(--ill-beige); }
+.mem-gradino-bordo { fill: none; stroke: var(--ill-linea); stroke-width: 1.6; }
+.mem-fronte { fill: var(--ill-beige-3); stroke: var(--ill-linea); stroke-width: 1.6; }
+.mem-striscia { fill: var(--cap); }
+.mem-guida { fill: none; stroke: var(--ill-grigio-2); stroke-width: 1.2; stroke-dasharray: 2 4; }
+.mem-fig-lat { fill: var(--ill-scuro-2); font-family: var(--mono); }
+.mem-fig-asse text { fill: var(--muted); font-size: 12.5px; font-weight: 700; }
+.mem-asse { fill: none; stroke: var(--muted); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+
+.mem-chip { fill: var(--ill-chip); stroke: var(--ill-linea); stroke-width: 1; }
+.mem-oro { fill: var(--ill-oro); }
+.mem-bit { fill: var(--ill-scuro-2); }
+.mem-bit-on { fill: var(--ill-ambra); }
+.mem-substrato { fill: var(--ill-pcb-2); stroke: var(--ill-linea); stroke-width: 1.5; }
+.mem-die { fill: var(--ill-scuro-2); stroke: var(--ill-linea); stroke-width: 1.2; }
+.mem-sram { fill: var(--ill-grigio); }
+.mem-sram-riga { stroke: var(--ill-grigio-2); stroke-width: 1; }
+.mem-core { fill: var(--ill-pcb); stroke: var(--ill-grigio-2); stroke-width: .8; }
+.mem-pcb { fill: var(--ill-pcb); stroke: var(--ill-linea); stroke-width: 1.5; }
+.mem-pcb-nero { fill: var(--ill-scuro); stroke: var(--ill-linea); stroke-width: 1.5; }
+.mem-nand { fill: var(--ill-chip); stroke: var(--ill-grigio-2); stroke-width: 1; }
+.mem-tacca { fill: var(--ill-beige); }
+.mem-hdd { fill: var(--ill-grigio); stroke: var(--ill-linea); stroke-width: 1.6; }
+.mem-hdd-in { fill: var(--ill-grigio-2); }
+.mem-piatto { fill: #cdd3d8; stroke: var(--ill-linea); stroke-width: 1.4; }
+.mem-riflesso { fill: none; stroke: #f4f6f8; stroke-width: 3; stroke-linecap: round; opacity: .8; transform-origin: 348px 304px; }
+.mem-perno { fill: var(--ill-grigio); stroke: var(--ill-linea); stroke-width: 1.2; }
+.mem-vite { fill: var(--ill-scuro-2); }
+.mem-magnete { fill: var(--ill-scuro); stroke: var(--ill-linea); stroke-width: 1; }
+.mem-braccio { fill: var(--ill-beige-2); stroke: var(--ill-linea); stroke-width: 1.2; }
+.mem-testina { fill: var(--ill-rame); stroke: var(--ill-linea); stroke-width: .8; }
+.mem-cavo { fill: none; stroke: var(--ill-ambra); stroke-width: 2.4; stroke-dasharray: 5 4; }
+.mem-globo { fill: var(--ill-blu); stroke: var(--ill-linea); stroke-width: 1.5; }
+.mem-meridiano { fill: none; stroke: #9cc2f0; stroke-width: 1.1; opacity: .75; }
+.mem-rack { fill: var(--ill-scuro); stroke: var(--ill-linea); stroke-width: 1.5; }
+.mem-unita { fill: var(--ill-scuro-2); }
+.mem-led-v { fill: var(--ill-fosforo); }
+.mem-led-a { fill: var(--ill-ambra); }
+
+/* piano di nuclei */
+.mem-telaio { fill: var(--ill-pcb); stroke: var(--ill-linea); stroke-width: 1.8; }
+.mem-finestra { fill: var(--ill-tela-2); stroke: var(--ill-linea); stroke-width: 1.2; }
+.mem-filo { fill: none; stroke: var(--ill-rame); stroke-width: 1.8; }
+.mem-lettura { fill: none; stroke: var(--ill-blu); stroke-width: 1.3; opacity: .85; }
+.mem-nucleo { fill: none; stroke: var(--mem-ferrite); stroke-width: 3.8; }
+.mem-nucleo.sel { stroke: var(--ill-led); }
+.mem-filo-sel { fill: none; stroke: var(--ill-ambra); stroke-width: 3.2; stroke-linecap: round; }
+.mem-corrente { stroke-dasharray: 12 9; animation: mem-scorre 1.1s linear infinite; }
+.mem-alone { fill: var(--ill-led); opacity: .28; animation: mem-pulsa 2.4s var(--ease-smooth) infinite alternate; }
+.mem-punta { fill: var(--ill-ambra); stroke: var(--ill-linea); stroke-width: 1; }
+.mem-fig-corr { fill: var(--ink); }
+.mem-lente { fill: var(--ill-tela-2); stroke: var(--ill-grigio); stroke-width: 1.2; stroke-dasharray: 5 4; }
+.mem-anello { fill: none; stroke: var(--mem-ferrite); stroke-width: 16; }
+.mem-anello-ombra { fill: none; stroke: var(--ill-linea); stroke-width: 16; opacity: .25; }
+.mem-anello-luce { fill: none; stroke: var(--ill-grigio-2); stroke-width: 1.2; }
+.mem-magn { fill: none; stroke: var(--ill-ambra); stroke-width: 3.2; stroke-linecap: round; }
+.mem-magn-punta { fill: var(--ill-ambra); }
+.mem-giro { animation: mem-ruota 7s linear infinite; }
+.mem-giro.inverso { animation-direction: reverse; }
+.mem-fig-cifra { font: 800 26px var(--mono); fill: var(--ink); }
+.mem-fig-imp { font-family: var(--mono); font-size: 14px; }
+.mem-base { fill: none; stroke: var(--ill-grigio-2); stroke-width: 1.2; }
+.mem-impulso { fill: none; stroke: var(--ill-ambra); stroke-width: 2.6; stroke-linejoin: round; }
+.mem-soglia { fill: none; stroke: var(--ill-led); stroke-width: 1.4; stroke-dasharray: 5 4; }
+.mem-supera { fill: none; stroke: var(--ill-led); stroke-width: 2.8; stroke-linejoin: round; }
+.mem-supera-area { fill: var(--ill-led); opacity: .22; }
+.mem-fig-soglia { fill: var(--ill-led); font-size: 12.5px; }
+.mem-riflesso { animation: mem-ruota 2.6s linear infinite; }
+/* Fuori dallo schermo queste animazioni si fermano da sole: app.js mette .fuori sulla figura. */
+@keyframes mem-scorre { to { stroke-dashoffset: -21; } }
+@keyframes mem-pulsa { from { opacity: .12; } to { opacity: .5; } }
+@keyframes mem-ruota { to { transform: rotate(360deg); } }
+
+/* Sui telefoni le etichette crescono (restano leggibili) e i dettagli passano alla didascalia. */
+@media (max-width: 640px) {
+  .mem-fig-et { font-size: 24px; }
+  .mem-fig-imp { font-size: 24px; }
+  .mem-fig-cifra { font-size: 30px; }
+  .mem-fig-det { display: none; }
+}
+
+/* ======================================================================
+ * Laboratorio
+ * ====================================================================== */
+
+.mem-lab {
+  container-type: inline-size;
+  display: grid; gap: 14px;
+  --mem-colpo: var(--trace-1);
+  --mem-manc: var(--trace-4);
+  --mem-tag: #c4b5fd;
+  --mem-idx: var(--trace-3);
+  --mem-pos: var(--trace-2);
+  --mem-tenue: #7f9a90;
+}
+.mem-tabs { justify-self: start; max-width: 100%; }
+.mem-lab .lab-seg button:focus-visible, .mem-lab .lab-btn:focus-visible, .mem-lab input:focus-visible { outline: 2px solid var(--trace-3); outline-offset: 2px; }
+.mem-pan { display: grid; gap: 12px; min-width: 0; }
+.mem-pan[hidden] { display: none; }
+.mem-pan.mem-entra { animation: mem-entra var(--dur-normal) var(--ease-smooth); }
+@keyframes mem-entra { from { opacity: 0; transform: translateY(6px); } }
+.mem-intro, .mem-descr { margin: 0; font-size: .94rem; line-height: 1.5; color: #b9d2c8; max-width: 72ch; }
+.mem-intro strong { color: #fff; }
+.mem-descr { min-height: 3em; }
+.mem-lab .lab-note { min-height: 4.7em; transition: opacity var(--dur-fast) var(--ease-smooth); }
+.mem-lab .lab-note.mem-vecchia { opacity: .5; }
+.mem-nota-dati, .mem-nota-passo { font-family: var(--mono); font-size: .86em; color: var(--trace-2); }
+.mem-nota-passo { color: var(--mem-tenue); }
+
+/* ---------- scheda 1: la scala ---------- */
+
+.mem-scala-grid { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+.mem-scala-col { position: relative; min-width: 0; }
+.mem-livelli { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.mem-cpu, .mem-liv {
+  display: grid; align-items: center; column-gap: 10px; row-gap: 3px;
+  grid-template-columns: 40px minmax(0, 1fr) auto auto;
+  grid-template-areas: "ico nome reale umano" "ico barra barra barra";
+}
+.mem-cpu { padding: 2px 10px 8px 4px; grid-template-areas: "ico nome nome nome"; }
+.mem-liv {
+  width: 100%; min-height: 52px; padding: 5px 10px 6px 4px; margin: 0;
+  border: 1px solid transparent; border-radius: 11px; background: transparent;
+  color: var(--scope-text); font: inherit; text-align: left; cursor: pointer;
+  transition-property: background-color, border-color; transition-duration: var(--dur-fast); transition-timing-function: var(--ease-smooth);
+}
+.mem-liv:hover { background: #101b18; border-color: var(--scope-grid); }
+.mem-liv:focus-visible { outline: 2px solid var(--trace-3); outline-offset: 1px; }
+.mem-liv.scelto { background: #12201c; border-color: color-mix(in srgb, var(--tinta) 45%, var(--scope-grid)); }
+.mem-liv-ico {
+  grid-area: ico; justify-self: center; position: relative; z-index: 1;
+  width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center;
+  background: #0c1412; border: 2px solid #2a3f39; color: #9fc2b6;
+  transition-property: border-color, color, background-color; transition-duration: var(--dur-normal); transition-timing-function: var(--ease-smooth);
+}
+.mem-liv-ico svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.mem-liv-ico svg text { fill: currentColor; stroke: none; font: 800 12px var(--mono); letter-spacing: -0.04em; }
+.mem-liv-ico::after {
+  content: ""; position: absolute; inset: -5px; border-radius: 50%; border: 2px solid var(--mem-manc);
+  opacity: 0; transform: scale(.8); pointer-events: none;
+}
+.mem-ico-cpu { border-color: var(--trace-2); color: var(--trace-2); }
+.mem-liv-nome { grid-area: nome; font-weight: 700; font-size: .95rem; line-height: 1.2; color: #e8f2ee; min-width: 0; }
+.mem-liv-nome small { display: block; margin-top: 1px; font-weight: 500; font-size: .76rem; color: var(--mem-tenue); }
+.mem-cpu .mem-liv-nome small { color: var(--trace-2); }
+.mem-liv-reale { grid-area: reale; font: 700 .82rem var(--mono); color: var(--trace-2); text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.mem-liv-umano { grid-area: umano; font: 700 .88rem var(--mono); color: #fff; text-align: right; white-space: nowrap; min-width: 7.4em; font-variant-numeric: tabular-nums; }
+.mem-liv-barra { grid-area: barra; height: 4px; border-radius: 2px; background: #15221e; overflow: hidden; }
+.mem-liv-barra i { display: block; height: 100%; width: calc(var(--p) * 100%); border-radius: 2px; background: var(--tinta); opacity: .75; }
+
+.mem-liv.passa .mem-liv-ico::after { animation: mem-anello var(--dur-slow) var(--ease-smooth); }
+.mem-liv.passato .mem-liv-ico { border-color: color-mix(in srgb, var(--mem-manc) 55%, #2a3f39); color: color-mix(in srgb, var(--mem-manc) 60%, #9fc2b6); }
+.mem-liv.cerca .mem-liv-ico { border-color: var(--tinta); color: #fff; }
+.mem-liv.cerca .mem-liv-ico::after { border-color: var(--tinta); animation: mem-anello 900ms var(--ease-smooth) infinite; }
+.mem-liv.trovato .mem-liv-ico { border-color: var(--tinta); color: #fff; background: color-mix(in srgb, var(--tinta) 22%, #0c1412); }
+@keyframes mem-anello { from { opacity: 1; transform: scale(.85); } to { opacity: 0; transform: scale(1.35); } }
+
+.mem-binario { position: absolute; left: 23px; top: 0; width: 2px; height: 0; border-radius: 1px; background: #22342f; }
+.mem-binario-luce { position: absolute; inset: 0; border-radius: 1px; background: var(--trace-2); transform-origin: top; transform: scaleY(0); }
+.mem-pacchetto {
+  position: absolute; left: 17px; top: 0; z-index: 2; width: 14px; height: 14px; border-radius: 50%;
+  background: var(--trace-2); box-shadow: 0 0 0 3px rgba(255, 192, 77, .25), 0 0 16px rgba(255, 192, 77, .8);
+  opacity: 0; pointer-events: none; will-change: transform;
+  transition: opacity var(--dur-fast) var(--ease-smooth);
+}
+.mem-pacchetto.vis { opacity: 1; }
+.mem-pacchetto.dato { background: var(--trace-1); box-shadow: 0 0 0 3px rgba(62, 224, 143, .25), 0 0 16px rgba(62, 224, 143, .85); }
+
+.mem-scala-lato { display: grid; gap: 12px; min-width: 0; }
+.mem-orologio { display: grid; gap: 6px; }
+.mem-oro-tit { margin: 0; font: 700 .7rem var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--mem-tenue); }
+.mem-oro-val { margin: 0; display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 10px; }
+.mem-oro-num { font: 800 2.6rem/1 var(--mono); color: #fff; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; min-width: 2.2ch; }
+.mem-oro-uni { font-size: 1.15rem; font-weight: 800; color: var(--trace-2); }
+.mem-oro-sub { margin: 0; font: 600 .8rem var(--mono); color: #8fb0a4; font-variant-numeric: tabular-nums; }
+.mem-oro-scala { position: relative; height: 58px; margin: 4px 14px 2px; }
+.mem-oro-binario { position: absolute; left: 0; right: 0; top: 24px; height: 9px; border-radius: 5px; background: #15221e; }
+.mem-oro-riempi { position: absolute; inset: 0; border-radius: 5px; background: linear-gradient(90deg, var(--trace-1), var(--trace-2) 45%, var(--trace-4)); transform-origin: left; transform: scaleX(0); }
+.mem-oro-punto { position: absolute; top: 50%; width: 7px; height: 7px; margin: -3.5px 0 0 -3.5px; border-radius: 50%; background: #0b1210; box-shadow: 0 0 0 1.5px var(--tinta); }
+.mem-oro-punto.on { background: #fff; box-shadow: 0 0 0 2px var(--tinta), 0 0 10px var(--tinta); }
+.mem-oro-tacca { position: absolute; top: 0; transform: translateX(-50%); font: 600 .72rem var(--mono); color: var(--mem-tenue); white-space: nowrap; }
+.mem-oro-tacca::after { content: ""; position: absolute; left: 50%; top: 17px; width: 1px; height: 6px; background: #3a4f48; }
+.mem-oro-tacca.sotto { top: 40px; }
+.mem-oro-tacca.sotto::after { top: -8px; }
+.mem-oro-fase { margin: 0; font-size: .88rem; line-height: 1.4; color: #d5e8e0; min-height: 2.8em; }
+
+@container (max-width: 720px) {
+  .mem-scala-grid { grid-template-columns: minmax(0, 1fr); }
+  /* Orologio sopra la scala e adesivo (resta in vista mentre si tocca un livello in basso),
+   * spiegazione sotto la scala. */
+  .mem-scala-lato { display: contents; }
+  .mem-orologio {
+    order: -1; position: sticky; top: calc(var(--spc-cima, 0px) + 12px); z-index: 4;
+    box-shadow: 0 14px 22px -16px rgba(0, 0, 0, .95);
+  }
+  .mem-scala-lato > .lab-note { order: 1; }
+}
+@container (max-width: 560px) {
+  .mem-liv {
+    grid-template-columns: 40px minmax(0, 1fr) auto;
+    grid-template-areas: "ico nome umano" "ico nome reale" "ico barra barra";
+    min-height: 48px; row-gap: 1px; padding-top: 4px; padding-bottom: 5px;
+  }
+  .mem-cpu { grid-template-columns: 40px minmax(0, 1fr); grid-template-areas: "ico nome"; }
+  .mem-liv-nome { font-size: .9rem; }
+  .mem-liv-umano { min-width: 0; font-size: .86rem; }
+  .mem-liv-reale { font-size: .78rem; }
+  .mem-oro-num { font-size: 2.2rem; }
+  .mem-oro-scala { margin-left: 16px; margin-right: 20px; }
+}
+
+/* ---------- scheda 2: la cache ---------- */
+
+.mem-scelte { gap: 10px 20px; }
+.mem-campo { display: inline-flex; align-items: center; flex-wrap: wrap; gap: 6px 8px; min-width: 0; }
+.mem-campo-tit { font: 700 .68rem var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--mem-tenue); }
+.mem-lab .lab-range input[type="range"] { width: 120px; min-height: 40px; }
+
+.mem-ind { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; min-height: 40px; }
+.mem-ind-tit { font: 700 .68rem var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--mem-tenue); }
+.mem-ind-dec { font: 800 1.2rem var(--mono); color: #fff; min-width: 2ch; font-variant-numeric: tabular-nums; }
+.mem-ind-bin { display: inline-flex; gap: 3px; font: 800 1.02rem var(--mono); }
+.mem-ind-bin b { padding: 3px 7px; border-radius: 7px; background: #111b18; min-width: 1.4em; text-align: center; }
+.mem-ind.vuoto .mem-ind-bin { visibility: hidden; }
+.mem-ind-bin .et { color: var(--mem-tag); box-shadow: inset 0 -2px 0 var(--mem-tag); }
+.mem-ind-bin .ix { color: var(--mem-idx); box-shadow: inset 0 -2px 0 var(--mem-idx); }
+.mem-ind-bin .po { color: var(--mem-pos); box-shadow: inset 0 -2px 0 var(--mem-pos); }
+.mem-ind-leg { display: inline-flex; flex-wrap: wrap; gap: 2px 12px; font-size: .78rem; color: #8fb0a4; }
+.mem-ind-leg i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
+.mem-ind-leg i.et { background: var(--mem-tag); }
+.mem-ind-leg i.ix { background: var(--mem-idx); }
+.mem-ind-leg i.po { background: var(--mem-pos); }
+
+.mem-tela { border-radius: 12px; background: #08100e; border: 1px solid var(--scope-grid); padding: 8px; }
+.mem-svg { max-width: 900px; margin: 0 auto; }
+.mem-svg.stretto { max-width: 440px; }
+.mem-svg text { font-family: var(--mono); }
+.mem-s-tit { font-size: 13px; font-weight: 800; letter-spacing: .06em; fill: #8fb0a4; }
+.mem-s-int { font-size: 12.5px; font-weight: 700; fill: #6f8a80; }
+.mem-s-int.et { fill: var(--mem-tag); }
+.mem-cella { fill: #0f1916; stroke: #233631; stroke-width: 1; }
+.mem-riga.vuota .mem-cella { fill: transparent; stroke-dasharray: 3 3; }
+.mem-s-dato { font-size: 14px; font-weight: 700; fill: #e8f2ee; }
+.mem-s-tag { font-size: 14px; font-weight: 800; fill: var(--mem-tag); }
+.mem-s-lbl { font-size: 14px; font-weight: 800; fill: var(--mem-idx); }
+.mem-s-vuota { font-size: 12.5px; font-weight: 600; fill: #4d655d; opacity: 0; }
+.mem-riga.vuota .mem-s-vuota { opacity: 1; }
+.mem-lru rect { fill: rgba(255, 192, 77, .14); stroke: rgba(255, 192, 77, .6); stroke-width: 1; }
+.mem-lru text { font-size: 12px; font-weight: 800; fill: #ffcf7a; }
+.mem-lampo { pointer-events: none; }
+.mem-lampo.colpo { fill: var(--mem-colpo); }
+.mem-lampo.manc { fill: var(--mem-manc); }
+.mem-sel { fill: none; stroke: var(--mem-idx); stroke-width: 1.6; opacity: 0; transition: opacity var(--dur-fast) var(--ease-smooth); }
+.mem-sel.on { opacity: .9; }
+.mem-blocco { fill: #0e1815; stroke: #1f302b; stroke-width: 1; }
+.mem-blocco.dispari { fill: #111d1a; }
+.mem-blocco.in-cache { fill: #0f2a1f; stroke: rgba(62, 224, 143, .45); }
+.mem-sep { stroke: #1f302b; stroke-width: 1; }
+.mem-s-ram { font-size: 13.5px; font-weight: 600; fill: #9fbcb1; }
+.mem-rivale { fill: none; stroke: var(--mem-idx); stroke-width: 1.5; stroke-dasharray: 4 3; opacity: 0; transition: opacity var(--dur-fast) var(--ease-smooth); }
+.mem-rivale.on { opacity: .85; }
+.mem-cursore { fill: none; stroke: var(--mem-pos); stroke-width: 2.6; }
+.mem-freccia { fill: var(--mem-idx); }
+.mem-volante rect { fill: #3a1d2a; stroke: var(--mem-manc); stroke-width: 1.5; }
+.mem-volante text { font-size: 14px; font-weight: 700; fill: #fff; }
+.mem-pop rect { fill: #3a1d2a; stroke: var(--mem-manc); stroke-width: 1.5; }
+.mem-pop text { font-size: 13px; font-weight: 800; letter-spacing: .08em; fill: #ffd1e1; }
+.mem-pop.colpo rect { fill: #0f3324; stroke: var(--mem-colpo); }
+.mem-pop.colpo text { fill: #c9ffe3; }
+/* Schema stretto (telefoni): l'SVG si rimpicciolisce, i testi minori crescono per restare sopra gli 11 px. */
+.mem-svg.stretto .mem-s-int, .mem-svg.stretto .mem-s-vuota, .mem-svg.stretto .mem-lru text { font-size: 13.5px; }
+
+.mem-storia { display: flex; gap: 2px; padding: 0 2px; }
+.mem-storia i {
+  flex: 1 1 0; height: 10px; border-radius: 2px; background: #15221e;
+  transform: scaleY(.45); transition-property: transform, background-color; transition-duration: var(--dur-fast); transition-timing-function: var(--ease-bounce);
+}
+.mem-storia i.colpo { background: var(--mem-colpo); transform: none; }
+.mem-storia i.manc { background: var(--mem-manc); transform: none; }
+.mem-storia i.ora { box-shadow: 0 0 0 1.5px #fff; }
+
+.mem-kv { grid-template-columns: repeat(auto-fit, minmax(104px, 1fr)); }
+.mem-kv-colpi dd { color: var(--mem-colpo); }
+.mem-kv-mancati dd { color: var(--mem-manc); }
+
+@container (max-width: 560px) {
+  /* Scelte in colonna, opzioni a due a due: niente pulsante rimasto da solo su una riga. */
+  .mem-campo { display: grid; width: 100%; }
+  .mem-campo .lab-seg { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .mem-tabs { justify-self: stretch; }
+  .mem-tabs button { flex: 1 1 auto; }
+  .mem-kv { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .mem-tela { padding: 4px; }
+}
+
+/* ======================================================================
+ * Movimento ridotto: nessun moto continuo, solo stati finali
+ * ====================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .mem-corrente, .mem-alone, .mem-giro, .mem-riflesso { animation: none; }
+  .mem-alone { opacity: .35; }
+  .mem-liv.passa .mem-liv-ico::after, .mem-liv.cerca .mem-liv-ico::after { animation: none; }
+  .mem-pan.mem-entra { animation: none; }
+  .mem-pacchetto, .mem-storia i, .mem-sel, .mem-rivale, .mem-liv, .mem-liv-ico { transition: none; }
+}
