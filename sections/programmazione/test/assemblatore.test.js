@@ -166,7 +166,9 @@ test('narra: testi con i colori giusti per ogni tipo di passo', () => {
   assert.match(testi[1], /\[e:ciclo\] indica la cella \[a:0\]/);
   const p2 = testi.slice(15);
   assert.match(p2[0], /\[o:LOAD\] diventa \[o:001\]; la tabella dei simboli dice che \[e:somma\] è la cella \[a:13\], cioè \[a:01101\]\. La parola \[w:00101101\] va nella cella \[a:0\]/);
-  assert.ok(p2.some((t) => /DATA non è un'istruzione: il numero \[d:5\]/.test(t)));
+  assert.ok(p2.some((t) => /DATA non è un'istruzione, quindi niente codice operativo: il numero \[d:5\] va nella cella \[a:11\] così com'è, in binario \[d:00000101\]\.$/.test(t)));
+  const neg = L.copione('x: DATA -3').passi.find((p) => p.fase === 2);
+  assert.match(L.narra(neg), /in binario \[d:11111101\] \(i numeri negativi si scrivono in complemento a due\)\.$/);
   assert.ok(p2.some((t) => /\[o:HALT\] diventa \[o:000\] e non ha indirizzo|\[o:HALT\] diventa \[o:000\]; non ha indirizzo/.test(t)));
   assert.strictEqual(L.semplice('la [o:LOAD] e la [w:00101101]'), 'la LOAD e la 00101101');
   for (const t of testi) assert.ok(!/undefined|null|NaN/.test(t), t);
@@ -180,7 +182,8 @@ test('esecuzione: i tre esempi stampano quello che promettono', () => {
   assert.strictEqual(s.passi, s.eventi.length);
   assert.deepStrictEqual(esito('conto').uscita, [3, 2, 1]);
   assert.deepStrictEqual(esito('formula').uscita, [14]);
-  assert.match(L.bilancio(s), /^Fermo dopo \d+ istruzioni: l'uscita è 15\.$/);
+  assert.match(L.bilancio(s), /^La macchina si è fermata dopo \d+ istruzioni: l'uscita è 15\.$/);
+  assert.match(L.bilancio(L.esegui(C.assembla('HALT'))), /^La macchina si è fermata dopo 1 istruzione: non ha stampato niente/);
 });
 
 test('esecuzione: ciclo infinito, dati eseguiti, cella vuota', () => {
@@ -231,7 +234,12 @@ test('sfida: controllo, lettura dal vivo e spiegazioni', () => {
   assert.match(L.spiegaSfida(load, e), /il codice operativo di LOAD è 001/);
   const f = L.controlla(store, '010 11110');
   assert.strictEqual(f.codiceOk, true);
-  assert.match(L.spiegaSfida(store, f), /OUT, la cella 31, in binario a 5 bit si scrive 11111/);
+  assert.match(L.spiegaSfida(store, f), /OUT, la cella 31, in binario a 5 bit si scrive 11111 \(31 = 16 \+ 8 \+ 4 \+ 2 \+ 1\)\.$/);
+  assert.strictEqual(L.spiegaSfida(load, L.controlla(load, '00100000')), 'Non ancora: la cella 9 in binario a 5 bit si scrive 01001 (9 = 8 + 1).');
+  assert.doesNotMatch(L.spiegaSfida(load, e), /prontuario/, 'il prontuario nella pagina si chiama «elenco dei codici»');
+  assert.strictEqual(L.scomponi(10), '8 + 2');
+  assert.strictEqual(L.scomponi(16), null, 'un bit solo non ha bisogno di somma');
+  assert.strictEqual(L.scomponi(0), null);
   assert.strictEqual(L.controlla(load, '0010').ok, false, 'servono 8 bit');
   assert.match(L.spiegaSfida(store, L.controlla(store, '01011111')), /^Giusto/);
   assert.deepStrictEqual(L.leggiBits('00101001'), { codice: 1, nome: 'LOAD', indirizzo: 9, operando: true, testo: 'LOAD 9' });
@@ -244,6 +252,7 @@ test('prontuario e durate in italiano', () => {
   assert.strictEqual(pr.length, 8);
   assert.deepStrictEqual(pr.map((x) => x.bits), ['000', '001', '010', '011', '100', '101', '110', '111']);
   for (const x of pr) assert.ok(x.breve && x.breve.length < 60, x.nome);
+  for (const x of pr) assert.doesNotMatch(x.breve, /\blì\b/, x.nome + ': ogni riga del prontuario si legge da sola');
   assert.strictEqual(L.durataItaliana(48000), '48 secondi');
   assert.strictEqual(L.durataItaliana(65000), '1 minuto e 5 secondi');
   assert.strictEqual(L.durataItaliana(120000), '2 minuti');

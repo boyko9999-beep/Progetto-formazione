@@ -52,7 +52,7 @@
     SUB: 'Sottrae la cella dall\'accumulatore',
     MUL: 'Moltiplica l\'accumulatore per la cella',
     JUMP: 'Salta all\'istruzione nella cella',
-    JZ: 'Salta lì solo se l\'accumulatore vale zero',
+    JZ: 'Salta alla cella solo se l\'accumulatore vale zero',
   };
 
   // Un esempio d'uso per ogni istruzione (nei consigli sugli errori).
@@ -356,7 +356,10 @@
     }
     if (p.errore) return R + minuscola(italiano(p.errore));
     const w = C.bin(p.parola, 8);
-    if (p.dato) return R + 'DATA non è un\'istruzione: il numero [d:' + p.operando + '] va così com\'è, [d:' + w + '], nella cella [a:' + p.indirizzo + '].';
+    if (p.dato) {
+      const negativo = numero(p.operando) < 0 ? ' (i numeri negativi si scrivono in complemento a due)' : '';
+      return R + 'DATA non è un\'istruzione, quindi niente codice operativo: il numero [d:' + p.operando + '] va nella cella [a:' + p.indirizzo + '] così com\'è, in binario [d:' + w + ']' + negativo + '.';
+    }
     const op = '[o:' + p.istruzione + '] diventa [o:' + C.bin(p.codice, 3) + ']';
     let ind;
     if (!p.conOperando) ind = 'non ha indirizzo, i 5 bit restano [a:00000]';
@@ -400,7 +403,7 @@
     if (e.limite) {
       return 'Dopo ' + e.passi + ' istruzioni la macchina non si è ancora fermata: forse un ciclo senza uscita. Controlla il JZ che dovrebbe interromperlo, e che ci sia un HALT.';
     }
-    let t = 'Fermo dopo ' + e.passi + (e.passi === 1 ? ' istruzione' : ' istruzioni') + ': ' + usc + '.';
+    let t = 'La macchina si è fermata dopo ' + e.passi + (e.passi === 1 ? ' istruzione' : ' istruzioni') + ': ' + usc + '.';
     if (e.datiEseguiti.length) {
       t += ' Attenzione: la CPU ha eseguito la cella ' + e.datiEseguiti[0] + ', che contiene un dato, come se fosse un\'istruzione. Programma e dati stanno nella stessa memoria: manca un HALT prima dei dati?';
     } else if (e.vuoteEseguite.length) {
@@ -479,13 +482,22 @@
     return { codice: codice, nome: istr.nome, indirizzo: indirizzo, operando: istr.operando, testo: istr.operando ? istr.nome + ' ' + indirizzo : istr.nome };
   }
 
+  // Un numero come somma dei valori dei suoi bit: 9 → «8 + 1» (null se basta un bit solo, o per lo zero).
+  function scomponi(n) {
+    const pesi = [16, 8, 4, 2, 1].filter((p) => n & p);
+    return pesi.length > 1 ? pesi.join(' + ') : null;
+  }
+
   function spiegaSfida(s, esito) {
     const C = cpu();
     const cella = (x) => (x.out ? 'OUT, la cella 31,' : 'la cella ' + x.indirizzo);
     if (esito.ok) return 'Giusto: ' + s.istruzione + ' è ' + s.bits.slice(0, 3) + ' e ' + cella(s) + ' è ' + s.bits.slice(3) + '.';
     const parti = [];
-    if (!esito.codiceOk) parti.push('il codice operativo di ' + s.istruzione + ' è ' + C.bin(s.codice, 3) + ' (guarda il prontuario)');
-    if (!esito.indirizzoOk) parti.push(cella(s) + ' in binario a 5 bit si scrive ' + C.bin(s.indirizzo, 5));
+    if (!esito.codiceOk) parti.push('il codice operativo di ' + s.istruzione + ' è ' + C.bin(s.codice, 3) + ' (lo trovi nell\'elenco dei codici qui sopra)');
+    if (!esito.indirizzoOk) {
+      const somma = scomponi(s.indirizzo);
+      parti.push(cella(s) + ' in binario a 5 bit si scrive ' + C.bin(s.indirizzo, 5) + (somma ? ' (' + s.indirizzo + ' = ' + somma + ')' : ''));
+    }
     return 'Non ancora: ' + parti.join('; ') + '.';
   }
 
@@ -604,6 +616,7 @@
     controlla: controlla,
     leggiBits: leggiBits,
     spiegaSfida: spiegaSfida,
+    scomponi: scomponi,
     durataItaliana: durataItaliana,
     due: due,
   };
@@ -693,6 +706,7 @@
     .${P}-sim-val { color: var(--asm-ind); font-weight: 700; }
     .${P}-sim-bit { margin-left: auto; font-size: 13px; color: color-mix(in srgb, var(--asm-ind) 72%, var(--lab-text)); }
     .${P}-sim.is-pred { border-style: dashed; }
+    .${P}-simboli-pan.is-vecchia .${P}-simboli { opacity: .42; }
     .${P}-sim.is-attesa { opacity: 0; }
     .${P}-sim.is-nuovo { animation: ${P}-entra calc(var(--pg-dur-normale) * var(--asm-v)) var(--pg-ease-bounce) both; }
     .${P}-sim.is-cerca { border-color: var(--asm-eti); box-shadow: 0 0 0 1px var(--asm-eti), 0 0 16px color-mix(in srgb, var(--asm-eti) 35%, transparent); }
@@ -864,6 +878,10 @@
       .${P}-sfida { padding: 14px 12px 16px; }
       .${P}-sf { padding: 10px; }
     }
+    @container ${P} (max-width: 380px) {
+      .${P}-letture { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .${P}-letture > div:last-child { grid-column: 1 / -1; grid-template-columns: auto auto; justify-content: space-between; align-items: baseline; }
+    }
     @media (pointer: coarse) {
       .${P}-r, .${P} .${P}-ta { font-size: 16px; }
     }
@@ -954,8 +972,8 @@
 
     const ta = h('textarea', {
       class: 'pg-campo ' + P + '-ta', id: id + '-src', wrap: 'off', spellcheck: 'false', autocomplete: 'off', autocapitalize: 'off',
-      autocorrect: 'off', 'aria-label': 'Sorgente in assembly, una istruzione per riga', 'aria-describedby': id + '-sint',
-      placeholder: 'Una istruzione per riga, per esempio:\n        LOAD n\n        STORE OUT\n        HALT\nn:      DATA 7',
+      autocorrect: 'off', 'aria-label': 'Sorgente in assembly, un\'istruzione per riga', 'aria-describedby': id + '-sint',
+      placeholder: 'Un\'istruzione per riga, per esempio:\n        LOAD n\n        STORE OUT\n        HALT\nn:      DATA 7',
     });
     ta.value = C.ESEMPI.somma;
     const numeri = h('div', { class: P + '-num-in' });
@@ -971,7 +989,7 @@
     const errCons = h('p', { class: P + '-err-cons' });
     const errAltri = h('p', { class: P + '-err-altri' });
     const btnVai = h('button', { type: 'button', class: 'pg-btn', onclick: () => vaiAllaRiga(stato.errRiga) }, 'Vai alla riga');
-    const boxErr = h('div', { class: P + '-err', hidden: true },
+    const boxErr = h('div', { class: P + '-err', id: id + '-err', hidden: true },
       h('span', { class: P + '-err-ico', 'aria-hidden': 'true' }, '!'),
       h('div', null, errTit, errMsg, errCons, errAltri, btnVai));
     const pSorgente = h('section', { class: P + '-pan ' + P + '-sorgente', 'aria-labelledby': id + '-t-src' },
@@ -997,7 +1015,7 @@
       h('table', { class: P + '-prontuario' },
         h('thead', null, h('tr', null, h('th', { scope: 'col' }, 'Bit'), h('th', { scope: 'col' }, 'Istruzione'), h('th', { scope: 'col' }, 'Che cosa fa'))),
         h('tbody', null, righeCodici)),
-      h('p', { class: P + '-nota' }, h('span', { class: P + '-k-d' }, 'DATA'), ' non è un\'istruzione: mette un numero in una cella, così com\'è.'));
+      h('p', { class: P + '-nota' }, h('span', { class: P + '-k-d' }, 'DATA'), ' non è un\'istruzione della CPU ma una direttiva per l\'assemblatore: mette un numero in una cella, così com\'è.'));
 
     /* ---------- banco dell'assemblatore ---------- */
 
@@ -1309,6 +1327,7 @@
       const piena = modello.some((m, i) => i !== C.OUT && m.stato !== 'vuota');
       stato.vecchia = piena;
       memNota.textContent = piena ? ' · da riassemblare' : '';
+      pSimboli.classList.toggle('is-vecchia', piena);
       for (let i = 0; i < C.CELLE; i++) disegnaCella(i);
     }
 
@@ -1318,6 +1337,7 @@
     function azzeraSimboli() {
       listaSimboli.replaceChildren();
       simEl.clear();
+      pSimboli.classList.remove('is-vecchia');
       aggiungiSimbolo('OUT', C.OUT, true);
     }
     function aggiungiSimbolo(nome, valore, predefinito) {
@@ -1468,14 +1488,14 @@
           f('parole in memoria', String(r.parole)),
           f('istruzioni · dati', (r.parole - r.dati) + ' · ' + r.dati),
           f('etichette', String(r.etichette))),
-        h('p', { class: P + '-riposo' }, 'Ogni riga ha la sua cella: punta una riga del sorgente o una cella per vederle collegate. Poi premi ', h('b', null, 'Esegui'), '.'));
+        h('p', { class: P + '-riposo' }, 'Ogni istruzione e ogni dato hanno la loro cella: punta o tocca una riga del sorgente o una cella per vederle collegate. Poi premi ', h('b', null, 'Esegui'), '.'));
     }
     function corpoErrore(e) {
       bancoStato('errore', 'riga ' + e.riga, stato.indice / Math.max(1, stato.cop.passi.length));
       bancoMostraRiga(e.riga);
       bancoCorpo.replaceChildren(h('p', { class: P + '-azione' },
         h('span', { class: P + '-k-err' }, '⚠ ' + breve(e.messaggio)), ' nella ' + (e.passata === 1 ? 'prima' : 'seconda') + ' passata. ',
-        e.passata === 1 ? 'L\'assemblatore non sa ancora quanto è lungo il programma, quindi non può tradurre niente.' : 'Le parole già scritte restano, ma il programma non è completo.'),
+        e.passata === 1 ? 'La seconda passata non comincia: in memoria non viene scritta nessuna parola.' : 'Le parole già scritte restano, ma il programma non è completo.'),
       h('p', { class: P + '-riposo' }, 'Correggi la riga e premi di nuovo Assembla.'));
     }
     function corpoEsecuzione(ev) {
@@ -1832,7 +1852,8 @@
         barraA(null);
         corpoFatto();
         const r = cop.riassunto;
-        narraTesto('Assemblato: ' + r.righe + (r.righe === 1 ? ' riga è diventata ' : ' righe sono diventate ') + r.parole + (r.parole === 1 ? ' parola' : ' parole') + ' di 8 bit, scritte nelle celle da [a:00] a [a:' + d2(r.parole - 1) + ']. Premi Esegui per farle girare.');
+        const dove = r.parole === 1 ? ' parola di 8 bit, scritta nella cella [a:00]' : ' parole di 8 bit, scritte nelle celle da [a:00] a [a:' + d2(r.parole - 1) + ']';
+        narraTesto('Assemblato: ' + r.righe + (r.righe === 1 ? ' riga è diventata ' : ' righe sono diventate ') + r.parole + dove + '. Premi Esegui per far girare il programma.');
         if (!silenzioso) ctx.annuncia('Assemblaggio finito: ' + r.parole + ' parole in memoria. Premi Esegui.');
       }
       aggiornaBottoni();
@@ -1944,7 +1965,8 @@
       }
       if (ep === stato.epoca) concludiEsecuzione(esito);
     }
-    function concludiEsecuzione(esito) {
+    // silenzioso: l'esecuzione è stata interrotta (per esempio scrivendo nel sorgente) e si chiude senza annunci.
+    function concludiEsecuzione(esito, silenzioso) {
       nastro.replaceChildren();
       for (let i = 0; i < C.OUT; i++) {
         const m = modello[i];
@@ -1975,8 +1997,10 @@
       esecEsito.textContent = testo;
       stato.modo = 'fatto';
       narraTesto(testo, esito.fermo && !esito.limite ? 'Prova a cambiare un numero dopo DATA, o a togliere un HALT, e riassembla.' : '');
-      ctx.annuncia(testo);
-      if (esito.fermo) ctx.completa();
+      if (!silenzioso) {
+        ctx.annuncia(testo);
+        if (esito.fermo) ctx.completa();
+      }
       aggiornaBottoni();
     }
 
@@ -1988,6 +2012,8 @@
       errori.altre.clear();
       stato.errRiga = null;
       boxErr.hidden = true;
+      ta.removeAttribute('aria-invalid');
+      ta.setAttribute('aria-describedby', id + '-sint');
       disegnaEditor();
       sincronizza();
     }
@@ -2006,6 +2032,8 @@
       errAltri.textContent = altre.length ? (altre.length === 1 ? 'Anche la riga ' + altre[0] + ' ha un errore.' : 'Anche le righe ' + altre.slice(0, -1).join(', ') + ' e ' + altre[altre.length - 1] + ' hanno un errore.') : '';
       btnVai.textContent = 'Vai alla riga ' + e.riga;
       boxErr.hidden = false;
+      ta.setAttribute('aria-invalid', 'true');
+      ta.setAttribute('aria-describedby', id + '-sint ' + id + '-err');
     }
     function vaiAllaRiga(n) {
       if (n == null) return;
@@ -2022,13 +2050,24 @@
     /* ======================= sorgente, esempi, velocità ======================= */
 
     function sorgenteCambiato() {
-      if (stato.modo === 'esegue') stato.modo = 'fatto';
+      // Un'esecuzione interrotta a metà si chiude nel suo stato finale, come ogni altro comando.
+      if (stato.modo === 'esegue') {
+        if (stato.esito) concludiEsecuzione(stato.esito, true);
+        else stato.modo = 'fatto';
+      }
       if (copioneValido()) {
         if (stato.modo === 'errore' && stato.cop.errore) mostraErrore(stato.cop.errore);
         aggiornaEsempi();
         return;
       }
+      // Il copione era del sorgente di prima: lo si scarta, così tornare indietro con la tastiera
+      // non fa rivivere uno stato già smontato a metà.
       stato.modo = 'pronto';
+      stato.cop = null;
+      stato.sorgenteCop = null;
+      stato.indice = 0;
+      stato.intermezzo = false;
+      stato.esito = null;
       vistaSeconda = null;
       azzeraErrori();
       cercaCodice(null);
@@ -2038,7 +2077,10 @@
       collega(null, null);
       segnaVecchia();
       rimettiInfo();
-      bancoRiposo('cambiato');
+      bancoRiposo(stato.vecchia ? 'cambiato' : undefined);
+      narraTesto(stato.vecchia
+        ? 'Il sorgente è cambiato: premi Assembla per tradurlo di nuovo, o Passo › per andare una riga alla volta.'
+        : 'Premi Assembla per tradurre il sorgente in parole di 8 bit, o Passo › per andare una riga alla volta.');
       aggiornaEsempi();
       aggiornaBottoni();
     }
@@ -2209,13 +2251,14 @@
       sf.finita = true;
       const ms = performance.now() - (sf.inizio == null ? performance.now() : sf.inizio);
       const t0 = performance.now();
-      for (let i = 0; i < 20; i++) C.assembla(C.ESEMPI.somma);
+      let parole = 0;
+      for (let i = 0; i < 20; i++) parole = C.assembla(C.ESEMPI.somma).lunghezza;
       const dt = (performance.now() - t0) / 20;
       const quanto = dt < 1 ? 'in meno di un millesimo di secondo' : 'in circa ' + Math.round(dt) + ' millesimi di secondo';
       sfidaFine.replaceChildren(
         h('b', null, 'Tre istruzioni tradotte a mano in ' + durataItaliana(ms) + '. '),
-        'L\'assemblatore di questa pagina traduce le 14 parole del programma «somma» ' + quanto + ', senza sbagliare un bit. ',
-        'Per questo, già nel 1949, gli ordini iniziali scritti da David Wheeler per l\'EDSAC di Cambridge leggevano dal nastro ordini fatti di lettere e numeri decimali e li traducevano in binario mentre li caricavano.');
+        'L\'assemblatore di questa pagina traduce le ' + parole + ' parole del programma «somma» ' + quanto + ', senza sbagliare un bit. ',
+        'Per questo già nel 1949, a Cambridge, gli ordini iniziali dell\'EDSAC, scritti da David Wheeler, leggevano dal nastro programmi fatti di lettere e numeri decimali e li traducevano in binario mentre li caricavano.');
       sfidaFine.hidden = false;
       ctx.annuncia('Sfida completata in ' + durataItaliana(ms) + '.');
     }

@@ -200,3 +200,31 @@ test('uniq -c e sort -rn danno le stesse righe dei veri strumenti GNU', () => {
     '      2 era', '      2 e', '      2 del', '      2 che', '      2 ch', '      1 vita'];
   assert.deepStrictEqual(L.ordinaNumeri(L.uniqC(L.ordina(parole()))).slice(0, 12), gnu);
 });
+
+test('le frasi si accordano con i numeri e guardano i dati che passano davvero', () => {
+  const E = (...c) => L.esegui(c.map((x) => (Array.isArray(x) ? S(...x) : S(x))));
+  // singolare e plurale
+  assert.match(L.consiglio(E('cat', ['grep', 'via'])), /^\*\*1 riga\*\* contiene «via»/);
+  assert.match(L.descrivi(E('cat', ['grep', 'via']).stadi[1]), /la sola che contiene «via»/);
+  assert.match(L.descrivi(E('cat', ['head', '10']).stadi[1]), /scarta l'ultima/);
+  assert.match(L.descrivi(E('cat', ['head', '1']).stadi[1]), /la \*\*prima riga\*\*/);
+  assert.match(L.descrivi(E('cat', 'wc', 'cat').stadi[2]), /ignora la riga che gli arriva/);
+  // grep con le maiuscole sbagliate: il consiglio indica la forma del testo, non un tr inutile
+  assert.match(L.consiglio(E('cat', ['grep', 'Selva'])), /nel testo c'è «selva»/);
+  assert.match(L.consiglio(E('cat', ['grep', 'AHI'])), /nel testo c'è «Ahi»/);
+  assert.doesNotMatch(L.consiglio(E('cat', 'parole', 'minuscole', ['grep', 'Nel'])), /tr A-Z a-z/);
+  assert.match(L.consiglio(E('cat', ['grep', 'zebra'])), /nel testo non c'è/);
+  // uniq su righe intere: in cima c'è la riga vuota (contata 2 volte, come fanno i veri strumenti)
+  const righeIntere = L.consiglio(E('cat', 'sort', 'uniq', 'sortrn'));
+  assert.match(righeIntere, /\*\*la riga vuota\*\*, 2 volte/);
+  assert.match(righeIntere, /righe intere, non parole/);
+  // «parole diverse» solo quando uniq ha contato parole e nessun filtro ha tolto righe
+  assert.doesNotMatch(L.consiglio(E('cat', 'sort', 'uniq', 'wc')), /parole diverse/);
+  assert.match(L.consiglio(E('cat', 'parole', 'sort', 'uniq', 'wc')), /\*\*57\*\*.*«Nel» e «nel»/);
+  assert.doesNotMatch(L.consiglio(E('cat', 'parole', 'minuscole', 'sort', 'uniq', 'head', 'wc')), /parole diverse/);
+  assert.doesNotMatch(L.consiglio(E('cat', 'sort', 'parole', 'wc')), /parole\*\*/, 'con la riga vuota in cima non sono tutte parole');
+  // sort -rn senza numeri, comandi che non ricevono niente, tr dopo sort
+  assert.match(L.descrivi(E('cat', 'sortrn').stadi[1]), /valgono tutte 0/);
+  assert.match(L.descrivi(E('cat', ['grep', 'zebra'], 'sort').stadi[2]), /non riceve nessuna riga/);
+  assert.match(L.descrivi(E('cat', 'sort', 'parole').stadi[2]), /\*\*68 parole\*\*.*prima riga resta vuota/);
+});

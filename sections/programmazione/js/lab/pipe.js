@@ -49,6 +49,8 @@
   // tr -cs '[:alpha:]' '\n': tutto ciò che non è una lettera (spazi, punteggiatura, apostrofi,
   // a capo) diventa un a capo, e gli a capo ripetuti si fondono in uno. Le lettere accentate
   // restano lettere: «ché», «è», «più» e «dirò» non si spezzano; «ch’i’» diventa «ch» e «i».
+  // Così fa un tr che conosce l'UTF-8 (per esempio quello di BSD e macOS); GNU tr lavora a byte
+  // e spezzerebbe le lettere accentate: «ché» diventerebbe «ch».
   function trParole(righe) {
     return inRighe(inFlusso(righe).replace(/[^\p{L}]+/gu, '\n'));
   }
@@ -252,33 +254,51 @@
 
   function righe(n) { return n === 1 ? '1 riga' : n + ' righe'; }
   function parolaDi(riga) { return riga.replace(/^\s*\d+\s/, ''); }
+  // Come chiamare la parola di una riga di uniq -c: la riga vuota non ha parole da mettere tra caporali.
+  function nomeRiga(riga) { const p = parolaDi(riga); return p === '' ? 'la riga vuota' : '«' + p + '»'; }
+  const PAROLA = /^\p{L}+$/u;
+  const soloParole = (r) => r.length > 0 && r.every((x) => PAROLA.test(x));
 
   // Che cosa ha fatto uno stadio, in una frase (con il mini-markup `codice` e **grassetto**).
   function descrivi(st) {
     const n = st.uscita.length;
     const e = st.entrata.length;
     const cmd = '`' + st.comando + '`';
+    if (!e && st.indice > 0 && st.id !== 'cat' && st.id !== 'wc') {
+      return cmd + ' non riceve nessuna riga dalla pipe: non ha niente da fare, e non manda niente.';
+    }
     switch (st.id) {
       case 'cat':
-        return st.indice === 0
-          ? cmd + ' legge il file e manda nella pipe le sue **' + righe(n) + '**.'
-          : cmd + ' ignora le ' + righe(e) + ' che gli arrivano e rimanda le **' + righe(n) + '** del file.';
-      case 'parole':
-        return cmd + ' spezza ' + righe(e) + ' in **' + (n === 1 ? '1 parola' : n + ' parole') + '**, una per riga: spazi, punteggiatura e apostrofi diventano a capo.';
+        if (st.indice === 0) return cmd + ' legge il file e manda nella pipe le sue **' + righe(n) + '**.';
+        if (!e) return cmd + ' rilegge il file e manda nella pipe le sue **' + righe(n) + '**.';
+        return cmd + ' ignora ' + (e === 1 ? 'la riga che gli arriva' : 'le ' + righe(e) + ' che gli arrivano') + ' e rimanda le **' + righe(n) + '** del file.';
+      case 'parole': {
+        // con -s gli a capo non si ripetono: una riga vuota può restare solo in cima
+        const np = st.uscita.filter((r) => r !== '').length;
+        return cmd + ' spezza ' + righe(e) + ' in **' + (np === 1 ? '1 parola' : np + ' parole') + '**, una per riga: spazi, punteggiatura e apostrofi diventano a capo.' +
+          (np < n ? ' La prima riga resta vuota, perché il testo cominciava con un separatore.' : '');
+      }
       case 'minuscole': {
         const cambiate = st.entrata.filter((r, i) => r !== st.uscita[i]).length;
-        return cmd + ' abbassa le maiuscole: ' + (cambiate === 1 ? 'cambia **1 riga**' : 'cambiano **' + righe(cambiate) + '**') + ' su ' + e + '.';
+        return cmd + ' trasforma le maiuscole in minuscole: ' + (cambiate === 1 ? 'cambia **1 riga**' : 'cambiano **' + righe(cambiate) + '**') + ' su ' + e + '.';
       }
       case 'sort':
         return cmd + ' mette in ordine ' + righe(n) + ': le righe uguali adesso sono **vicine**.';
       case 'uniq':
         return cmd + ' fonde le righe uguali vicine: da ' + e + ' a **' + righe(n) + '**, ognuna con il suo conteggio davanti.';
       case 'sortrn':
+        if (!st.entrata.some((r) => /^\s*-?\d/.test(r))) {
+          return cmd + ' cerca un numero all\'inizio di ogni riga, ma qui non ce n\'è nessuno: valgono tutte 0, e l\'ordine lo decide l\'alfabeto, **al contrario**.';
+        }
         return cmd + ' guarda il numero all\'inizio di ogni riga e mette in cima **i più grandi**.';
       case 'head':
-        return cmd + ' tiene le prime **' + righe(n) + '**' + (e > n ? ' e scarta le altre ' + (e - n) + '.' : ': non c\'era altro da scartare.');
-      case 'grep':
-        return cmd + ' tiene **' + righe(n) + '** su ' + e + ': quelle che contengono «' + pulisciParola(st.stadio && st.stadio.parola) + '».';
+        return cmd + ' tiene ' + (n === 1 ? 'la **prima riga**' : 'le prime **' + righe(n) + '**') +
+          (e > n ? ' e scarta ' + (e - n === 1 ? 'l\'ultima.' : 'le altre ' + (e - n) + '.') : ': non c\'era altro da scartare.');
+      case 'grep': {
+        const p = '«' + pulisciParola(st.stadio && st.stadio.parola) + '»';
+        if (!n) return cmd + ' non trova ' + p + ' ' + (e === 1 ? 'nell\'unica riga che gli arriva' : 'in nessuna delle ' + e + ' righe') + ': non esce niente.';
+        return cmd + ' tiene **' + righe(n) + '** su ' + e + ': ' + (n === 1 ? 'la sola che contiene ' : 'quelle che contengono ') + p + '.';
+      }
       case 'wc':
         return cmd + ' conta le righe che gli arrivano: **' + (st.uscita[0] || '0') + '**.';
       default:
@@ -297,7 +317,19 @@
     return false;
   }
 
+  // Una parola che compare due volte, una con la maiuscola e una senza (come «Nel» e «nel»)?
+  function coppiaMaiuscola(r) {
+    const tutte = new Set(r);
+    for (const x of tutte) if (x !== x.toLowerCase() && tutte.has(x.toLowerCase())) return [x, x.toLowerCase()];
+    return null;
+  }
+  function notaMaiuscole(r) {
+    const c = coppiaMaiuscola(r);
+    return c ? ' Senza `tr A-Z a-z`, però, «' + c[0] + '» e «' + c[1] + '» contano come due parole diverse.' : '';
+  }
+
   // Un consiglio alla fine dell'esecuzione: cosa si è visto e cosa provare.
+  // Guarda i dati che sono passati davvero nella catena, non solo i nomi dei comandi.
   function consiglio(ris) {
     if (!ris || !ris.ok || !ris.stadi.length) return '';
     const st = ris.stadi;
@@ -308,26 +340,43 @@
     if (uniqSparso) {
       return '`uniq -c` fonde solo le righe uguali **vicine**: qui le ripetizioni erano sparse e sono rimaste separate. Metti `sort` subito prima di `uniq -c`.';
     }
+    const filtri = ids.includes('grep') || ids.includes('head');
+    const iUniq = ids.lastIndexOf('uniq');
+    const uniqDiParole = iUniq >= 0 && soloParole(st[iUniq].entrata);
     if (ultimo.id === 'wc') {
       const solo = ids.length === 2 && ids[0] === 'cat';
       if (solo) return '**' + righe(Number(u[0])) + '**: i 9 versi più le 2 righe vuote tra le terzine. Metti `tr -cs \'[:alpha:]\' \'\\n\'` prima di `wc -l` e conterai le parole.';
-      if (ids.includes('parole') && !ids.includes('uniq') && !ids.includes('grep') && !ids.includes('head')) return 'Le terzine contengono **' + u[0] + ' parole**: `wc -l` conta le righe, e `tr` ha messo una parola per riga.';
-      if (ids.includes('uniq')) return 'Le parole diverse sono **' + u[0] + '**: `uniq -c` ha lasciato una riga per ogni parola.';
+      const ent = ultimo.entrata;
+      if (!filtri && soloParole(ent)) return 'Per la catena le terzine contengono **' + u[0] + ' parole** (gli apostrofi dividono: «ch’i’» vale due parole). `wc -l` conta le righe, e `tr` ha messo una parola per riga.';
+      if (!filtri && uniqDiParole && ent.every((r) => /^\s*\d+ \p{L}+$/u.test(r))) return 'Le parole diverse sono **' + u[0] + '**: `uniq -c` ha lasciato una riga per ogni parola.' + notaMaiuscole(st[iUniq].entrata);
       return '`wc -l` non sa nulla di versi o parole: conta le righe che la pipe gli porta. Qui sono **' + u[0] + '**.';
     }
-    const iUniq = ids.lastIndexOf('uniq');
     const iRn = ids.lastIndexOf('sortrn');
-    if (iUniq >= 0 && iRn > iUniq && u.length) {
+    if (iUniq >= 0 && iRn > iUniq && u.length && u.every((r) => /^\s*\d+ /.test(r))) {
       const primo = u[0];
       const nPrimo = numeroIniziale(primo);
-      const altre = u.slice(1, 3).map((r) => '«' + parolaDi(r) + '»');
-      return 'In cima c\'è **«' + parolaDi(primo) + '»**, ' + (nPrimo === 1 ? 'una volta' : nPrimo + ' volte') + (altre.length ? '; poi ' + altre.join(' e ') : '') + '. Nessuno dei programmi sa contare le parole: ci riesce la catena.';
+      const altre = u.slice(1, 3).map(nomeRiga);
+      const cima = 'In cima c\'è **' + nomeRiga(primo) + '**, ' + (nPrimo === 1 ? 'una volta' : nPrimo + ' volte') + (altre.length ? '; poi ' + altre.join(' e ') : '') + '.';
+      if (!uniqDiParole) return cima + ' Qui `uniq -c` ha contato righe intere, non parole: metti `tr -cs \'[:alpha:]\' \'\\n\'` subito dopo `cat ' + FILE + '`.';
+      return cima + ' Nessun programma, da solo, sa fare questa classifica: ci riesce la catena.' + notaMaiuscole(st[iUniq].entrata);
     }
     if (ultimo.id === 'grep') {
       const p = pulisciParola(ultimo.stadio && ultimo.stadio.parola);
-      if (!u.length) return 'Nessuna riga contiene «' + p + '». `grep` distingue maiuscole e minuscole: prova un\'altra parola, o metti `tr A-Z a-z` prima.';
-      if (ids.includes('parole') && u.some((r) => r !== p)) return '`grep` cerca pezzi di testo, non parole intere: con «' + p + '» trova anche ' + u.filter((r) => r !== p).map((r) => '«' + r + '»').slice(0, 3).join(', ') + '.';
-      return '**' + righe(u.length) + '** contengono «' + p + '». Prova a mettere `tr -cs \'[:alpha:]\' \'\\n\'` prima di `grep`: vedrai le singole parole.';
+      const ent = ultimo.entrata;
+      if (!u.length) {
+        // la parola c'è, ma con altre maiuscole? grep le distingue
+        const pl = p.toLowerCase();
+        const trovata = ent.find((r) => r.toLowerCase().includes(pl));
+        if (trovata) {
+          const k = trovata.toLowerCase().indexOf(pl);
+          const forma = trovata.slice(k, k + p.length);
+          return 'Nessuna riga contiene «' + p + '»: `grep` distingue maiuscole e minuscole, e nel testo c\'è «' + forma + '». Prova a cercare quella' +
+            (ent.some((r) => /[A-Z]/.test(r)) ? ', oppure metti `tr A-Z a-z` prima di `grep` e scrivi la parola in minuscolo.' : '.');
+        }
+        return 'Nessuna riga contiene «' + p + '»: nel testo non c\'è. Prova un\'altra parola, per esempio «selva», «via» o «paura».';
+      }
+      if (soloParole(ent) && u.some((r) => r !== p)) return '`grep` cerca pezzi di testo, non parole intere: con «' + p + '» trova anche ' + u.filter((r) => r !== p).map((r) => '«' + r + '»').slice(0, 3).join(', ') + '.';
+      return '**' + righe(u.length) + '** ' + (u.length === 1 ? 'contiene' : 'contengono') + ' «' + p + '». Prova a mettere `tr -cs \'[:alpha:]\' \'\\n\'` prima di `grep`: vedrai le singole parole.';
     }
     if (!u.length) return 'Alla fine non è uscita nessuna riga: prova a togliere un filtro con ✕.';
     return 'Ogni programma ha fatto una cosa sola; la pipe ha portato le sue righe al successivo. Prova a spostare un comando con ▲ ▼ e guarda cosa cambia.';
@@ -372,6 +421,8 @@
     .lab-pipe-avviso.is-errore { background: rgba(255, 120, 100, .09); color: #ffc2b8; }
     .lab-pipe-avviso.is-attenzione { background: color-mix(in srgb, var(--trace-2) 9%, transparent); color: #ffe2a8; }
     .lab-pipe-avviso code { color: inherit; }
+    /* il codice nel testo resta leggibile anche nei riquadri a 14 px (il .9em comune darebbe 12,6 px) */
+    .lab-pipe .lab-pipe-dettaglio code, .lab-pipe .lab-pipe-vuota code, .lab-pipe .lab-pipe-avviso code, .lab-pipe .lab-pipe-spiega code { font-size: max(13px, .9em); }
 
     .lab-pipe-arena { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; padding: 16px; }
     .lab-pipe-colonna { display: grid; gap: 16px; align-content: start; min-width: 0; }
@@ -497,7 +548,7 @@
 
     @container (min-width: 760px) {
       .lab-pipe-arena { grid-template-columns: minmax(0, 1.25fr) minmax(300px, 1fr); gap: 20px; padding: 18px; }
-      .lab-pipe-verso::before { content: "→"; }
+      .lab-pipe-verso::before { content: "↗"; } /* il terminale è nella colonna a destra, più in alto */
     }
     @container (max-width: 520px) {
       .lab-pipe-arena { padding: 12px 10px; gap: 14px; }
@@ -875,7 +926,7 @@
       v.righe.replaceChildren(...st.uscita.slice(0, MAX_ELENCO).map((r) => (r === '' ? h('li', null, h('span', { class: 'lab-pipe-vuota-riga' }, '(riga vuota)')) : h('li', null, r))));
       const resto = st.uscita.length - MAX_ELENCO;
       v.altre.hidden = resto <= 0;
-      v.altre.textContent = resto === 1 ? '… e un\'altra riga.' : '… e altre ' + resto + ' righe.';
+      v.altre.textContent = resto <= 0 ? '' : resto === 1 ? '… e un\'altra riga.' : '… e altre ' + resto + ' righe.';
     }
 
     function apriChiudi(v) {
@@ -1230,7 +1281,7 @@
           disegnaTerminale();
           const c = Logica.consiglio(stato.ris);
           spiega(c || 'Fatto.', 'Fatto');
-          ctx.annuncia('Sullo schermo: ' + (u.length === 1 ? u[0].trim() : Logica.righe(u.length)) + '. ' + testoPiano(c));
+          ctx.annuncia('Sullo schermo: ' + (!u.length ? 'nessuna riga' : u.length === 1 ? u[0].trim() : Logica.righe(u.length)) + '. ' + testoPiano(c));
           if (!stato.completato) { stato.completato = true; ctx.completa(); }
         }
       }

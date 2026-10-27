@@ -7,9 +7,11 @@
  *
  * La logica pura (i messaggi HTTP/0.9 e HTTP/1.0, un analizzatore HTML semplificato che segue le
  * regole principali dei browser, il clic sul contatore) è esportata per i test in Node.
- * Sicurezza: l'HTML scritto dal lettore non entra mai nella pagina. Lo legge il nostro
- * analizzatore e lo disegna un renderer che crea solo elementi noti e nodi di testo:
- * niente innerHTML, nessun attributo del lettore sugli elementi veri, nessuno script eseguito.
+ * Nel browser l'albero mostrato è quello di DOMParser (daDom): il nostro analizzatore dà le posizioni
+ * nel testo, il ritmo della crescita e gli avvisi; i nodi in più del parser vero diventano «aggiunti».
+ * Sicurezza: l'HTML scritto dal lettore non entra mai nella pagina. DOMParser lo legge in un documento
+ * a parte e inerte (i suoi script non partono) e lo disegna un renderer che crea solo elementi noti e
+ * nodi di testo: niente innerHTML, nessun attributo del lettore sugli elementi veri, nessuno script eseguito.
  */
 (function (root) {
   'use strict';
@@ -68,7 +70,7 @@
     'altro-tasto': 'Questo pulsante non ha `id="tasto"`: il programma ascolta solo quello, quindi il clic non fa niente.',
     'senza-conta': 'Il programma cerca l\'elemento con `id="conta"` e non lo trova: `conta` vale `null` e in un browser vero la console mostrerebbe un errore. Rimetti `<b id="conta">0</b>` o premi «Ripristina».',
     'conta-vuoto': '`#conta` non ha figli: `conta.firstChild` vale `null` e il programma si ferma con un errore. Scrivi un numero dentro il marcatore, per esempio `<b id="conta">0</b>`.',
-    'conta-non-testo': 'Il primo figlio di `#conta` è un elemento, non un testo: cambiare il suo `.data` non cambia niente sullo schermo. Metti il numero subito dentro `#conta`.',
+    'conta-non-testo': 'Il primo figlio di `#conta` non è un nodo di testo: cambiare il suo `.data` non cambia niente sullo schermo. Metti il numero subito dentro `#conta`.',
   };
 
   /* ---------- testo e byte ---------- */
@@ -107,13 +109,16 @@
   }
 
   // HTTP/0.9: solo il testo della pagina, poi il server chiude. HTTP/1.0: riga di stato, intestazioni, riga vuota, corpo.
+  // Content-Length conta i byte del corpo; se ci sono lettere fuori dall'ASCII (è, €) il server dice anche che
+  // il testo è in UTF-8, altrimenti HTTP/1.0 lo leggerebbe come ISO-8859-1.
   function risposta(html, versione) {
     const corpo = String(html == null ? '' : html);
     const byte = byteUtf8(corpo);
     if (versione === '0.9') return { versione: '0.9', stato: null, codice: null, intestazioni: [], corpo: corpo, byte: byte, etichetta: 'HTML' };
+    const tipo = /[^\x00-\x7f]/.test(corpo) ? 'text/html; charset=utf-8' : 'text/html';
     return {
       versione: '1.0', stato: 'HTTP/1.0 200 OK', codice: 200,
-      intestazioni: [['Content-Type', 'text/html'], ['Content-Length', String(byte)]],
+      intestazioni: [['Content-Type', tipo], ['Content-Length', String(byte)]],
       corpo: corpo, byte: byte, etichetta: '200 OK',
     };
   }
@@ -252,7 +257,8 @@
   // paragrafi e voci di elenco chiusi da soli, errori corretti invece che rifiutati.
   // Semplificazione dichiarata: i marcatori di formato annidati male (<b><i></b></i>) vengono chiusi
   // insieme invece di essere riaperti come farebbe l'«adoption agency» dei browser.
-  const TESTA = new Set(['title', 'meta', 'link', 'style', 'script', 'base', 'noscript', 'template']);
+  const TESTA = new Set(['title', 'meta', 'link', 'style', 'script', 'base', 'noscript']);
+  const DOPO_TESTA = new Set(['title', 'meta', 'link', 'style', 'script', 'base']); // dopo </head> tornano nella testa
   const CHIUDE_P = new Set(['address', 'article', 'aside', 'blockquote', 'center', 'details', 'dialog', 'dir', 'div', 'dl', 'dd', 'dt',
     'fieldset', 'figcaption', 'figure', 'footer', 'form', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'header', 'hgroup', 'hr', 'li', 'listing',
     'main', 'menu', 'nav', 'ol', 'p', 'plaintext', 'pre', 'section', 'summary', 'table', 'ul', 'xmp']);
@@ -402,6 +408,13 @@
       if (tk.tipo === 'doctype') { fuoriPosto(k, tk); return; }
       if (tk.tipo === 'apre' && (tk.nome === 'html' || tk.nome === 'head')) { doppio(k, tk); return; }
       if (tk.tipo === 'apre' && tk.nome === 'body') { body = elemento('body', tk.attributi, k, false); modo = 'in-body'; return; }
+      if (tk.tipo === 'apre' && DOPO_TESTA.has(tk.nome) && head) {
+        avvisa(k, 'Il marcatore <' + tk.nome + '> sta dopo </head>: il browser lo rimette dentro <head>.');
+        pila.push(head);
+        elemento(tk.nome, tk.attributi, k, false);
+        pila.splice(pila.indexOf(head), 1);
+        return;
+      }
       if (tk.tipo === 'chiude' && !STRUTTURA.includes(tk.nome)) { ignora(k, tk); return; }
       assicuraBody(k);
       inBody(tk, k);
@@ -442,7 +455,9 @@
             chiudi(gia, -1);
           }
         }
-        elemento(n, tk.attributi, k, false);
+        const el = elemento(n, tk.attributi, k, false);
+        // dentro <svg> e <math> la barra di «/>» chiude davvero il marcatore; nell'HTML non conta
+        if (tk.autochiuso && !VUOTI.has(n) && pila.some((x) => x.nome === 'svg' || x.nome === 'math')) chiudi(el, k);
         return;
       }
       // marcatori di chiusura
@@ -485,7 +500,9 @@
 
     function elabora(tk, k) {
       const cur = corrente();
-      if (tk.tipo === 'testo' && (GREZZI.has(cur.nome) || RCDATA.has(cur.nome))) { testo(tk, k, cur); return; }
+      const grezzo = GREZZI.has(cur.nome) || RCDATA.has(cur.nome);
+      if (tk.tipo === 'testo' && grezzo) { testo(tk, k, cur); return; }
+      if (tk.tipo === 'chiude' && grezzo && tk.nome === cur.nome) { chiudi(cur, k); return; } // </title>, </script>…
       if (tk.tipo === 'rotto') {
         passo.ignorato = true;
         avvisa(k, 'Il marcatore <' + (tk.nome || '') + '… non finisce con «>»: il browser lo ignora, insieme a tutto il testo che segue.');
@@ -566,24 +583,205 @@
     return { ok: true };
   }
 
+  // Quanti nodi e quanti livelli ha l'albero visibile (il documento escluso), e se stanno nei limiti.
+  function misura(documento) {
+    const righe = righeAlbero(documento);
+    const conteggio = righe.length - 1;
+    const profondita = righe.reduce((m, r) => Math.max(m, r.livello), 1) - 1;
+    if (conteggio > LIMITI.nodi) {
+      return { ok: false, errore: 'La pagina ha ' + conteggio + ' nodi: in questo laboratorio l\'albero ne tiene al massimo ' + LIMITI.nodi + '. Togli qualche paragrafo o qualche marcatore.' };
+    }
+    if (profondita > LIMITI.profondita) {
+      return { ok: false, errore: 'I marcatori sono annidati troppo (' + profondita + ' livelli, al massimo ' + LIMITI.profondita + '): chiudi qualche marcatore prima di aprirne un altro.' };
+    }
+    return { ok: true, conteggio: conteggio, profondita: profondita };
+  }
+
   function analizza(testo) {
     const v = valida(testo);
     if (!v.ok) return v;
     const t = String(testo);
     const token = tokenizza(t);
     const a = costruisci(token, t);
-    const righe = righeAlbero(a.documento);
-    const conteggio = righe.length - 1;
-    if (conteggio > LIMITI.nodi) {
-      return { ok: false, errore: 'La pagina ha ' + conteggio + ' nodi: in questo laboratorio l\'albero ne tiene al massimo ' + LIMITI.nodi + '. Togli qualche paragrafo o qualche marcatore.' };
-    }
-    const profondita = righe.reduce((m, r) => Math.max(m, r.livello), 1) - 1;
-    if (profondita > LIMITI.profondita) {
-      return { ok: false, errore: 'I marcatori sono annidati troppo (' + profondita + ' livelli, al massimo ' + LIMITI.profondita + '): chiudi qualche marcatore prima di aprirne un altro.' };
-    }
+    const m = misura(a.documento);
+    if (!m.ok) return m;
     const script = a.nodi.find((n) => n.tipo === 'elemento' && n.nome === 'script');
     if (script) a.avvisi.push({ riga: riga(t, token[script.token].inizio), testo: 'Gli script scritti da te restano testo: per sicurezza questo laboratorio non li esegue.', tipo: 'script', token: script.token });
-    return Object.assign({ ok: true, testo: t, token: token, conteggio: conteggio, profondita: profondita }, a);
+    return Object.assign({ ok: true, testo: t, token: token, conteggio: m.conteggio, profondita: m.profondita }, a);
+  }
+
+  /* ---------- l'albero del browser vero (DOMParser) ---------- */
+
+  // Il nostro analizzatore semplifica alcune regole; nel browser l'ultima parola spetta al suo parser.
+  // daDom riceve l'albero di DOMParser (un documento a parte e inerte: non entra mai nella pagina e i suoi
+  // script non partono) e lo riscrive con i nostri nodi. Dal nostro analizzatore prende solo le posizioni
+  // nel testo e il passo in cui ogni nodo nasce. I nodi che il browser aggiunge e noi no (un <b> riaperto,
+  // un <tbody>) diventano «aggiunti dal browser», con un avviso. Basta un oggetto con nodeType, localName,
+  // attributes, childNodes e data: i test in Node gli passano un albero finto.
+  const FORMATO = new Set(['a', 'b', 'big', 'code', 'em', 'font', 'i', 'nobr', 's', 'small', 'strike', 'strong', 'tt', 'u']);
+
+  function daDom(doc, a) {
+    const nodi = [];
+    const nuovoNodo = (tipo, campi, padre) => {
+      const n = Object.assign({ id: nodi.length, tipo: tipo, nome: '', attributi: {}, figli: [], padre: padre, implicito: false, token: -1, tokenFine: -1 }, campi);
+      nodi.push(n);
+      if (padre) padre.figli.push(n);
+      return n;
+    };
+    (function copia(x, padre) {
+      let n = null;
+      if (x.nodeType === 9) n = nuovoNodo('documento', { nome: '#documento' }, null);
+      else if (x.nodeType === 10) n = nuovoNodo('doctype', { nome: '!DOCTYPE', testo: 'DOCTYPE ' + (x.name || 'html') }, padre);
+      else if (x.nodeType === 3) n = nuovoNodo('testo', { testo: String(x.data), spazio: SPAZI.test(x.data), tokens: [] }, padre);
+      else if (x.nodeType === 8) n = nuovoNodo('commento', { testo: String(x.data) }, padre);
+      else if (x.nodeType === 1) {
+        const att = {};
+        for (const at of Array.from(x.attributes || [])) if (!Object.prototype.hasOwnProperty.call(att, at.name)) att[at.name] = at.value;
+        n = nuovoNodo('elemento', { nome: String(x.localName || x.nodeName || '').toLowerCase(), attributi: att }, padre);
+      }
+      if (!n) return;
+      const figli = x.nodeType === 1 && x.content && x.content.childNodes ? x.content.childNodes : x.childNodes; // <template>
+      for (const f of Array.from(figli || [])) copia(f, n);
+    })(doc, null);
+    const radice = nodi[0];
+    if (!radice || radice.tipo !== 'documento') return a;
+    const m = misura(radice);
+    if (!m.ok) return m;
+
+    // Le due liste in ordine di documento, senza i nodi fatti solo di spazi, si allineano come due testi
+    // (la sottosequenza comune più pesante): lo stesso elemento con gli stessi attributi pesa di più,
+    // lo stesso testo più di un testo letto in modo diverso (per esempio un'entità che non conosciamo).
+    const inOrdine = (r) => {
+      const out = [];
+      (function giro(n) { for (const f of n.figli) { if (!(f.tipo === 'testo' && f.spazio)) out.push(f); giro(f); } })(r);
+      return out;
+    };
+    const firma = (n) => {
+      const k = Object.keys(n.attributi).sort();
+      return { chiavi: k.join(' '), tutto: k.map((x) => x + '=' + n.attributi[x]).join('\n'), testo: n.tipo === 'testo' ? collassa(n.testo) : '' };
+    };
+    const D = inOrdine(radice);
+    const O = inOrdine(a.documento);
+    const fD = D.map(firma);
+    const fO = O.map(firma);
+    const peso = (i, j) => {
+      const d = D[i];
+      const o = O[j];
+      if (d.tipo !== o.tipo) return 0;
+      if (d.tipo === 'testo') return fD[i].testo === fO[j].testo ? 3 : 1;
+      if (d.tipo !== 'elemento') return 1;
+      if (d.nome !== o.nome) return 0;
+      return 1 + (fD[i].chiavi === fO[j].chiavi ? 1 : 0) + (fD[i].tutto === fO[j].tutto ? 2 : 0);
+    };
+    const nO = O.length + 1;
+    const W = new Int32Array((D.length + 1) * nO);
+    for (let i = D.length - 1; i >= 0; i--) {
+      for (let j = O.length - 1; j >= 0; j--) {
+        const w = peso(i, j);
+        W[i * nO + j] = Math.max(W[(i + 1) * nO + j], W[i * nO + j + 1], w > 0 ? w + W[(i + 1) * nO + j + 1] : 0);
+      }
+    }
+    const usato = O.map(() => false);
+    const pari = new Map();
+    for (let i = 0, j = 0; i < D.length && j < O.length;) {
+      const w = peso(i, j);
+      if (w > 0 && W[i * nO + j] === w + W[(i + 1) * nO + j + 1]) { pari.set(D[i], O[j]); usato[j] = true; i++; j++; } else if (W[(i + 1) * nO + j] >= W[i * nO + j + 1]) i++;
+      else j++;
+    }
+    // I nodi che il browser sposta (il testo dentro <table> finisce prima della tabella) escono dall'ordine:
+    // si accoppiano solo se sono identici.
+    D.forEach((d, i) => {
+      if (pari.has(d)) return;
+      const j = O.findIndex((o, k) => !usato[k] && o.tipo === d.tipo && o.nome === d.nome && fO[k].tutto === fD[i].tutto && fO[k].testo === fD[i].testo);
+      if (j >= 0) { pari.set(d, O[j]); usato[j] = true; }
+    });
+    const nostro = new Map();
+    for (const [d, o] of pari) {
+      d.token = o.token;
+      d.tokenFine = o.tokenFine;
+      d.implicito = o.implicito;
+      if (d.tipo === 'testo') d.tokens = (o.tokens || [o.token]).slice();
+      nostro.set(o.id, d);
+    }
+    const aggiunti = D.filter((d) => d.tipo === 'elemento' && !pari.has(d));
+    for (const d of aggiunti) d.implicito = true;
+
+    // Quando nasce ogni nodo: come il suo gemello nostro; un nodo aggiunto, con il primo dei suoi discendenti;
+    // mai prima di suo padre.
+    const quando = new Map();
+    a.passi.forEach((ps, s) => { for (const id of ps.crea) quando.set(id, s); });
+    const passoDi = new Map();
+    (function giu(n) {
+      let min = Infinity;
+      for (const f of n.figli) min = Math.min(min, giu(f));
+      const o = pari.get(n);
+      const s = o && quando.has(o.id) ? quando.get(o.id) : min;
+      if (s !== Infinity && n !== radice) passoDi.set(n, s);
+      return Math.min(s, min);
+    })(radice);
+    let ultimo = 0;
+    (function su(n, minimo) {
+      for (const f of n.figli) {
+        const s = Math.max(passoDi.has(f) ? passoDi.get(f) : ultimo, minimo);
+        passoDi.set(f, s);
+        ultimo = s;
+        su(f, s);
+      }
+    })(radice, 0);
+    const mappa = (ids) => ids.map((id) => nostro.get(id)).filter(Boolean).map((d) => d.id);
+    const passi = a.passi.map((ps) => ({
+      token: ps.token, crea: [], chiude: mappa(ps.chiude), aggiorna: mappa(ps.aggiorna), ignorato: ps.ignorato,
+      aperti: ps.aperti.slice(), apertiId: mappa(ps.apertiId),
+    }));
+    for (const n of nodi) if (n !== radice) passi[Math.min(passi.length - 1, passoDi.get(n) || 0)].crea.push(n.id);
+
+    // Gli avvisi: i nostri, tranne quelli che il browser smentisce, più uno per ogni nodo che aggiunge lui.
+    const primoToken = (n) => {
+      let k = -1;
+      (function giro(x) { for (const f of x.figli) { if (f.token >= 0 && (k < 0 || f.token < k)) k = f.token; giro(f); } })(n);
+      return k;
+    };
+    const conti = new Map();
+    for (const d of aggiunti) {
+      const c = conti.get(d.nome) || { volte: 0, token: -1 };
+      c.volte += 1;
+      const k = primoToken(d);
+      if (k >= 0 && (c.token < 0 || k < c.token)) c.token = k;
+      conti.set(d.nome, c);
+    }
+    // smentiti: un </b> «ignorato» che in realtà chiude il <b> riaperto, e le correzioni che creano
+    // un elemento che nel browser vero non c'è (per esempio il paragrafo vuoto di un </p> spaiato)
+    const smentiti = new Set();
+    O.forEach((o, j) => {
+      if (usato[j] || o.tipo !== 'elemento' || !quando.has(o.id)) return;
+      const t = a.passi[quando.get(o.id)].token;
+      if (t >= 0) smentiti.add(t);
+    });
+    const avvisi = a.avvisi.filter((v) => {
+      const g = v.token >= 0 ? a.token[v.token] : null;
+      if (g && g.tipo === 'chiude' && FORMATO.has(g.nome) && conti.has(g.nome) && v.testo.indexOf('</' + g.nome + '> chiude qualcosa') >= 0) return false;
+      return !(v.tipo === 'correzione' && v.token >= 0 && smentiti.has(v.token));
+    });
+    for (const [nome, c] of conti) {
+      const volte = c.volte > 1 ? ' (' + c.volte + ' volte)' : '';
+      const testo = FORMATO.has(nome)
+        ? 'Il browser riapre <' + nome + '>' + volte + ', rimasto aperto: ne mette una copia attorno al testo che segue.'
+        : nome === 'tbody'
+          ? 'Il browser aggiunge <tbody>' + volte + ': in una tabella le righe stanno sempre dentro un corpo.'
+          : 'Il browser aggiunge <' + nome + '>' + volte + ', che nel testo non c\'è.';
+      avvisi.push({ riga: c.token >= 0 ? riga(a.testo, a.token[c.token].inizio) : null, testo: testo, tipo: 'correzione', token: c.token });
+    }
+    avvisi.sort((x, y) => (x.riga == null ? Infinity : x.riga) - (y.riga == null ? Infinity : y.riga));
+
+    const html =radice.figli.find((n) => n.tipo === 'elemento' && n.nome === 'html') || null;
+    const head = html ? html.figli.find((n) => n.nome === 'head') || null : null;
+    const body = html ? html.figli.find((n) => n.nome === 'body' || n.nome === 'frameset') || null : null;
+    const titolo = trova(radice, (x) => x.tipo === 'elemento' && x.nome === 'title');
+    return Object.assign({}, a, {
+      documento: radice, html: html, head: head, body: body, nodi: nodi, passi: passi, avvisi: avvisi,
+      conteggio: m.conteggio, profondita: m.profondita, titolo: titolo ? collassa(testoDi(titolo)) : '',
+      browser: true, diverso: aggiunti.length > 0 || pari.size < O.length,
+    });
   }
 
   const NON_DISEGNATI = new Set(['head', 'title', 'meta', 'link', 'style', 'script', 'base', 'noscript', 'template']);
@@ -662,7 +860,7 @@
     PROGRAMMA: PROGRAMMA, RIGHE_PROGRAMMA: RIGHE_PROGRAMMA, FRAMMENTI: FRAMMENTI, MOTIVI: MOTIVI,
     byteUtf8: byteUtf8, riga: riga, collassa: collassa, abbrevia: abbrevia,
     richiesta: richiesta, risposta: risposta,
-    decodifica: decodifica, tokenizza: tokenizza, costruisci: costruisci, analizza: analizza, valida: valida,
+    decodifica: decodifica, tokenizza: tokenizza, costruisci: costruisci, analizza: analizza, valida: valida, daDom: daDom,
     righeAlbero: righeAlbero, trova: trova, perId: perId, testoDi: testoDi, descrivi: descrivi,
     disegnabile: disegnabile, pianoDisegno: pianoDisegno, ascolta: ascolta, eseguiClic: eseguiClic,
     destinazione: destinazione, inserisciFrammento: inserisciFrammento,
@@ -700,13 +898,13 @@
     .lab-pagina-web-binario { position: absolute; top: 31px; left: calc(14px + (100% - 28px) / 10); right: calc(14px + (100% - 28px) / 10); height: 2px; background: var(--lab-line); pointer-events: none; }
     .lab-pagina-web-binario > span { position: absolute; inset: 0; background: var(--trace-1); transform-origin: 0 50%; transform: scaleX(0); transition: transform var(--pg-dur-lenta) var(--pg-ease-smooth); }
     .lab-pagina-web-passo { position: relative; z-index: 1; width: 100%; min-height: 44px; display: grid; justify-items: center; align-content: start; gap: 3px; padding: 4px 2px 4px; border: 0; border-radius: 10px; background: transparent; color: var(--lab-text); font: inherit; cursor: pointer; }
-    .lab-pagina-web-passo .num { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 50%; border: 2px solid var(--lab-line); background: var(--lab-bg); font: 800 14px var(--mono); color: var(--lab-text); transition: background-color var(--pg-dur-veloce) ease, border-color var(--pg-dur-veloce) ease, color var(--pg-dur-veloce) ease; }
-    .lab-pagina-web-passo .nome { font: 700 13px/1.25 var(--font); color: var(--lab-bright); }
-    .lab-pagina-web-passo .breve { font: 600 13px/1.2 var(--mono); color: var(--pw-muto); }
-    .lab-pagina-web-passo:hover .num { border-color: var(--trace-1); color: #fff; }
-    .lab-pagina-web-passo.is-fatto .num { border-color: var(--trace-1); color: var(--trace-1); }
-    .lab-pagina-web-passo[aria-current="step"] .num { background: var(--trace-1); border-color: var(--trace-1); color: #04150d; box-shadow: 0 0 0 4px color-mix(in srgb, var(--trace-1) 22%, transparent); }
-    .lab-pagina-web-passo[aria-current="step"] .nome { color: var(--trace-1); }
+    .lab-pagina-web-passo .lab-pagina-web-num { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 50%; border: 2px solid var(--lab-line); background: var(--lab-bg); font: 800 14px var(--mono); color: var(--lab-text); transition: background-color var(--pg-dur-veloce) ease, border-color var(--pg-dur-veloce) ease, color var(--pg-dur-veloce) ease; }
+    .lab-pagina-web-passo .lab-pagina-web-nome { font: 700 13px/1.25 var(--font); color: var(--lab-bright); }
+    .lab-pagina-web-passo .lab-pagina-web-breve { font: 600 13px/1.2 var(--mono); color: var(--pw-muto); }
+    .lab-pagina-web-passo:hover .lab-pagina-web-num { border-color: var(--trace-1); color: #fff; }
+    .lab-pagina-web-passo.is-fatto .lab-pagina-web-num { border-color: var(--trace-1); color: var(--trace-1); }
+    .lab-pagina-web-passo[aria-current="step"] .lab-pagina-web-num { background: var(--trace-1); border-color: var(--trace-1); color: #04150d; box-shadow: 0 0 0 4px color-mix(in srgb, var(--trace-1) 22%, transparent); }
+    .lab-pagina-web-passo[aria-current="step"] .lab-pagina-web-nome { color: var(--trace-1); }
     .lab-pagina-web-ora { display: none; margin: 0; padding: 0 14px 10px; border-bottom: 1px solid var(--lab-line); font: 700 13px var(--font); color: var(--lab-bright); text-align: center; }
 
     /* la scena: browser, rete, server */
@@ -792,14 +990,14 @@
     .lab-pagina-web-registro-vuoto { margin: 0; font-size: 13px; color: var(--pw-muto); }
     .lab-pagina-web-msg { display: grid; grid-template-columns: 16px minmax(0, 1fr); gap: 0 6px; margin: 0; padding: 6px 9px; border-radius: 8px; background: var(--lab-panel); border: 1px solid var(--lab-line); font: 13px/1.45 var(--mono); }
     .lab-pagina-web-msg > b { color: var(--trace-1); font-weight: 800; }
-    .lab-pagina-web-msg > b .w { display: none; }
+    .lab-pagina-web-msg > b .lab-pagina-web-w { display: none; }
     .lab-pagina-web-msg > div { min-width: 0; overflow-wrap: anywhere; }
-    .lab-pagina-web-msg .l { display: block; color: var(--lab-bright); }
-    .lab-pagina-web-msg .l.is-h { color: var(--lab-text); }
-    .lab-pagina-web-msg .l.is-h span { color: var(--lab-bright); }
-    .lab-pagina-web-msg .ok { color: var(--trace-1); font-weight: 800; }
-    .lab-pagina-web-msg .nota { display: block; font: 13px/1.4 var(--font); color: var(--pw-muto); }
-    .lab-pagina-web-msg.is-nuovo, .lab-pagina-web-msg.is-nuovo .l, .lab-pagina-web-msg.is-nuovo .nota { animation: lab-pagina-web-entra var(--pg-dur-normale) var(--pg-ease-smooth) both; animation-delay: calc(var(--i, 0) * 150ms); }
+    .lab-pagina-web-msg .lab-pagina-web-l { display: block; color: var(--lab-bright); }
+    .lab-pagina-web-msg .lab-pagina-web-l.is-h { color: var(--lab-text); }
+    .lab-pagina-web-msg .lab-pagina-web-l.is-h span { color: var(--lab-bright); }
+    .lab-pagina-web-msg .lab-pagina-web-ok { color: var(--trace-1); font-weight: 800; }
+    .lab-pagina-web-msg .lab-pagina-web-nota { display: block; font: 13px/1.4 var(--font); color: var(--pw-muto); }
+    .lab-pagina-web-msg.is-nuovo, .lab-pagina-web-msg.is-nuovo .lab-pagina-web-l, .lab-pagina-web-msg.is-nuovo .lab-pagina-web-nota { animation: lab-pagina-web-entra var(--pg-dur-normale) var(--pg-ease-smooth) both; animation-delay: calc(var(--i, 0) * 150ms); }
 
     /* il server */
     .lab-pagina-web-server { min-width: 0; display: grid; align-content: start; gap: 10px; padding: 12px 14px 14px; background: linear-gradient(180deg, #1a2420, #111916); border: 1px solid var(--lab-line); border-radius: 10px; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .05), 0 16px 30px -24px #000; }
@@ -813,7 +1011,7 @@
     .lab-pagina-web-feritoie { height: 8px; border-radius: 2px; background: repeating-linear-gradient(90deg, #26332e 0 16px, transparent 16px 20px); }
     .lab-pagina-web-file { display: flex; align-items: center; gap: 8px; min-height: 40px; padding: 6px 10px; border-radius: 8px; background: var(--pw-nero); border: 1px solid var(--lab-line); font: 13px var(--mono); color: var(--lab-bright); transition: border-color var(--pg-dur-normale) ease, box-shadow var(--pg-dur-normale) ease; }
     .lab-pagina-web-file::before { content: ""; flex: none; width: 12px; height: 15px; background: var(--lab-text); clip-path: polygon(0 0, 66% 0, 100% 30%, 100% 100%, 0 100%); opacity: .85; }
-    .lab-pagina-web-file .peso { margin-left: auto; color: var(--pw-muto); white-space: nowrap; }
+    .lab-pagina-web-file .lab-pagina-web-peso { margin-left: auto; color: var(--pw-muto); white-space: nowrap; }
     .lab-pagina-web-file.is-scelto { border-color: var(--trace-1); box-shadow: inset 0 0 0 1px var(--trace-1); }
     .lab-pagina-web-server p { margin: 0; font-size: 13px; line-height: 1.4; color: var(--pw-muto); }
 
@@ -875,11 +1073,11 @@
     .lab-pagina-web-riga { display: flex; align-items: center; gap: 8px; min-height: var(--pw-riga); }
     .lab-pagina-web-chip { position: relative; display: inline-block; max-width: 100%; padding: 2px 8px; border-radius: 7px; border: 1px solid transparent; font: 13px/1.4 var(--mono); white-space: nowrap; cursor: default; }
     .lab-pagina-web-chip::after { content: ""; position: absolute; inset: -2px; border-radius: 9px; opacity: 0; pointer-events: none; }
-    .lab-pagina-web-chip .p, .lab-pagina-web-chip .q { color: var(--pw-muto); }
-    .lab-pagina-web-chip .n { font-weight: 700; }
-    .lab-pagina-web-chip .a { color: var(--trace-2); }
-    .lab-pagina-web-chip .v { color: #ffd98a; }
-    .lab-pagina-web-chip .t { display: inline-block; }
+    .lab-pagina-web-chip .lab-pagina-web-p, .lab-pagina-web-chip .lab-pagina-web-q { color: var(--pw-muto); }
+    .lab-pagina-web-chip .lab-pagina-web-n { font-weight: 700; }
+    .lab-pagina-web-chip .lab-pagina-web-a { color: var(--trace-2); }
+    .lab-pagina-web-chip .lab-pagina-web-v { color: #ffd98a; }
+    .lab-pagina-web-chip .lab-pagina-web-t { display: inline-block; }
     .is-elemento > .lab-pagina-web-riga .lab-pagina-web-chip { color: var(--trace-3); background: color-mix(in srgb, var(--trace-3) 11%, transparent); border-color: color-mix(in srgb, var(--trace-3) 32%, transparent); }
     .is-testo > .lab-pagina-web-riga .lab-pagina-web-chip { color: var(--lab-bright); background: rgba(255, 255, 255, .045); border-color: rgba(255, 255, 255, .13); }
     .is-commento > .lab-pagina-web-riga .lab-pagina-web-chip, .is-doctype > .lab-pagina-web-riga .lab-pagina-web-chip { color: var(--pw-muto); font-style: italic; border-color: var(--lab-line); }
@@ -892,16 +1090,16 @@
     .lab-pagina-web-nodo:focus-visible > .lab-pagina-web-riga .lab-pagina-web-chip { outline: 3px solid var(--trace-1); outline-offset: 2px; }
     .lab-pagina-web-nodo.is-disegna > .lab-pagina-web-riga .lab-pagina-web-chip::after { background: var(--trace-3); animation: lab-pagina-web-lampo 800ms ease-out; }
     .lab-pagina-web-nodo.is-cambia > .lab-pagina-web-riga .lab-pagina-web-chip::after { background: var(--trace-4); animation: lab-pagina-web-lampo 1.1s ease-out; }
-    .lab-pagina-web-nodo.is-cambia > .lab-pagina-web-riga .lab-pagina-web-chip .t { animation: lab-pagina-web-tic var(--pg-dur-normale) var(--pg-ease-smooth); }
+    .lab-pagina-web-nodo.is-cambia > .lab-pagina-web-riga .lab-pagina-web-chip .lab-pagina-web-t { animation: lab-pagina-web-tic var(--pg-dur-normale) var(--pg-ease-smooth); }
     .lab-pagina-web-lettura { min-height: 40px; margin: 0; padding: 9px 12px; border-top: 1px solid var(--lab-line); font-size: 13px; line-height: 1.45; color: var(--pw-muto); }
-    .lab-pagina-web-lettura .n { font: 700 13px var(--mono); color: var(--trace-3); }
-    .lab-pagina-web-lettura .t { font: 13px var(--mono); color: var(--lab-bright); }
+    .lab-pagina-web-lettura .lab-pagina-web-n { font: 700 13px var(--mono); color: var(--trace-3); }
+    .lab-pagina-web-lettura .lab-pagina-web-t { font: 13px var(--mono); color: var(--lab-bright); }
     .lab-pagina-web-legenda { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 0; padding: 8px 12px 10px; border-top: 1px solid var(--lab-line); font-size: 13px; color: var(--pw-muto); }
     .lab-pagina-web-legenda span::before { content: ""; display: inline-block; width: 11px; height: 11px; margin-right: 6px; border-radius: 3px; vertical-align: -1px; }
-    .lab-pagina-web-legenda .l-el::before { background: var(--trace-3); }
-    .lab-pagina-web-legenda .l-te::before { background: var(--lab-bright); }
-    .lab-pagina-web-legenda .l-at::before { background: var(--trace-2); }
-    .lab-pagina-web-legenda .l-im::before { border: 1.5px dashed var(--trace-3); }
+    .lab-pagina-web-legenda .lab-pagina-web-l-el::before { background: var(--trace-3); }
+    .lab-pagina-web-legenda .lab-pagina-web-l-te::before { background: var(--lab-bright); }
+    .lab-pagina-web-legenda .lab-pagina-web-l-at::before { background: var(--trace-2); }
+    .lab-pagina-web-legenda .lab-pagina-web-l-im::before { border: 1.5px dashed var(--trace-3); }
 
     .lab-pagina-web-js::after { content: ""; position: absolute; inset: 0; border-radius: 12px; box-shadow: inset 0 0 0 2px var(--trace-4); opacity: 0; pointer-events: none; }
     .lab-pagina-web-js.is-arriva::after { animation: lab-pagina-web-lampo 1.3s ease-out; }
@@ -909,13 +1107,13 @@
     .lab-pagina-web-programma li { position: relative; min-height: 22px; padding: 0 14px 0 42px; white-space: pre; color: var(--pw-muto); counter-increment: lab-pagina-web-r; transition: background-color var(--pg-dur-veloce) ease; }
     .lab-pagina-web-programma li::before { content: counter(lab-pagina-web-r); position: absolute; left: 0; width: 30px; text-align: right; color: var(--pw-muto); }
     .lab-pagina-web-js.is-attivo .lab-pagina-web-programma li { color: var(--lab-bright); }
-    .lab-pagina-web-js.is-attivo .j-k { font-weight: 700; }
-    .lab-pagina-web-js.is-attivo .j-s { color: #ffd98a; }
-    .lab-pagina-web-js.is-attivo .j-d { color: var(--trace-3); }
-    .lab-pagina-web-js.is-attivo .j-e { color: var(--trace-4); font-weight: 700; }
+    .lab-pagina-web-js.is-attivo .lab-pagina-web-j-k { font-weight: 700; }
+    .lab-pagina-web-js.is-attivo .lab-pagina-web-j-s { color: #ffd98a; }
+    .lab-pagina-web-js.is-attivo .lab-pagina-web-j-d { color: var(--trace-3); }
+    .lab-pagina-web-js.is-attivo .lab-pagina-web-j-e { color: var(--trace-4); font-weight: 700; }
     .lab-pagina-web-programma li.is-ora { background: color-mix(in srgb, var(--trace-4) 22%, transparent); box-shadow: inset 3px 0 0 var(--trace-4); }
     .lab-pagina-web-js-lettura { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 16px; margin: 0; padding: 9px 12px; border-top: 1px solid var(--lab-line); font-size: 13px; color: var(--pw-muto); }
-    .lab-pagina-web-js-lettura .m { font: 13px var(--mono); color: var(--lab-bright); }
+    .lab-pagina-web-js-lettura .lab-pagina-web-m { font: 13px var(--mono); color: var(--lab-bright); }
     .lab-pagina-web-js-lettura b { display: inline-block; min-width: 1.2em; font: 800 14px var(--mono); color: var(--trace-4); }
     .lab-pagina-web-js-lettura b.is-cambia { animation: lab-pagina-web-tic var(--pg-dur-normale) var(--pg-ease-smooth); }
 
@@ -943,8 +1141,8 @@
       .lab-pagina-web-presa.is-b { right: -6px; top: 50%; bottom: auto; }
       .lab-pagina-web-pacchetto { left: 0; top: 50%; transform: translate(0, -50%); }
       .lab-pagina-web-registro { min-height: 0; align-content: start; padding: 0 12px; }
-      .lab-pagina-web-msg > b .w { display: inline; }
-      .lab-pagina-web-msg > b .n { display: none; }
+      .lab-pagina-web-msg > b .lab-pagina-web-w { display: inline; }
+      .lab-pagina-web-msg > b .lab-pagina-web-n { display: none; }
       .lab-pagina-web-server { margin-top: 18px; }
       .lab-pagina-web-vista { height: 220px; }
     }
@@ -959,8 +1157,8 @@
       .lab-pagina-web-programma { flex: 1 1 auto; }
     }
     @container lab-pagina-web (max-width: 520px) {
-      .lab-pagina-web-passo .nome { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-      .lab-pagina-web-passo .breve { display: none; }
+      .lab-pagina-web-passo .lab-pagina-web-nome { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+      .lab-pagina-web-passo .lab-pagina-web-breve { display: none; }
       .lab-pagina-web-passi-box { border-bottom: 0; padding-bottom: 6px; }
       .lab-pagina-web-ora { display: block; }
       .lab-pagina-web-gutter { display: none; }
@@ -973,9 +1171,9 @@
       .lab-pagina-web { --pw-riga: 40px; }
     }
     @media (prefers-reduced-motion: reduce) {
-      .lab-pagina-web-binario > span, .lab-pagina-web-passo .num, .lab-pagina-web-codice, .lab-pagina-web-tk, .lab-pagina-web-file, .lab-pagina-web-programma li { transition: none; }
-      .lab-pagina-web-titolo.is-nuovo, .lab-pagina-web-msg.is-nuovo, .lab-pagina-web-msg.is-nuovo .l, .lab-pagina-web-msg.is-nuovo .nota,
-      .lab-pagina-web-nodo.is-nuovo > .lab-pagina-web-riga, .lab-pagina-web-nodo.is-cambia > .lab-pagina-web-riga .lab-pagina-web-chip .t,
+      .lab-pagina-web-binario > span, .lab-pagina-web-passo .lab-pagina-web-num, .lab-pagina-web-codice, .lab-pagina-web-tk, .lab-pagina-web-file, .lab-pagina-web-programma li { transition: none; }
+      .lab-pagina-web-titolo.is-nuovo, .lab-pagina-web-msg.is-nuovo, .lab-pagina-web-msg.is-nuovo .lab-pagina-web-l, .lab-pagina-web-msg.is-nuovo .lab-pagina-web-nota,
+      .lab-pagina-web-nodo.is-nuovo > .lab-pagina-web-riga, .lab-pagina-web-nodo.is-cambia > .lab-pagina-web-riga .lab-pagina-web-chip .lab-pagina-web-t,
       .lab-pagina-web-js-lettura b.is-cambia, .lab-pagina-web-led.is-lavora, .lab-pagina-web-x-button.is-invito { animation: none; }
       .lab-pagina-web-nodo.is-disegna > .lab-pagina-web-riga .lab-pagina-web-chip::after, .lab-pagina-web-nodo.is-cambia > .lab-pagina-web-riga .lab-pagina-web-chip::after,
       .lab-pagina-web-pagina .is-cambiato::after, .lab-pagina-web-js.is-arriva::after { animation: none; }
@@ -1053,9 +1251,9 @@
 
     const binario = h('span');
     const btnPassi = PASSI.map((p) => h('button', { type: 'button', class: 'lab-pagina-web-passo', 'data-n': String(p.n), onclick: () => vaiA(p.n, true) },
-      h('span', { class: 'num' }, h('span', { class: 'pg-sr' }, 'Passo '), String(p.n)),
-      h('span', { class: 'nome' }, p.nome),
-      h('span', { class: 'breve', 'aria-hidden': 'true' }, p.breve)));
+      h('span', { class: 'lab-pagina-web-num' }, h('span', { class: 'pg-sr' }, 'Passo '), String(p.n)),
+      h('span', { class: 'lab-pagina-web-nome' }, p.nome),
+      h('span', { class: 'lab-pagina-web-breve', 'aria-hidden': 'true' }, p.breve)));
     const passiBox = h('div', { class: 'lab-pagina-web-passi-box' },
       h('span', { class: 'lab-pagina-web-binario', 'aria-hidden': 'true' }, binario),
       h('ol', { class: 'lab-pagina-web-passi', 'aria-label': 'I cinque passi' }, btnPassi.map((b) => h('li', null, b))));
@@ -1081,7 +1279,7 @@
     const rete = h('div', { class: 'lab-pagina-web-rete', role: 'group', 'aria-label': 'La rete' }, filo, registro);
 
     const ledLavoro = h('i', { class: 'lab-pagina-web-led' });
-    const peso = h('span', { class: 'peso' });
+    const peso = h('span', { class: 'lab-pagina-web-peso' });
     const fileRiga = h('div', { class: 'lab-pagina-web-file' }, h('span', null, 'ciao.html'), peso);
     const server = h('div', { class: 'lab-pagina-web-server', role: 'group', 'aria-label': 'Il server' },
       h('div', { class: 'lab-pagina-web-server-testa' }, h('strong', null, 'Server'), h('span', null, HOST),
@@ -1141,7 +1339,7 @@
       h('header', { class: 'lab-pagina-web-testa' }, h('h4', { id: idA }, 'L\'albero del DOM'), nNodi),
       alberoScroll, lettura,
       h('p', { class: 'lab-pagina-web-legenda', 'aria-hidden': 'true' },
-        h('span', { class: 'l-el' }, 'elemento'), h('span', { class: 'l-te' }, 'testo'), h('span', { class: 'l-at' }, 'attributo'), h('span', { class: 'l-im' }, 'aggiunto dal browser')));
+        h('span', { class: 'lab-pagina-web-l-el' }, 'elemento'), h('span', { class: 'lab-pagina-web-l-te' }, 'testo'), h('span', { class: 'lab-pagina-web-l-at' }, 'attributo'), h('span', { class: 'lab-pagina-web-l-im' }, 'aggiunto dal browser')));
 
     /* ---------- il banco: il programma ---------- */
 
@@ -1152,7 +1350,7 @@
       let m;
       while ((m = re.exec(r))) {
         if (m.index > u) parti.push(r.slice(u, m.index));
-        parti.push(h('span', { class: m[1] ? 'j-s' : m[2] ? 'j-d' : m[3] ? 'j-e' : 'j-k' }, m[0]));
+        parti.push(h('span', { class: 'lab-pagina-web-' + (m[1] ? 'j-s' : m[2] ? 'j-d' : m[3] ? 'j-e' : 'j-k') }, m[0]));
         u = m.index + m[0].length;
       }
       if (u < r.length) parti.push(r.slice(u));
@@ -1165,7 +1363,7 @@
     const js = h('section', { class: 'lab-pagina-web-pannello lab-pagina-web-js', 'aria-labelledby': idJ },
       h('header', { class: 'lab-pagina-web-testa' }, h('h4', { id: idJ }, 'Il programma JavaScript'), notaJs),
       h('ol', { class: 'lab-pagina-web-programma', 'aria-label': 'Il codice del programma' }, righeJs),
-      h('p', { class: 'lab-pagina-web-js-lettura' }, h('span', null, 'variabile ', h('span', { class: 'm' }, 'clic'), ' = ', valClic), esitoJs));
+      h('p', { class: 'lab-pagina-web-js-lettura' }, h('span', null, 'variabile ', h('span', { class: 'lab-pagina-web-m' }, 'clic'), ' = ', valClic), esitoJs));
 
     const banco = h('div', { class: 'lab-pagina-web-banco' }, sorgente, alberoBox, js);
     const spiega = h('div', { class: 'pg-spiega lab-pagina-web-spiega', 'aria-live': 'polite' });
@@ -1188,12 +1386,12 @@
       if (n === 2) {
         return [v09
           ? '**2 · Risposta.** Il server manda soltanto il testo della pagina, ' + r.byte + ' byte, e chiude la connessione: niente codice di stato, niente intestazioni. Anche un errore arrivava così, come una pagina da leggere.'
-          : '**2 · Risposta.** Il server trova il file e risponde con la riga di stato `200 OK` («tutto bene»), poi con le intestazioni, che annunciano un testo HTML di ' + r.byte + ' byte, infine con la pagina stessa. Poi chiude la connessione.'];
+          : '**2 · Risposta.** Il server trova il file e risponde con la riga di stato `HTTP/1.0 200 OK` («tutto bene»), poi con le intestazioni, che annunciano un testo HTML di ' + r.byte + ' byte, infine con la pagina stessa. Poi chiude la connessione.'];
       }
       if (n === 3) {
         const a = stato.analisi;
         if (!a) return ['**3 · Analisi.** Il browser legge il testo e costruisce l\'albero del **DOM**.'];
-        const t = ['**3 · Analisi.** Il browser legge il testo da sinistra a destra: ogni marcatore di apertura crea un nodo, il testo dentro diventa una foglia, ogni marcatore di chiusura risale di un livello. Le righe diventano un albero di ' + a.conteggio + ' nodi: il **DOM**.'];
+        const t = ['**3 · Analisi.** Il browser legge il testo da sinistra a destra: ogni marcatore di apertura crea un nodo, il testo dentro diventa una foglia, ogni marcatore di chiusura risale di un livello. Il testo diventa un albero di ' + a.conteggio + ' nodi appesi al documento: il **DOM**.'];
         const imp = Array.from(new Set(a.nodi.filter((x) => x.implicito).map((x) => x.nome)));
         if (imp.length) t.push('I nodi tratteggiati (' + imp.map((x) => '`' + x + '`').join(', ') + ') non erano nel testo: li ha aggiunti il browser, come fanno tutti.');
         const corr = a.avvisi.filter((v) => v.tipo === 'correzione').length;
@@ -1208,7 +1406,7 @@
     }
     function testoBarra(n) {
       const r = risposta(stato.testo, stato.protocollo);
-      return ['Pronto.', 'Richiesta inviata. Il server cerca ciao.html…', 'Ricevuti ' + r.byte + ' byte. Connessione chiusa.',
+      return ['Pronto.', 'Richiesta inviata. Il server cerca ciao.html…', 'Pagina ricevuta: ' + r.byte + ' byte. Connessione chiusa.',
         'Albero pronto: ' + (stato.analisi ? stato.analisi.conteggio : 0) + ' nodi.', 'Documento disegnato.', 'Programma JavaScript caricato.'][n] || '';
     }
     function barraStato(t) { barraFissa = t; testoBarraEl.textContent = t; }
@@ -1217,15 +1415,15 @@
     /* ---------- disegno: la rete ---------- */
 
     function freccia(andata) {
-      return h('b', { 'aria-hidden': 'true' }, h('span', { class: 'w' }, andata ? '→' : '←'), h('span', { class: 'n' }, andata ? '↓' : '↑'));
+      return h('b', { 'aria-hidden': 'true' }, h('span', { class: 'lab-pagina-web-w' }, andata ? '→' : '←'), h('span', { class: 'lab-pagina-web-n' }, andata ? '↓' : '↑'));
     }
     function disegnaRegistro(n, nuovo) {
       const parti = [h('p', { class: 'lab-pagina-web-registro-titolo' }, 'Sulla rete')];
       if (n < 1) parti.push(h('p', { class: 'lab-pagina-web-registro-vuoto' }, 'Ancora nessun messaggio.'));
       if (n >= 1) {
         const q = richiesta(stato.protocollo);
-        const righe = [h('span', { class: 'l', style: '--i:0' }, q.riga)];
-        righe.push(h('span', { class: 'nota', style: '--i:1' }, q.versione === '1.0' ? 'e una riga vuota · dal browser al server' : 'una riga sola · dal browser al server'));
+        const righe = [h('span', { class: 'lab-pagina-web-l', style: '--i:0' }, q.riga)];
+        righe.push(h('span', { class: 'lab-pagina-web-nota', style: '--i:1' }, q.versione === '1.0' ? 'e una riga vuota · dal browser al server' : 'una riga sola · dal browser al server'));
         parti.push(h('div', { class: 'lab-pagina-web-msg' + (nuovo === 1 ? ' is-nuovo' : ''), role: 'group', 'aria-label': 'Richiesta' }, freccia(true), h('div', null, righe)));
       }
       if (n >= 2) {
@@ -1233,12 +1431,12 @@
         const righe = [];
         let i = 0;
         if (r.stato) {
-          righe.push(h('span', { class: 'l', style: '--i:' + i++ }, 'HTTP/1.0 ', h('span', { class: 'ok' }, '200 OK')));
-          for (const [k, v] of r.intestazioni) righe.push(h('span', { class: 'l is-h', style: '--i:' + i++ }, k + ': ', h('span', null, v)));
-          righe.push(h('span', { class: 'nota', style: '--i:' + i }, 'una riga vuota, poi ' + r.byte + ' byte di HTML'));
+          righe.push(h('span', { class: 'lab-pagina-web-l', style: '--i:' + i++ }, 'HTTP/1.0 ', h('span', { class: 'lab-pagina-web-ok' }, '200 OK')));
+          for (const [k, v] of r.intestazioni) righe.push(h('span', { class: 'lab-pagina-web-l is-h', style: '--i:' + i++ }, k + ': ', h('span', null, v)));
+          righe.push(h('span', { class: 'lab-pagina-web-nota', style: '--i:' + i }, 'una riga vuota, poi ' + r.byte + ' byte di HTML'));
         } else {
-          righe.push(h('span', { class: 'l', style: '--i:0' }, r.byte + ' byte di HTML'));
-          righe.push(h('span', { class: 'nota', style: '--i:1' }, 'niente stato, niente intestazioni; poi il server chiude'));
+          righe.push(h('span', { class: 'lab-pagina-web-l', style: '--i:0' }, r.byte + ' byte di HTML'));
+          righe.push(h('span', { class: 'lab-pagina-web-nota', style: '--i:1' }, 'niente stato, niente intestazioni; poi il server chiude'));
         }
         parti.push(h('div', { class: 'lab-pagina-web-msg' + (nuovo === 2 ? ' is-nuovo' : ''), role: 'group', 'aria-label': 'Risposta' }, freccia(false), h('div', null, righe)));
       }
@@ -1287,7 +1485,7 @@
     function mostraAvvisi(a) {
       const lista = a ? a.avvisi : [];
       avvisi.hidden = !lista.length;
-      const voci = lista.slice(0, 3).map((v) => h('li', { class: v.tipo === 'script' ? 'is-script' : null }, (v.riga ? 'Riga ' + v.riga + ': ' : '') + v.testo));
+      const voci = lista.slice(0, 3).map((v) => h('li', { class: v.tipo === 'script' ? 'is-script' : null }, (v.riga ? 'Riga ' + v.riga + ' · ' : '') + v.testo));
       if (lista.length > 3) voci.push(h('li', null, 'E altre ' + (lista.length - 3) + ' correzioni.'));
       avvisi.replaceChildren(...voci);
     }
@@ -1296,15 +1494,15 @@
 
     function chipDi(n) {
       if (n.tipo === 'documento') return ['documento'];
-      if (n.tipo === 'testo') return [h('span', { class: 'q' }, '"'), h('span', { class: 't' }, abbrevia(n.testo, 28)), h('span', { class: 'q' }, '"')];
+      if (n.tipo === 'testo') return [h('span', { class: 'lab-pagina-web-q' }, '"'), h('span', { class: 'lab-pagina-web-t' }, abbrevia(n.testo, 28)), h('span', { class: 'lab-pagina-web-q' }, '"')];
       if (n.tipo === 'commento') return ['<!-- ' + abbrevia(n.testo, 18) + ' -->'];
       if (n.tipo === 'doctype') return ['<!' + abbrevia(n.testo, 18) + '>'];
-      const parti = [h('span', { class: 'p' }, '<'), h('span', { class: 'n' }, n.nome)];
+      const parti = [h('span', { class: 'lab-pagina-web-p' }, '<'), h('span', { class: 'lab-pagina-web-n' }, n.nome)];
       for (const k of Object.keys(n.attributi)) {
-        parti.push(' ', h('span', { class: 'a' }, k));
-        if (n.attributi[k] !== '') parti.push(h('span', { class: 'p' }, '="'), h('span', { class: 'v' }, abbrevia(n.attributi[k], 20)), h('span', { class: 'p' }, '"'));
+        parti.push(' ', h('span', { class: 'lab-pagina-web-a' }, k));
+        if (n.attributi[k] !== '') parti.push(h('span', { class: 'lab-pagina-web-p' }, '="'), h('span', { class: 'lab-pagina-web-v' }, abbrevia(n.attributi[k], 20)), h('span', { class: 'lab-pagina-web-p' }, '"'));
       }
-      parti.push(h('span', { class: 'p' }, '>'));
+      parti.push(h('span', { class: 'lab-pagina-web-p' }, '>'));
       return parti;
     }
     function voceAlbero(n) {
@@ -1317,13 +1515,18 @@
     }
     function aggiungiAlbero(n, nuovo) {
       if (n.tipo === 'testo' && n.spazio) return null;
+      if (mappaAlbero.has(n.id)) return mappaAlbero.get(n.id);
       const li = voceAlbero(n);
       const pl = n.padre ? mappaAlbero.get(n.padre.id) : null;
       if (!pl) alberoUl.append(li);
       else {
         let gruppo = pl.querySelector(':scope > ul');
         if (!gruppo) { gruppo = h('ul', { role: 'group' }); pl.append(gruppo); pl.setAttribute('aria-expanded', 'true'); }
-        gruppo.append(li);
+        // al suo posto tra i fratelli, anche quando nasce dopo un fratello che nel documento viene dopo di lui
+        const fratelli = n.padre.figli;
+        let prima = null;
+        for (let i = fratelli.indexOf(n) + 1; i < fratelli.length && !prima; i++) prima = mappaAlbero.get(fratelli[i].id) || null;
+        gruppo.insertBefore(li, prima);
       }
       if (nuovo && !ctx.riduci) li.classList.add('is-nuovo');
       return li;
@@ -1437,19 +1640,32 @@
       if (!stato.analisi) return;
       const conta = perId(stato.analisi.documento, 'conta');
       const primo = conta && conta.figli[0];
-      if (primo && primo.tipo === 'testo') {
+      if (primo && primo.tipo === 'testo' && !primo.spazio) {
         aggiornaVoce(primo);
         const pe = mappaPagina.get(primo.id);
         if (pe) pe.textContent = primo.testo;
+        else if (stato.passo >= 4) disegnaPagina(stato.analisi, false);
       }
     }
 
     /* ---------- lo stato completo di un passo, senza animazioni ---------- */
 
+    // L'albero vero lo costruisce il parser del browser, DOMParser, in un documento a parte che non entra mai
+    // nella pagina (i suoi script non partono). Il nostro analizzatore dà le posizioni nel testo e il ritmo
+    // della crescita; se DOMParser manca, resta lui.
+    function analizzaVera(testo) {
+      const a = analizza(testo);
+      if (!a.ok || typeof DOMParser !== 'function') return a;
+      try {
+        return daDom(new DOMParser().parseFromString(a.testo, 'text/html'), a);
+      } catch (err) {
+        return a;
+      }
+    }
     function assicuraAnalisi() {
       if (stato.analisi) return;
-      let a = analizza(stato.testo);
-      if (!a.ok) { stato.testo = ESEMPIO; a = analizza(ESEMPIO); }
+      let a = analizzaVera(stato.testo);
+      if (!a.ok) { stato.testo = ESEMPIO; a = analizzaVera(ESEMPIO); }
       stato.analisi = a;
       stato.clic = 0;
     }
@@ -1572,11 +1788,11 @@
     function letturaAperti(a, p) {
       const nomi = p.aperti;
       lettura.hidden = false;
-      lettura.replaceChildren('Aperti: ', ...(nomi.length ? nomi.flatMap((x, i) => [i ? ' › ' : '', h('span', { class: 'n' }, x)]) : ['nessuno']));
+      lettura.replaceChildren('Aperti: ', ...(nomi.length ? nomi.flatMap((x, i) => [i ? ' › ' : '', h('span', { class: 'lab-pagina-web-n' }, x)]) : ['nessuno']));
     }
     function letturaBase() {
       lettura.hidden = false;
-      lettura.replaceChildren('Punta un nodo, o scegli con le frecce: lo ritrovi nella pagina e nel codice.');
+      lettura.replaceChildren('Tocca o punta un nodo, oppure usa le frecce: lo ritrovi nella pagina e nel codice.');
     }
     async function animaAnalisi(ep) {
       nuovaAnalisi();
@@ -1737,8 +1953,9 @@
       riavvia(li, 'is-cambia');
       esitoJs.textContent = '#conta ora contiene «' + esito.dopo + '»';
       if (!fermo) await aspetta(D.normale, ep);
-      const pe = mappaPagina.get(esito.nodo.id);
+      let pe = mappaPagina.get(esito.nodo.id);
       if (!fermo && chip && pe) await vola(chip, pe, 'ridisegna', ep);
+      if (!pe) { disegnaPagina(stato.analisi, false); pe = mappaPagina.get(esito.nodo.id); } // prima era solo uno spazio
       if (pe) { pe.textContent = esito.dopo; riavvia(pe, 'is-cambiato'); }
       barraStato('Evento click: pagina aggiornata.');
       const nomeTasto = t.nodo ? abbrevia(testoDi(t.nodo), 24) : '';
@@ -1815,7 +2032,7 @@
     function applicaBozza() {
       if (!stato.modifica) return true;
       if (area.value === stato.testo) { esciModifica(); return true; }
-      const r = analizza(area.value);
+      const r = analizzaVera(area.value);
       if (!r.ok) { mostraErrore(r.errore); area.focus(); return false; }
       stato.testo = area.value;
       stato.analisi = null;
@@ -1898,7 +2115,7 @@
       if (stato.animando || stato.inCorsa) { interrompi(); stato.inCorsa = false; applicaFino(stato.passo); } else disegnaRegistro(stato.passo);
       narra(v === '0.9'
         ? '**HTTP/0.9, il protocollo del 1991.** La richiesta è una riga sola, `GET /ciao.html`, e la risposta è soltanto l\'HTML: quando il server chiude la connessione, la pagina è finita. Non ci sono codici di stato, quindi anche un errore arriva come una pagina da leggere.'
-        : '**HTTP/1.0.** Messo per iscritto nel 1996, nella RFC 1945, dopo anni di uso: la risposta comincia con un codice di stato, come `200 OK`, e con le intestazioni, che dicono che cosa sta arrivando e quanto è lungo.',
+        : '**HTTP/1.0.** Messo per iscritto nel 1996, nella RFC 1945, dopo anni di uso: la risposta comincia con una riga di stato, come `HTTP/1.0 200 OK`, e con le intestazioni, che dicono che cosa sta arrivando e quanto è lungo.',
       stato.passo < 1 ? 'Premi **▶ Avvia** per vedere la differenza sul filo.' : null);
     }
 
@@ -1976,11 +2193,11 @@
       lettura.hidden = false;
       const rigaN = tk.length ? riga(a.testo, a.token[tk[0]].inizio) : null;
       const figli = n.figli.filter((f) => !(f.tipo === 'testo' && f.spazio)).length;
-      if (n.tipo === 'documento') lettura.replaceChildren(h('span', { class: 'n' }, 'documento'), ': la radice dell\'albero, da cui parte tutto.');
-      else if (n.tipo === 'testo') lettura.replaceChildren('Testo ', h('span', { class: 't' }, '«' + abbrevia(n.testo, 40) + '»'), rigaN ? ', riga ' + rigaN : '', ': una foglia, non ha figli.');
+      if (n.tipo === 'documento') lettura.replaceChildren(h('span', { class: 'lab-pagina-web-n' }, 'documento'), ': la radice dell\'albero, da cui parte tutto.');
+      else if (n.tipo === 'testo') lettura.replaceChildren('Testo ', h('span', { class: 'lab-pagina-web-t' }, '«' + abbrevia(n.testo, 40) + '»'), rigaN ? ', riga ' + rigaN : '', ': una foglia, non ha figli.');
       else if (n.tipo !== 'elemento') lettura.replaceChildren(descrivi(n) + (rigaN ? ', riga ' + rigaN : '') + '.');
       else {
-        lettura.replaceChildren(h('span', { class: 'n' }, '<' + n.nome + '>'),
+        lettura.replaceChildren(h('span', { class: 'lab-pagina-web-n' }, '<' + n.nome + '>'),
           n.implicito ? ' non è scritto nel testo: l\'ha aggiunto il browser' : ', riga ' + rigaN,
           ' · ' + (figli === 1 ? '1 figlio' : figli + ' figli') + (pe && stato.passo >= 4 ? ' · evidenziato nella pagina' : '') + '.');
       }
@@ -2112,7 +2329,7 @@
       ctx.annuncia('Rimesso il testo originale. Premi Ricostruisci la pagina.');
     }
     function ricostruisci() {
-      const r = analizza(area.value);
+      const r = analizzaVera(area.value);
       if (!r.ok) { mostraErrore(r.errore); area.focus(); return; }
       stato.testo = area.value;
       esciModifica();

@@ -165,7 +165,7 @@ html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; -moz-osx-fo
 }
 .pg-rail a:hover { color: var(--ink); }
 .pg-rail a[aria-current] { color: var(--ink); border-left-color: var(--cap); font-weight: 700; background: linear-gradient(90deg, color-mix(in srgb, var(--cap) 9%, transparent), transparent); }
-.pg-rail-anni { font: 600 .72rem var(--mono); color: var(--cap); letter-spacing: .02em; }
+.pg-rail-anni { font: 600 .8rem var(--mono); color: var(--cap); letter-spacing: .02em; }
 .pg-rail a.letto .pg-rail-tit::after { content: " ✓"; color: var(--ok); font-weight: 800; }
 
 /* barra dei capitoli su schermi stretti */
@@ -324,7 +324,7 @@ html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; -moz-osx-fo
 }
 .pg-lab :focus-visible { outline: 3px solid var(--trace-1); outline-offset: 2px; }
 .pg-lab-head { padding: 18px 22px 15px; border-bottom: 1px solid var(--lab-line); background: linear-gradient(180deg, rgba(255, 255, 255, .035), transparent); }
-.pg-lab-eyebrow { display: flex; justify-content: space-between; gap: 12px; font: 800 .8rem var(--mono); text-transform: uppercase; letter-spacing: .18em; color: var(--trace-1); margin: 0 0 6px; }
+.pg-lab-eyebrow { display: flex; justify-content: space-between; gap: 12px; font: 800 max(13px, .8rem) var(--mono); text-transform: uppercase; letter-spacing: .18em; color: var(--trace-1); margin: 0 0 6px; }
 .pg-lab-ok { display: none; }
 .pg-lab--fatto .pg-lab-ok { display: inline; }
 .pg-lab-head h3 { color: var(--lab-bright); font-size: 1.32rem; letter-spacing: -0.01em; margin: 0 0 6px; }

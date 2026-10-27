@@ -215,7 +215,9 @@ test('messaggi HTTP/1.0 e HTTP/0.9', () => {
   assert.deepStrictEqual(L.richiesta('0.9').righe, ['GET /ciao.html']);
   const r = L.risposta('<p>è</p>', '1.0');
   assert.strictEqual(r.stato, 'HTTP/1.0 200 OK');
-  assert.deepStrictEqual(r.intestazioni, [['Content-Type', 'text/html'], ['Content-Length', '9']]);
+  // con una lettera fuori dall'ASCII il server dichiara l'UTF-8 (in HTTP/1.0 il testo, se no, è ISO-8859-1)
+  assert.deepStrictEqual(r.intestazioni, [['Content-Type', 'text/html; charset=utf-8'], ['Content-Length', '9']]);
+  assert.deepStrictEqual(L.risposta('<p>e</p>', '1.0').intestazioni, [['Content-Type', 'text/html'], ['Content-Length', '8']]);
   const v = L.risposta('<p>è</p>', '0.9');
   assert.strictEqual(v.stato, null);
   assert.deepStrictEqual(v.intestazioni, []);
@@ -296,4 +298,121 @@ test('descrizioni per i lettori di schermo', () => {
   assert.strictEqual(L.descrivi(L.trova(a.documento, (n) => n.nome === 'a')), 'elemento a, href http://info.cern.ch');
   assert.strictEqual(L.descrivi(albero('x').html), 'elemento html, aggiunto dal browser');
   assert.strictEqual(L.descrivi(L.trova(a.documento, (n) => n.tipo === 'testo')), 'testo: Ciao, mondo!');
+});
+
+/* ---------- l'albero del browser vero: daDom con un DOM finto ---------- */
+
+// Un albero con la forma dei nodi del DOM (nodeType, localName, attributes, childNodes, data), come quello di DOMParser.
+const E = (nome, att, ...figli) => ({ nodeType: 1, localName: nome, attributes: Object.entries(att || {}).map(([name, value]) => ({ name, value })), childNodes: figli });
+const T = (data) => ({ nodeType: 3, data });
+const DOC = (...figli) => ({ nodeType: 9, childNodes: figli });
+const pagina = (...corpo) => DOC(E('html', null, E('head'), E('body', null, ...corpo)));
+
+// Ogni nodo nasce una volta sola, mai prima di suo padre.
+function nasceUnaVolta(b) {
+  const creati = b.passi.flatMap((p) => p.crea);
+  assert.deepStrictEqual(creati.slice().sort((x, y) => x - y), b.nodi.slice(1).map((n) => n.id));
+  const quando = new Map(creati.map((id, i) => [id, i]));
+  for (const n of b.nodi.slice(1)) if (n.padre.id !== 0) assert.ok(quando.get(n.padre.id) < quando.get(n.id), n.nome);
+}
+
+test('daDom: con l\'esempio l\'albero del browser è uguale al nostro e tiene le posizioni', () => {
+  const a = albero(L.ESEMPIO);
+  const dom = DOC(E('html', null,
+    E('head', null, T('\n'), E('title', null, T('Ciao, mondo!')), T('\n')), T('\n'),
+    E('body', null, T('\n'), E('h1', null, T('Ciao, mondo!')), T('\n'),
+      E('p', null, T('Il primo sito web:\n'), E('a', { href: 'http://info.cern.ch' }, T('info.cern.ch'))), T('\n'),
+      E('button', { id: 'tasto' }, T('Cliccami')), T('\n'),
+      E('p', null, T('Clic: '), E('b', { id: 'conta' }, T('0'))), T('\n\n'))));
+  const b = L.daDom(dom, a);
+  assert.strictEqual(b.ok, true);
+  assert.strictEqual(forma(b.documento), forma(a.documento));
+  assert.deepStrictEqual(b.avvisi, []);
+  assert.strictEqual(b.diverso, false);
+  assert.strictEqual(b.conteggio, 17);
+  assert.strictEqual(b.titolo, 'Ciao, mondo!');
+  assert.strictEqual(b.passi.length, a.passi.length);
+  nasceUnaVolta(b);
+  const h1 = L.trova(b.documento, (n) => n.nome === 'h1');
+  assert.strictEqual(b.token[h1.token].nome, 'h1');
+  assert.strictEqual(b.token[h1.tokenFine].tipo, 'chiude');
+  const clic = L.trova(b.documento, (n) => n.tipo === 'testo' && n.testo === 'Clic: ');
+  assert.ok(clic.tokens.length >= 1 && b.token[clic.tokens[0]].tipo === 'testo');
+  assert.strictEqual(L.eseguiClic(b, 1).dopo, '1'); // il programma lavora sull'albero del browser
+});
+
+test('daDom: un <b> rimasto aperto viene riaperto dal browser, con un avviso', () => {
+  const src = '<p>Un <b>grassetto</p>\n<p>Fine</p>\n<p><b id="conta">0</b></p>';
+  const a = albero(src);
+  const b = L.daDom(pagina(E('p', null, T('Un '), E('b', null, T('grassetto'))),
+    E('b', null, T('\n'), E('p', null, T('Fine')), T('\n'), E('p', null, E('b', { id: 'conta' }, T('0'))))), a);
+  assert.strictEqual(forma(b.body), 'body*(p("Un",b("grassetto")),b*(p("Fine"),p(b("0"))))');
+  // il <b> riaperto non ruba il posto al <b id="conta"> scritto nel testo
+  const conta = L.perId(b.documento, 'conta');
+  assert.strictEqual(conta.implicito, false);
+  assert.strictEqual(b.token[conta.token].nome, 'b');
+  assert.strictEqual(L.riga(src, b.token[conta.token].inizio), 3);
+  assert.strictEqual(b.diverso, true);
+  const riapre = b.avvisi.find((v) => /riapre <b>/.test(v.testo));
+  assert.ok(riapre);
+  assert.strictEqual(riapre.riga, 2);
+  assert.ok(b.avvisi.some((v) => /<b> \(riga 1\) non era chiuso/.test(v.testo)));
+  nasceUnaVolta(b);
+  // il <b> riaperto nasce insieme al paragrafo che contiene, subito prima
+  const [, b2] = b.nodi.filter((n) => n.nome === 'b');
+  const p2 = b2.figli.find((n) => n.nome === 'p');
+  const passo = b.passi.find((p) => p.crea.includes(p2.id));
+  assert.ok(passo.crea.indexOf(b2.id) >= 0 && passo.crea.indexOf(b2.id) < passo.crea.indexOf(p2.id));
+  assert.strictEqual(b.token[p2.token].nome, 'p');
+});
+
+test('daDom: marcatori incrociati, tabelle, entità e nodi spostati', () => {
+  // <b><i></b></i>: il browser riapre <i>, quindi </i> non è più «ignorato»
+  const inc = L.daDom(pagina(E('p', null, E('b', null, T('uno '), E('i', null, T('due'))), E('i', null, T(' tre')))), albero('<p><b>uno <i>due</b> tre</i></p>'));
+  assert.strictEqual(forma(inc.body), 'body*(p(b("uno",i("due")),i*("tre")))');
+  assert.ok(inc.avvisi.some((v) => /riapre <i>/.test(v.testo)));
+  assert.ok(!inc.avvisi.some((v) => /<\/i> chiude qualcosa/.test(v.testo)));
+  nasceUnaVolta(inc);
+  // il corpo della tabella
+  const tab = L.daDom(pagina(E('table', null, E('tbody', null, E('tr', null, E('td', null, T('cella')))))), albero('<table><tr><td>cella</td></tr></table>'));
+  assert.strictEqual(forma(tab.body), 'body*(table(tbody*(tr(td("cella")))))');
+  assert.ok(tab.avvisi.some((v) => /aggiunge <tbody>/.test(v.testo)));
+  // un'entità che il nostro analizzatore non conosce: vale il testo del browser, la posizione resta
+  const ent = L.daDom(pagina(E('p', null, T('Io ♥ il web'))), albero('<p>Io &hearts; il web</p>'));
+  const t = L.trova(ent.documento, (n) => n.tipo === 'testo');
+  assert.strictEqual(t.testo, 'Io ♥ il web');
+  assert.strictEqual(t.implicito, false);
+  assert.ok(t.tokens.length === 1 && t.token >= 0);
+  assert.deepStrictEqual(ent.avvisi, []);
+  // il testo dentro <table> che il browser porta fuori, prima della tabella
+  const fuori = L.daDom(pagina(T('x'), E('table', null, E('tbody', null, E('tr', null, E('td', null, T('1')))))), albero('<table>x<tr><td>1</td></tr></table>'));
+  assert.strictEqual(forma(fuori.body), 'body*("x",table(tbody*(tr(td("1")))))');
+  assert.ok(L.trova(fuori.documento, (n) => n.nome === 'table').token >= 0);
+  nasceUnaVolta(fuori);
+  // anche l'albero del browser deve stare nei limiti
+  const tanti = L.daDom(pagina(...Array.from({ length: 85 }, () => E('i'))), albero('<p>x</p>'));
+  assert.strictEqual(tanti.ok, false);
+  assert.match(tanti.errore, /nodi/);
+});
+
+test('correzioni come nei browser: <title> dopo </head>, «/>» dentro <svg>, </p> smentito', () => {
+  // un <title> dopo </head> torna nella testa e <body> resta quello scritto
+  const a = albero('<html><head></head><title>dopo</title><body><p>y</p></body></html>');
+  assert.strictEqual(forma(a.documento), '#(html(head(title("dopo")),body(p("y"))))');
+  assert.strictEqual(a.titolo, 'dopo');
+  assert.deepStrictEqual(a.avvisi.map((v) => v.testo), ['Il marcatore <title> sta dopo </head>: il browser lo rimette dentro <head>.']);
+  // dentro <svg> la barra chiude il marcatore
+  const svg = albero('<svg><circle/><rect/></svg><p>dopo</p>');
+  assert.strictEqual(forma(svg.body), 'body*(svg(circle,rect),p("dopo"))');
+  assert.deepStrictEqual(svg.avvisi, []);
+  // <template> non è un marcatore della testa: niente avvisi sbagliati
+  assert.deepStrictEqual(albero('<template><p>dentro</p></template><p>fuori</p>').avvisi, []);
+  // <b>1<p>2</b>3</p>: il browser vero non crea il paragrafo vuoto, quindi quell'avviso sparisce
+  const nostro = albero('<b>1<p>2</b>3</p>');
+  assert.ok(nostro.avvisi.some((v) => /paragrafo vuoto/.test(v.testo)));
+  const vero = L.daDom(pagina(E('b', null, T('1')), E('p', null, E('b', null, T('2')), T('3'))), nostro);
+  assert.strictEqual(forma(vero.body), 'body*(b("1"),p(b*("2"),"3"))');
+  assert.ok(!vero.avvisi.some((v) => /paragrafo vuoto/.test(v.testo)));
+  assert.ok(vero.avvisi.some((v) => /riapre <b>/.test(v.testo)));
+  nasceUnaVolta(vero);
 });
