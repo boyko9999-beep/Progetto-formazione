@@ -1,0 +1,37 @@
+/* Capitolo 9 · Luce che trasporta dati */
+
+/* Sugli schermi larghi il disegno riempie l'altezza della colonna dei comandi. */
+.fotonica-lab .ea-lab-display { min-height: 640px; }
+.fotonica-lab-canvas { position: absolute; inset: 0; height: 100%; }
+
+/* Comandi in due gruppi, come i due pannelli del disegno: la fibra e il collegamento. */
+.fotonica-lab .ea-lab-controls { gap: 14px; }
+.fotonica-group {
+  margin: 0; font: 700 .7rem var(--mono); letter-spacing: .14em; text-transform: uppercase;
+  color: var(--ea-panel-ink);
+}
+.fotonica-group ~ .fotonica-group { margin-top: 6px; padding-top: 16px; border-top: 1px solid var(--ea-panel-line); }
+
+/* Comandi che non servono nella finestra scelta: visibili ma spenti. */
+.fotonica-lab input[type="range"]:disabled,
+.fotonica-lab .ea-toggle input:disabled { opacity: .4; cursor: not-allowed; }
+.fotonica-lab .ea-toggle input:disabled + label { opacity: .55; cursor: not-allowed; }
+
+/* Otto display in righe sempre complete: la fibra sopra, il collegamento sotto; 2 per riga sul telefono. */
+.fotonica-lab .ea-lab-readouts { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.fotonica-lab .ea-ro { align-content: space-between; }
+
+/* Comandi sopra e disegno sotto: il disegno prende la sua proporzione. */
+@media (max-width: 900px) {
+  .fotonica-lab .ea-lab-display { min-height: 0; }
+  .fotonica-lab-canvas { position: static; height: auto; aspect-ratio: 6 / 5; }
+}
+
+/* Telefono: i pannelli stanno uno sotto l'altro. */
+@media (max-width: 680px) {
+  .fotonica-lab-canvas { aspect-ratio: 10 / 19; }
+}
+
+@media (max-width: 560px) {
+  .fotonica-lab .ea-lab-readouts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

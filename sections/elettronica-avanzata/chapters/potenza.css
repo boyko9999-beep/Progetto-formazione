@@ -1,0 +1,26 @@
+/* Capitolo 7 · Energia che commuta */
+
+.potenza-lab-canvas { aspect-ratio: 2 / 1; }
+
+/* comandi in quattro colonne sotto il banco, allineati in alto */
+.ea-lab.potenza-lab .ea-lab-controls { grid-template-columns: repeat(4, minmax(0, 1fr)); align-items: start; }
+
+/* sei display in righe sempre complete: 6, poi 3, poi 2 per riga */
+.potenza-lab .ea-lab-readouts { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+.potenza-lab .ea-ro { align-content: space-between; }
+
+@media (max-width: 1100px) {
+  .potenza-lab-canvas { aspect-ratio: 16 / 10; }
+  .ea-lab.potenza-lab .ea-lab-controls { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .potenza-lab .ea-lab-readouts { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+/* sotto i 760 px i quattro strumenti stanno uno sotto l'altro */
+@media (max-width: 760px) {
+  .potenza-lab-canvas { aspect-ratio: 1 / 2; }
+}
+
+@media (max-width: 560px) {
+  .ea-lab.potenza-lab .ea-lab-controls { grid-template-columns: minmax(0, 1fr); }
+  .potenza-lab .ea-lab-readouts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

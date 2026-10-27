@@ -1,0 +1,29 @@
+/* Capitolo 10 · La frontiera quantistica */
+
+.qb-lab-canvas { aspect-ratio: 3 / 2; }
+.qb-lab .ea-lab-controls { gap: 14px; }
+.qb-gates { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.qb-gates .ea-btn { font: 700 1rem var(--mono); }
+.qb-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+.qb-row .ea-btn { padding: 0 8px; }
+.qb-lab .ea-btn:hover { border-color: #7aa2ff; }
+.qb-lab .ea-btn:focus-visible { outline-color: #7aa2ff; }
+.qb-lab .ea-btn.primary { background: #7aa2ff; color: #08122b; }
+.qb-lab .ea-lab-readouts { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+/* Le lettere greche restano minuscole: α e β in maiuscolo sembrerebbero A e B. */
+.qb-lab .ea-ro-label { text-transform: none; letter-spacing: .03em; font-size: .74rem; }
+
+/* Fra telefono e computer l'animazione resta orizzontale. */
+@media (min-width: 600px) and (max-width: 900px) {
+  .ea-stage-view.qb-stage { aspect-ratio: 4 / 3; }
+}
+
+/* Telefoni molto stretti: animazione più alta, così i testi non si sovrappongono. */
+@media (max-width: 359px) {
+  .ea-stage-view.qb-stage { aspect-ratio: 3 / 5; }
+}
+
+@media (max-width: 640px) {
+  .qb-lab-canvas { aspect-ratio: 2 / 3; }
+  .qb-lab .ea-lab-readouts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
