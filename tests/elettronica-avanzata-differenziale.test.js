@@ -1,4 +1,4 @@
-// Modello del capitolo 3 (segnali differenziali, CMRR, diagramma a occhio e BER): node --test tests/
+// Modello del capitolo 3 (segnali differenziali, CMRR, diagramma a occhio e BER): node --test tests/elettronica-avanzata*.test.js
 const test = require('node:test');
 const assert = require('node:assert');
 const { load } = require('./elettronica-avanzata.load.js');
@@ -180,10 +180,13 @@ test('la simulazione è riproducibile e il rumore è gaussiano', () => {
 });
 
 test('passi, didascalia e domande sono testo semplice: la pagina non li legge come HTML', () => {
-  const ch = load().chapter('differenziale');
+  const sezione = load();
+  const ch = sezione.chapter('differenziale');
   const plain = [ch.hero.caption, ch.hero.label, ch.lab.title, ...ch.uses];
   ch.steps.forEach((s) => plain.push(s.title, s.text));
   ch.timeline.forEach((e) => plain.push(e.title, e.who));
-  Array.from(ch.quiz || []).forEach((q) => plain.push(q.q, q.why, ...q.options));
+  const quiz = Array.from(sezione.QUIZ).filter((q) => q.chapter === 'differenziale');
+  assert.ok(quiz.length >= 4, 'domande del capitolo in quiz.js');
+  quiz.forEach((q) => plain.push(q.q, q.why, ...q.options));
   plain.forEach((t) => assert.ok(!/<[a-z/]|&[a-z]+;/i.test(t), 'HTML in un testo semplice: ' + t.slice(0, 60)));
 });

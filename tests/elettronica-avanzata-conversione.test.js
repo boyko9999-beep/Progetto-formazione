@@ -1,9 +1,10 @@
-// Modello del capitolo 5 (conversione analogico-digitale): node --test tests/
+// Modello del capitolo 5 (conversione analogico-digitale): node --test tests/elettronica-avanzata*.test.js
 const test = require('node:test');
 const assert = require('node:assert');
 const { load } = require('./elettronica-avanzata.load.js');
 
-const chapter = load().chapter('conversione');
+const sezione = load();
+const chapter = sezione.chapter('conversione');
 const M = chapter.model;
 const TAU = Math.PI * 2;
 const near = (a, b, tol, msg) => assert.ok(Math.abs(a - b) <= tol, (msg ? msg + ': ' : '') + a + ' invece di ' + b);
@@ -187,7 +188,7 @@ test('bit rate, filtro, sovracampionamento e ADC flash', () => {
 });
 
 test('domande del capitolo: formato e conti coerenti con il modello', () => {
-  const quiz = Array.from(chapter.quiz || []);
+  const quiz = Array.from(sezione.QUIZ).filter((q) => q.chapter === 'conversione');
   assert.ok(quiz.length >= 4, 'almeno 4 domande');
   quiz.forEach((q) => {
     assert.strictEqual(q.chapter, 'conversione');

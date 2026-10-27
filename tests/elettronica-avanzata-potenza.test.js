@@ -1,4 +1,4 @@
-// Modello del capitolo 7 (elettronica di potenza, convertitore buck): node --test tests/
+// Modello del capitolo 7 (elettronica di potenza, convertitore buck): node --test tests/elettronica-avanzata*.test.js
 const test = require('node:test');
 const assert = require('node:assert');
 const { load } = require('./elettronica-avanzata.load.js');

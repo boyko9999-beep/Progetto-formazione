@@ -1,9 +1,10 @@
-// Modello del capitolo 2 (linee di trasmissione): node --test tests/
+// Modello del capitolo 2 (linee di trasmissione): node --test tests/elettronica-avanzata*.test.js
 const test = require('node:test');
 const assert = require('node:assert');
 const { load } = require('./elettronica-avanzata.load.js');
 
-const chapter = load().chapter('linee');
+const sezione = load();
+const chapter = sezione.chapter('linee');
 const M = chapter.model;
 
 const near = (a, b, tol, msg) => assert.ok(Math.abs(a - b) <= tol, (msg ? msg + ': ' : '') + a + ' invece di ' + b);
@@ -189,8 +190,8 @@ test('finestra del laboratorio: abbastanza echi da arrivare vicino al valore fin
   near(M.timeSpan(e), 30, 1e-12);
 });
 
-test('domande provvisorie: formato e conti coerenti con il modello', () => {
-  const quiz = Array.from(chapter.quiz);
+test('domande del capitolo: formato e conti coerenti con il modello', () => {
+  const quiz = Array.from(sezione.QUIZ).filter((q) => q.chapter === 'linee');
   assert.deepStrictEqual(quiz.map((q) => q.id), ['ea-linee-01', 'ea-linee-02', 'ea-linee-03', 'ea-linee-04']);
   quiz.forEach((q) => {
     assert.strictEqual(q.chapter, 'linee');

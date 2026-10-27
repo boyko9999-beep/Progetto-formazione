@@ -1,4 +1,4 @@
-// Contratto della sezione Elettronica avanzata: node --test tests/
+// Contratto della sezione Elettronica avanzata: node --test tests/elettronica-avanzata*.test.js
 const test = require('node:test');
 const assert = require('node:assert');
 const { load } = require('./elettronica-avanzata.load.js');

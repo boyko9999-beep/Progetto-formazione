@@ -1890,51 +1890,6 @@
       intro: 'Scegli la fibra o regola gli indici del nucleo e del mantello, poi cambia l\'angolo di lancio: guarda quando il raggio resta intrappolato e quando esce nel mantello. Sotto c\'è il bilancio di potenza: scegli finestra, lunghezza e numero di canali e controlla se la luce arriva sopra la soglia del ricevitore, con gli amplificatori all\'erbio quando servono. I display danno anche la frequenza della luce, la corrente del fotodiodo e il ritardo del viaggio.',
       mount: mountLab,
     },
-    quiz: [
-      {
-        id: 'ea-fotonica-01', chapter: 'fotonica', level: 1, topic: 'Riflessione totale',
-        q: 'Che cosa tiene la luce dentro il nucleo di una fibra ottica, anche quando la fibra fa una curva?',
-        options: [
-          'La riflessione totale: il nucleo ha indice più alto del mantello e la luce lo colpisce oltre l\'angolo critico',
-          'Un velo di metallo sottilissimo, depositato tra nucleo e mantello, che riflette la luce come uno specchio',
-          'Il mantello assorbe tutta la luce che lo raggiunge, quindi resta soltanto quella che viaggia lungo l\'asse',
-          'La coerenza del laser: un fascio coerente non si allarga mai e così non tocca le pareti del nucleo',
-        ],
-        answer: 0,
-        why: 'Il mantello è anch\'esso trasparente (nelle fibre per telecomunicazioni è vetro), con un indice di rifrazione leggermente minore del nucleo. Un raggio che colpisce la superficie di separazione con un angolo dalla normale maggiore dell\'angolo critico, arcsin(n₂/n₁), viene riflesso al 100%. Non serve alcun metallo, e la coerenza del laser da sola non basterebbe: senza riflessione totale la luce uscirebbe a ogni curva.',
-      },
-      {
-        id: 'ea-fotonica-02', chapter: 'fotonica', level: 2, topic: 'Cono di accettazione',
-        q: 'Una fibra ha nucleo con n₁ = 1,48 e mantello con n₂ = 1,46, quindi NA ≈ 0,24. Un raggio arriva dall\'aria formando 20° con l\'asse della fibra. Che cosa gli succede?',
-        options: [
-          'Esce nel mantello: il cono di accettazione ha un semiangolo di circa 14°',
-          'Resta guidato: 20° è molto meno dell\'angolo critico, che vale circa 80,6°',
-          'Resta guidato: il cono di accettazione ha un semiangolo di circa 76°',
-          'Esce nel mantello: si perde ogni raggio che non viaggia lungo l\'asse',
-        ],
-        answer: 0,
-        why: 'θmax = arcsin(NA) = arcsin(0,24) ≈ 14°: è il semiangolo del cono, misurato dall\'asse e in aria. A 20° il raggio è fuori dal cono: nel vetro forma circa 13,4° con l\'asse e incontra il mantello a circa 76,6° dalla normale, meno dell\'angolo critico di 80,6°, quindi in gran parte esce. L\'errore tipico è confrontare 20°, misurato dall\'asse, con θc, misurato dalla normale.',
-      },
-      {
-        id: 'ea-fotonica-03', chapter: 'fotonica', level: 2, topic: 'Bilancio di potenza',
-        q: 'Un trasmettitore lancia 0 dBm a 1550 nm in una fibra da 0,2 dB/km e il ricevitore funziona fino a −28 dBm. Trascurando connettori e margine, qual è la distanza massima senza amplificatori?',
-        options: ['140 km', '28 km', '56 km', '1400 km'],
-        answer: 0,
-        why: 'Il ricevitore tollera una perdita di 0 − (−28) = 28 dB. A 0,2 dB/km si arriva a 28 / 0,2 = 140 km. A 1310 nm, con circa 0,35 dB/km, ci si fermerebbe a 80 km: anche per questo le lunghe distanze usano 1550 nm, dove funzionano gli amplificatori all\'erbio. Nei progetti veri si tolgono anche circa 0,5 dB per connettore e un margine di qualche dB.',
-      },
-      {
-        id: 'ea-fotonica-04', chapter: 'fotonica', level: 3, topic: 'EDFA e WDM',
-        q: 'Perché l\'amplificatore a fibra drogata con erbio (EDFA) ha reso conveniente la multiplazione a divisione di lunghezza d\'onda (WDM)?',
-        options: [
-          'Amplifica insieme tutti i canali della banda C, senza trasformare la luce in elettricità',
-          'Trasforma ogni canale in un segnale elettrico e lo rigenera con impulsi di nuovo perfetti',
-          'Porta tutti i canali sulla stessa lunghezza d\'onda, così il ricevitore ne deve leggere uno',
-          'Elimina l\'attenuazione della fibra, così la potenza resta costante per tutto il percorso',
-        ],
-        answer: 0,
-        why: 'Un ripetitore elettronico, come quelli di TAT\u20118, deve rivelare, rigenerare e ritrasmettere ogni canale con la sua elettronica: con 40 canali servirebbero 40 ripetitori in ogni punto. L\'EDFA amplifica per emissione stimolata tutta la banda attorno a 1550 nm in un colpo solo, rumore compreso, quindi un solo apparato basta per tutti i canali. Non elimina l\'attenuazione: la compensa a tratti.',
-      },
-    ],
     model,
   });
 })(typeof window !== 'undefined' ? window : globalThis);
