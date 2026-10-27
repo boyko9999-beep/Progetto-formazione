@@ -107,7 +107,7 @@ ProgStoria.capitolo({
     },
     {
       tipo: 'sapevi',
-      testo: 'Geoffrey Hinton, premio Nobel per la fisica 2024 insieme a John Hopfield «per le scoperte e le invenzioni fondamentali che rendono possibile l\'apprendimento automatico con le reti neurali artificiali», è un trisnipote di George Boole, il matematico che nel 1854 trasformò il ragionamento in un\'algebra di «vero» e «falso» ([capitolo 2](#logica)). Dall\'algebra della logica alle reti che imparano dagli esempi, la storia passa anche per cinque generazioni della stessa famiglia.',
+      testo: 'Geoffrey Hinton, premio Nobel per la fisica 2024 insieme a John Hopfield «per le scoperte e le invenzioni fondamentali che rendono possibile l\'apprendimento automatico con le reti neurali artificiali», è un trisnipote di George Boole, il matematico che tra il 1847 e il 1854 trasformò il ragionamento in un\'algebra di «vero» e «falso» ([capitolo 2](#logica)). Dall\'algebra della logica alle reti che imparano dagli esempi, la storia passa anche per cinque generazioni della stessa famiglia.',
     },
     { tipo: 'ciao' },
   ],
