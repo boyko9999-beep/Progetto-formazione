@@ -831,12 +831,12 @@
     g += L('M146 80H195') + ARROW(202, 80, 0) + T(174, 70, 'e', 'f-accent-text', 'middle');
     g += R(202, 52, 100, 56, 'f-accent-soft', 10) + T(252, 80, 'A', 'f-title', 'middle', 'font-size:22px') + T(252, 99, '≈ 200' + NB + '000', 'f-mono', 'middle');
     g += L('M302 80H409') + ARROW(416, 80, 0) + NODE(380, 80) + T(422, 85, 'Vout', 'f-text');
-    g += T(357, 66, 'Vout = A · e', 'f-mono', 'middle');
+    g += T(312, 66, 'Vout = A · e', 'f-mono');
     // anello di retroazione: una parte dell'uscita torna indietro e si sottrae
     g += L('M380 80V178H309') + ARROW(303, 178, 180);
     g += R(202, 152, 100, 52, 'f-paper', 10) + T(252, 177, 'β', 'f-title', 'middle', 'font-size:22px') + T(252, 196, '= 0,1', 'f-mono', 'middle');
     g += L('M202 178H128V105') + ARROW(128, 99, -90);
-    g += T(166, 170, 'β · Vout', 'f-mono', 'middle');
+    g += T(165, 170, 'β·Vout', 'f-mono', 'middle');
     g += T(116, 146, 'retroazione', 'f-accent-text', 'end');
     g += T(390, 132, 'β = Rg/(Rg + Rf)', 'f-small');
     g += '<path class="operazionale-flow" d="M46 80H102M146 80H195M302 80H409"/>';
@@ -912,13 +912,6 @@
       '.ei-figure .operazionale-zone { fill: color-mix(in srgb, var(--ei-bright) 6%, transparent); stroke: var(--ei-line); stroke-width: 1; stroke-dasharray: 4 4; }',
       '.ei-figure .operazionale-flow { fill: none; stroke: var(--ei-bright); stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 2 12; animation: operazionale-dash 1.2s linear infinite; }',
       '@keyframes operazionale-dash { to { stroke-dashoffset: -28; } }',
-      // sul telefono le figure scendono a circa il 63%: scritte più grandi, dove il disegno ha spazio
-      '@media (max-width: 640px) {',
-      '  .ei-figure .operazionale-fig .f-small { font-size: 13.5px; }',
-      '  .ei-figure .operazionale-fig .f-text { font-size: 15px; }',
-      '  .ei-figure .operazionale-fig .f-mono { font-size: 13.5px; }',
-      '  .ei-figure .operazionale-fig .f-accent-text { font-size: 14.5px; }',
-      '}',
       '@media (prefers-reduced-motion: reduce) {',
       '  .operazionale-sch { transition: none; }',
       '  .ei-figure .operazionale-flow { animation: none; }',

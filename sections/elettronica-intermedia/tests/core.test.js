@@ -38,3 +38,19 @@ test('core: EI.si mostra i femto e azzera i valori trascurabili', () => {
   assert.strictEqual(EI.si(3.2e-14, 'A'), '32,0\u202ffA');
   assert.strictEqual(EI.si(2.57e-17, 'A', { trim: true }), '0\u202fA');
 });
+
+test('core: la spiegazione lampeggia quando cambia il messaggio, non quando cambiano solo i numeri', () => {
+  let flashes = 0;
+  const fake = {
+    reduced: false,
+    explainEl: { innerHTML: '', offsetWidth: 0, classList: { remove() {}, add() { flashes += 1; } } },
+  };
+  const explain = (html) => EI.Lab.prototype.explain.call(fake, html);
+  explain('La corrente vale <b>4,70 mA</b>.');
+  explain('La corrente vale <b>4,81 mA</b>.');
+  explain('La corrente vale <b>12 mA</b>.');
+  assert.strictEqual(flashes, 1);
+  assert.match(fake.explainEl.innerHTML, /12 mA/);
+  explain('Il diodo è spento: la corrente vale <b>0 mA</b>.');
+  assert.strictEqual(flashes, 2);
+});

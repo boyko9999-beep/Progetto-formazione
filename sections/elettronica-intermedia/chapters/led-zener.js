@@ -1152,9 +1152,9 @@
         '<path class="f-line" d="M' + x.toFixed(1) + ' 118V160" stroke-width="2.4"/>';
     }).join('');
     const nmTicks = [400, 500, 600, 700, 800, 900].map((nm) => '<path class="f-thin" d="M' + X(nm).toFixed(1) + ' 156V162"/><text class="f-small" x="' + X(nm).toFixed(1) + '" y="175" text-anchor="middle">' + nm + (nm === 900 ? ' nm' : '') + '</text>').join('');
-    const evTicks = [3, 2.5, 2, 1.5].map((e) => { const x = X(HC / e).toFixed(1); return '<path class="f-thin" d="M' + x + ' 184V190"/><text class="f-mono" x="' + x + '" y="204" text-anchor="middle">' + num(e, 1) + ' eV</text>'; }).join('');
+    const evTicks = [3, 2.5, 2, 1.5].map((e) => { const x = X(HC / e).toFixed(1); return '<path class="f-thin" d="M' + x + ' 184V190"/><text class="f-mono" x="' + x + '" y="204" text-anchor="middle">' + num(e, 1) + (e === 1.5 ? ' eV' : '') + '</text>'; }).join('');
     const irX = ((X(780) + X(940)) / 2).toFixed(1);
-    return '<svg viewBox="0 0 480 280">' +
+    return '<svg viewBox="0 0 480 288">' +
       '<defs><linearGradient id="led-zener-spectrum" x1="0" x2="1" y1="0" y2="0">' + grad + '</linearGradient></defs>' +
       '<rect x="' + X(380) + '" y="124" width="' + (X(780) - X(380)).toFixed(1) + '" height="30" rx="3" fill="url(#led-zener-spectrum)"/>' +
       '<rect class="f-soft" x="' + X(780).toFixed(1) + '" y="124" width="' + (X(1000) - X(780)).toFixed(1) + '" height="30" rx="3"/>' +
@@ -1162,9 +1162,11 @@
       '<text class="f-small" x="' + irX + '" y="149" text-anchor="middle">invisibile</text>' +
       marks + nmTicks +
       '<path class="f-thin" d="M30 187H450"/>' + evTicks +
-      '<text class="f-small" x="240" y="228" text-anchor="middle">← fotoni più energetici: serve più tensione · meno energia: rosso e infrarosso →</text>' +
-      '<text class="f-small" x="240" y="252" text-anchor="middle">Silicio: banda proibita di 1,12 eV (circa 1100 nm), ma a gap indiretto:</text>' +
-      '<text class="f-small" x="240" y="268" text-anchor="middle">la ricombinazione scalda il cristallo invece di fare luce.</text>' +
+      // due righe: sul telefono i testi crescono e una riga sola uscirebbe dal disegno
+      '<text class="f-small" x="30" y="226">← fotoni più energetici: serve più tensione</text>' +
+      '<text class="f-small" x="450" y="242" text-anchor="end">meno energia: rosso e infrarosso →</text>' +
+      '<text class="f-small" x="240" y="264" text-anchor="middle">Silicio: banda proibita di 1,12 eV (circa 1100 nm), ma a gap indiretto:</text>' +
+      '<text class="f-small" x="240" y="280" text-anchor="middle">la ricombinazione scalda il cristallo invece di fare luce.</text>' +
       '</svg>';
   }
 
@@ -1200,10 +1202,12 @@
       '<text class="f-small" x="390" y="140">≈ 0,7 V</text>' +
       '<text class="f-text" x="404" y="64">diretta:</text>' +
       '<text class="f-small" x="404" y="80">come un</text>' +
-      '<text class="f-small" x="404" y="94">diodo normale</text>' +
+      '<text class="f-small" x="404" y="94">diodo</text>' +
+      '<text class="f-small" x="404" y="108">normale</text>' +
       '<path class="f-thin" d="M126 114V126"/>' +
       '<text class="f-mono" x="126" y="106" text-anchor="middle">−Vz</text>' +
-      '<text class="f-small" x="242" y="106" text-anchor="middle">inversa: quasi nessuna corrente</text>' +
+      '<text class="f-small" x="245" y="90" text-anchor="middle">inversa:</text>' +
+      '<text class="f-small" x="245" y="106" text-anchor="middle">quasi nessuna corrente</text>' +
       '<text class="f-small" x="44" y="150" text-anchor="middle">ginocchio</text>' +
       '<path class="f-thin" d="M66 147L124 136"/>' +
       '<text class="f-small" x="230" y="196">tratteggio:</text>' +
@@ -1273,6 +1277,7 @@
       '.ei-figure .led-zener-fig-move, .ei-figure .led-zener-fig-static { fill: var(--ei-hl); stroke: var(--fig-paper); stroke-width: 2; }',
       '.ei-figure .led-zener-fig-static { display: none; }',
       '.ei-figure .led-zener-fig-key { fill: var(--ei-hl); font: 800 11.5px var(--font); }',
+      '.ei-figure svg .led-zener-fig-key { font-size: max(11.5px, calc(9.5px / var(--fig-k, 1))); }',
       '@keyframes led-zener-rays { to { stroke-dashoffset: -28; } }',
       '@keyframes led-zener-pulse { 0%, 100% { opacity: .65; transform: scale(.92); } 50% { opacity: 1; transform: scale(1.06); } }',
       '@media (prefers-reduced-motion: reduce) {',

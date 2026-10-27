@@ -326,6 +326,11 @@
 .ei-figure .f-n-text { fill: var(--fig-n); font: 800 13px var(--font); }
 .ei-figure .f-p-text { fill: var(--fig-p); font: 800 13px var(--font); }
 .ei-figure .f-accent-text { fill: var(--ei-hl); font: 800 13px var(--font); }
+/* sul telefono la figura si rimpicciolisce: i testi non scendono sotto una misura leggibile (--fig-k da app.js) */
+.ei-figure svg .f-small { font-size: max(11px, calc(9.5px / var(--fig-k, 1))); }
+.ei-figure svg .f-mono { font-size: max(12px, calc(10px / var(--fig-k, 1))); }
+.ei-figure svg .f-text, .ei-figure svg .f-n-text, .ei-figure svg .f-p-text, .ei-figure svg .f-accent-text { font-size: max(13px, calc(10.5px / var(--fig-k, 1))); }
+.ei-figure svg .f-title { font-size: max(14px, calc(11.5px / var(--fig-k, 1))); }
 .ei-figure .f-glow { filter: url(#ei-glow); }
 .ei-figure .f-dark { fill: var(--scope-bg); }
 
@@ -519,6 +524,7 @@
   .ei-meta { justify-content: flex-start; max-width: none; }
 }
 @media (max-width: 640px) {
+  .ei-figure { padding: 12px 10px; }
   .ei-cards { grid-template-columns: 1fr; }
   .ei-duo { grid-template-columns: 1fr; }
   .ei-chapter-head { grid-template-columns: 1fr; }

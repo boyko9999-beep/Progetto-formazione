@@ -98,6 +98,9 @@ Regole del banco:
   (cerchietti ambra), ioni `.ei-ion-n` / `.ei-ion-p`, zone `.ei-zone-n` / `.ei-zone-p` / `.ei-zone-dep`.
 - Movimento ridotto (`lab.reduced`): niente animazione continua; il laboratorio mostra subito lo stato finale.
 - Telefono (390 px): lo schema deve restare leggibile; usa tutto il `viewBox`, senza margini vuoti.
+  Sotto i 640 px `style.css` ingrandisce etichette (18 px) e fili (4) in unità del disegno, pensando a uno
+  schema largo circa 640: un capitolo con un disegno più stretto per il telefono ridefinisce queste misure con
+  classi sue (come `.rc-svg.rc-narrow` nei filtri RC).
 - Nessuna libreria esterna, nessuna richiesta di rete.
 
 ### Figure
@@ -107,6 +110,12 @@ Le figure sono SVG in stringa, con le classi di `style.css` che si adattano al t
 `f-n-dot`, `f-p-dot`, `f-text`, `f-small`, `f-mono`, `f-title`, `f-n-text`, `f-p-text`, `f-accent-text`.
 Le animazioni nelle figure usano classi con il prefisso del capitolo nel campo `css` e si fermano con
 `@media (prefers-reduced-motion: reduce)`.
+
+Sul telefono la figura si rimpicciolisce: `app.js` scrive su ogni `<svg>` la variabile `--fig-k` (larghezza sullo
+schermo diviso larghezza del `viewBox`, senza scendere sotto quella di un telefono da 390 px) e `style.css` alza
+i testi `f-*` quanto basta perché sullo schermo non scendano sotto i 9,5 px circa. Una figura nuova va quindi
+provata anche a 390 px: le scritte crescono fino a circa un terzo rispetto al disegno e non devono accavallarsi.
+Per una classe di testo propria basta la stessa formula: `font-size: max(11px, calc(9.5px / var(--fig-k, 1)))`.
 
 ## Test
 

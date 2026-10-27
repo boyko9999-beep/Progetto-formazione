@@ -1363,7 +1363,7 @@
       { href: '../porte-logiche/index.html#famiglie', section: 'Porte logiche', title: 'Le famiglie logiche: MOSFET N e P in coppia nel CMOS' },
       { href: '../porte-logiche/index.html#struttura', section: 'Porte logiche', title: 'Dentro il chip: miliardi di MOSFET di pochi nanometri' },
       { href: '../elettronica-base/index.html#potenza', section: 'Elettronica base', title: 'La potenza elettrica: P = V · I e il calore' },
-      { href: '../elettronica-avanzata/index.html', section: 'Elettronica avanzata', title: 'Elettronica di potenza: MOSFET che commutano centinaia di migliaia di volte al secondo' },
+      { href: '../elettronica-avanzata/index.html#potenza', section: 'Elettronica avanzata', title: 'Elettronica di potenza: MOSFET che commutano centinaia di migliaia di volte al secondo' },
     ],
     glossary: {
       'mosfet': { term: 'MOSFET', def: 'Metal-Oxide-Semiconductor Field-Effect Transistor: transistor a effetto di campo con il gate isolato da uno strato di ossido. Si comanda con la tensione tra gate e source, quasi senza corrente.' },

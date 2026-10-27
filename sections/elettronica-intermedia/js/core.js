@@ -1126,6 +1126,10 @@
     if (html === this.lastExplain) return;
     this.lastExplain = html;
     this.explainEl.innerHTML = EI.rich(html);
+    // lampeggia solo quando cambia il messaggio, non a ogni numero aggiornato mentre si trascina un cursore
+    const shape = String(html).replace(/\d+(?:[.,\u202f]\d+)*/g, '#');
+    if (shape === this.lastShape) return;
+    this.lastShape = shape;
     if (!this.reduced) {
       this.explainEl.classList.remove('flash');
       void this.explainEl.offsetWidth;

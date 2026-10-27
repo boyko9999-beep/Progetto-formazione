@@ -1384,7 +1384,7 @@
       { href: '#rc-filtri', section: 'Questa sezione', title: 'La carica RC e la costante di tempo τ = R·C' },
       { href: '#operazionale', section: 'Questa sezione', title: 'Il comparatore: due tensioni a confronto' },
       { href: '../porte-logiche/index.html#calcolo', section: 'Porte logiche', title: 'Il flip-flop e la memoria dei circuiti logici' },
-      { href: '../elettronica-avanzata/index.html', section: 'Elettronica avanzata', title: 'Oscillatori al quarzo e PLL' },
+      { href: '../elettronica-avanzata/index.html#clock', section: 'Elettronica avanzata', title: 'Oscillatori al quarzo e PLL' },
       { href: '../elettronica-base/index.html#misure', section: 'Elettronica base', title: 'L\'oscilloscopio per vedere le forme d\'onda' },
     ],
     glossary: {

@@ -118,6 +118,21 @@
     }, { rootMargin: '0px 0px -6% 0px' });
     items.forEach((i) => io.observe(i));
   }
+  // Sul telefono le figure si rimpiccioliscono: --fig-k (larghezza sullo schermo / larghezza del disegno)
+  // permette a style.css di tenere i testi a una misura leggibile. Sotto i 336 px (la figura su un telefono
+  // da 390 px) i testi non crescono più rispetto al disegno, così non si accavallano sui telefoni più stretti.
+  const FIG_MIN_W = 336;
+  let figObserver = null;
+  function fitFigure(svg) {
+    const vb = svg.viewBox && svg.viewBox.baseVal;
+    const w = svg.getBoundingClientRect().width;
+    if (vb && vb.width && w) svg.style.setProperty('--fig-k', (Math.max(w, FIG_MIN_W) / vb.width).toFixed(3));
+  }
+  function observeFigure(box) {
+    if (!('ResizeObserver' in window)) return;
+    if (!figObserver) figObserver = new ResizeObserver((entries) => entries.forEach((e) => fitFigure(e.target)));
+    box.querySelectorAll(':scope > svg').forEach((svg) => figObserver.observe(svg));
+  }
   function figure(f) {
     const box = h('div', { class: 'ei-figure-art' });
     if (f.svg) box.innerHTML = f.svg;
@@ -131,6 +146,7 @@
       svgEl.setAttribute('role', 'img');
       svgEl.setAttribute('aria-label', f.alt || f.title || 'Illustrazione');
     }
+    observeFigure(box);
     return h('figure', { class: 'ei-figure reveal' },
       f.title ? h('p', { class: 'ei-figure-title' }, f.title) : null,
       box,
@@ -477,6 +493,7 @@
     hideTip();
     if (current && current.cleanup) current.cleanup();
     current = null;
+    if (figObserver) figObserver.disconnect();
     let view;
     let nav = 'home';
     if (!hash) view = viewHome();
