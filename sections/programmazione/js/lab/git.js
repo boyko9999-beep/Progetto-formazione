@@ -532,7 +532,7 @@
 .lab-git-gruppo { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .lab-git-gruppo .pg-etichetta { font-size: 14px; }
 .lab-git-gruppo .pg-etichetta b { color: var(--lab-bright); font: 700 14px var(--mono); }
-.lab-git select.pg-campo { max-width: 13em; }
+.lab-git select.pg-campo { max-width: 15em; }
 .lab-git-nome { width: 12.5em; }
 .lab-git-nome[aria-invalid="true"] { border-color: #ff8f80; }
 .lab-git-commit { border-color: color-mix(in srgb, var(--trace-1) 55%, var(--lab-line)); color: var(--lab-bright); }
@@ -545,7 +545,7 @@
 .lab-git-pann { padding: 0; min-width: 0; overflow: hidden; display: flex; flex-direction: column; }
 .lab-git-testa { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 2px 12px; padding: 9px 14px 8px; border-bottom: 1px solid var(--lab-line); }
 .lab-git-testa h4 { margin: 0; font: 700 13px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--lab-bright); }
-.lab-git-testa h4 code { text-transform: none; letter-spacing: 0; }
+.lab-git-testa h4 code { text-transform: none; letter-spacing: 0; font-size: 13px; }
 .lab-git-legenda { font: 13px var(--font); color: var(--lab-text); }
 .lab-git-scorri { position: relative; height: 290px; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: var(--lab-line) transparent; }
 .lab-git--stretta .lab-git-scorri { height: 318px; }

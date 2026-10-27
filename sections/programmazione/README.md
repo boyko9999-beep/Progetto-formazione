@@ -66,7 +66,7 @@ Mini-markup nei testi: `**grassetto**`, `*corsivo*`, `` `codice` ``, `{{termine}
 | `epoca` / `schermo` | Che cosa si vede | Campi usati |
 | --- | --- | --- |
 | `jacquard` | la catena di schede guida il telaio, riga dopo riga il tessuto mostra la parola | `uscita` (massimo 8 caratteri) |
-| `nastro` | la testina della macchina di Turing scrive un simbolo per casella e si ferma in ALT | `uscita` (massimo 12 simboli), `codice` facoltativo: la tavola delle regole; se ha una riga con `→` per simbolo, le righe si accendono in ordine |
+| `nastro` | la testina della macchina di Turing scrive un simbolo per casella e si ferma in ALT | `uscita` (massimo 12 simboli), `codice` facoltativo: la tavola delle regole; se ha una riga con `→` per simbolo, le righe si accendono in ordine. Ogni riga che contiene `→` conta come regola: l'intestazione della tavola non deve contenerne |
 | `williams` | 32 righe da 32 bit, punti e trattini: il programma in alto, i dati disegnano la parola | `uscita` (al massimo 3 righe da 5 lettere) |
 | `telescrivente` | il nastro perforato passa nel lettore, poi la telescrivente stampa | `codice` (listato), `uscita` (in maiuscolo) |
 | `foglio` | il programma scritto a matita sul modulo di codifica, una casella per carattere | `codice` (FORTRAN a colonne fisse), `uscita` |
