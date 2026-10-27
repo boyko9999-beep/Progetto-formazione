@@ -122,9 +122,9 @@
       },
       {
         id: 'eb-14', level: 2, topic: 'Energia in bolletta', chapter: 'potenza', type: 'number',
-        q: 'Una stufetta da 2 kW resta accesa per 3 ore. Se l\'energia costa 0,25 € al kWh, quanto si spende, in euro?',
-        value: 1.5, unit: '€', tolerance: 0.01,
-        why: 'Energia = P × t = 2 kW × 3 h = 6 kWh, che a 0,25 € al kWh costano 6 × 0,25 = 1,50 €. Il consumo in bolletta si conta in kWh: non basta la potenza, conta anche per quanto tempo l\'apparecchio resta acceso.',
+        q: 'Una stufetta da 2 kW resta accesa per 3 ore. Se l\'energia costa 0,30 € al kWh, quanto si spende, in euro?',
+        value: 1.8, unit: '€', tolerance: 0.01,
+        why: 'Energia = P × t = 2 kW × 3 h = 6 kWh, che a 0,30 € al kWh costano 6 × 0,30 = 1,80 €. Il consumo in bolletta si conta in kWh: non basta la potenza, conta anche per quanto tempo l\'apparecchio resta acceso.',
       },
       {
         id: 'eb-15', level: 2, topic: 'Effetto Joule', chapter: 'potenza', type: 'choice',
