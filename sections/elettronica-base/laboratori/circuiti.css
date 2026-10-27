@@ -1,0 +1,84 @@
+/* Capitolo 5 · laboratorio "Il banco delle lampadine". */
+
+.cir-svg { display: block; width: 100%; height: auto; }
+
+/* fili, elettroni, nodi */
+.cir-filo { fill: none; stroke: #2a3b35; stroke-width: 7; stroke-linecap: round; stroke-linejoin: round; }
+.cir-filo-rame { fill: none; stroke: var(--rame); stroke-width: 2; opacity: .55; stroke-linejoin: round; }
+.cir-tratto-e { transition: opacity .4s ease; }
+.cir-tratto-e.spento { opacity: 0; transition-duration: .15s; }
+.cir-elettrone circle { fill: var(--lab-neg); }
+.cir-elettrone text { fill: #04121a; font: 800 7px var(--mono); }
+.cir-freccia { fill: none; stroke: var(--lab-neg); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.cir-nodo { fill: #f3c79d; stroke: var(--lab-bg); stroke-width: 2; filter: drop-shadow(0 0 4px rgb(243 199 157 / 55%)); }
+.cir-nodo-t { fill: var(--lab-text); font: 600 12px var(--font); }
+.cir-vite { fill: #aeb7b3; stroke: #4d5a55; stroke-width: 1.2; }
+.cir-vite-taglio { stroke: #4d5a55; stroke-width: 1.4; }
+
+/* pila */
+.cir-pila-corpo { fill: #141f1c; stroke: #3a4f48; stroke-width: 2; }
+.cir-pila-carica { fill: color-mix(in srgb, var(--lab-v) 13%, transparent); stroke: color-mix(in srgb, var(--lab-v) 40%, transparent); stroke-width: 1; }
+.cir-pila-polo { fill: #9aa8a2; }
+.cir-pila-v { fill: var(--lab-v); font: 800 15px var(--mono); }
+.cir-pila-t { fill: var(--lab-text); font: 600 12px var(--font); }
+.cir-segno { font: 800 15px var(--mono); }
+.cir-segno.pos { fill: var(--lab-pos); }
+.cir-segno.neg { fill: var(--lab-neg); }
+
+/* lampadine */
+.cir-luce { stop-color: var(--lab-luce); }
+.cir-zoccolo { fill: #16211e; stroke: #33463f; stroke-width: 1.5; }
+.cir-foro { fill: #050a09; }
+.cir-lampada { cursor: pointer; }
+.cir-svg .cir-lampada:focus, .cir-svg .cir-lampada:focus-visible { outline: none; }
+.cir-presa { fill: transparent; stroke: transparent; stroke-width: 2; stroke-dasharray: 5 5; }
+.cir-lampada:focus-visible .cir-presa { stroke: #fff; }
+.cir-sollevo { transition: transform .25s var(--ease-out); }
+.cir-lampada:hover .cir-sollevo { transform: translateY(-3px); }
+.cir-vetro { fill: rgb(205 228 235 / 5%); stroke: rgb(205 228 235 / 50%); stroke-width: 1.8; stroke-linejoin: round; }
+.cir-supporto { fill: none; stroke: #7d8b86; stroke-width: 1.1; }
+.cir-filamento { fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.cir-riflesso { fill: none; stroke: #fff; stroke-opacity: .22; stroke-width: 3; stroke-linecap: round; }
+.cir-attacco { fill: #a3aeaa; stroke: #5f6c67; stroke-width: 1; }
+.cir-attacco-riga { fill: none; stroke: #66736e; stroke-width: 1.4; }
+.cir-nome { fill: var(--lab-text); font: 700 12px var(--mono); }
+
+/* V, I e P accanto a ogni lampadina */
+.cir-val { font: 700 13.5px var(--mono); paint-order: stroke; stroke: var(--lab-bg); stroke-width: 4px; stroke-linejoin: round; }
+.cir-val.v { fill: var(--lab-v); }
+.cir-val.i { fill: var(--lab-i); }
+.cir-val.p { fill: var(--lab-p); }
+.cir-val.zero { fill: var(--lab-dim); }
+.cir-cap { fill: var(--lab-dim); font: 600 12px var(--font); }
+
+/* pannello di Kirchhoff */
+.cir-kir { display: grid; gap: 6px; padding: 10px 12px 12px; border-radius: 12px; border: 1px solid var(--lab-line); background: #08100e; }
+.cir-kir-t { margin: 0; font: 700 .66rem var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--lab-b); }
+.cir-kir-f .eb-f { font-size: 1.08rem; }
+.cir-kir-righe { max-width: 17rem; display: grid; grid-template-columns: 1.3em auto minmax(0, 1fr) auto; align-items: baseline; font-variant-numeric: tabular-nums; }
+.cir-kir-riga { display: contents; }
+.cir-kir-riga > * { padding: 2px 0; }
+.cir-kir-op { color: var(--lab-dim); font: 700 .95rem var(--mono); }
+.cir-kir-righe var { color: var(--qc); font: italic 700 1rem var(--serif); padding-right: 10px; }
+.cir-kir-val { color: var(--qc); font: 700 1rem var(--mono); text-align: right; white-space: nowrap; }
+.cir-kir-tag { min-width: 3.6em; padding-left: 8px; font-size: .72rem; color: var(--lab-dim); }
+.cir-kir-riga.zero var, .cir-kir-riga.zero .cir-kir-val { color: var(--lab-dim); }
+.cir-kir-linea { grid-column: 1 / -1; height: 1px; margin: 4px 0 3px; background: #2c403a; }
+
+/* comandi */
+.cir-scelta small { display: block; margin-top: 1px; font-size: .72rem; font-weight: 600; opacity: .8; }
+.cir-azioni { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
+.cir-aiuto { margin: 0; font-size: .84rem; color: var(--lab-dim); max-width: 30ch; }
+
+@media (max-width: 900px) {
+  .cir-pannello .cir-kir { grid-column: 1 / -1; }
+}
+
+/* Sul telefono il disegno si rimpicciolisce: le scritte crescono per restare leggibili. */
+@media (max-width: 600px) {
+  .cir-val { font-size: 17px; }
+  .cir-pila-v { font-size: 17px; }
+  .cir-nome, .cir-pila-t, .cir-nodo-t { font-size: 15px; }
+  .cir-cap { font-size: 16px; }
+  .cir-segno { font-size: 19px; }
+}

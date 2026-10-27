@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dall'elettronica a oggi · Enciclopedia</title>
+  <meta name="description" content="Enciclopedia interattiva in otto sezioni: dalla carica elettrica ai transistor, dai chip ai personal computer e al software, con testi, immagini e laboratori animati.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230b1210'/%3E%3Cellipse cx='16' cy='16' rx='12' ry='5' fill='none' stroke='%23f2994a' stroke-width='2.2' transform='rotate(-30 16 16)'/%3E%3Cellipse cx='16' cy='16' rx='12' ry='5' fill='none' stroke='%23f2994a' stroke-width='2.2' transform='rotate(30 16 16)'/%3E%3Ccircle cx='16' cy='16' r='3' fill='%23ffc04d'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="enciclopedia.css">
+</head>
+<body class="enc">
+  <a class="skip" href="#main">Vai al contenuto</a>
+  <header class="topbar">
+    <a class="brand" href="index.html" aria-label="Enciclopedia, torna all'elenco delle sezioni">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7"/><ellipse class="orbit" cx="16" cy="16" rx="12" ry="5" transform="rotate(-30 16 16)"/><ellipse class="orbit" cx="16" cy="16" rx="12" ry="5" transform="rotate(30 16 16)"/><circle class="nucleo" cx="16" cy="16" r="3"/></svg>
+      <span>Enciclopedia</span>
+    </a>
+    <nav class="topnav" aria-label="Sito">
+      <a href="index.html" aria-current="page">Sezioni</a>
+      <a href="../index.html">BusLab</a>
+    </nav>
+    <div class="progress" id="percorso" hidden>
+      <span id="percorso-testo"></span>
+      <span class="progress-track"><span id="progress-bar"></span></span>
+    </div>
+  </header>
+
+  <main id="main" tabindex="-1">
+    <section class="enc-hero" aria-labelledby="titolo">
+      <div>
+        <p class="eyebrow">Enciclopedia interattiva</p>
+        <h1 id="titolo">Dall'elettronica a oggi</h1>
+        <p class="lead">Come siamo passati da una scintilla sull'ambra al computer che hai in tasca. Otto sezioni con testi, immagini e laboratori animati: muovi i cursori, accendi i circuiti, guarda la corrente scorrere.</p>
+        <div class="enc-hero-actions">
+          <a class="btn primary" href="elettronica-base/index.html">Comincia dalla sezione 1</a>
+          <a class="btn" href="#sezioni-titolo">Tutte le sezioni</a>
+        </div>
+      </div>
+      <div class="evo-wrap">
+        <div class="evo-filo" aria-hidden="true"><span class="evo-impulso"></span></div>
+        <ol class="evo" id="evo" aria-label="Il percorso dell'enciclopedia in otto tappe"></ol>
+      </div>
+    </section>
+
+    <section class="enc-sezioni" aria-labelledby="sezioni-titolo">
+      <h2 id="sezioni-titolo">Le sezioni</h2>
+      <ol class="enc-grid" id="sezioni" aria-busy="true"></ol>
+    </section>
+
+    <section class="enc-extra" aria-labelledby="extra-titolo">
+      <h2 id="extra-titolo">Laboratorio extra</h2>
+      <a class="enc-buslab" href="../index.html">
+        <svg viewBox="0 0 32 32" aria-hidden="true"><rect x="1" y="1" width="30" height="30" rx="7"/><path d="M4 22h6V10h6v12h6V10h6"/></svg>
+        <span><strong>BusLab: come parlano i circuiti</strong>31 bus e protocolli, da UART a PCI Express, con i bit che viaggiano sui fili e l'analizzatore logico.</span>
+        <span class="vai">Apri BusLab →</span>
+      </a>
+    </section>
+  </main>
+
+  <footer class="foot">
+    Enciclopedia "Dall'elettronica a oggi" · progetto di formazione. Ogni sezione è una pagina autonoma: funziona anche aprendo i file dal disco.
+  </footer>
+
+  <script src="enciclopedia.js"></script>
+  <script src="hub.js"></script>
+</body>
+</html>

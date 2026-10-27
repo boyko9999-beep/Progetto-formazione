@@ -1,0 +1,69 @@
+/* Capitolo 7 · figura dell'anello di Faraday (29 agosto 1831). */
+
+.fig-magnetismo-filo { fill: none; stroke: var(--rame); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.fig-magnetismo-sopra { stroke-width: 2; opacity: .9; }
+.fig-magnetismo-pila rect { fill: color-mix(in srgb, var(--rame) 16%, var(--surface)); stroke: color-mix(in srgb, var(--muted) 65%, transparent); stroke-width: 1.6; }
+.fig-magnetismo-piastre path { fill: none; stroke-width: 2.6; stroke-linecap: round; }
+.fig-magnetismo-cu { stroke: var(--rame); }
+.fig-magnetismo-zn { stroke: var(--zinco); }
+.fig-magnetismo-morsetto { fill: var(--muted); }
+.fig-magnetismo-perno { fill: var(--ink); }
+.fig-magnetismo-tasto { fill: none; stroke: var(--ink); stroke-width: 3; stroke-linecap: round; }
+
+/* ferro dolce: sfumatura radiale per dare volume all'anello */
+.fig-magnetismo-anello { fill: url(#fig-magnetismo-ferro); stroke: color-mix(in srgb, #4b555e 70%, transparent); stroke-width: 1; }
+.fig-magnetismo-ombra { stop-color: #5b656e; }
+.fig-magnetismo-luce { stop-color: #a4aeb6; }
+
+/* bobine isolate con cotone e spire di rame */
+.fig-magnetismo-fascia { fill: color-mix(in srgb, #dccaa6 80%, transparent); stroke: color-mix(in srgb, var(--rame) 55%, transparent); stroke-width: 1; }
+.fig-magnetismo-spire { fill: none; stroke: var(--rame); stroke-width: 2.3; stroke-linecap: round; }
+
+/* flusso nel ferro */
+.fig-magnetismo-linea { fill: none; stroke: #3ccf74; stroke-width: 2.4; stroke-dasharray: 7 5; stroke-linecap: round; }
+.fig-magnetismo-freccia { fill: none; stroke: #3ccf74; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.fig-magnetismo-tb { fill: var(--q-b); }
+
+/* galvanometro: bussola vista dall'alto */
+.fig-magnetismo-cassa { fill: color-mix(in srgb, var(--rame) 22%, var(--surface)); stroke: color-mix(in srgb, var(--muted) 60%, transparent); stroke-width: 1.6; }
+.fig-magnetismo-quadrante { fill: var(--surface); stroke: var(--line); stroke-width: 1; }
+.fig-magnetismo-tacche { fill: none; stroke: var(--muted); stroke-width: 1.2; stroke-linecap: round; }
+.fig-magnetismo-nord { fill: #d0312d; }
+.fig-magnetismo-sud { fill: var(--muted); }
+
+.fig-magnetismo-t { fill: var(--muted); font: 600 11px var(--font); }
+.fig-magnetismo-segno { font-size: 13px; }
+.fig-magnetismo-lettera { fill: var(--ink); font-size: 13px; }
+
+/*
+ * Un ciclo di 6 s: il contatto chiude il circuito di A, il flusso nasce nel ferro e l'ago scatta;
+ * finché il flusso resta costante l'ago torna a zero; all'apertura il flusso sparisce e l'ago scatta al contrario.
+ * Senza animazioni resta l'istante della chiusura: contatto chiuso, flusso presente, ago deviato.
+ */
+.fig-magnetismo-tasto { transform-origin: 64px 50px; animation: fig-magnetismo-tasto 6s ease-in-out infinite; }
+@keyframes fig-magnetismo-tasto {
+  0%, 6% { transform: rotate(-30deg); }
+  10%, 52% { transform: rotate(0deg); }
+  56%, 100% { transform: rotate(-30deg); }
+}
+.fig-magnetismo-flusso { animation: fig-magnetismo-flusso 6s ease-in-out infinite; }
+@keyframes fig-magnetismo-flusso {
+  0%, 9% { opacity: 0; stroke-dashoffset: 0; }
+  16%, 54% { opacity: 1; stroke-dashoffset: -24; }
+  61%, 100% { opacity: 0; stroke-dashoffset: -48; }
+}
+.fig-magnetismo-ago { transform-origin: 310px 110px; transform: rotate(-26deg); animation: fig-magnetismo-ago 6s ease-in-out infinite; }
+@keyframes fig-magnetismo-ago {
+  0%, 10% { transform: rotate(0deg); }
+  15% { transform: rotate(-32deg); }
+  20% { transform: rotate(11deg); }
+  25% { transform: rotate(-4deg); }
+  30%, 56% { transform: rotate(0deg); }
+  61% { transform: rotate(32deg); }
+  66% { transform: rotate(-11deg); }
+  71% { transform: rotate(4deg); }
+  76%, 100% { transform: rotate(0deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fig-magnetismo-tasto, .fig-magnetismo-flusso, .fig-magnetismo-ago { animation: none; }
+}

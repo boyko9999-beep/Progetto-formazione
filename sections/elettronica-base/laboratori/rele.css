@@ -1,0 +1,145 @@
+/* Capitolo 8 · laboratorio "Il relè e il telegrafo". */
+
+.rel-circuito { position: relative; }
+.rel-circuito svg { display: block; width: 100%; height: auto; }
+
+/* fili, pile, pali e terra */
+.rel-filo { fill: none; stroke: #263832; stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; }
+.rel-filo-rame { fill: none; stroke: var(--rame); stroke-width: 1.6; opacity: .5; stroke-linecap: round; stroke-linejoin: round; }
+.rel-corrente { fill: none; stroke: var(--lab-i); stroke-width: 3; stroke-linecap: butt; stroke-linejoin: round; filter: drop-shadow(0 0 4px var(--lab-i)); }
+.rel-terra { fill: none; stroke: #6f8a80; stroke-width: 2; stroke-linecap: round; }
+.rel-terra-tratto { fill: none; stroke: #2c3f39; stroke-width: 2; stroke-dasharray: 2 7; stroke-linecap: round; }
+.rel-palo { fill: #3b3026; }
+.rel-isolatore { fill: #8fb9ae; }
+.rel-pila { fill: #141f1c; stroke: #3a4f48; stroke-width: 2; }
+.rel-pila-livello { fill: var(--lab-v); opacity: .85; }
+.rel-pila-polo { fill: #9aa8a2; }
+.rel-pila-testo { fill: #160f00; font: 800 13px var(--mono); }
+.rel-segno { font: 800 15px var(--mono); }
+.rel-segno.pos { fill: var(--lab-pos); }
+.rel-segno.neg { fill: var(--lab-neg); }
+
+/* tasto */
+.rel-legno { fill: #4a3627; stroke: #6b4f39; stroke-width: 1.2; }
+.rel-legno-luce { stroke: #8a6a4c; stroke-width: 1; opacity: .55; }
+.rel-ottone { fill: #b48f3c; }
+.rel-argento { fill: #d3dcdf; }
+.rel-metallo { fill: #6f7c79; }
+.rel-rame-striscia { fill: var(--rame); }
+.rel-vite { fill: #9aa8a2; }
+.rel-perno { fill: #cfd8d4; }
+.rel-pomello { fill: #17110d; stroke: #4a3b30; stroke-width: 1.5; }
+.rel-pomello-luce { fill: #fff; opacity: .22; }
+.rel-molla { fill: none; stroke: #a8b5b0; stroke-width: 1.5; stroke-linejoin: round; }
+.rel-invito { fill: none; stroke: var(--lab-v); stroke-width: 2; opacity: .5; transform-box: fill-box; transform-origin: center; transition: opacity .4s ease; }
+.rel-invito.attivo { animation: rel-invito 1.9s var(--ease-out) infinite; }
+.rel-invito.spento { opacity: 0; animation: none; }
+@keyframes rel-invito {
+  from { transform: scale(.75); opacity: .75; }
+  to { transform: scale(1.3); opacity: 0; }
+}
+
+.rel-tasto-btn {
+  position: absolute; left: 9.2%; top: 52%; width: 19.6%; height: 31%;
+  margin: 0; padding: 0; border: 0; border-radius: 14px; background: transparent; cursor: pointer;
+  touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent;
+}
+.rel-tasto-btn:hover { background: color-mix(in srgb, var(--lab-strong) 5%, transparent); }
+.rel-tasto-btn:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.rel-tasto-btn[aria-pressed="true"] { background: color-mix(in srgb, var(--lab-i) 7%, transparent); }
+
+/* relè */
+.rel-basetta { fill: #3b2c20; stroke: #5a4330; stroke-width: 1.2; }
+.rel-ferro { fill: #4f5a62; stroke: #67747d; stroke-width: 1; }
+.rel-ferro-polo { fill: #8a969e; }
+.rel-flangia { fill: #2e241d; stroke: #4d3d31; stroke-width: 1; }
+.rel-bobina { fill: color-mix(in srgb, var(--rame) 62%, #120a04); }
+.rel-spire { fill: none; stroke: #e7a065; stroke-width: 1.3; opacity: .55; transition: stroke .15s ease, opacity .15s ease; }
+.rel-spire.on { stroke: var(--lab-i); opacity: 1; filter: drop-shadow(0 0 3px var(--lab-i)); }
+.rel-ancora { fill: #66737b; stroke: #8f9ba2; stroke-width: 1; }
+.rel-ancora-luce { stroke: #c2ccd1; stroke-width: 1; opacity: .45; }
+.rel-campo { fill: none; stroke: var(--lab-b); stroke-width: 1.6; stroke-dasharray: 5 5; stroke-linecap: round; }
+.rel-campo-g.on .rel-campo { animation: rel-flusso .9s linear infinite; }
+.rel-campo-frecce path { fill: none; stroke: var(--lab-b); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.rel-polo { fill: var(--lab-b); font: 800 12px var(--mono); }
+@keyframes rel-flusso { to { stroke-dashoffset: -20; } }
+
+/* lampada */
+.rel-alone-c { stop-color: var(--lab-luce); stop-opacity: .75; }
+.rel-alone-b { stop-color: var(--lab-luce); stop-opacity: 0; }
+.rel-vetro { fill: color-mix(in srgb, var(--lab-luce) 7%, transparent); stroke: #6f8a80; stroke-width: 1.5; }
+.rel-sostegno { fill: none; stroke: #8d9a95; stroke-width: 1; }
+.rel-filamento { fill: none; stroke: #6c5a44; stroke-width: 1.5; stroke-linejoin: round; }
+.rel-filamento.acceso { stroke: var(--lab-luce); stroke-width: 2; filter: drop-shadow(0 0 4px var(--lab-luce)); }
+.rel-attacco { fill: #87938f; }
+.rel-attacco-righe { fill: none; stroke: #55625d; stroke-width: 1.2; }
+
+/* etichette */
+.rel-t { fill: var(--lab-dim); font: 600 12px var(--font); }
+.rel-t-parte { fill: #8fa79e; }
+.rel-t-nota { font-style: italic; }
+
+/* striscia di carta */
+.rel-nastro { margin-top: 2px; }
+.rel-nastro-testa { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0 0 6px; }
+.rel-nastro-testa p, .rel-tabella-t { margin: 0; font: 700 .7rem var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--lab-dim); }
+.rel-nastro-testa .eb-btn { min-height: 32px; padding: 4px 11px; font-size: .8rem; }
+.rel-nastro-svg { display: block; width: 100%; height: auto; }
+.rel-carta { fill: #e3d8bd; }
+.rel-carta-orlo { fill: none; stroke: #c4b590; stroke-width: 1; }
+.rel-marchio { fill: #27304a; }
+.rel-nastro-vuoto { fill: #7a6d52; font: italic 600 13px var(--font); }
+.rel-lettera { fill: var(--lab-strong); font: 700 16px var(--mono); text-anchor: middle; }
+.rel-graffa { fill: none; stroke: var(--lab-dim); stroke-width: 1.2; }
+.rel-rotolo { fill: #cbbf9f; stroke: #a7976f; stroke-width: 1; }
+.rel-rotolo-giro { fill: none; stroke: #b3a47f; stroke-width: 1; }
+.rel-rotolo-raggi { fill: none; stroke: #6d6148; stroke-width: 2; stroke-linecap: round; }
+.rel-rotolo-mozzo { fill: #6d6148; }
+.rel-stilo-leva { fill: none; stroke: #b48f3c; stroke-width: 4; stroke-linecap: round; }
+.rel-stilo { fill: #d3dcdf; }
+.rel-sfuma-a { stop-color: var(--lab-bg); stop-opacity: 1; }
+.rel-sfuma-b { stop-color: var(--lab-bg); stop-opacity: 0; }
+
+/* alfabeto */
+.rel-tabella { margin-top: 10px; padding: 12px 12px 10px; border: 1px solid var(--lab-line); border-radius: 12px; background: #0d1714; }
+.rel-tabella[hidden] { display: none; }
+.rel-tabella-t { margin-bottom: 8px; }
+.rel-celle { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 4px; }
+.rel-celle li { display: flex; align-items: center; gap: 10px; padding: 4px 8px; border-radius: 7px; border: 1px solid transparent; font: 700 .95rem var(--mono); color: var(--lab-text); transition: background .2s ease, border-color .2s ease; }
+.rel-celle b { min-width: 1.1ch; color: var(--lab-strong); }
+.rel-codice { display: inline-flex; align-items: center; gap: 4px; color: #d9cfb6; }
+.rel-codice i { display: block; height: 6px; border-radius: 3px; background: currentColor; }
+.rel-codice .rel-p { width: 6px; }
+.rel-codice .rel-l { width: 17px; }
+.rel-celle li.rel-possibile { background: #13211d; border-color: var(--lab-line); }
+.rel-celle li.rel-esatta { background: color-mix(in srgb, var(--lab-v) 16%, transparent); border-color: color-mix(in srgb, var(--lab-v) 60%, transparent); }
+.rel-celle li.rel-esatta b, .rel-celle li.rel-ultima b { color: var(--lab-v); }
+.rel-celle li.rel-ultima { border-color: var(--lab-line); }
+.rel-tabella-n { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin: 8px 0 0; font-size: .82rem; color: var(--lab-dim); }
+
+/* comandi e letture */
+.eb-lab-comandi.rel-comandi { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr) minmax(0, 1.15fr); align-items: center; }
+.rel-gruppo { display: grid; gap: 6px; min-width: 0; }
+.rel-gruppo-t { margin: 0; font-size: .86rem; font-weight: 600; color: var(--lab-text); }
+.rel-bottoni, .rel-opzioni { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.eb-lettura.rel-debole .eb-lettura-n { color: var(--lab-f); }
+
+@media (max-width: 1100px) {
+  .eb-lab-comandi.rel-comandi { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .rel-opzioni { grid-column: 1 / -1; }
+}
+
+@media (max-width: 640px) {
+  .eb-lab-comandi.rel-comandi { grid-template-columns: minmax(0, 1fr); }
+  .rel-t { font-size: 20px; }
+  .rel-t-parte { display: none; }
+  .rel-t-nota { font-size: 18px; }
+  .rel-pila-testo { font-size: 17px; }
+  .rel-segno { font-size: 20px; }
+  .rel-polo { font-size: 18px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rel-invito, .rel-invito.attivo, .rel-campo-g.on .rel-campo { animation: none; }
+  .rel-invito, .rel-spire, .rel-celle li { transition: none; }
+}

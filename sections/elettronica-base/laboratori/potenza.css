@@ -1,0 +1,109 @@
+/* Capitolo 4 · laboratorio "Il filamento". */
+
+.pot-scena { position: relative; }
+.pot-scena svg { display: block; width: 100%; height: auto; }
+
+/* circuito */
+.pot-percorso { fill: none; stroke: none; }
+.pot-filo { fill: none; stroke: #2a3b35; stroke-width: 7; stroke-linecap: round; stroke-linejoin: round; }
+.pot-filo-rame { fill: none; stroke: var(--rame); stroke-width: 2; opacity: .55; stroke-linecap: round; stroke-linejoin: round; }
+.pot-elettrone circle { fill: var(--lab-neg); }
+.pot-elettrone text { fill: #04121a; font: 800 7px var(--mono); }
+.pot-freccia { fill: var(--lab-neg); opacity: .85; }
+
+/* alimentatore */
+.pot-alim { fill: #141f1c; stroke: #3a4f48; stroke-width: 2; }
+.pot-display { fill: #050b09; stroke: #243630; stroke-width: 1.5; }
+.pot-display-v { fill: var(--lab-v); font: 700 13.5px var(--mono); filter: drop-shadow(0 0 5px rgb(255 192 77 / 55%)); }
+.pot-display-i { fill: var(--lab-i); font: 700 10.5px var(--mono); }
+.pot-manopola { fill: #1c2925; stroke: #4c625a; stroke-width: 2; }
+.pot-manopola-segno { stroke: var(--lab-v); stroke-width: 3; stroke-linecap: round; }
+.pot-tacca { stroke: #4f655d; stroke-width: 1.5; stroke-linecap: round; }
+.pot-morsetto { stroke-width: 2.5; }
+.pot-morsetto.pos { fill: #3a1714; stroke: var(--lab-pos); }
+.pot-morsetto.neg { fill: #0b2430; stroke: var(--lab-neg); }
+.pot-segno { font: 800 13px var(--mono); }
+.pot-segno.pos { fill: var(--lab-pos); }
+.pot-segno.neg { fill: var(--lab-neg); }
+
+/* fusibile: il colore del filo lo decide la sua temperatura */
+.pot-fus-vetro { fill: #0e1b18; stroke: rgb(190 225 235 / 45%); stroke-width: 1.1; }
+.pot-fus-riflesso { fill: none; stroke: rgb(255 255 255 / 30%); stroke-width: 1.4; stroke-linecap: round; }
+.pot-fus-filo { fill: none; stroke-width: 1.6; stroke-linecap: round; }
+.pot-fus-pezzo { stroke: #a9b2ae; }
+.pot-fus-bagliore { fill: none; stroke-width: 5; stroke-linecap: round; filter: blur(2px); }
+.pot-fus-goccia { fill: #c9b9a4; }
+.pot-favilla { fill: #ffd27a; }
+.pot-fuso { fill: var(--lab-f); font-weight: 800; }
+
+/* lampadina */
+.pot-vetro { fill: rgb(205 228 235 / 4%); stroke: rgb(205 228 235 / 48%); stroke-width: 1.8; stroke-linejoin: round; }
+.pot-riflesso { fill: none; stroke: rgb(255 255 255 / 34%); stroke-width: 3.2; stroke-linecap: round; }
+.pot-stelo { fill: rgb(205 228 235 / 10%); stroke: rgb(205 228 235 / 32%); stroke-width: 1; }
+.pot-reoforo { fill: none; stroke: #8b9893; stroke-width: 1.3; stroke-linejoin: round; }
+.pot-fil { fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.pot-fil-alone { fill: none; stroke-width: 8; stroke-linecap: round; filter: blur(3px); }
+.pot-filetto { stroke: rgb(0 0 0 / 32%); stroke-width: 1.4; }
+.pot-isolante { fill: #1a201e; }
+.pot-puntale { fill: #b8c1bd; }
+
+.pot-etichetta { fill: var(--lab-dim); font: 600 9.5px var(--font); }
+.pot-etichetta.piccola { font-size: 9px; }
+.pot-dato { fill: var(--lab-text); font: 700 9.5px var(--mono); }
+.pot-dato.i { fill: var(--lab-i); }
+.pot-dato.r { fill: var(--lab-r); }
+
+/* comandi */
+.pot-fila, .pot-calc { grid-column: 1 / -1; }
+.pot-fila { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 14px 30px; align-items: end; }
+.pot-fusibile { --lab-accent: var(--lab-i); display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px 12px; }
+.pot-fusibile .eb-scelta { display: grid; grid-template-columns: repeat(4, auto); justify-content: start; }
+.pot-fusibile legend { grid-column: 1 / -1; }
+.pot-fusibile .eb-btn { white-space: nowrap; }
+.pot-formula { grid-column: 1 / -1; }
+
+/* calcolatore dei consumi */
+.pot-calc {
+  --lab-accent: var(--lab-p);
+  display: grid; gap: 14px; margin-top: 4px; padding: 16px 16px 18px;
+  border: 1px solid var(--lab-line); border-radius: 14px;
+  background: radial-gradient(90% 120% at 100% 0%, rgb(255 159 67 / 7%), transparent 60%), #0d1714;
+}
+.pot-calc-testa { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
+.pot-calc-kicker { margin: 0; font: 700 .7rem var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--lab-p); }
+.pot-calc h3 { margin: 0; font: 700 1.1rem var(--serif); color: var(--lab-strong); }
+.pot-calc-corpo { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 18px 28px; align-items: start; }
+.pot-calc-corpo > .pot-apparecchi { grid-column: 1 / -1; }
+.pot-calc-comandi { display: grid; gap: 14px; min-width: 0; }
+.pot-calc-esito { display: grid; gap: 10px; align-content: start; min-width: 0; }
+.pot-calc-letture { display: grid; grid-template-columns: repeat(auto-fit, minmax(118px, 1fr)); gap: 8px; }
+.pot-prezzo { --qc: #c4d3cd; }
+
+.pot-apparecchi { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+.pot-apparecchi legend { grid-column: 1 / -1; }
+.pot-apparecchi label { display: grid; }
+.pot-apparecchi label > span { display: grid; align-content: center; gap: 2px; padding: 8px 11px; line-height: 1.25; }
+.pot-app-w { font: 700 .8rem var(--mono); color: var(--lab-p); }
+.pot-apparecchi input:checked + span .pot-app-w { color: inherit; opacity: .72; }
+
+@media (max-width: 900px) {
+  .pot-fila, .pot-calc-corpo { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 760px) {
+  .pot-apparecchi { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+/* sul telefono la scena si rimpicciolisce: le scritte crescono per restare leggibili */
+@media (max-width: 640px) {
+  .pot-etichetta, .pot-dato { font-size: 14px; }
+  .pot-etichetta.piccola { font-size: 13px; }
+  .pot-display-v { font-size: 18px; }
+  .pot-display-i { font-size: 14px; }
+  .pot-segno { font-size: 16px; }
+  .pot-calc { padding: 14px 12px 16px; }
+  .pot-apparecchi { grid-template-columns: minmax(0, 1fr); }
+  .pot-apparecchi label > span { grid-auto-flow: column; justify-content: space-between; align-items: baseline; }
+  .pot-calc-letture { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+  .pot-calc-letture .eb-lettura { grid-template-columns: minmax(0, 1fr) auto; align-items: center; column-gap: 12px; }
+  .pot-calc-letture .eb-lettura-v { grid-column: 2; grid-row: 1 / span 2; }
+  .pot-calc-letture .eb-lettura-n { grid-column: 1; grid-row: 2; }
+}

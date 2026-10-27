@@ -1,0 +1,25 @@
+/* Capitolo 3 · figura dell'esperimento di Ohm. */
+
+.fig-ohm-vetro path { fill: none; stroke: color-mix(in srgb, var(--muted) 70%, transparent); stroke-width: 2.2; stroke-linecap: round; }
+.fig-ohm-acqua-calda { fill: color-mix(in srgb, #ff9f43 22%, transparent); }
+.fig-ohm-acqua-fredda { fill: color-mix(in srgb, #5cc8ff 22%, transparent); }
+.fig-ohm-ghiaccio rect { fill: color-mix(in srgb, #ffffff 70%, #5cc8ff); stroke: color-mix(in srgb, #5cc8ff 60%, transparent); stroke-width: 1.2; }
+.fig-ohm-vapore path { fill: none; stroke: color-mix(in srgb, var(--muted) 55%, transparent); stroke-width: 2; stroke-linecap: round; stroke-dasharray: 6 26; animation: fig-ohm-vapore 2.8s linear infinite; }
+.fig-ohm-vapore path:nth-child(2) { animation-delay: -.9s; }
+.fig-ohm-vapore path:nth-child(3) { animation-delay: -1.8s; }
+@keyframes fig-ohm-vapore { to { stroke-dashoffset: 32; } }
+.fig-ohm-fiamma path { fill: #ff9f43; transform-origin: 65px 232px; animation: fig-ohm-fiamma .9s ease-in-out infinite alternate; }
+@keyframes fig-ohm-fiamma { to { transform: scaleY(.82) scaleX(1.06); } }
+.fig-ohm-bismuto { fill: none; stroke: #7d8790; stroke-width: 7; stroke-linejoin: round; }
+.fig-ohm-rame { fill: none; stroke: var(--rame); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.fig-ohm-giunzione { fill: var(--ink); }
+.fig-ohm-cilindro { fill: color-mix(in srgb, var(--surface) 70%, transparent); stroke: color-mix(in srgb, var(--muted) 60%, transparent); stroke-width: 2; }
+.fig-ohm-sospensione { stroke: var(--muted); stroke-width: 1.2; }
+.fig-ohm-scala { fill: none; stroke: var(--muted); stroke-width: 1.5; stroke-dasharray: 2 4; }
+.fig-ohm-ago path { fill: #d0312d; }
+.fig-ohm-ago { transform-origin: 302px 170px; animation: fig-ohm-ago 4s ease-in-out infinite; }
+@keyframes fig-ohm-ago {
+  0%, 100% { transform: scaleX(.55); }
+  50% { transform: scaleX(.95); }
+}
+.fig-ohm-t { fill: var(--muted); font: 600 11px var(--font); }

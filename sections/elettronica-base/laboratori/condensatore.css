@@ -1,0 +1,128 @@
+/* Capitolo 6 · laboratorio "Il condensatore a piatti". */
+
+.con-scena { container-type: inline-size; }
+.con-svg { display: block; width: 100%; height: auto; overflow: hidden; }
+
+/* circuito */
+.con-filo { fill: none; stroke: #2a3b35; stroke-width: 6; stroke-linecap: round; stroke-linejoin: round; }
+.con-filo-rame { fill: none; stroke: var(--rame); stroke-width: 2; opacity: .55; stroke-linecap: round; stroke-linejoin: round; }
+.con-nodo { fill: var(--rame); }
+.con-pila-corpo { fill: #141f1c; stroke: #3a4f48; stroke-width: 2; }
+.con-pila-polo { fill: #9aa8a2; }
+.con-pila-livello { fill: var(--lab-v); opacity: .85; filter: drop-shadow(0 0 6px var(--lab-v)); transform-box: fill-box; transform-origin: 50% 100%; transition: transform .35s var(--ease-out); }
+.con-pila-testo { fill: #160f00; font: 800 14px var(--mono); }
+.con-pila-testo.fuori { fill: var(--lab-v); }
+.con-segno { font: 800 15px var(--mono); }
+.con-segno.pos { fill: var(--lab-pos); }
+.con-segno.neg { fill: var(--lab-neg); }
+
+/* flash */
+.con-flash-corpo { fill: #141f1c; stroke: #3a4f48; stroke-width: 2; }
+.con-flash-vetro { fill: #0a1311; stroke: #2a3b35; stroke-width: 1.5; }
+.con-fresnel { stroke: #c8d6d0; stroke-opacity: .1; stroke-width: 1; }
+.con-flash-tubo { fill: rgb(220 235 230 / 6%); stroke: #8fa39b; stroke-width: 1.5; }
+.con-flash-elettrodo { fill: #9aa8a2; }
+.con-flash-luce { fill: var(--lab-luce); }
+.con-alone { pointer-events: none; }
+.con-alone-a { stop-color: var(--lab-luce); stop-opacity: .95; }
+.con-alone-b { stop-color: var(--lab-luce); stop-opacity: .3; }
+.con-alone-c { stop-color: var(--lab-luce); stop-opacity: 0; }
+
+/* commutatore */
+.con-contatto { fill: #0f1916; stroke: #4c625a; stroke-width: 2; transition: fill .2s ease, stroke .2s ease; }
+.con-contatto.attivo { fill: var(--rame); stroke: var(--lab-strong); }
+.con-leva { stroke: #d8e2de; stroke-width: 5; stroke-linecap: round; }
+.con-perno { fill: #e8f2ee; stroke: #3a4f48; stroke-width: 2; }
+
+/* piatti e cariche */
+.con-piatto-fronte { fill: color-mix(in srgb, var(--zinco) 62%, #0b1210); }
+.con-piatto-sopra { fill: color-mix(in srgb, var(--zinco) 86%, #fff); }
+.con-piatto-lato { fill: color-mix(in srgb, var(--zinco) 36%, #0b1210); }
+.con-cariche circle { stroke: rgb(0 0 0 / 30%); stroke-width: .8; }
+.con-cariche path { fill: none; stroke: #0b1210; stroke-width: 1.6; stroke-linecap: round; }
+.con-cariche.pos circle { fill: var(--lab-pos); }
+.con-cariche.neg circle { fill: var(--lab-neg); }
+.con-cariche.pos { filter: drop-shadow(0 0 4px color-mix(in srgb, var(--lab-pos) 75%, transparent)); }
+.con-cariche.neg { filter: drop-shadow(0 0 4px color-mix(in srgb, var(--lab-neg) 75%, transparent)); }
+
+/* dielettrico, campo, dipoli */
+.con-diel { transition: opacity .45s ease; }
+.con-diel.con-mat-aria { opacity: 0; }
+.con-diel-fronte, .con-diel-lato { stroke-width: 1; transition: fill .45s ease, stroke .45s ease; }
+.con-mat-carta .con-diel-fronte { fill: rgb(232 214 170 / 15%); stroke: rgb(232 214 170 / 42%); }
+.con-mat-carta .con-diel-lato { fill: rgb(232 214 170 / 26%); stroke: none; }
+.con-mat-vetro .con-diel-fronte { fill: rgb(150 225 220 / 11%); stroke: rgb(170 235 230 / 48%); }
+.con-mat-vetro .con-diel-lato { fill: rgb(150 225 220 / 24%); stroke: none; }
+.con-mat-ceramica .con-diel-fronte { fill: rgb(244 230 208 / 19%); stroke: rgb(244 230 208 / 48%); }
+.con-mat-ceramica .con-diel-lato { fill: rgb(244 230 208 / 32%); stroke: none; }
+.con-diel-riflesso { fill: none; stroke: #fff; stroke-opacity: 0; stroke-width: 5; stroke-linecap: round; }
+.con-mat-vetro .con-diel-riflesso { stroke-opacity: .08; }
+.con-linee path { fill: none; stroke: #e8f2ee; stroke-opacity: .62; stroke-width: 1.3; stroke-linecap: round; stroke-linejoin: round; }
+.con-dip-neg { fill: var(--lab-neg); }
+.con-dip-pos { fill: var(--lab-pos); }
+.con-dip-segni { fill: none; stroke: #0b1210; stroke-width: 1.3; stroke-linecap: round; }
+
+/* elettroni in viaggio e scintilla */
+.con-elettrone circle { fill: var(--lab-neg); }
+.con-elettrone path { stroke: #04121a; stroke-width: 1.5; stroke-linecap: round; }
+.con-scintilla { fill: none; stroke: var(--lab-luce); stroke-width: 2.2; stroke-linejoin: round; stroke-linecap: round; filter: drop-shadow(0 0 5px var(--lab-luce)); }
+
+/* quote ed etichette */
+.con-quota { fill: none; stroke: var(--lab-text); stroke-width: 1.2; opacity: .7; }
+.con-et { fill: var(--lab-dim); font: 600 12px var(--font); }
+.con-val { fill: var(--lab-strong); font: 700 12px var(--mono); }
+.con-lampo-t { fill: var(--lab-p); font: 700 12px var(--mono); }
+
+/* piatto superiore trascinabile */
+.con-maniglia { cursor: grab; }
+.con-maniglia.in-presa { cursor: grabbing; }
+.eb-lab .con-svg .con-maniglia:focus-visible { outline: none; }
+.con-presa { fill: transparent; }
+.con-anello { fill: none; stroke: #fff; stroke-width: 1.5; stroke-dasharray: 5 4; opacity: 0; transition: opacity .15s ease; }
+.con-maniglia:hover .con-anello { opacity: .3; }
+.con-maniglia:focus-visible .con-anello { opacity: 1; }
+
+/* legenda sotto la scena */
+.con-legenda { display: flex; flex-wrap: wrap; gap: 6px 18px; margin: 8px 4px 2px; font-size: .8rem; line-height: 1.35; color: var(--lab-dim); }
+.con-leg { display: inline-flex; align-items: center; gap: 7px; }
+.con-leg-q { display: inline-grid; place-items: center; width: 14px; height: 14px; border-radius: 50%; font: 800 11px/1 var(--mono); color: #0b1210; background: var(--lab-pos); }
+.con-leg-q.neg { background: var(--lab-neg); margin-left: -4px; }
+.con-leg-campo { flex: none; width: 10px; height: 16px; background: #cfdcd6; clip-path: polygon(40% 0, 60% 0, 60% 62%, 100% 62%, 50% 100%, 0 62%, 40% 62%); }
+.con-leg-dip { flex: none; width: 18px; height: 8px; border-radius: 4px; background: linear-gradient(90deg, var(--lab-neg) 50%, var(--lab-pos) 50%); }
+
+/* pannello */
+.con-formula { display: grid; gap: 2px; }
+.con-formula .eb-f { font-size: 1.05rem; }
+.con-formula .eb-f-viva { font-size: .95rem; white-space: pre-line; color: var(--lab-text); }
+
+/* comandi: tre cursori, poi materiale e interruttore */
+.con-comandi { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 16px 24px; align-items: end; }
+.con-comandi > .eb-cursore { grid-column: span 2; }
+.con-comandi > .eb-scelta { grid-column: span 3; }
+.con-geom { --qc: var(--lab-t); }
+.con-mat { --lab-accent: var(--lab-q); }
+
+/* testi dell'SVG leggibili anche quando la scena è stretta */
+@container (max-width: 560px) {
+  .con-et, .con-val, .con-lampo-t { font-size: 15px; }
+  .con-pila-testo { font-size: 15px; }
+}
+@container (max-width: 430px) {
+  .con-et, .con-lampo-t { font-size: 17.5px; }
+  .con-val { font-size: 15px; }
+  .con-pila-testo { font-size: 16px; }
+}
+
+@media (max-width: 900px) {
+  .con-formula { grid-column: 1 / -1; }
+  .con-comandi { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .con-comandi > .eb-cursore { grid-column: auto; }
+  .con-comandi > .eb-cursore:nth-child(3), .con-comandi > .eb-scelta { grid-column: 1 / -1; }
+}
+@media (max-width: 560px) {
+  .con-comandi { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .con-pila-livello, .con-diel, .con-diel-fronte, .con-diel-lato, .con-contatto, .con-anello { transition: none; }
+}
