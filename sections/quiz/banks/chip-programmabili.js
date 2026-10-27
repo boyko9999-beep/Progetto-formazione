@@ -11,7 +11,7 @@
     title: 'I primi chip programmabili',
     subtitle: 'Microprocessori, memorie e logica programmabile: architettura e storia',
     chapters: [
-      { id: 'idea', title: 'Cablato o programmabile' },
+      { id: 'idea', title: 'Cablato o programmato' },
       { id: 'memorie', title: 'Le memorie' },
       { id: 'intel-4004', title: 'Intel 4004' },
       { id: 'ciclo', title: 'Fetch, decode, execute' },
@@ -21,7 +21,7 @@
       { id: 'sedici-bit', title: 'Verso i 16 e 32 bit' },
     ],
     questions: [
-      // ------------------------------------------------------------ Cablato o programmabile
+      // ------------------------------------------------------------ Cablato o programmato
       {
         id: 'cp-01', level: 1, topic: 'Logica cablata', chapter: 'idea', type: 'choice',
         q: 'Il circuito in figura è a logica cablata. Che cosa bisogna fare per fargli svolgere una funzione diversa?',
@@ -45,7 +45,7 @@
         why: 'Hoff, con Stan Mazor, propose pochi chip generici: un processore a 4 bit, una ROM con il programma e una RAM per i dati. Le funzioni della calcolatrice diventavano software, più facile da cambiare.',
       },
       {
-        id: 'cp-04', level: 2, topic: 'Cablato e programmabile', chapter: 'idea', type: 'truefalse',
+        id: 'cp-04', level: 2, topic: 'Cablato e programmato', chapter: 'idea', type: 'truefalse',
         q: 'A parità di tecnologia, un processore che esegue un programma è più veloce di un circuito cablato progettato per quel solo compito.',
         answer: false,
         why: 'Di solito è il contrario: il circuito cablato fa solo quel lavoro, mentre il processore deve prelevare e decodificare un\'istruzione dopo l\'altra. Il vantaggio del processore è la flessibilità: basta cambiare il programma.',
