@@ -1,0 +1,392 @@
+/*
+ * Capitolo 4 · Dentro la CPU: prendi, decodifica, esegui.
+ * Illustrazioni del capitolo e laboratorio «Programma una CPU» (js/ciclo.js).
+ * Ogni selettore comincia con #ciclo: nessuna regola esce dal capitolo.
+ */
+
+/* ---------- impaginazione del testo ---------- */
+
+#ciclo .ciclo-intro { align-items: center; }
+#ciclo .ciclo-code, #ciclo .ciclo-jumps { align-items: center; margin-top: 8px; }
+#ciclo .cp-fig .cp-art > svg { margin: 0 auto; }
+#ciclo .ciclo-fig-ring .cp-art > svg { max-width: 470px; }
+#ciclo .ciclo-fig-byte .cp-art > svg { max-width: 470px; }
+#ciclo .ciclo-fig-loop .cp-art > svg { max-width: 400px; }
+#ciclo .cp-people { grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); }
+
+/* colori dei segnali sulla carta: più scuri nel tema chiaro, più luminosi nel tema scuro */
+#ciclo .ciclo-f-addr { fill: color-mix(in srgb, var(--sig-addr) 74%, var(--ink)); }
+#ciclo .ciclo-f-data { fill: color-mix(in srgb, var(--sig-data) 74%, var(--ink)); }
+#ciclo .ciclo-f-ctrl { fill: color-mix(in srgb, var(--sig-ctrl) 74%, var(--ink)); }
+#ciclo .ciclo-f-on { fill: color-mix(in srgb, var(--sig-on) 74%, var(--ink)); }
+#ciclo .ciclo-on-sig { fill: #10171b; }
+
+/* anatomia di un'istruzione */
+#ciclo .ciclo-art-op { fill: color-mix(in srgb, var(--cp) 12%, var(--surface)); stroke: var(--cp); stroke-width: 1.5; }
+#ciclo .ciclo-art-opt { fill: var(--cp-strong); }
+#ciclo .ciclo-art-arg { fill: color-mix(in srgb, var(--ink) 5%, var(--surface)); stroke: color-mix(in srgb, var(--ink) 30%, var(--line)); stroke-width: 1.5; }
+#ciclo .ciclo-art-pill { fill: color-mix(in srgb, var(--ink) 4%, var(--surface)); stroke: var(--line); stroke-width: 1.3; }
+#ciclo .ciclo-art-pill.acc { fill: var(--cp-soft); stroke: var(--cp-edge); }
+
+/* il ciclo fatto con i salti */
+#ciclo .ciclo-art-arrow { fill: var(--muted); }
+#ciclo .ciclo-art-wire { stroke: var(--muted); }
+#ciclo .ciclo-art-loopn { fill: var(--cp-soft); stroke: var(--cp-edge); }
+#ciclo .ciclo-art-cond { fill: color-mix(in srgb, var(--sig-ctrl) 11%, var(--surface)); stroke: color-mix(in srgb, var(--sig-ctrl) 62%, var(--ink)); }
+#ciclo .ciclo-art-no { fill: var(--cp-strong); }
+
+/* il diagramma temporale (sfondo da strumento): versione larga e versione per il telefono */
+#ciclo .ciclo-fig-timing .cp-art { padding: 18px 14px 14px; }
+#ciclo .ciclo-fig-timing .cp-art > svg { max-width: 920px; }
+#ciclo .ciclo-tm-narrow { display: none; }
+#ciclo .ciclo-tm-ph.k-addr { fill: rgba(255, 192, 77, .14); }
+#ciclo .ciclo-tm-ph.k-ctrl { fill: rgba(255, 122, 168, .14); }
+#ciclo .ciclo-tm-ph.k-on { fill: rgba(62, 224, 143, .12); }
+#ciclo .ciclo-tm-pht { font-family: var(--mono); font-size: 11.5px; font-weight: 800; letter-spacing: .12em; }
+#ciclo .ciclo-tm-pht.k-addr { fill: var(--sig-addr); }
+#ciclo .ciclo-tm-pht.k-ctrl { fill: var(--sig-ctrl); }
+#ciclo .ciclo-tm-pht.k-on { fill: var(--sig-on); }
+#ciclo .ciclo-tm-dec { fill: rgba(255, 122, 168, .05); stroke: rgba(255, 122, 168, .28); stroke-dasharray: 3 4; }
+#ciclo .ciclo-tm-grid { stroke: var(--lab-line); stroke-width: 1; stroke-dasharray: 2 4; }
+#ciclo .ciclo-tm-t { fill: var(--lab-ink); font-family: var(--mono); font-size: 13.5px; font-weight: 800; }
+#ciclo .ciclo-tm-l { fill: var(--lab-text); font-family: var(--mono); font-size: 12px; }
+#ciclo .ciclo-tm-k { fill: var(--lab-dim); font-family: var(--mono); font-size: 12.5px; font-weight: 700; }
+#ciclo .ciclo-tm-k.clk { fill: var(--lab-ink); }
+#ciclo .ciclo-tm-k.addr { fill: var(--sig-addr); }
+#ciclo .ciclo-tm-k.data { fill: var(--sig-data); }
+#ciclo .ciclo-tm-k.sig { fill: #ff9fc0; }
+#ciclo .ciclo-tm-clk { fill: none; stroke: var(--lab-ink); stroke-width: 1.6; stroke-linejoin: round; opacity: .85; }
+#ciclo .ciclo-tm-bus { stroke-width: 1.6; stroke-linejoin: round; }
+#ciclo .ciclo-tm-bus.addr { fill: rgba(255, 192, 77, .14); stroke: var(--sig-addr); }
+#ciclo .ciclo-tm-bus.data { fill: rgba(92, 200, 255, .14); stroke: var(--sig-data); }
+#ciclo .ciclo-tm-v { font-family: var(--mono); font-size: 12.5px; font-weight: 800; }
+#ciclo .ciclo-tm-v.addr { fill: var(--sig-addr); }
+#ciclo .ciclo-tm-v.data { fill: var(--sig-data); }
+#ciclo .ciclo-tm-idle, #ciclo .ciclo-tm-base { fill: none; stroke: #33493f; stroke-width: 1.6; }
+#ciclo .ciclo-tm-sig { fill: none; stroke: var(--sig-ctrl); stroke-width: 1.8; stroke-linejoin: round; }
+#ciclo .ciclo-tm-fill { fill: rgba(255, 122, 168, .2); }
+#ciclo .ciclo-tm-note { fill: var(--lab-dim); font-size: 11.5px; font-weight: 600; }
+#ciclo .ciclo-tm-leg { fill: var(--lab-text); font-family: var(--mono); font-size: 12.5px; }
+
+@media (max-width: 640px) {
+  #ciclo .cp-fig .cp-art { padding: 12px; }
+  #ciclo .ciclo-tm-wide { display: none; }
+  #ciclo .ciclo-tm-narrow { display: block; }
+  #ciclo .ciclo-fig-timing .cp-art { padding: 14px 10px 10px; }
+}
+
+/* ---------- laboratorio: barra dei controlli ---------- */
+
+#ciclo .ciclo-bars > .cp-bar:first-child { background: rgba(255, 255, 255, .018); }
+#ciclo .ciclo-progs { gap: 8px; }
+#ciclo .ciclo-bar-k { font: 700 .7rem var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--lab-dim); }
+#ciclo .cp-bar .cp-range output { min-width: 5ch; }
+
+/* ---------- laboratorio: il palco ---------- */
+
+#ciclo .ciclo-stage {
+  background:
+    radial-gradient(90% 70% at 30% 20%, rgba(62, 224, 143, .045), transparent 65%),
+    linear-gradient(rgba(29, 43, 39, .35) 1px, transparent 1px) 0 0 / 100% 24px,
+    linear-gradient(90deg, rgba(29, 43, 39, .35) 1px, transparent 1px) 0 0 / 24px 100%;
+}
+#ciclo .ciclo-svg { display: block; width: 100%; height: auto; user-select: none; -webkit-user-select: none; }
+#ciclo .ciclo-svg text { font-family: var(--font); }
+#ciclo .ciclo-svg .mono { font-family: var(--mono); }
+
+/* bus e collegamenti */
+#ciclo .ciclo-bus { stroke-width: 6; }
+#ciclo .ciclo-link { fill: none; stroke: var(--sig-idle); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; transition: stroke var(--t-fast); }
+#ciclo .ciclo-link.is-lit.k-addr { stroke: var(--sig-addr); }
+#ciclo .ciclo-link.is-lit.k-data { stroke: var(--sig-data); }
+#ciclo .ciclo-link.is-lit.k-op { stroke: var(--sig-ctrl); }
+#ciclo .ciclo-link.is-lit.k-on { stroke: var(--sig-on); }
+#ciclo .ciclo-buslabel { fill: var(--lab-dim); font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+#ciclo .ciclo-route { fill: none; stroke-width: 6; stroke-linecap: round; stroke-linejoin: round; }
+#ciclo .ciclo-route.thin { stroke-width: 3.5; }
+#ciclo .ciclo-route.k-addr { stroke: var(--sig-addr); filter: drop-shadow(0 0 3px rgba(255, 192, 77, .55)); }
+#ciclo .ciclo-route.k-data { stroke: var(--sig-data); filter: drop-shadow(0 0 3px rgba(92, 200, 255, .55)); }
+#ciclo .ciclo-route.k-op { stroke: var(--sig-ctrl); filter: drop-shadow(0 0 3px rgba(255, 122, 168, .5)); }
+
+/* il gettone che viaggia sul bus */
+#ciclo .ciclo-token rect { stroke: rgba(0, 0, 0, .45); stroke-width: 1; }
+#ciclo .ciclo-token text { font-family: var(--mono); font-size: 12px; font-weight: 800; }
+#ciclo .ciclo-token.k-addr rect { fill: var(--sig-addr); }
+#ciclo .ciclo-token.k-addr text { fill: #2a1a00; }
+#ciclo .ciclo-token.k-data rect { fill: var(--sig-data); }
+#ciclo .ciclo-token.k-data text { fill: #022233; }
+#ciclo .ciclo-token.k-op rect { fill: var(--sig-ctrl); }
+#ciclo .ciclo-token.k-op text { fill: #2e0716; }
+#ciclo .is-narrow .ciclo-token text { font-size: 11px; }
+
+/* blocchi */
+#ciclo .ciclo-blk { cursor: pointer; outline: none; }
+#ciclo .ciclo-blk .box { fill: #101a17; stroke: #26392f; stroke-width: 1.5; transition: stroke var(--t-fast), fill var(--t-fast); }
+#ciclo .ciclo-blk .ring { fill: none; stroke: transparent; stroke-width: 2; transition: stroke var(--t-fast), opacity var(--t-fast); }
+#ciclo .ciclo-blk .halo { fill: rgba(238, 246, 242, .07); stroke: var(--lab-ink); stroke-width: 1.5; pointer-events: none; }
+#ciclo .ciclo-blk:hover .box { stroke: #3f5a4f; }
+#ciclo .ciclo-blk:focus-visible .ring { stroke: var(--lab-gold); stroke-width: 2.5; }
+#ciclo .ciclo-blk.is-info .ring { stroke: var(--lab-gold); stroke-dasharray: 5 4; }
+#ciclo .ciclo-blk.is-addr .box { stroke: var(--sig-addr); fill: #19190f; }
+#ciclo .ciclo-blk.is-data .box { stroke: var(--sig-data); fill: #0f1a1e; }
+#ciclo .ciclo-blk.is-op .box { stroke: var(--sig-ctrl); fill: #1c1217; }
+#ciclo .ciclo-blk.is-on .box { stroke: var(--sig-on); fill: #10211a; }
+#ciclo .ciclo-blk.is-addr .halo { stroke: var(--sig-addr); fill: rgba(255, 192, 77, .14); }
+#ciclo .ciclo-blk.is-data .halo { stroke: var(--sig-data); fill: rgba(92, 200, 255, .14); }
+#ciclo .ciclo-blk.is-op .halo { stroke: var(--sig-ctrl); fill: rgba(255, 122, 168, .14); }
+#ciclo .ciclo-blk.is-on .halo { stroke: var(--sig-on); fill: rgba(62, 224, 143, .14); }
+
+#ciclo .ciclo-blk .t { fill: var(--lab-ink); font-size: 14px; font-weight: 750; }
+#ciclo .ciclo-blk .sub { fill: var(--lab-dim); font-size: 10.5px; font-weight: 600; }
+#ciclo .ciclo-blk .val { fill: var(--lab-ink); font-size: 16px; font-weight: 700; letter-spacing: .05em; }
+#ciclo .ciclo-blk .dec { fill: var(--lab-text); font-size: 12px; font-weight: 600; }
+#ciclo .ciclo-blk .nib-op { fill: #ff9fc0; }
+#ciclo .ciclo-blk .nib-arg { fill: var(--lab-ink); }
+#ciclo .ciclo-blk .plus { fill: var(--sig-on); font-size: 13px; font-weight: 800; }
+
+/* etichette dei segnali sui blocchi */
+#ciclo .ciclo-tag rect { fill: rgba(7, 13, 11, .6); stroke: #2b3f38; stroke-width: 1; transition: fill var(--t-fast), stroke var(--t-fast); }
+#ciclo .ciclo-tag text { fill: #64796f; font-family: var(--mono); font-size: 9.5px; font-weight: 800; transition: fill var(--t-fast); }
+#ciclo .ciclo-tag.is-on rect { fill: var(--sig-ctrl); stroke: var(--sig-ctrl); }
+#ciclo .ciclo-tag.is-on text { fill: #2e0716; }
+
+/* RAM */
+#ciclo .ciclo-blk .hdr { fill: var(--lab-dim); font-size: 10px; font-weight: 700; }
+#ciclo .ciclo-blk .cell { cursor: pointer; }
+#ciclo .ciclo-blk .cell > rect:first-child { fill: #0a1411; stroke: #24372f; stroke-width: 1; transition: fill var(--t-fast), stroke var(--t-fast); }
+#ciclo .ciclo-blk .cell text { fill: var(--lab-ink); font-size: 11.5px; font-weight: 700; }
+#ciclo .ciclo-blk .cell:hover > rect:first-child { stroke: #46645a; }
+#ciclo .ciclo-blk .cell .flash { fill: var(--sig-data); pointer-events: none; }
+#ciclo .ciclo-blk .cell .edit { fill: var(--lab-gold); opacity: 0; }
+#ciclo .ciclo-blk .cell.is-edited .edit { opacity: 1; }
+#ciclo .ciclo-blk .cell.is-sel > rect:first-child { stroke: var(--lab-gold); stroke-width: 1.6; }
+#ciclo .ciclo-blk .cell.is-read > rect:first-child { fill: #0f2a33; stroke: var(--sig-data); }
+#ciclo .ciclo-blk .marring { fill: none; stroke: var(--sig-addr); stroke-width: 2; pointer-events: none; }
+
+/* ALU e flag */
+#ciclo .ciclo-blk .opc { fill: rgba(62, 224, 143, .06); stroke: var(--sig-off); stroke-width: 1.5; transition: stroke var(--t-fast), fill var(--t-fast); }
+#ciclo .ciclo-blk.is-on .opc { stroke: var(--sig-on); fill: rgba(62, 224, 143, .16); }
+#ciclo .ciclo-blk .glyph { fill: var(--sig-on); font-size: 18px; font-weight: 800; }
+#ciclo .ciclo-blk .calc { fill: var(--lab-ink); font-size: 12.5px; font-weight: 700; }
+#ciclo .ciclo-blk .led { fill: #0d1d17; stroke: var(--sig-off); stroke-width: 1.5; transition: fill var(--t-fast), stroke var(--t-fast); }
+#ciclo .ciclo-blk .led.is-on { fill: var(--sig-on); stroke: var(--sig-on); }
+#ciclo .ciclo-blk .flag { fill: var(--lab-text); font-size: 12.5px; font-weight: 700; }
+
+/* display a sette segmenti */
+#ciclo .ciclo-blk .panel { fill: #040a08; stroke: #1a2b25; }
+#ciclo .ciclo-blk .seg { fill: rgba(62, 224, 143, .07); transition: fill var(--t-fast); }
+#ciclo .ciclo-blk .seg.is-on { fill: var(--sig-on); }
+
+/* clock */
+#ciclo .ciclo-blk .wave { fill: none; stroke: var(--lab-dim); stroke-width: 1.6; stroke-linejoin: round; }
+#ciclo .ciclo-blk.is-stop .wave { stroke: #ff8a7a; }
+#ciclo .ciclo-blk .led.clk { fill: #0d1d17; }
+#ciclo .ciclo-blk .led.clk.is-on { fill: var(--sig-on); }
+#ciclo .ciclo-blk .freq { fill: var(--lab-ink); font-size: 12px; font-weight: 700; }
+#ciclo .ciclo-blk .state { fill: var(--lab-dim); font-size: 11px; font-weight: 700; }
+#ciclo .ciclo-blk.is-stop .state { fill: #ff8a7a; }
+
+/* unità di controllo: istruzione, micro-passi T1…T6 e parola di controllo */
+#ciclo .ciclo-blk .mnem-box { fill: var(--lab-sunk); stroke: #26392f; stroke-width: 1; }
+#ciclo .ciclo-blk .mnem { fill: var(--lab-ink); font-size: 17px; font-weight: 800; }
+#ciclo .ciclo-blk.is-unknown .mnem { fill: var(--lab-dim); }
+#ciclo .ciclo-blk .tbox rect { fill: var(--lab-sunk); stroke: #22332d; stroke-width: 1; transition: fill var(--t-fast), stroke var(--t-fast); }
+#ciclo .ciclo-blk .tbox .tn { fill: var(--lab-dim); font-size: 10.5px; font-weight: 800; }
+#ciclo .ciclo-blk .tbox .tl { fill: var(--lab-text); font-size: 10.5px; font-weight: 600; }
+#ciclo .ciclo-blk .tbox.is-empty .tl { fill: #4b6158; }
+#ciclo .ciclo-blk .tbox.is-now rect { stroke-width: 2; }
+#ciclo .ciclo-blk .tbox.is-now text { fill: var(--lab-ink); }
+#ciclo .ciclo-blk .tbox.is-now.k-addr rect { stroke: var(--sig-addr); fill: rgba(255, 192, 77, .14); }
+#ciclo .ciclo-blk .tbox.is-now.k-data rect { stroke: var(--sig-data); fill: rgba(92, 200, 255, .14); }
+#ciclo .ciclo-blk .tbox.is-now.k-op rect { stroke: var(--sig-ctrl); fill: rgba(255, 122, 168, .14); }
+#ciclo .ciclo-blk .tbox.is-now.k-on rect { stroke: var(--sig-on); fill: rgba(62, 224, 143, .14); }
+#ciclo .ciclo-blk .cw rect { fill: var(--lab-sunk); stroke: #22332d; stroke-width: 1; transition: fill var(--t-fast), stroke var(--t-fast); }
+#ciclo .ciclo-blk .cw text { fill: #5f756b; font-size: 10px; font-weight: 800; transition: fill var(--t-fast); }
+#ciclo .ciclo-blk .cw.is-on rect { fill: var(--sig-ctrl); stroke: var(--sig-ctrl); }
+#ciclo .ciclo-blk .cw.is-on text { fill: #2e0716; }
+
+/* palco stretto (telefono): testi più grandi, perché il disegno viene rimpicciolito meno */
+#ciclo .is-narrow .ciclo-blk .t { font-size: 13.5px; }
+#ciclo .is-narrow .ciclo-blk .sub { font-size: 11px; }
+#ciclo .is-narrow .ciclo-blk .val { font-size: 15px; letter-spacing: .03em; }
+#ciclo .is-narrow .ciclo-blk .hdr,
+#ciclo .is-narrow .ciclo-blk .cell text,
+#ciclo .is-narrow .ciclo-blk .state,
+#ciclo .is-narrow .ciclo-blk .tbox .tn,
+#ciclo .is-narrow .ciclo-blk .tbox .tl,
+#ciclo .is-narrow .ciclo-blk .cw text,
+#ciclo .is-narrow .ciclo-buslabel { font-size: 11px; }
+#ciclo .is-narrow .ciclo-tag text { font-size: 10.5px; }
+#ciclo .is-narrow .ciclo-blk .mnem { font-size: 14px; }
+#ciclo .is-narrow .ciclo-bus { stroke-width: 5; }
+
+/* ---------- laboratorio: il pannello di spiegazione ---------- */
+
+#ciclo .ciclo-explain { display: grid; align-content: start; gap: 14px; }
+#ciclo .ciclo-explain h4 { font-size: 1.08rem; }
+#ciclo .ciclo-phases { display: flex; gap: 4px; list-style: none; margin: 0 0 12px; padding: 3px; border-radius: 10px; background: var(--lab-sunk); border: 1px solid var(--lab-line); }
+#ciclo .ciclo-phases li {
+  flex: 1 1 0; min-width: 0; text-align: center; padding: 6px 4px; border-radius: 7px;
+  font: 700 .72rem var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--lab-dim);
+  transition: background var(--t-fast), color var(--t-fast);
+}
+#ciclo .ciclo-phases li.is-on { color: #10140f; }
+#ciclo .ciclo-phases li.is-on::before { content: "▸ "; }
+#ciclo .ciclo-phases li.is-on[data-ph="prendi"] { background: var(--sig-addr); }
+#ciclo .ciclo-phases li.is-on[data-ph="decodifica"] { background: var(--sig-ctrl); }
+#ciclo .ciclo-phases li.is-on[data-ph="esegui"] { background: var(--sig-on); }
+#ciclo .ciclo-why b { color: var(--lab-ink); }
+#ciclo .ciclo-sig { font-size: .86rem; line-height: 1.6; }
+#ciclo .ciclo-sig .k, #ciclo .ciclo-outs .k { color: var(--lab-dim); font-weight: 700; }
+#ciclo .ciclo-sig code { color: #2e0716; background: var(--sig-ctrl); font-weight: 800; }
+#ciclo .ciclo-tip { margin: 0; padding: 9px 12px; border-radius: 9px; background: rgba(240, 176, 74, .09); border: 1px solid rgba(240, 176, 74, .35); color: var(--lab-ink); font-size: .9rem; }
+#ciclo .ciclo-val { color: var(--lab-gold); }
+#ciclo .ciclo-recipe-h { margin: 0 0 6px; font: 700 .72rem var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--lab-dim); }
+#ciclo .ciclo-recipe { list-style: none; margin: 0; padding: 0; display: grid; gap: 3px; }
+#ciclo .ciclo-recipe li {
+  display: flex; gap: 8px; align-items: baseline; padding: 3px 8px; border-radius: 6px;
+  border-left: 3px solid var(--lab-line); background: rgba(7, 13, 11, .5);
+  font: .82rem var(--mono); color: var(--lab-text);
+  transition: background var(--t-fast), color var(--t-fast);
+}
+#ciclo .ciclo-recipe li b { color: var(--lab-dim); min-width: 2.2ch; }
+#ciclo .ciclo-recipe li.k-addr { border-left-color: var(--sig-addr); }
+#ciclo .ciclo-recipe li.k-data { border-left-color: var(--sig-data); }
+#ciclo .ciclo-recipe li.k-op { border-left-color: var(--sig-ctrl); }
+#ciclo .ciclo-recipe li.k-on { border-left-color: var(--sig-on); }
+#ciclo .ciclo-recipe li.is-done { color: var(--lab-dim); }
+#ciclo .ciclo-recipe li.is-done::after { content: "✓"; margin-left: auto; color: var(--sig-off); }
+#ciclo .ciclo-recipe li.is-now { background: var(--lab-raise); color: var(--lab-ink); box-shadow: inset 0 0 0 1px #33493f; }
+#ciclo .ciclo-recipe li.is-now b { color: var(--lab-ink); }
+#ciclo .ciclo-recipe li.is-now::after { content: "◀ ora"; margin-left: auto; color: var(--lab-gold); font-size: .72rem; }
+#ciclo .ciclo-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin: 12px 0 0; }
+#ciclo .ciclo-stats > div { padding: 6px 9px; border-radius: 8px; background: var(--lab-sunk); border: 1px solid var(--lab-line); min-width: 0; }
+#ciclo .ciclo-stats dt { font-size: .64rem; text-transform: uppercase; letter-spacing: .08em; color: var(--lab-dim); font-weight: 700; line-height: 1.25; }
+#ciclo .ciclo-stats dd { margin: 2px 0 0; font: 700 1.02rem var(--mono); color: var(--lab-ink); font-variant-numeric: tabular-nums; }
+#ciclo .ciclo-outs { margin: 10px 0 0; font-size: .86rem; overflow-wrap: anywhere; }
+#ciclo .ciclo-outs .mono { font-family: var(--mono); color: var(--lab-ink); font-weight: 700; }
+#ciclo .ciclo-outs .dim { color: var(--lab-dim); }
+
+/* ---------- laboratorio: programma, editor della cella, tabella dei codici ---------- */
+
+#ciclo .ciclo-work { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); border-top: 1px solid var(--lab-line); }
+#ciclo .ciclo-prog { padding: 14px 16px 16px; border-right: 1px solid var(--lab-line); min-width: 0; }
+#ciclo .ciclo-prog-t, #ciclo .ciclo-ed-t { margin: 0 0 2px; color: var(--lab-ink); font-size: 1rem; }
+#ciclo .ciclo-prog-about { margin: 0 0 10px; font-size: .86rem; color: var(--lab-dim); }
+#ciclo .ciclo-ram-head, #ciclo .ciclo-row {
+  display: grid; grid-template-columns: 14px 34px 84px 26px 66px 34px minmax(0, 1fr); gap: 6px; align-items: center;
+}
+#ciclo .ciclo-ram-head { padding: 0 7px 4px; font: 700 .62rem var(--mono); letter-spacing: .04em; text-transform: uppercase; color: var(--lab-dim); }
+#ciclo .ciclo-ram-head span:nth-child(2), #ciclo .ciclo-ram-head span:nth-child(6) { text-align: right; }
+#ciclo .ciclo-ram { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+#ciclo .ciclo-row {
+  width: 100%; min-height: 30px; padding: 3px 6px; border-radius: 7px; cursor: pointer; text-align: left;
+  border: 1px solid transparent; background: transparent; color: var(--lab-text); font: .84rem var(--mono);
+  transition: background var(--t-fast), border-color var(--t-fast);
+}
+#ciclo .ciclo-row:hover { background: var(--lab-raise); }
+#ciclo .ciclo-row[aria-pressed="true"] { border-color: var(--lab-gold); background: rgba(240, 176, 74, .07); }
+#ciclo .ciclo-row.is-cur { background: rgba(62, 224, 143, .08); }
+#ciclo .ciclo-row.is-cur[aria-pressed="true"] { background: rgba(240, 176, 74, .1); }
+#ciclo .ciclo-row .r-pc { color: var(--sig-on); font-size: .72rem; }
+#ciclo .ciclo-row .r-addr { color: var(--lab-dim); text-align: right; }
+#ciclo .ciclo-row.is-mar .r-addr { color: var(--sig-addr); font-weight: 800; }
+#ciclo .ciclo-row .r-bits i { font-style: normal; }
+#ciclo .ciclo-row .r-bits .op { color: #ff9fc0; margin-right: .45ch; }
+#ciclo .ciclo-row .r-bits .arg { color: var(--lab-ink); }
+#ciclo .ciclo-row .r-hex { color: var(--lab-text); }
+#ciclo .ciclo-row .r-asm { color: var(--lab-ink); font-weight: 700; }
+#ciclo .ciclo-row.is-data .r-asm { color: var(--sig-data); font-weight: 600; }
+#ciclo .ciclo-row .r-dec { color: var(--lab-dim); text-align: right; }
+#ciclo .ciclo-row .r-note { font-family: var(--font); font-size: .78rem; color: var(--lab-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#ciclo .ciclo-row.is-edited .r-note { color: var(--lab-gold); font-weight: 700; }
+
+#ciclo .ciclo-side { min-width: 0; display: grid; align-content: start; }
+#ciclo .ciclo-ed { padding: 14px 16px 16px; border-bottom: 1px solid var(--lab-line); }
+#ciclo .ciclo-ed-t { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+#ciclo .ciclo-ed-t b { font-size: 1.05rem; }
+#ciclo .ciclo-badge { font: 700 .66rem var(--mono); letter-spacing: .08em; text-transform: uppercase; color: #241603; background: var(--lab-gold); border-radius: 99px; padding: 2px 8px; }
+#ciclo .ciclo-bits { display: flex; flex-wrap: wrap; gap: 8px 14px; }
+#ciclo .ciclo-nib { display: grid; gap: 4px; }
+#ciclo .ciclo-nib-l { font: 700 .64rem var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--lab-dim); }
+#ciclo .ciclo-nib.op .ciclo-nib-l { color: #ff9fc0; }
+#ciclo .ciclo-nib-b { display: flex; gap: 4px; }
+#ciclo .ciclo-bit {
+  width: 40px; height: 44px; border-radius: 8px; cursor: pointer;
+  border: 1px solid var(--lab-line); background: var(--lab-sunk); color: var(--lab-dim);
+  font: 800 1.1rem var(--mono);
+  transition: background var(--t-fast), color var(--t-fast), border-color var(--t-fast), transform var(--t-instant);
+}
+#ciclo .ciclo-bit:hover { border-color: #46645a; color: var(--lab-ink); }
+#ciclo .ciclo-bit:active { transform: scale(.94); }
+#ciclo .ciclo-nib.op .ciclo-bit[aria-pressed="true"] { background: var(--sig-ctrl); border-color: transparent; color: #2e0716; }
+#ciclo .ciclo-nib.arg .ciclo-bit[aria-pressed="true"] { background: var(--sig-data); border-color: transparent; color: #022233; }
+#ciclo .ciclo-fields { display: flex; flex-wrap: wrap; gap: 10px 12px; margin-top: 12px; align-items: end; }
+#ciclo .ciclo-field { display: grid; gap: 4px; font-size: .78rem; color: var(--lab-dim); font-weight: 700; }
+#ciclo .ciclo-field.grow { flex: 1 1 210px; }
+#ciclo .ciclo-in {
+  min-height: 38px; padding: 0 10px; border-radius: 8px; border: 1px solid var(--lab-line);
+  background: var(--lab-sunk); color: var(--lab-ink); font: 700 1rem var(--mono);
+}
+#ciclo .ciclo-in::placeholder { color: #4f665c; font-weight: 600; }
+#ciclo .ciclo-in:focus { border-color: var(--lab-gold); }
+#ciclo #ciclo-hex { width: 4.6em; text-transform: uppercase; }
+#ciclo .ciclo-asm-row { display: flex; gap: 6px; }
+#ciclo .ciclo-asm-row .ciclo-in { flex: 1 1 auto; min-width: 0; text-transform: uppercase; }
+#ciclo .ciclo-ed-dis { margin: 12px 0 2px; font-size: .88rem; }
+#ciclo .ciclo-ed-dis b { color: var(--lab-ink); }
+#ciclo .ciclo-ed-msg { margin: 0; min-height: 1.4em; font-size: .84rem; }
+#ciclo .ciclo-ed-msg.is-err { color: #ff9b8f; }
+#ciclo .ciclo-ed-msg.is-ok { color: var(--sig-on); }
+#ciclo .ciclo-ed-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+
+#ciclo .ciclo-isa-wrap { padding: 4px 16px 16px; overflow-x: auto; }
+#ciclo .ciclo-isa { width: 100%; min-width: 0; border-collapse: collapse; font-size: .8rem; }
+#ciclo .ciclo-isa thead th { position: static; background: transparent; }
+#ciclo .ciclo-isa tbody tr:hover { background: rgba(255, 255, 255, .025); }
+#ciclo .ciclo-isa caption { caption-side: top; text-align: left; padding: 10px 0 6px; color: var(--lab-ink); font-weight: 750; font-size: .9rem; }
+#ciclo .ciclo-isa caption span { color: var(--lab-dim); font-weight: 500; font-size: .8rem; }
+#ciclo .ciclo-isa th { text-align: left; padding: 4px 6px; border-bottom: 1px solid var(--lab-line); font: 700 .62rem var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--lab-dim); white-space: nowrap; }
+#ciclo .ciclo-isa td { padding: 3px 6px; border-bottom: 1px solid rgba(29, 43, 39, .7); vertical-align: top; line-height: 1.4; transition: background var(--t-fast); }
+#ciclo .ciclo-isa td.mono { font-family: var(--mono); white-space: nowrap; }
+#ciclo .ciclo-isa td.b { color: var(--lab-ink); font-weight: 700; }
+#ciclo .ciclo-isa td.num { text-align: right; }
+#ciclo .ciclo-isa tr.dim td { color: var(--lab-dim); }
+#ciclo .ciclo-isa tr.is-now td { background: rgba(255, 122, 168, .1); color: var(--lab-ink); }
+#ciclo .ciclo-isa tr.is-now td:first-child { box-shadow: inset 3px 0 0 var(--sig-ctrl); }
+
+/* obiettivo in due tappe */
+#ciclo .ciclo-goal { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 8px 10px; }
+#ciclo .ciclo-gs { display: flex; flex-wrap: wrap; gap: 6px; }
+#ciclo .ciclo-g { font: 700 .74rem var(--mono); padding: 3px 9px; border-radius: 99px; border: 1px solid var(--lab-line); color: var(--lab-dim); white-space: nowrap; transition: background var(--t-fast), color var(--t-fast); }
+#ciclo .ciclo-g.is-ok { background: var(--sig-on); border-color: transparent; color: #04150d; }
+#ciclo .ciclo-g.is-ok::after { content: " ✓"; }
+
+/* ---------- schermi medi e stretti ---------- */
+
+@media (max-width: 900px) {
+  #ciclo .ciclo-explain { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; }
+}
+
+@media (max-width: 760px) {
+  #ciclo .ciclo-work { grid-template-columns: minmax(0, 1fr); }
+  #ciclo .ciclo-prog { border-right: 0; border-bottom: 1px solid var(--lab-line); }
+  #ciclo .ciclo-goal { grid-template-columns: auto minmax(0, 1fr); align-items: start; }
+  #ciclo .ciclo-gs { grid-column: 2; }
+}
+
+@media (max-width: 640px) {
+  #ciclo .ciclo-explain { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  #ciclo .ciclo-progs { width: 100%; }
+  #ciclo .ciclo-prog, #ciclo .ciclo-ed { padding: 12px; }
+  #ciclo .ciclo-isa-wrap { padding: 2px 12px 12px; }
+  #ciclo .ciclo-ram-head, #ciclo .ciclo-row { grid-template-columns: 12px 32px 82px 24px minmax(0, 1fr); gap: 6px; }
+  #ciclo .ciclo-ram-head span:nth-child(n+6), #ciclo .ciclo-row .r-dec, #ciclo .ciclo-row .r-note { display: none; }
+  #ciclo .ciclo-row { min-height: 34px; }
+  #ciclo .ciclo-bit { width: 36px; height: 42px; }
+  #ciclo .ciclo-isa td:nth-child(2), #ciclo .ciclo-isa th:nth-child(2) { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #ciclo .ciclo-bit:active { transform: none; }
+}
