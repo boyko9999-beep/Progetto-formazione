@@ -120,7 +120,7 @@
     while (fan < MAXN && solve(0, 0, fan + 1).iin >= IMIN) fan += 1;
     const st = { a: 0, b: 0, n: 3, shown: 3 };
 
-    const art = PL.svg('0 0 540 320', { class: 'f1-art', role: 'img', 'aria-label': 'Schema di una porta NOR RTL: due transistor in parallelo con una resistenza comune verso l\'alimentazione da 3,6 V; ogni ingresso arriva alla base del suo transistor attraverso una resistenza. L\'uscita è collegata agli ingressi di altre porte, da 1 a 12.' });
+    const art = PL.svg('0 0 540 320', { class: 'pl-svg f1-art', role: 'img', 'aria-label': 'Schema di una porta NOR RTL: due transistor in parallelo con una resistenza comune verso l\'alimentazione da 3,6 V; ogni ingresso arriva alla base del suo transistor attraverso una resistenza. L\'uscita è collegata agli ingressi di altre porte, da 1 a 12.' });
     const flows = s('g', { class: 'f1-flows' });
     const fl = flowIn(flows);
 
@@ -137,12 +137,13 @@
     const q2 = npn(270, 175, true);
     const outWires = [wTop, wBar, wC1, wC2, wOut, bus];
 
+    // ogni ingresso è un tasto con il suo bit dentro, come nel laboratorio del 7400
     const term = (x, name) => {
-      const dot = s('circle', { class: 'f1-term', cx: x, cy: 175, r: 6 });
-      const val = s('text', { class: 'f1-bit', x, y: 206, 'text-anchor': 'middle' }, '0');
+      const dot = s('rect', { class: 'f1-term', x: x - 12, y: 163, width: 24, height: 24, rx: 6 });
+      const val = s('text', { class: 'f1-bit', x, y: 180, 'text-anchor': 'middle' }, '0');
       const g = s('g', { class: 'f1-in' },
-        s('rect', { class: 'f1-hit', x: x - 20, y: 142, width: 40, height: 72, rx: 8 }),
-        s('text', { class: 'f1-name', x, y: 160, 'text-anchor': 'middle' }, name), dot, val);
+        s('rect', { class: 'f1-hit', x: x - 20, y: 134, width: 40, height: 60, rx: 8 }),
+        s('text', { class: 'f1-name', x, y: 154, 'text-anchor': 'middle' }, name), dot, val);
       return { g, dot, val };
     };
     const inA = term(40, 'A');
@@ -172,10 +173,10 @@
       draw.junction(200, 118), draw.junction(264, 118), draw.junction(430, 118),
       inA.g, inB.g,
       s('text', { class: 'f1-lbl', x: 212, y: 74 }, 'Rc 640 Ω'),
-      s('text', { class: 'f1-lbl', x: 74, y: 198, 'text-anchor': 'middle' }, 'Rb 450 Ω'),
-      s('text', { class: 'f1-lbl', x: 326, y: 198, 'text-anchor': 'middle' }, 'Rb 450 Ω'),
+      s('text', { class: 'f1-lbl', x: 80, y: 203, 'text-anchor': 'middle' }, 'Rb 450 Ω'),
+      s('text', { class: 'f1-lbl', x: 320, y: 203, 'text-anchor': 'middle' }, 'Rb 450 Ω'),
       s('text', { class: 'f1-cap', x: 350, y: 108, 'text-anchor': 'middle' }, 'uscita'),
-      s('text', { class: 'f1-cap', x: 470, y: 13, 'text-anchor': 'middle' }, 'porte collegate'),
+      s('text', { class: 'f1-cap', x: 536, y: 13, 'text-anchor': 'end' }, 'porte collegate'),
       flows);
 
     const fRc = fl(rc);
@@ -188,8 +189,8 @@
     const fT2 = fl(route('M200 118H264V205'));
     const fE1 = fl(wE1);
     const fE2 = fl(wE2);
-    const fB1 = fl(route('M40 175H120'));
-    const fB2 = fl(route('M360 175H280'));
+    const fB1 = fl(route('M52 175H120'));
+    const fB2 = fl(route('M348 175H280'));
 
     // pannello: voltmetro con le zone e le correnti
     const pct = (v) => (clamp(v, 0, 2) / 2) * 100;
@@ -310,7 +311,7 @@
       return i === G.y ? 'uscita della porta ' + G.n : 'ingresso ' + (i === G.a ? 'A' : 'B') + ' della porta ' + G.n;
     };
 
-    const art = PL.svg('0 0 440 372', { class: 'f2-art', role: 'img', 'aria-label': 'Il chip 7400 visto dall\'alto: un contenitore DIP con 14 piedini, numerati in senso antiorario a partire dalla tacca. Ai piedini d\'ingresso sono collegati degli interruttori, a quelli d\'uscita dei LED.' });
+    const art = PL.svg('0 0 440 372', { class: 'pl-svg f2-art', role: 'img', 'aria-label': 'Il chip 7400 visto dall\'alto: un contenitore DIP con 14 piedini, numerati in senso antiorario a partire dalla tacca. Ai piedini d\'ingresso sono collegati degli interruttori, a quelli d\'uscita dei LED.' });
     const dip = draw.dip({ x: 91, y: 92, pins: 14, pitch: 34, h: 196 });
     const pinX = (i) => dip.pin(i).x;
     const numbers = Array.from(dip.g.querySelectorAll('.pl-t-pin'));
@@ -589,7 +590,7 @@
     function build(type) {
       const N = NETS[type];
       const node = N.node;
-      const art = PL.svg('0 0 360 360', { class: 'f3-art', role: 'img', 'aria-label': 'Schema a transistor di una porta ' + type + ' CMOS: in alto i pMOS collegati all\'alimentazione VDD, in basso gli nMOS collegati a massa, al centro l\'uscita Y che va al carico.' });
+      const art = PL.svg('0 0 360 360', { class: 'pl-svg f3-art', role: 'img', 'aria-label': 'Schema a transistor di una porta ' + type + ' CMOS: in alto i pMOS collegati all\'alimentazione VDD, in basso gli nMOS collegati a massa, al centro l\'uscita Y che va al carico.' });
       const flows = s('g', { class: 'f3-flows' });
       const boxes = {};
       ['p', 'n'].forEach((kind) => {
@@ -654,7 +655,7 @@
     const SPIKE_UP = [0.18, 0.9, 1, 0.78, 0.56, 0.4, 0.28, 0.2, 0.13, 0.08, 0.05, 0.03, 0.015];
     const SPIKE_DOWN = [0.06, 0.16, 0.12, 0.06, 0.03, 0.01];
     const trace = s('polyline', { class: 'f3-trace', points: '' });
-    const scope = PL.svg(`0 0 ${SW} 100`, { class: 'f3-scope', role: 'img', 'aria-label': 'Grafico della corrente presa dall\'alimentazione nel tempo: zero a riposo, un picco a ogni cambio dell\'uscita' });
+    const scope = PL.svg(`0 0 ${SW} 100`, { class: 'pl-svg f3-scope', role: 'img', 'aria-label': 'Grafico della corrente presa dall\'alimentazione nel tempo: zero a riposo, un picco a ogni cambio dell\'uscita' });
     for (let i = 1; i < 7; i++) scope.append(s('line', { class: 'f3-sgrid', x1: i * 40, y1: 6, x2: i * 40, y2: 94 }));
     scope.append(
       s('line', { class: 'f3-sgrid', x1: 0, y1: 50, x2: SW, y2: 50 }),
@@ -811,7 +812,7 @@
 
   function figEcl() {
     const st = { a: 1, auto: !PL.reduced() };
-    const art = PL.svg('0 0 600 300', { class: 'f6-art', role: 'img', 'aria-label': 'Porta ECL semplificata: due transistor con gli emettitori collegati a una sola sorgente di corrente verso −5,2 V. La corrente passa nel transistor di sinistra se l\'ingresso A è più alto del riferimento di −1,29 V, altrimenti in quello di destra.' });
+    const art = PL.svg('0 0 600 300', { class: 'pl-svg f6-art', role: 'img', 'aria-label': 'Porta ECL semplificata: due transistor con gli emettitori collegati a una sola sorgente di corrente verso −5,2 V. La corrente passa nel transistor di sinistra se l\'ingresso A è più alto del riferimento di −1,29 V, altrimenti in quello di destra.' });
     const flows = s('g', { class: 'f6-flows' });
     const fl = flowIn(flows);
     const rc1 = draw.resistor(220, 40, 220, 100);
@@ -839,8 +840,8 @@
       s('text', { class: 'f6-lbl', x: 458, y: 44 }, '0 V (massa)'),
       s('text', { class: 'f6-name', x: 140, y: 146, 'text-anchor': 'middle' }, 'A'),
       aVal,
-      s('text', { class: 'f6-lbl', x: 460, y: 146, 'text-anchor': 'middle' }, 'riferimento'),
-      s('text', { class: 'f6-v', x: 460, y: 188, 'text-anchor': 'middle' }, '−1,29 V'),
+      s('text', { class: 'f6-lbl', x: 474, y: 152 }, 'riferimento'),
+      s('text', { class: 'f6-v', x: 474, y: 180 }, '−1,29 V'),
       s('text', { class: 'f6-out', x: 142, y: 120, 'text-anchor': 'end' }, 'NOR ', norVal),
       s('text', { class: 'f6-out', x: 458, y: 120 }, 'OR ', orVal),
       s('text', { class: 'f6-lbl', x: 312, y: 242 }, 'corrente costante'),
@@ -896,7 +897,7 @@
     ];
     const st = { dec: PL.reduced() ? 80 : 60, idle: false, sel: null, timers: [] };
 
-    const art = PL.svg('0 0 520 376', { class: 'f4-art', role: 'group', 'aria-label': 'Grafico in scala logaritmica: in orizzontale il ritardo di propagazione di una porta, in verticale la potenza che consuma. Ogni punto è una famiglia logica.' });
+    const art = PL.svg('0 0 520 376', { class: 'pl-svg f4-art', role: 'group', 'aria-label': 'Grafico in scala logaritmica: in orizzontale il ritardo di propagazione di una porta, in verticale la potenza che consuma. Ogni punto è una famiglia logica.' });
     const uid = PL.uid('f4-ideal');
     art.append(s('defs', null,
       s('radialGradient', { id: uid, cx: '0', cy: '1', r: '1' },
@@ -908,7 +909,7 @@
     [0.1, 0.2, 0.5, 1, 2, 5, 10, 20, 50, 100].forEach((p) => art.append(s('line', { class: 'f4-gl' + ([0.1, 1, 10, 100].includes(p) ? ' is-major' : ''), x1: 80, y1: Y(p), x2: 496, y2: Y(p) })));
     // linee di uguale energia per commutazione (ritardo × potenza)
     const ANG = n1((Math.atan(84 / 160) * 180) / Math.PI);
-    [[100, 1, 200, 404], [10, 0.5, 100, 362]].forEach(([E, t0, t1, lx]) => {
+    [[100, 1, 200, 372], [10, 0.5, 100, 362]].forEach(([E, t0, t1, lx]) => {
       const t = Math.pow(10, (lx - 80) / 160 - 0.30103);
       const ly = Y(E / t) - 6;
       art.append(
@@ -917,7 +918,7 @@
     });
     art.append(
       s('rect', { class: 'f4-floor', x: 80, y: 302, width: 416, height: 24, rx: 4 }),
-      s('text', { class: 'f4-floor-t', x: 488, y: 318, 'text-anchor': 'end' }, 'porte CMOS ferme: consumo quasi zero'),
+      s('text', { class: 'f4-floor-t', x: 88, y: 318 }, 'porte CMOS ferme'),
       s('text', { class: 'f4-ideal-t', x: 88, y: 284 }, 'veloce e parca'));
     [[100, '100 mW'], [10, '10 mW'], [1, '1 mW'], [0.1, '0,1 mW']].forEach(([p, t]) => art.append(s('text', { class: 'f4-tick', x: 74, y: Y(p) + 4, 'text-anchor': 'end' }, t)));
     art.append(s('text', { class: 'f4-tick', x: 74, y: FLOOR + 4, 'text-anchor': 'end' }, '≈ 0'));
@@ -1030,7 +1031,7 @@
     const sub = (t) => s('tspan', { class: 'f5-sub', 'baseline-shift': 'sub' }, t);
 
     const panels = FAMS.map((F) => {
-      const art = PL.svg('0 0 360 250', { class: 'f5-art', role: 'img', 'aria-label': F.name + ': l\'ingresso legge 0 sotto ' + lvl(F.vil) + ' V e 1 sopra ' + lvl(F.vih) + ' V; l\'uscita garantisce lo 0 sotto ' + lvl(F.vol) + ' V e l\'1 sopra ' + lvl(F.voh) + ' V.' });
+      const art = PL.svg('0 0 360 250', { class: 'pl-svg f5-art', role: 'img', 'aria-label': F.name + ': l\'ingresso legge 0 sotto ' + lvl(F.vil) + ' V e 1 sopra ' + lvl(F.vih) + ' V; l\'uscita garantisce lo 0 sotto ' + lvl(F.vol) + ' V e l\'1 sopra ' + lvl(F.voh) + ' V.' });
       const uid = PL.uid('f5-hatch');
       art.append(s('defs', null,
         s('pattern', { id: uid, width: 8, height: 8, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(45)' },
@@ -1041,9 +1042,6 @@
         s('rect', { class: 'f5-zone is-x', x: X0, y: Yv(F.vih), width: X1 - X0, height: Yv(F.vil) - Yv(F.vih) }),
         s('rect', { x: X0, y: Yv(F.vih), width: X1 - X0, height: Yv(F.vil) - Yv(F.vih), fill: `url(#${uid})` }),
         s('rect', { class: 'f5-zone is-0', x: X0, y: Yv(F.vil), width: X1 - X0, height: Yv(0) - Yv(F.vil) }),
-        s('text', { class: 'f5-zt', x: X1 - 6, y: Yv(5) + 14, 'text-anchor': 'end' }, 'letto come 1'),
-        s('text', { class: 'f5-zt is-x', x: X1 - 6, y: n1(mid + 4), 'text-anchor': 'end' }, 'zona proibita'),
-        s('text', { class: 'f5-zt', x: X1 - 6, y: Yv(0) - 6, 'text-anchor': 'end' }, 'letto come 0'),
         s('line', { class: 'f5-out', x1: X0, y1: Yv(F.voh), x2: X1, y2: Yv(F.voh) }),
         s('line', { class: 'f5-out', x1: X0, y1: Yv(F.vol), x2: X1, y2: Yv(F.vol) }),
         s('text', { class: 'f5-lv is-out', x: X0 - 6, y: Yv(F.voh) + 4, 'text-anchor': 'end' }, 'V', sub('OH'), ' ' + lvl(F.voh)),
@@ -1066,7 +1064,11 @@
         dots.push(c);
         dotsG.append(c);
       }
-      art.append(line, dotsG);
+      // le scritte delle zone stanno sopra i campioni, con un alone che le tiene leggibili
+      art.append(line, dotsG, s('g', { class: 'f5-zts' },
+        s('text', { class: 'f5-zt', x: X1 - 6, y: Yv(5) + 14, 'text-anchor': 'end' }, 'letto come 1'),
+        s('text', { class: 'f5-zt is-x', x: X1 - 6, y: n1(mid + 4), 'text-anchor': 'end' }, 'zona proibita'),
+        s('text', { class: 'f5-zt', x: X1 - 6, y: Yv(0) - 6, 'text-anchor': 'end' }, 'letto come 0')));
       const errEl = h('b', null, '0');
       const totEl = h('b', null, '0');
       const box = h('div', { class: 'f5-panel is-' + F.id },
