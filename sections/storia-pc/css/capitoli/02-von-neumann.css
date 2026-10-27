@@ -386,7 +386,7 @@
 .vn-medio > .vn-macchina { grid-column: 1; }
 .vn-medio > .vn-lato {
   grid-column: 2; display: grid; gap: 14px; align-content: start;
-  position: sticky; top: calc(var(--topbar-h, 52px) + 12px);
+  position: sticky; top: calc(var(--spc-cima, 52px) + 12px);
 }
 .vn-medio .vn-legenda { flex-direction: column; }
 .vn-medio .vn-conta { margin-left: 0; }

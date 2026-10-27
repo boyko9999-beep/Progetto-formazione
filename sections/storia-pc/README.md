@@ -74,6 +74,10 @@ si avvicina allo schermo; un errore dentro `crea` mostra un messaggio senza romp
 Classi pronte per i controlli (tema scuro da strumento): `.lab-controls`, `.lab-btn`, `.lab-btn.primary`,
 `.lab-seg` (pulsanti con `aria-pressed`), `.lab-range`, `.lab-readout`, `.lab-kv` (`dl` di letture),
 `.lab-note` (spiegazione, usala con `aria-live="polite"`), `.lab-panel`, `.lab-grid`, `.lab-svg`, `.lab-mono`.
+Dentro un laboratorio `[hidden]` nasconde sempre, anche un `.lab-btn`; `.spc-sr-only` è il testo per i soli
+lettori di schermo. Gli elementi adesivi usano `top: calc(var(--spc-cima) + 12px)`: `--spc-cima` è l'altezza
+di ciò che resta fisso in cima (la barra sul desktop, l'indice dei capitoli sul telefono). Le animazioni CSS
+delle figure si fermano da sole quando la figura è lontana dallo schermo (classe `.fuori`).
 
 Strumenti in `ctx`: `h()` e `s()` per creare elementi HTML e SVG, `svgDaTesto()`, `loop()`, `tween()`,
 `curve`, `motion` (durate e curve), `ridotto()` (movimento ridotto), `puntoSu(path, t)`, `formato(n, dec)`,

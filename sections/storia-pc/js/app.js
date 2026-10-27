@@ -437,15 +437,77 @@
     }
   }
 
-  // Altezza reale della barra in alto, per posizionare l'indice adesivo sotto di lei.
+  // Altezza reale della barra in alto, per posizionare l'indice adesivo sotto di lei (--topbar-h),
+  // e di tutto ciò che resta adesivo in cima, per gli elementi adesivi dei capitoli (--spc-cima).
   function misuraBarra() {
     const bar = document.querySelector('.topbar');
     if (!bar) return;
-    // Sui telefoni la barra non è adesiva (lascia spazio al testo): allora non serve spazio sotto di lei.
-    const set = () => document.documentElement.style.setProperty('--topbar-h', (getComputedStyle(bar).position === 'sticky' ? bar.offsetHeight : 0) + 'px');
+    const stretto = window.matchMedia('(max-width: 1080px)');
+    const set = () => {
+      // Sui telefoni la barra non è adesiva (lascia spazio al testo), ma lo è l'indice orizzontale dei capitoli.
+      const barra = getComputedStyle(bar).position === 'sticky' ? bar.offsetHeight : 0;
+      const indice = stretto.matches && elRail ? elRail.offsetHeight : 0;
+      document.documentElement.style.setProperty('--topbar-h', barra + 'px');
+      document.documentElement.style.setProperty('--spc-cima', (barra + indice) + 'px');
+    };
     set();
-    if ('ResizeObserver' in window) new ResizeObserver(set).observe(bar);
-    else window.addEventListener('resize', set);
+    if ('ResizeObserver' in window) {
+      const ro = new ResizeObserver(set);
+      ro.observe(bar);
+      if (elRail) ro.observe(elRail);
+    } else window.addEventListener('resize', set);
+  }
+
+  /* ---------- figure: le animazioni CSS si fermano fuori dallo schermo ---------- */
+
+  function fermaFigureFuori(root) {
+    if (!('IntersectionObserver' in window)) return;
+    const io = new IntersectionObserver((entries) => entries.forEach((e) => {
+      e.target.classList.toggle('fuori', !e.isIntersecting);
+    }), { rootMargin: '120px 0px' });
+    root.querySelectorAll('.spc-figura').forEach((f) => io.observe(f));
+  }
+
+  /* ---------- link ai capitoli: arrivo nel punto giusto ---------- */
+
+  // I laboratori nascono quando si avvicinano allo schermo e allungano la pagina: dopo un salto a un
+  // capitolo (dall'indice, dall'hub o da un'altra sezione) la pagina si assesta per un attimo e il
+  // capitolo scivolerebbe via. Finché la pagina non si assesta, e finché chi legge non scorre da sé,
+  // il capitolo resta allineato in cima.
+  let tenuta = null;
+
+  function tieniAllineato(id) {
+    const dest = id && document.getElementById(id);
+    if (!dest) return;
+    if (tenuta) tenuta();
+    const allinea = () => {
+      const d = dest.getBoundingClientRect().top - (parseFloat(getComputedStyle(dest).scrollMarginTop) || 0);
+      if (Math.abs(d) > 2) window.scrollBy(0, d);
+    };
+    const ro = 'ResizeObserver' in window ? new ResizeObserver(allinea) : null;
+    if (ro) ro.observe(elCapitoli);
+    const gesti = ['wheel', 'touchstart', 'pointerdown', 'keydown'];
+    const fine = () => {
+      if (ro) ro.disconnect();
+      gesti.forEach((g) => window.removeEventListener(g, fine, true));
+      clearTimeout(timer);
+      tenuta = null;
+    };
+    gesti.forEach((g) => window.addEventListener(g, fine, { capture: true, passive: true }));
+    const timer = setTimeout(fine, 2500);
+    tenuta = fine;
+    allinea();
+  }
+
+  function seguiAncore() {
+    const daHash = () => tieniAllineato(decodeURIComponent(location.hash.slice(1)));
+    window.addEventListener('hashchange', daHash);
+    // Anche il secondo clic sullo stesso link (l'indirizzo non cambia, quindi niente hashchange).
+    document.addEventListener('click', (e) => {
+      const a = e.target.closest && e.target.closest('a[href^="#"]');
+      if (a && a.getAttribute('href').length > 1) setTimeout(daHash, 0);
+    });
+    if (location.hash.length > 1) daHash();
   }
 
   /* ---------- avvio ---------- */
@@ -462,14 +524,12 @@
     aggiornaProgressi();
     rivela(document.getElementById('main'));
     contaNumeri(elCapitoli);
+    fermaFigureFuori(elCapitoli);
     osservaLab();
     seguiLettura();
     const voce = document.getElementById('spc-num-capitoli');
     if (voce) voce.textContent = String(capitoli.length);
-    if (location.hash.length > 1) {
-      const dest = document.getElementById(decodeURIComponent(location.hash.slice(1)));
-      if (dest) requestAnimationFrame(() => dest.scrollIntoView({ block: 'start' }));
-    }
+    seguiAncore();
   }
 
   avvia();

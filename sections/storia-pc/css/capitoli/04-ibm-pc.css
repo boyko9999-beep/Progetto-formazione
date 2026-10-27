@@ -181,7 +181,7 @@
 .ibm-chip[aria-pressed="true"] .ibm-chip-num { background: var(--trace-1); color: #04150d; }
 
 /* scheda del pezzo scelto */
-.ibm-scheda { position: sticky; top: calc(var(--topbar-h) + 16px); }
+.ibm-scheda { position: sticky; top: calc(var(--spc-cima, 52px) + 16px); }
 .ibm-scheda-corpo { transition-property: opacity, transform; transition-duration: var(--dur-fast); transition-timing-function: var(--ease-smooth); }
 .ibm-scheda-corpo.cambio { opacity: 0; transform: translateY(6px); }
 .ibm-scheda-testa { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }

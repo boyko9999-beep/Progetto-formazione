@@ -52,6 +52,7 @@
   --ease-bounce: cubic-bezier(.34, 1.56, .64, 1);
 
   --topbar-h: 52px;
+  --spc-cima: 52px;
   --spc-accent: var(--c-pc);
 }
 
@@ -120,7 +121,8 @@
   --ill-legno: #855c36;
 }
 
-html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+/* Niente scroll-behavior: smooth: i salti ai capitoli sono istantanei e app.js li tiene allineati mentre i laboratori nascono. */
+html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
 
 .spc main { max-width: 1240px; }
 .spc .foot { max-width: 1240px; }
@@ -340,7 +342,7 @@ html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; -moz-osx-fo
 
 .lab-seg { display: inline-flex; flex-wrap: wrap; gap: 2px; padding: 3px; border-radius: 11px; background: #0a100e; border: 1px solid var(--scope-grid); }
 .lab-seg button {
-  min-height: 36px; padding: 0 12px; border-radius: 8px; border: 0; cursor: pointer;
+  min-height: 40px; padding: 0 12px; border-radius: 8px; border: 0; cursor: pointer;
   font: 700 .84rem var(--font); color: var(--scope-text); background: transparent;
   transition-property: color, background-color; transition-duration: var(--dur-fast);
 }
@@ -369,6 +371,8 @@ html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; -moz-osx-fo
 .lab th, .lab td { border-bottom-color: var(--scope-grid); }
 .lab thead th { position: static; background: var(--lab-panel); color: #7f9a90; }
 .spc-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; border: 0; }
+/* app.js aggiunge .fuori alle figure lontane dallo schermo: le loro animazioni CSS si fermano */
+.spc-figura.fuori, .spc-figura.fuori * { animation-play-state: paused !important; }
 
 /* ---------- linea del tempo ---------- */
 
@@ -454,7 +458,6 @@ html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; -moz-osx-fo
 }
 
 @media (prefers-reduced-motion: reduce) {
-  html { scroll-behavior: auto; }
   .tempo-punto { transition: none; }
 }
 

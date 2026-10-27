@@ -35,8 +35,9 @@ test('dieci capitoli, in ordine, con gli id concordati con le altre sezioni', ()
   assert.deepStrictEqual(capitoli.map((c) => c.numero), ID.map((_, i) => i + 1));
 });
 
-test('ogni capitolo ha intestazione, testi, schede, punti chiave e laboratorio', () => {
-  for (const c of capitoli) {
+// Un sottotest per capitolo: un capitolo incompleto non nasconde gli esiti degli altri.
+test('ogni capitolo ha intestazione, testi, schede, punti chiave e laboratorio', async (t) => {
+  for (const c of capitoli) await t.test(c.id, () => {
     const dove = 'capitolo ' + c.id;
     ['titolo', 'breve', 'periodo', 'colore', 'sommario', 'intro'].forEach((k) => assert.ok(typeof c[k] === 'string' && c[k].trim(), dove + ': manca ' + k));
     assert.ok(Array.isArray(c.blocchi) && c.blocchi.length >= 6, dove + ': troppo pochi blocchi');
@@ -50,24 +51,24 @@ test('ogni capitolo ha intestazione, testi, schede, punti chiave e laboratorio',
       assert.ok(typeof b.svg === 'function' || typeof b.svg === 'string', dove + ': figura senza svg');
       assert.ok(b.alt && b.alt.length > 10, dove + ': figura senza testo alternativo');
     });
-  }
+  });
 });
 
-test('le schede hanno anni plausibili e testi: alimentano la linea del tempo', () => {
+test('le schede hanno anni plausibili e testi: alimentano la linea del tempo', async (t) => {
   let n = 0;
-  for (const c of capitoli) {
+  for (const c of capitoli) await t.test(c.id, () => {
     c.blocchi.filter((b) => b.tipo === 'schede').forEach((b) => b.items.forEach((it) => {
       n++;
       assert.ok(Number.isInteger(it.anno) && it.anno >= 1800 && it.anno <= 2026, c.id + ': anno non valido in ' + testo(it.nome));
       assert.ok(testo(it.nome).trim() && testo(it.testo).trim().length > 20, c.id + ': scheda incompleta ' + testo(it.nome));
     }));
-  }
+  });
   assert.ok(n >= 60, 'la linea del tempo ha solo ' + n + ' eventi');
 });
 
-test('i collegamenti puntano a lezioni, sezioni e capitoli che esistono', () => {
+test('i collegamenti puntano a lezioni, sezioni e capitoli che esistono', async (t) => {
   const ancore = new Set(ID.concat('linea-del-tempo'));
-  for (const c of capitoli) {
+  for (const c of capitoli) await t.test(c.id, () => {
     const hrefs = (c.collegamenti || []).map((l) => l.href);
     c.blocchi.forEach((b) => {
       const html = JSON.stringify(b);
@@ -81,7 +82,7 @@ test('i collegamenti puntano a lezioni, sezioni e capitoli che esistono', () => 
       else if (/^\.\.\/\.\.\/index\.html(#\/[a-z]*)?$/.test(href) || /^\.\.\/index\.html$/.test(href)) continue;
       else assert.fail(c.id + ': collegamento in formato non previsto ' + href + ' (usa ../<sezione>/index.html#<capitolo>)');
     }
-  }
+  });
 });
 
 test('section.js registra nell\'hub gli stessi capitoli della pagina', () => {
