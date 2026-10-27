@@ -79,14 +79,6 @@
         why: 'La soglia di 0,6-0,7 V vale solo in diretta. In inversa la zona di svuotamento si allarga e passa una corrente minuscola, di pochi nanoampere; la giunzione cede solo a tensioni molto più alte (è il breakdown, che lo Zener sfrutta apposta).',
       },
       {
-        id: 'ei-07', level: 1, topic: 'Forme d\'onda', chapter: 'diodo', type: 'choice',
-        q: 'Quale circuito trasforma una tensione sinusoidale nella forma d\'onda in figura?',
-        figure: { kind: 'wave', shape: 'half-wave' },
-        options: ['Un diodo in serie al carico', 'Un ponte di quattro diodi', 'Un condensatore in serie al carico', 'Un trasformatore che abbassa la tensione'],
-        answer: 0,
-        why: 'Il diodo conduce solo quando è polarizzato in diretta: delle due semionde ne passa una sola. È il raddrizzatore a una semionda. Il ponte di quattro diodi le raddrizza tutte e due, mentre il trasformatore cambia solo l\'ampiezza della sinusoide.',
-      },
-      {
         id: 'ei-08', level: 2, topic: 'Giunzione P-N', chapter: 'diodo', type: 'choice',
         q: 'In una giunzione P-N al silicio, che cosa dà origine alla barriera di potenziale di circa 0,7 V?',
         options: [
@@ -317,6 +309,14 @@
       },
 
       // ------------------------------------------------------------ alimentatore
+      {
+        id: 'ei-07', level: 1, topic: 'Forme d\'onda', chapter: 'alimentatore', type: 'choice',
+        q: 'Quale circuito trasforma una tensione sinusoidale nella forma d\'onda in figura?',
+        figure: { kind: 'wave', shape: 'half-wave' },
+        options: ['Un diodo in serie al carico', 'Un ponte di quattro diodi', 'Un condensatore in serie al carico', 'Un trasformatore che abbassa la tensione'],
+        answer: 0,
+        why: 'Il diodo conduce solo quando è polarizzato in diretta: delle due semionde ne passa una sola. È il raddrizzatore a una semionda. Il ponte di quattro diodi le raddrizza tutte e due, mentre il trasformatore cambia solo l\'ampiezza della sinusoide.',
+      },
       {
         id: 'ei-33', level: 1, topic: 'Blocchi dell\'alimentatore', chapter: 'alimentatore', type: 'order',
         q: 'Metti in ordine i blocchi di un alimentatore lineare, dalla presa di rete all\'uscita a 5 V.',
