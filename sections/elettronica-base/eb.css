@@ -145,7 +145,8 @@
 .eb-formule-griglia { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 230px), 1fr)); gap: 12px; }
 .eb-formule-griglia a { display: grid; gap: 6px; padding: 14px 16px; height: 100%; border-radius: var(--radius); text-decoration: none; background: var(--surface); border: 1px solid var(--line); transition: border-color .2s ease; }
 .eb-formule-griglia a:hover { border-color: var(--cap); }
-.eb-formule-griglia .eb-f { font-size: 1.25rem; }
+.eb-formule-griglia .eb-f { font-size: 1.25rem; white-space: normal; }
+.eb-formule-griglia .eb-f-lunga { font-size: 1.05rem; }
 .eb-formule-griglia small { color: var(--muted); font-weight: 600; }
 
 .eb-striscia { list-style: none; margin: 0; padding: 4px 2px 14px; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(220px, 260px); gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: thin; }
@@ -190,7 +191,9 @@
 .eb-chiave { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 14px; margin: 8px 0 30px; }
 .eb-formula-card { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; padding: 18px 20px; border-radius: var(--radius); background: var(--surface); border: 1px solid var(--line); box-shadow: var(--enc-shadow); }
 .eb-formula-card h2 { font: 700 .76rem var(--font); text-transform: uppercase; letter-spacing: .12em; color: var(--muted); margin: 0; }
-.eb-formula-card > .eb-f { font-size: clamp(1.6rem, 3.4vw, 2.1rem); }
+.eb-formula-card > .eb-f { font-size: clamp(1.6rem, 3.4vw, 2.1rem); white-space: normal; }
+.eb-formula-card > .eb-f-media { font-size: clamp(1.35rem, 2.6vw, 1.7rem); }
+.eb-formula-card > .eb-f-lunga { font-size: clamp(1.1rem, 2vw, 1.35rem); }
 .eb-legenda { margin: 0; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 12px; font-size: .9rem; }
 .eb-legenda dt { font: 700 1rem var(--mono); }
 .eb-legenda dd { margin: 0; color: var(--muted); }
@@ -360,7 +363,7 @@
 .eb-gloss dt { font: 700 1.08rem var(--serif); color: var(--ink); }
 .eb-gloss dd { margin: 4px 0 0; color: var(--muted); }
 .eb-gloss dd a { font-weight: 700; font-size: .86rem; color: var(--cap); }
-.eb-vuoto { color: var(--muted); font-style: italic; }
+.eb-vuoto, .eb-formula-nota { color: var(--muted); font-style: italic; }
 
 /* ---------- transizioni tra le viste ---------- */
 

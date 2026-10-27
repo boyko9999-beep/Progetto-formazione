@@ -83,7 +83,7 @@
         fondoScala,
         s('text', { x: 360, y: 288, 'text-anchor': 'middle', class: 'ohm-etichetta' }, 'amperometro'));
       circ.append(frecce, elettroni, pila, resistore, amperometro,
-        s('text', { x: 110, y: 288, class: 'ohm-etichetta' }, ctx.ridotto ? '' : 'elettroni: velocità non in scala'));
+        s('text', { x: 110, y: 288, class: 'ohm-etichetta' }, ctx.ridotto ? 'frecce: verso degli elettroni' : 'elettroni: velocità non in scala'));
 
       /* --- grafico corrente-tensione --- */
       const X = (v) => 46 + v / V_MAX * 236;
@@ -195,7 +195,7 @@
         if (stato.v === 0) {
           testo = '**Tensione zero**: nessuna spinta, quindi nessuna corrente, qualunque sia la resistenza.';
         } else if (stato.r === prima.r && stato.v !== prima.v && prima.v > 0) {
-          testo = 'Tensione da **' + fmt(prima.v, 'V') + '** a **' + fmt(stato.v, 'V') + '** (' + fattore(stato.v / prima.v, num) + '): la corrente passa da **' + fmt(iPrima, 'A') + '** a **' + fmt(i, 'A') + '**, cresce o cala dello stesso fattore. Corrente e tensione sono proporzionali.';
+          testo = 'Tensione da **' + fmt(prima.v, 'V') + '** a **' + fmt(stato.v, 'V') + '** (' + fattore(stato.v / prima.v, num) + '): la corrente passa da **' + fmt(iPrima, 'A') + '** a **' + fmt(i, 'A') + '**, ' + (stato.v > prima.v ? 'cresce' : 'cala') + ' dello stesso fattore. Corrente e tensione sono proporzionali.';
         } else if (stato.v === prima.v && stato.r !== prima.r) {
           testo = 'Resistenza da **' + fmt(prima.r, 'Ω') + '** a **' + fmt(stato.r, 'Ω') + '** (' + fattore(stato.r / prima.r, num) + '): la corrente diventa **' + fmt(i, 'A') + '** (' + fattore(i / iPrima, num) + '). ' + (stato.r > prima.r ? 'Più il resistore frena, meno corrente passa: la retta del grafico si abbassa.' : 'Meno resistenza, più corrente: la retta del grafico si alza.');
         } else {
@@ -232,7 +232,7 @@
         pilaTesto.textContent = fmt(stato.v, 'V');
         pilaTesto.setAttribute('class', 'ohm-pila-testo' + (stato.v / V_MAX >= 0.6 ? '' : ' fuori'));
         const fs = portata(i);
-        fondoScala.textContent = 'f.s. ' + fmt(fs, 'A');
+        fondoScala.textContent = 'fondo scala ' + fmt(fs, 'A');
         lV.imposta(fmt(stato.v, 'V'));
         lR.imposta(fmt(stato.r, 'Ω'));
         lI.imposta(fmt(i, 'A'));

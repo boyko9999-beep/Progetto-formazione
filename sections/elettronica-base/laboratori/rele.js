@@ -444,7 +444,7 @@
           if (iLinea() >= SOGLIA) chiudiRele(forzato);
           else if (debolePer !== stato.km) {
             debolePer = stato.km;
-            nota('La corrente arriva, ma **' + fmt(iLinea(), 'A') + '** non bastano: il nucleo si magnetizza poco e la molla tiene ferma l\'ancora, così la striscia resta bianca. Accorcia la linea sotto i **' + kmMax() + ' km**.');
+            nota('La corrente arriva, ma **' + fmt(iLinea(), 'A') + '** non bastano: il nucleo si magnetizza poco e la molla tiene ferma l\'ancora, così la striscia resta bianca. Accorcia la linea a **' + Math.floor(kmMax() / 10) * 10 + ' km** o meno.');
           }
         } else if (stato.chiuso) apriRele();
         aggiornaVista();
@@ -520,7 +520,7 @@
         const compatto = testo.replace(/\s+/g, '');
         const ult = nuove[nuove.length - 1];
         if (ult.testo === '?') {
-          nota('Il codice **' + segni(ult.codice) + '** non è una lettera: forse due lettere si sono unite. Stacca un po\' di più tra una lettera e l\'altra: ora la pausa che chiude una lettera è di **' + ms10(sogliaLettera()) + '**.');
+          nota('Il codice **' + segni(ult.codice) + '** non è una lettera: forse due lettere si sono unite. Lascia una pausa un po\' più lunga tra una lettera e l\'altra: ora la pausa che chiude una lettera è di **' + ms10(sogliaLettera()) + '**.');
         } else if (compatto.includes('CIAO') && !ctx.fatta('ciao')) {
           const lt = ricevute.slice(-4);
           const durata = lt.length === 4 && lt.map((x) => x.testo).join('') === 'CIAO' ? (lt[3].t1 - lt[0].t0) / 1000 : 0;

@@ -350,7 +350,7 @@
       h('h2', null, f.nome),
       EB.formula(f.formula),
       f.legenda ? h('dl', { class: 'eb-legenda' }, f.legenda.map((l) => [h('dt', null, EB.formula(l[0], { inline: false })), h('dd', null, l[1] + (l[2] ? ' (' + l[2] + ')' : ''))])) : null,
-      f.nota ? h('p', { class: 'eb-vuoto' }, EB.testo(f.nota, ctx)) : null))) : null;
+      f.nota ? h('p', { class: 'eb-formula-nota' }, EB.testo(f.nota, ctx)) : null))) : null;
 
     const labs = h('div', { class: 'eb-labs' });
     const appro = def.approfondimenti && def.approfondimenti.length

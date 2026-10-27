@@ -216,15 +216,18 @@
     return base !== p && base in GRANDEZZE ? GRANDEZZE[base] : null;
   }
 
+  // Le formule lunghe hanno un corpo più piccolo; se proprio non ci stanno vanno a capo solo vicino a = + −.
   EB.formula = function (testo, opzioni) {
     const o = opzioni || {};
-    const el = EB.h(o.inline ? 'code' : 'div', { class: o.inline ? 'eb-f eb-f-in' : 'eb-f' });
+    const n = String(testo).length;
+    const misura = o.inline ? '' : n > 26 ? ' eb-f-lunga' : n > 18 ? ' eb-f-media' : '';
+    const el = EB.h(o.inline ? 'code' : 'div', { class: (o.inline ? 'eb-f eb-f-in' : 'eb-f') + misura });
     String(testo).split(/([A-Za-zΦτεργ][A-Za-z0-9₀-₉]*)/).forEach((p) => {
       if (!p) return;
       const g = grandezza(p);
       if (g) el.append(EB.h('var', { class: 'q-' + g }, p));
       else if (g === '' || /^[A-Za-zΦτεργ][₀-₉0-9]?$/.test(p)) el.append(EB.h('var', null, p));
-      else el.append(p);
+      else el.append(p.replace(/ ([/·×]) /g, '\u00a0$1\u00a0'));
     });
     return el;
   };

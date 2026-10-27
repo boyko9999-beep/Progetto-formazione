@@ -10,12 +10,13 @@
 (function () {
   'use strict';
 
-  // εr tipici: carta circa 3,5, vetro da 4 a 10 (Pyrex circa 4,7), titanato di bario da 1200 in su.
+  // εr tipici: carta circa 3,5, vetro da 4 a 10 (Pyrex circa 4,7); le ceramiche per condensatori
+  // (titanato di bario) vanno da qualche centinaio a oltre 10 000: 1200 è un valore prudente.
   const MATERIALI = {
     aria: { nome: 'aria', del: 'dell\'aria', er: 1, testo: '1' },
     carta: { nome: 'carta', del: 'della carta', er: 3.5, testo: '3,5' },
     vetro: { nome: 'vetro', del: 'del vetro', er: 5, testo: '5' },
-    ceramica: { nome: 'ceramica', del: 'della ceramica', er: 1200, testo: '1 200' },
+    ceramica: { nome: 'ceramica', del: 'della ceramica', er: 1200, testo: '1200' },
   };
   const FLASH_J = 0.5 * 160e-6 * 300 * 300; // flash usa e getta: 160 µF a 300 V, circa 7 J
   const RIGIDITA_ARIA = 3e6; // V/m: l'aria regge circa 3 kV per millimetro
@@ -41,7 +42,8 @@
   const C3 = punta(ANGOLO.scarica);
   const f1 = (v) => v.toFixed(1);
   const P = (x, y) => f1(x) + ' ' + f1(y);
-  const intero = (x) => String(Math.round(x)).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  // Come ctx.num: separatore delle migliaia solo da 10 000 in su (1200, ma 12 000).
+  const intero = (x) => { const t = String(Math.round(x)); return t.length > 4 ? t.replace(/\B(?=(\d{3})+(?!\d))/g, ' ') : t; };
   // Distanza disegnata: esagerata e un po' compressa, perché 1 mm resti leggibile.
   const gapDa = (d) => 26 * Math.pow(d, 0.8);
   const dDaGap = (g) => Math.pow(Math.max(g, 0) / 26, 1.25);
@@ -412,7 +414,7 @@
       function descrizione() {
         const mat = MATERIALI[stato.mat];
         return 'Condensatore a piatti piani visto di lato: due piatti di ' + cm2(stato.A) + ' distanti ' + mm(stato.d) + ', con ' + mat.nome + ' in mezzo (εr circa ' + mat.testo + '). ' +
-          'A sinistra la pila da ' + fmt(stato.vb, 'V') + ', a destra il flash; il commutatore è su «' + { carica: 'carica', isolato: 'isolato', scarica: 'scarica nel flash' }[stato.sw] + '». ' +
+          'A sinistra la pila da ' + fmt(stato.vb, 'V') + ', a destra il flash; l\'interruttore è su «' + { carica: 'carica', isolato: 'isolato', scarica: 'scarica nel flash' }[stato.sw] + '». ' +
           (stato.q > 0 ? 'Il condensatore è carico: ' + fmt(stato.q, 'C') + ' su ogni piatto, ' + fmt(tensione(), 'V') + ' tra i piatti.' : 'Il condensatore è scarico.');
       }
 
@@ -480,7 +482,7 @@
         }
         clearTimeout(timerNota);
         notato = istantanea();
-        dici('Con la stessa carica e una capacità così piccola, la tensione salirebbe a ' + F(v, 'V') + ': troppa per ' + mm(stato.d) + ' d\'aria, che regge circa 3 kV per millimetro. Scocca una **scintilla** tra i piatti e il condensatore si scarica.');
+        dici('Con la stessa carica e una capacità così piccola, la tensione salirebbe a ' + F(v, 'V') + ': troppa per ' + mm(stato.d) + ' d\'aria, che regge circa 3 kV per millimetro. Scocca una **scintilla** tra i piatti e il condensatore si scarica.');
         return true;
       }
 
@@ -510,7 +512,7 @@
             lampoT.textContent = 'lampo: ' + fmt(p.E, 'J');
             if (!ctx.ridotto) lampo = { t: 0, b: 0.25 + 0.75 * clamp((Math.log10(p.E) + 11.5) / 7.5, 0, 1) };
             ctx.completa('lampo');
-            t = 'Scarica nel flash: gli elettroni tornano dal piatto in basso a quello in alto passando per il tubo, e i ' + F(p.E, 'J') + ' immagazzinati diventano luce e calore. Il condensatore del flash di una fotocamera usa e getta (circa 160 µF a 300 V) ne accumula circa **7 J**: ' + volte(FLASH_J / p.E) + ' di più.';
+            t = 'Scarica nel flash: gli elettroni tornano dal piatto in basso a quello in alto passando per il tubo, e i ' + F(p.E, 'J') + ' immagazzinati diventano luce e calore. Il condensatore del flash di una fotocamera usa e getta (circa 160 µF a 300 V) ne accumula circa **7 J**: ' + volte(FLASH_J / p.E) + ' di più.';
           } else {
             t = 'Il condensatore è scarico: nel flash non arriva nulla. Prima caricalo con la pila.';
           }
@@ -518,7 +520,7 @@
           if (p.q === 0) {
             t = 'Interruttore su **Carica**: la pila toglie elettroni al piatto in alto e li spinge su quello in basso, finché tra i piatti ci sono ' + F(n.vb, 'V') + '. Ogni piatto ha ora una carica di ' + F(n.q, 'C') + ' (`Q = C · V`, cioè ' + fmt(n.C, 'F') + ' × ' + fmt(n.vb, 'V') + '): positiva in alto, negativa in basso.';
             const mat = MATERIALI[n.mat];
-            if (n.mat !== 'aria') t += ' Con l\'aria al posto ' + mat.del + ' sarebbe ' + mat.testo + ' volte più piccola, ' + fmt(n.q / mat.er, 'C') + ': il dielettrico fa entrare più carica a parità di tensione.';
+            if (n.mat !== 'aria') t += ' Con l\'aria al posto ' + mat.del + ' sarebbe ' + mat.testo + ' volte più piccola, ' + fmt(n.q / mat.er, 'C') + ': il dielettrico permette di accumulare più carica a parità di tensione.';
           } else if (Math.abs(n.q - p.q) > p.q * 0.002) {
             t = 'Interruttore su **Carica**: la pila riporta la tensione tra i piatti da ' + fmt(p.V, 'V') + ' a ' + F(n.vb, 'V') + ' e la carica passa da ' + fmt(p.q, 'C') + ' a ' + F(n.q, 'C') + '.';
           } else {
@@ -528,7 +530,7 @@
           lampoT.textContent = '';
         } else {
           t = p.q > 0
-            ? 'Interruttore su **Isolato**: la carica, ' + F(p.q, 'C') + ', resta sui piatti anche senza pila, e con lei l\'energia, ' + F(p.E, 'J') + '. Prova ad allontanare i piatti: la carica non può cambiare, la tensione sì.'
+            ? 'Interruttore su **Isolato**: la carica, ' + F(p.q, 'C') + ', resta sui piatti anche senza pila, e con essa l\'energia, ' + F(p.E, 'J') + '. Prova ad allontanare i piatti: la carica non può cambiare, la tensione sì.'
             : 'Interruttore su **Isolato**: il condensatore è scarico e resta così. Per caricarlo porta l\'interruttore su **Carica**.';
         }
         clearTimeout(timerNota);
@@ -552,7 +554,7 @@
             ', quindi la tensione passa da ' + fmt(p.V, 'V') + ' a ' + F(n.V, 'V') + ' (`V = Q / C`) e l\'energia da ' + fmt(p.E, 'J') + ' a ' + F(n.E, 'J') + '.' +
             (n.d > p.d && n.A === p.A ? ' L\'energia in più l\'hai data tu, allontanando piatti che si attraggono; il campo invece resta uguale.' : n.E > p.E ? ' L\'energia in più viene dal lavoro che hai fatto.' : '');
         }
-        return cosa + c + '. Il condensatore però è scarico: porta l\'interruttore su **Carica** per riempirlo.';
+        return cosa + c + '. Il condensatore però è scarico: porta l\'interruttore su **Carica** per caricarlo.';
       }
 
       function notaMateriale(p, n) {
@@ -561,11 +563,11 @@
         if (n.sw === 'carica') {
           return tag + ': la capacità passa da ' + fmt(p.C, 'F') + ' a ' + F(n.C, 'F') + ' (' + fattore(n.C / p.C) + ') e, con la stessa pila da ' + fmt(n.vb, 'V') +
             ', la carica da ' + fmt(p.q, 'C') + ' a ' + F(n.q, 'C') + '.' +
-            (n.mat === 'aria' ? '' : ' A parità di tensione è ' + (mat.er >= 10 ? intero(mat.er) : num(mat.er, mat.er % 1 ? 1 : 0)) + ' volte la carica che ci sarebbe con l\'aria: le molecole ' + mat.del + ' si orientano nel campo e ne compensano una parte, così la pila riesce a spingere altra carica sui piatti.');
+            (n.mat === 'aria' ? '' : ' A parità di tensione è ' + (mat.er >= 10 ? intero(mat.er) : num(mat.er, mat.er % 1 ? 1 : 0)) + ' volte la carica che ci sarebbe con l\'aria: le cariche ' + mat.del + ' formano piccoli dipoli che si allineano al campo e ne compensano una parte, così la pila riesce a spingere altra carica sui piatti.');
         }
         if (n.q > 0) {
           return tag + ': con l\'interruttore aperto la carica resta ' + F(n.q, 'C') + ', ma la capacità passa da ' + fmt(p.C, 'F') + ' a ' + fmt(n.C, 'F') +
-            ', quindi la tensione va da ' + fmt(p.V, 'V') + ' a ' + F(n.V, 'V') + ' (`V = Q / C`).' + (n.C > p.C ? ' Il dielettrico indebolisce il campo tra i piatti.' : ' Senza quel dielettrico il campo torna più intenso.');
+            ', quindi la tensione va da ' + fmt(p.V, 'V') + ' a ' + F(n.V, 'V') + ' (`V = Q / C`).' + (n.C > p.C ? ' Il dielettrico indebolisce il campo tra i piatti.' : n.mat === 'aria' ? ' Senza dielettrico il campo torna più intenso.' : ' Con un dielettrico meno efficace il campo si fa più intenso.');
         }
         return tag + ': la capacità passa da ' + fmt(p.C, 'F') + ' a ' + F(n.C, 'F') + ' (' + fattore(n.C / p.C) + '). Carica il condensatore per vedere quanta carica in più accumula.';
       }

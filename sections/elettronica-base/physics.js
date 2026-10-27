@@ -205,7 +205,8 @@
     { nome: 'bianco', hex: '#f4f4f0' },
   ];
   const MOLTIPLICATORI = { argento: -2, oro: -1, nero: 0, marrone: 1, rosso: 2, arancione: 3, giallo: 4, verde: 5, blu: 6, viola: 7, grigio: 8, bianco: 9 };
-  const TOLLERANZE = { marrone: 1, rosso: 2, verde: 0.5, blu: 0.25, viola: 0.1, grigio: 0.05, oro: 5, argento: 10 };
+  // Il grigio come tolleranza resta fuori: le fonti non concordano sul suo valore.
+  const TOLLERANZE = { marrone: 1, rosso: 2, verde: 0.5, blu: 0.25, viola: 0.1, oro: 5, argento: 10 };
   const E12 = [10, 12, 15, 18, 22, 27, 33, 39, 47, 56, 68, 82];
 
   function indiceColore(nome) {

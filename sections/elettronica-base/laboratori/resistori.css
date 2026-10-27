@@ -107,14 +107,14 @@
 /* (annulla le regole generali delle tabelle del sito, pensate per gli elenchi lunghi) */
 .res-tab { width: 100%; min-width: 0; border-collapse: collapse; font-size: .8rem; }
 .res-tab caption { margin-bottom: 6px; text-align: left; font: 700 .66rem var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--lab-dim); }
-.res-tab th, .res-tab td { height: 23px; padding: 1px 2px; border-bottom: 1px solid #15221e; vertical-align: middle; }
+.res-tab th, .res-tab td { height: 23px; padding: 1px; border-bottom: 1px solid #15221e; vertical-align: middle; }
 .res-tab thead th { position: static; background: none; font: 700 .7rem var(--mono); letter-spacing: 0; text-transform: none; color: var(--lab-dim); text-align: center; border-bottom-color: var(--lab-line); }
 .res-tab thead th:first-child { text-align: left; }
 .res-tab tbody th { border-left: 0; text-align: left; font-weight: 600; color: var(--lab-text); white-space: nowrap; }
 .res-tab tbody tr:hover { background: #111d1a; }
-.res-tab tbody .res-sw { width: 12px; height: 12px; margin-right: 7px; vertical-align: -1px; }
+.res-tab tbody .res-sw { width: 12px; height: 12px; margin-right: 6px; vertical-align: -1px; }
 .res-tab td { text-align: center; font: 600 .76rem var(--mono); color: var(--lab-dim); white-space: nowrap; }
-.res-tab td span { display: inline-block; padding: 0 4px; border-radius: 6px; line-height: 18px; transition: background .25s ease, color .25s ease; }
+.res-tab td span { display: inline-block; padding: 0 3px; border-radius: 6px; line-height: 18px; transition: background .25s ease, color .25s ease; }
 .res-tab td.res-uso span { background: var(--c); color: #0b1210; font-weight: 800; box-shadow: 0 0 0 1px rgb(255 255 255 / 35%); }
 .res-tab td.res-uso.res-chiaro span { color: #fff; }
 .res-consiglio { margin: 0; font-size: .8rem; line-height: 1.45; color: var(--lab-text); }

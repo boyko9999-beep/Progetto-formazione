@@ -3,7 +3,7 @@
  * In alto il circuito: pile da 1,5 V in serie, un interruttore e una lampadina da 3 Ω.
  * Sotto, ingrandito, il tratto di filo evidenziato: ioni di rame che vibrano nel reticolo
  * ed elettroni liberi in agitazione disordinata, con una lenta deriva quando passa corrente.
- * Sullo schermo l'agitazione è rallentata e la deriva esagerata (lo dice la legenda);
+ * Sullo schermo l'agitazione è rallentata molto più della deriva (lo dice la legenda);
  * le letture usano i valori veri: I = V / R e v = I / (n · e · S).
  */
 (function () {
@@ -218,8 +218,8 @@
       const legenda = h('p', { class: 'cor-legenda' },
         voce('cor-sw-ione', ctx.ridotto ? 'ione di rame (+)' : 'ione di rame (+): vibra attorno al suo posto'),
         voce('cor-sw-el', ctx.ridotto ? 'elettrone libero (−), con la direzione della sua agitazione' : 'elettrone libero (−)'),
-        voce('cor-sw-seguito', ctx.ridotto ? 'zigzag: il cammino di un elettrone fra un urto e l\'altro; la freccia tratteggiata indica di quanto avanza in media' : 'un elettrone seguito, con la sua scia'),
-        h('span', null, 'Due ioni vicini distano circa 0,26' + NB + 'nm. Velocità non in scala: l\'agitazione è rallentata, la deriva esagerata.'));
+        voce('cor-sw-seguito', ctx.ridotto ? 'zigzag: il cammino di un elettrone, che cambia direzione a ogni urto; la freccia tratteggiata indica di quanto avanza in media' : 'un elettrone seguito, con la sua scia'),
+        h('span', null, 'Due ioni vicini distano circa 0,26' + NB + 'nm. Velocità non in scala: nel filo vero l\'agitazione è miliardi di volte più veloce della deriva.'));
       const scena = h('div', { class: 'cor-scena' }, svg, lente, legenda);
       ctx.scena.append(scena);
       const tela = EB.tela(lente, { rapporto: 2.35, min: 210, max: 340, etichetta: 'Il filo di rame ingrandito' });
@@ -554,9 +554,9 @@
           (stato.chiuso && stato.verso ? ' Frecce azzurre del verso convenzionale: dal + della pila, attraverso la lampadina, al −.' : '');
       }
       function descriviLente() {
-        const base = 'Il filo di rame ingrandito: ioni positivi fermi nel reticolo ed elettroni liberi che si agitano in tutte le direzioni.';
+        const base = 'Il filo di rame ingrandito: ioni positivi fissi al loro posto nel reticolo ed elettroni liberi che si agitano in tutte le direzioni.';
         if (!stato.chiuso) return base + ' Circuito aperto: in media gli elettroni non avanzano.';
-        return base + ' Con ' + fmt(corrente(), 'A') + ' gli elettroni derivano verso destra a ' + mmS(deriva()) + ' (sullo schermo la deriva è esagerata).' +
+        return base + ' Con ' + fmt(corrente(), 'A') + ' gli elettroni derivano verso destra a ' + mmS(deriva()) + ' (sullo schermo la deriva è esagerata rispetto all\'agitazione).' +
           (stato.verso ? ' Le frecce azzurre del verso convenzionale puntano a sinistra, al contrario degli elettroni.' : '');
       }
 
@@ -576,8 +576,8 @@
         let t = '';
         if (stato.chiuso !== p.chiuso) {
           t = stato.chiuso
-            ? 'Circuito chiuso: la lampadina si accende **subito**, perché la spinta corre lungo i fili quasi alla velocità della luce. Gli elettroni invece avanzano in media di appena **' + mmS(v) + '**: per fare un metro impiegherebbero **' + durata(1 / v) + '**.' + (stato.verso ? ' Le frecce azzurre del verso convenzionale puntano al contrario.' : '')
-            : 'Circuito aperto: la corrente si ferma nello stesso istante in tutto il circuito. Gli elettroni continuano ad agitarsi, ma in media **non avanzano più**.';
+            ? 'Circuito chiuso: la lampadina si accende **subito**, perché la spinta corre lungo i fili a una velocità paragonabile a quella della luce. Gli elettroni invece avanzano in media di appena **' + mmS(v) + '**: per fare un metro impiegherebbero **' + durata(1 / v) + '**.' + (stato.verso ? ' Le frecce azzurre del verso convenzionale puntano al contrario.' : '')
+            : 'Circuito aperto: la corrente si ferma praticamente nello stesso istante in tutto il circuito. Gli elettroni continuano ad agitarsi, ma in media **non avanzano più**.';
         } else if (stato.verso !== p.verso) {
           if (!stato.verso) t = 'Frecce nascoste: resta il moto vero degli elettroni, che nel circuito esterno vanno dal − al + della pila.';
           else if (stato.chiuso) t = 'Le frecce azzurre mostrano il **verso convenzionale**: dal + della pila, attraverso la lampadina, fino al −. Gli elettroni vanno **al contrario**, perché la loro carica è negativa: il verso fu fissato prima che si scoprisse chi si muove davvero nei fili.';
@@ -590,7 +590,7 @@
         } else if (stato.sezione !== p.sezione) {
           const sottile = stato.sezione < p.sezione;
           t = stato.chiuso
-            ? 'Filo più ' + (sottile ? 'sottile' : 'grosso') + ', da ' + sezT(p.sezione) + ' a **' + sezT(stato.sezione) + '**: la corrente resta **' + fmt(i, 'A') + '**, perché il filo ha una resistenza minima rispetto ai 3' + NB + 'Ω della lampadina. La stessa carica al secondo passa da una sezione più ' + (sottile ? 'stretta, quindi gli elettroni **accelerano**' : 'larga, quindi gli elettroni **rallentano**') + ': da ' + mmS(vP) + ' a **' + mmS(v) + '** (' + fattore(v / vP) + ').'
+            ? 'Filo più ' + (sottile ? 'sottile' : 'grosso') + ', da ' + sezT(p.sezione) + ' a **' + sezT(stato.sezione) + '**: la corrente resta **' + fmt(i, 'A') + '**, perché la resistenza del filo è trascurabile rispetto ai 3' + NB + 'Ω della lampadina. La stessa carica al secondo passa da una sezione più ' + (sottile ? 'stretta, quindi gli elettroni **accelerano**' : 'larga, quindi gli elettroni **rallentano**') + ': da ' + mmS(vP) + ' a **' + mmS(v) + '** (' + fattore(v / vP) + ').'
             : 'Filo da **' + sezT(stato.sezione) + '**. Senza corrente non c\'è deriva: chiudi il circuito per confrontare le velocità.';
         }
         notato = Object.assign({}, stato);
@@ -635,7 +635,7 @@
         lV.imposta(mmS(v));
         lT.imposta(v > 0 ? durata(1 / v) : '–');
         fI.imposta(stato.chiuso
-          ? [['I', 'i'], ' = ', ['V', 'v'], ' / ', ['R', 'r'], ' = ', [fmt(vT, 'V'), 'v'], ' / ', ['3' + NB + 'Ω', 'r'], ' = ', [fmt(i, 'A'), 'i']]
+          ? [['I', 'i'], ' = ', ['V', 'v'], ' / ', ['R', 'r'], '\n', '= ', [fmt(vT, 'V'), 'v'], ' / ', ['3' + NB + 'Ω', 'r'], ' = ', [fmt(i, 'A'), 'i']]
           : [['I', 'i'], ' = 0 (circuito aperto)']);
         fV.imposta([['v'], ' = ', ['I', 'i'], ' / (', ['n'], ' · ', ['e', 'q'], ' · ', ['S'], ')', '\n', '= ', [mmS(v)]]);
         pilaTesto.textContent = stato.pile === 1 ? '1 pila da 1,5' + NB + 'V' : stato.pile + NB + '×' + NB + '1,5' + NB + 'V = ' + fmt(vT, 'V');

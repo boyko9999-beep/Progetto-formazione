@@ -117,7 +117,7 @@
       const url = (id) => 'url(#' + uid + id + ')';
 
       const stato = { v: 6, fus: 2, ricambio: 2, intatto: true };
-      const calc = { app: APPARECCHI[2], min: 180, prezzo: 0.35 };
+      const calc = { app: APPARECCHI[2], min: 180, prezzo: 0.3 };
       const corrente = () => (stato.intatto ? F.corrente(stato.v, R) : 0);
       const potenza = () => F.potenzaDaCorrente(corrente(), R);
 
@@ -438,7 +438,7 @@
       function notaFusibileScelto(a) {
         const i = corrente();
         if (i > a) return 'Fusibile da **' + fmt(a, 'A') + '**, ma la lampadina chiede **' + fmt(i, 'A') + '**: troppi. Il suo filo sottile si sta scaldando…';
-        if (a > 2) return 'Fusibile da **' + fmt(a, 'A') + '**: regge sempre, ma è abbondante. Protegge bene i fili un fusibile appena sopra la corrente normale: qui 2 A, perché a 12 V passano 1,67 A.';
+        if (a > 2) return 'Fusibile da **' + fmt(a, 'A') + '**: regge sempre, ma è abbondante. Per proteggere bene i fili serve un fusibile appena sopra la corrente normale: qui 2 A, perché a 12 V passano 1,67 A.';
         if (a === 2) return 'Fusibile da **2 A**: è il valore adatto, appena sopra la corrente della lampadina a piena tensione (1,67 A a 12 V).';
         return 'Fusibile da **' + fmt(a, 'A') + '**: regge la corrente di adesso (' + fmt(i, 'A') + '), ma fonde se la corrente supera ' + fmt(a, 'A') + ', cioè sopra **' + fmt(a * R, 'V') + '**.';
       }
@@ -524,7 +524,7 @@
         if (stato.v === 0) testo += 'il circuito è di nuovo chiuso. Alza la tensione per riaccendere la lampadina.';
         else if (i > stato.fus) testo += 'ma la lampadina chiede **' + fmt(i, 'A') + '**, fonderà anche questo. Scegli un valore più alto della corrente, o abbassa la tensione.';
         else if (!c) testo += 'il circuito è chiuso, ma con ' + fmt(stato.v, 'V') + ' il filamento resta troppo freddo per fare luce. Alza la tensione.';
-        else testo += 'regge senza fatica la corrente della lampadina (**' + fmt(i, 'A') + '**), che si riaccende ' + c + '.' + (stato.fus > 2 ? ' È però abbondante: per proteggere i fili basterebbe 2 A.' : '');
+        else testo += (i > 0.9 * stato.fus ? 'regge, ma al limite, ' : 'regge senza fatica ') + 'la corrente della lampadina (**' + fmt(i, 'A') + '**), che si riaccende con il filamento **' + c + '**.' + (stato.fus > 2 ? ' È però abbondante: per proteggere i fili basterebbe 2 A.' : '');
         notato = { v: stato.v, intatto: true };
         dichiara(testo);
       }

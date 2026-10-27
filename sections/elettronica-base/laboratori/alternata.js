@@ -173,7 +173,7 @@
       const curV = ctx.ui.cursore({ etichetta: 'Tensione', min: 0, max: 250, passo: 5, valore: stato.v, unita: 'V', grandezza: 'v', cambia: (v) => { stato.v = v; accensione(); aggiorna('v'); } });
       const curF = ctx.ui.cursore({ etichetta: 'Frequenza', min: 10, max: 100, passo: 1, valore: stato.f, unita: 'Hz', grandezza: 't', cambia: (f) => { stato.f = f; aggiorna('f'); } });
       const preset = h('div', { class: 'alt-preset' }, [[50, 'Europa', 'in Europa'], [60, 'Stati Uniti', 'negli Stati Uniti']].map(([f, dove, come]) => ctx.ui.bottone({
-        etichetta: [f + ' Hz', h('small', null, dove)], aria: 'Alternata a ' + f + ' hertz, come ' + come,
+        etichetta: [f + ' Hz', h('small', null, dove)], aria: 'Alternata a ' + f + ' hertz, come ' + come,
         click: () => {
           const cambia = stato.tipo !== 'ac';
           stato.f = f; stato.tipo = 'ac';
@@ -507,7 +507,7 @@
         lV.imposta(V);
         lPicco.imposta(fmt(t.picco, 'V'));
         lPicco.nota(t.ac ? 'efficace × √2' : 'sempre uguale');
-        lF.imposta(t.ac ? fmt(stato.f, 'Hz') : '0 Hz');
+        lF.imposta(t.ac ? fmt(stato.f, 'Hz') : '0 Hz');
         lF.nota(t.ac ? 'un ciclo ogni ' + fmt(1 / stato.f, 's') : 'nessun ciclo');
         simbolo1.setAttribute('d', t.ac ? ONDA : CONTINUA);
         simbolo2.setAttribute('d', t.ac ? ONDA : CONTINUA);
@@ -533,7 +533,7 @@
         vsTesto.textContent = fmt(t.ac ? t.vs : 0, 'V');
         npTesto.textContent = 'Np = ' + num(stato.np, 0);
         nsTesto.textContent = 'Ns = ' + num(stato.ns, 0);
-        lampTesto.textContent = t.ac && t.vs > 18 ? 'si brucerebbe' : 'lampada 12 V';
+        lampTesto.textContent = t.ac && t.vs > 18 ? 'si brucerebbe' : 'lampada 12 V';
         didTrasf.textContent = (!t.ac ? 'Continua: il flusso nel ferro resta fermo e il secondario tace.'
           : stato.lento && !ctx.ridotto ? 'Al rallentatore: il flusso Φ cresce, cala e cambia verso nel ferro.'
             : 'Il flusso Φ cambia verso ' + lampi + ' volte al secondo.') + ' Spire disegnate non in scala.';
@@ -564,7 +564,7 @@
             : [['V', 'v'], ' = ', [V, 'v'], '\n', 'in ogni istante']);
         } else if (vis === 'tra') {
           formula.imposta(t.ac ? [['Vs', 'v'], ' = ', ['Vp', 'v'], ' · ', ['Ns', 'b'], ' / ', ['Np', 'b'], '\n', '= ', [V, 'v'], ' · ', [num(stato.ns, 0), 'b'], ' / ', [num(stato.np, 0), 'b'], ' = ', [fmt(t.vs, 'V'), 'v']]
-            : [['Vs', 'v'], ' = ', ['0 V', 'v'], '\n', 'il flusso ', ['Φ', 'b'], ' non cambia']);
+            : [['Vs', 'v'], ' = ', ['0 V', 'v'], '\n', 'il flusso ', ['Φ', 'b'], ' non cambia']);
         } else {
           formula.imposta([['I', 'i'], ' = ', ['P', 'p'], ' / ', ['V', 'v'], ' = ', [fmt(t.corrente, 'A'), 'i'], '\n', ['P', 'p'], ' perse = ', ['R', 'r'], ' · ', ['I', 'i'], '²', '\n', '= ', [fmt(R_LINEA, 'Ω'), 'r'], ' · (', [fmt(t.corrente, 'A'), 'i'], ')² = ', [fmt(t.perdita, 'W'), 'p']]);
         }
@@ -583,16 +583,16 @@
         bers.calore = calore;
         const parti = [h('span', null, h('b', null, 'CH1'), ' ' + fmt(Math.exp(bers.s1), 'V') + '/div')];
         if (vis === 'tra') parti.push(h('span', { class: 'alt-ch2' }, h('b', null, 'CH2'), ' ' + fmt(Math.exp(bers.s2), 'V') + '/div'));
-        parti.push(h('span', null, MS_DIV + ' ms/div'));
+        parti.push(h('span', null, MS_DIV + ' ms/div'));
         if (vis === 'tra' && !t.ac) parti.push(h('span', null, 'cattura dell\'accensione, impulso non in scala'));
         else if (stato.lento && !ctx.ridotto) parti.push(h('span', { class: 'alt-lento' }, 'rallentato ' + num(t.ac ? stato.f : 50, 0) + ' volte'));
         info.replaceChildren(...parti);
-        tela.canvas.setAttribute('aria-label', 'Oscilloscopio, ' + MS_DIV + ' ms per quadretto. ' + (vis === 'tra'
+        tela.canvas.setAttribute('aria-label', 'Oscilloscopio, ' + MS_DIV + ' ms per quadretto. ' + (vis === 'tra'
           ? 'Traccia 1, primario: ' + (t.ac ? 'sinusoide di ' + V + ' efficaci' : 'gradino a ' + V + ' all\'accensione') + '. Traccia 2, secondario: ' + (t.ac ? 'sinusoide di ' + fmt(t.vs, 'V') + ' efficaci.' : 'un breve impulso, poi zero.')
           : t.ac ? 'Sinusoide di ' + V + ' efficaci, picco ' + fmt(t.picco, 'V') + ', ' + fmt(stato.f, 'Hz') + '.' : 'Riga piatta a ' + V + '.'));
 
         if (origine) {
-          sfide(t);
+          sfide(t, origine);
           clearTimeout(timerNota);
           timerNota = setTimeout(nota, ['v', 'f', 'np', 'ns'].includes(origine) ? 350 : 0, origine);
         }
@@ -607,9 +607,10 @@
       /* --- sfide e note --- */
       const rete = (t) => t.ac && Math.abs(stato.v - 230) <= 2.3 && stato.f === 50;
 
-      function sfide(t) {
+      function sfide(t, origine) {
         if (rete(t)) ctx.completa('rete');
-        if (stato.vista === 'tra' && !t.ac && stato.v > 0) ctx.completa('continua');
+        // continua: serve una scelta fatta qui (sorgente, tensione o spire), non basta aprire la vista con la sorgente iniziale
+        if (stato.vista === 'tra' && !t.ac && stato.v > 0 && ['tipo', 'v', 'np', 'ns'].includes(origine)) ctx.completa('continua');
         if (stato.vista === 'tra' && t.ac && Math.abs(stato.v - 230) <= 2.3 && Math.abs(t.vs - 12) <= 0.36) ctx.completa('dodici-volt');
         if (stato.vista === 'lin' && t.quota < 0.01) ctx.completa('linea');
       }
@@ -629,7 +630,7 @@
           if (ctx.ridotto) return 'Sullo schermo compare la potenza nella lampada (curva arancione): ha **2 massimi per ciclo**, uno a ogni picco, positivo o negativo. A ' + fmt(stato.f, 'Hz') + ' sono **' + num(2 * stato.f, 0) + ' al secondo**, troppo rapidi perché l\'occhio li veda.';
           return 'Rallentatore acceso: il tempo scorre **' + num(stato.f, 0) + ' volte** più piano, un ciclo al secondo. La lampada si accende di più a ogni picco, positivo o negativo: **2 lampi per ciclo**. A velocità reale sarebbero **' + num(2 * stato.f, 0) + ' al secondo**, troppo rapidi perché l\'occhio li veda.';
         }
-        if (rete(t)) return 'Ecco la presa di casa: **230 V efficaci a 50 Hz**. Il picco vale 230 V × √2, circa **325 V**; ogni ciclo dura **20 ms** e sullo schermo, a 5 ms per quadretto, ne entrano due e mezzo.';
+        if (rete(t)) return 'Ecco la presa di casa: **230 V efficaci a 50 Hz**. Il picco vale 230 V × √2, circa **325 V**; ogni ciclo dura **20 ms** e sullo schermo, a 5 ms per quadretto, ne entrano due e mezzo.';
         if (origine === 'tipo') return 'Alternata a ' + V + ' efficaci: la tensione sale fino a +' + picco + ', scende a −' + picco + ' e cambia verso **' + num(2 * stato.f, 0) + ' volte al secondo**. La lampada fa la stessa luce di prima: ' + fmt(stato.v, 'V') + ' efficaci scaldano come ' + fmt(stato.v, 'V') + ' continui.';
         if (origine === 'v' && p.v !== stato.v && p.tipo === 'ac') return 'Tensione efficace da **' + fmt(p.v, 'V') + '** a ' + V + ': il picco passa da **' + fmt(F.piccoDaEfficace(p.v), 'V') + '** a ' + picco + '. Il picco è sempre √2 volte, circa 1,41 volte, il valore efficace.';
         if (origine === 'f' && p.f !== stato.f) return 'Frequenza da **' + fmt(p.f, 'Hz') + '** a **' + fmt(stato.f, 'Hz') + '**: ogni ciclo dura **' + giro + '** invece di ' + fmt(1 / p.f, 's') + ', e sullo schermo ne entrano **' + num(stato.f * FINESTRA, 1) + '** invece di ' + num(p.f * FINESTRA, 1) + '.';
@@ -639,16 +640,17 @@
       function notaTrasformatore(t, origine, p) {
         if (!t.ac) {
           if (stato.v === 0) return 'Con zero volt non succede niente: alza la tensione.';
-          return 'Trasformatore in **continua**: all\'accensione il flusso nel ferro cresce e il secondario dà un breve impulso (traccia 2); poi il flusso resta fermo e il secondario dà **0 V**. Senza un flusso che cambia non c\'è tensione indotta. In un trasformatore vero la continua è frenata solo dalla resistenza del filo: il primario si scalda e può bruciarsi.';
+          if (origine === 'vista') return 'Il trasformatore è collegato alla **continua**: all\'accensione il secondario dà solo un breve impulso (traccia 2), poi **0 V**. Prova a cambiare la tensione: che cosa esce dal secondario?';
+          return 'Trasformatore in **continua**: all\'accensione il flusso nel ferro cresce e il secondario dà un breve impulso (traccia 2); poi il flusso resta fermo e il secondario dà **0 V**. Senza un flusso che cambia non c\'è tensione indotta. In un trasformatore vero la continua è frenata solo dalla resistenza del filo: il primario si scalda e può bruciarsi.';
         }
         const perSpira = stato.v / stato.np;
         const vs = '**' + fmt(t.vs, 'V') + '**';
         const base = 'ogni spira raccoglie **' + fmt(perSpira, 'V', { prefissi: false }) + '** e le ' + num(stato.ns, 0) + ' spire del secondario danno ' + vs + '.';
         let testo;
         if (stato.v === 0) testo = 'Con zero volt nel primario il flusso non cambia e il secondario resta a zero.';
-        else if (Math.abs(stato.v - 230) <= 2.3 && Math.abs(t.vs - 12) <= 0.36) testo = '**12 V** dai 230 V della rete: il secondario ha circa **' + num(stato.np / stato.ns, 0) + ' volte** meno spire del primario. È il lavoro dei trasformatori per le lampade alogene da 12 V.';
+        else if (Math.abs(stato.v - 230) <= 2.3 && Math.abs(t.vs - 12) <= 0.36) testo = '**12 V** dai 230 V della rete: il secondario ha circa **' + num(stato.np / stato.ns, 0) + ' volte** meno spire del primario. È il lavoro dei trasformatori per le lampade alogene da 12 V.';
         else if (origine === 'ns' && p.ns !== stato.ns) testo = 'Spire del secondario da ' + num(p.ns, 0) + ' a **' + num(stato.ns, 0) + '**: ' + base;
-        else if (origine === 'np' && p.np !== stato.np) testo = 'Spire del primario da ' + num(p.np, 0) + ' a **' + num(stato.np, 0) + '**: il flusso per spira cambia, ora ' + base;
+        else if (origine === 'np' && p.np !== stato.np) testo = 'Spire del primario da ' + num(p.np, 0) + ' a **' + num(stato.np, 0) + '**: la tensione del primario si divide su ' + (stato.np < p.np ? 'meno' : 'più') + ' spire, così ' + base;
         else testo = 'Il primario, **' + num(stato.np, 0) + ' spire** a **' + fmt(stato.v, 'V') + '**, crea nel ferro un flusso che cambia di continuo: ' + base;
         if (stato.ns > stato.np && stato.v > 0) testo += ' Con più spire nel secondario il trasformatore **alza** la tensione.';
         return testo;
@@ -657,8 +659,8 @@
       function notaLinea(t, p) {
         const V = '**' + fmt(stato.vl, 'V') + '**';
         const I = '**' + num(t.corrente, 0) + ' A**';
-        if (t.quota >= 1) return 'A ' + V + ' servirebbero ' + I + ' e il calcolo darebbe **' + fmt(t.perdita, 'W') + '** di perdite, più dei 100 MW da trasportare. Non è un risultato possibile: vuol dire che con questa tensione la linea non può funzionare. I cavi si surriscalderebbero e la tensione crollerebbe prima della città.';
-        let testo = 'A ' + V + ', per portare 100 MW servono ' + I + ': i cavi da 10 Ω ne trasformano in calore **' + fmt(t.perdita, 'W') + '**, ' + (t.quota < 0.01 ? 'lo' : 'il') + ' **' + num(t.quota * 100, 2) + '%**.';
+        if (t.quota >= 1) return 'A ' + V + ' servirebbero ' + I + ' e il calcolo darebbe **' + fmt(t.perdita, 'W') + '** di perdite, più dei 100 MW da trasportare. Non è un risultato possibile: vuol dire che con questa tensione la linea non può funzionare. I cavi si surriscalderebbero e la tensione crollerebbe prima della città.';
+        let testo = 'A ' + V + ', per portare 100 MW servono ' + I + ': i cavi da 10 Ω ne trasformano in calore **' + fmt(t.perdita, 'W') + '**, ' + (t.quota < 0.01 ? 'lo' : 'il') + ' **' + num(t.quota * 100, 2) + '%**.';
         const qPrima = F.perditaLinea(P_LINEA, p.vl, R_LINEA) / P_LINEA;
         if (p.vl !== stato.vl && qPrima < 1) {
           const r = stato.vl / p.vl;

@@ -11,13 +11,14 @@
   const F = EBFisica;
   const NB = ' ';
   const NOMI = F.COLORI.map((c) => c.nome);
+  const TOLL = F.TOLLERANZE;
   const ORDINE = NOMI.concat(['oro', 'argento']);
   // Colori ammessi per ogni banda: la prima cifra non è mai zero.
   const LISTE = [
     NOMI.slice(1),
     NOMI,
     ORDINE.filter((n) => n in F.MOLTIPLICATORI),
-    ORDINE.filter((n) => n in F.TOLLERANZE),
+    ORDINE.filter((n) => n in TOLL),
   ];
   const SFONDO = { oro: 'linear-gradient(90deg, #8c6a14, #f1d06a, #a37f1f)', argento: 'linear-gradient(90deg, #788188, #f0f3f5, #8b949b)' };
   F.COLORI.forEach((c) => { SFONDO[c.nome] = c.hex; });
@@ -58,7 +59,7 @@
   function toll(t) { return '±' + NB + decimale(t) + '%'; }
   function significato(k, n) {
     if (k < 2) return String(NOMI.indexOf(n));
-    return k === 2 ? molt(F.MOLTIPLICATORI[n]) : toll(F.TOLLERANZE[n]);
+    return k === 2 ? molt(F.MOLTIPLICATORI[n]) : toll(TOLL[n]);
   }
   function ad(n) { return (/^a/.test(n) ? 'ad ' : 'a ') + '**' + n + '**'; }
   function nelleE12(v) { return Math.abs(F.arrotondaE12(v) / v - 1) < 1e-9; }
@@ -214,7 +215,7 @@
       /* --- tabella del codice colori --- */
       const righe = {};
       const corpoTab = h('tbody', null, ORDINE.map((n) => {
-        const celle = [NOMI.includes(n) ? String(NOMI.indexOf(n)) : '–', molt(F.MOLTIPLICATORI[n]), n in F.TOLLERANZE ? decimale(F.TOLLERANZE[n]) + '%' : '–']
+        const celle = [NOMI.includes(n) ? String(NOMI.indexOf(n)) : '–', molt(F.MOLTIPLICATORI[n]).slice(2), n in TOLL ? decimale(TOLL[n]) + '%' : '–']
           .map((t) => h('td', null, h('span', null, t)));
         righe[n] = celle;
         return h('tr', null, h('th', { scope: 'row' }, h('span', { class: 'res-sw', style: { '--c': SFONDO[n] } }), n), celle);
@@ -440,7 +441,7 @@
       function aggiorna(origine) {
         const b = stato.bande;
         const v = F.valoreDaColori(b);
-        const t = F.TOLLERANZE[b[3]];
+        const t = TOLL[b[3]];
         const mist = stato.modo === 'misteriosi';
         const svela = !mist || quiz.risposto;
         b.forEach((n, k) => {
@@ -494,7 +495,7 @@
         notato = b.slice();
         const v = F.valoreDaColori(b);
         const v0 = F.valoreDaColori(p);
-        const t = F.TOLLERANZE[b[3]];
+        const t = TOLL[b[3]];
         const k = cambiate[0];
         let testo;
         if (b[0] === 'giallo' && b[1] === 'viola' && b[2] === 'rosso' && k < 3) {
@@ -509,8 +510,8 @@
           testo = 'Moltiplicatore da **' + p[2] + '** (' + significato(2, p[2]) + ') ' + ad(b[2]) + ' (' + significato(2, b[2]) + '): da **' + ohm(v0) + '** a **' + ohm(v) + '**, ' +
             (d > 0 ? 'moltiplicato' : 'diviso') + ' per ' + intero(Math.pow(10, Math.abs(d))) + '. Ogni passo del moltiplicatore aggiunge o toglie uno zero.';
         } else {
-          testo = 'Tolleranza da **' + p[3] + '** (' + toll(F.TOLLERANZE[p[3]]) + ') ' + ad(b[3]) + ' (' + toll(t) + '): il valore vero sta fra **' + ohm(v * (1 - t / 100), 4) + '** e **' +
-            ohm(v * (1 + t / 100), 4) + '**. ' + (t < F.TOLLERANZE[p[3]] ? 'Fascia più stretta, resistore più preciso.' : 'Fascia più larga, resistore meno preciso.');
+          testo = 'Tolleranza da **' + p[3] + '** (' + toll(TOLL[p[3]]) + ') ' + ad(b[3]) + ' (' + toll(t) + '): il valore reale sta fra **' + ohm(v * (1 - t / 100), 4) + '** e **' +
+            ohm(v * (1 + t / 100), 4) + '**. ' + (t < TOLL[p[3]] ? 'Fascia più stretta, resistore più preciso.' : 'Fascia più larga, resistore meno preciso.');
         }
         if (k < 3 && !nelleE12(v)) testo += ' ' + fuoriSerie(v);
         dici(testo);
@@ -550,8 +551,9 @@
         const a = NOMI.indexOf(b[0]);
         const c = NOMI.indexOf(b[1]);
         const m = F.MOLTIPLICATORI[b[2]];
+        const d = NOMI.indexOf(b[2]); // letto al contrario, il moltiplicatore diventa la prima cifra
         const candidati = mescola([[v * 10, 'zeri'], [v / 10, 'zeri'], [v * 100, 'zeri'], [v / 100, 'zeri'],
-          [a * 100 + c * 10 + m, 'terza'], [c > 0 && c !== a ? (c * 10 + a) * Math.pow(10, m) : 0, 'verso']]);
+          [a * 100 + c * 10 + m, 'terza'], [d > 0 ? (d * 10 + c) * Math.pow(10, a) : 0, 'verso']]);
         const viste = new Set([ohm(v)]);
         const scelte = [{ v: v, tipo: '' }];
         candidati.forEach(([x, tipo]) => {
@@ -615,7 +617,7 @@
         prossimo.focus({ preventScroll: true });
         const spiega = lettura(stato.bande) + '.';
         if (giusto) dici('Giusto: ' + spiega + ' ' + (quiz.serie === 3 ? 'Tre di fila: ormai il codice colori lo leggi al volo.' : 'Di fila: ' + quiz.serie + (quiz.serie < 3 ? ' su 3.' : '.')));
-        else dici('Non è ' + ohm(scelta.v) + ': ' + spiega + ' ' + CONSIGLI[scelta.tipo] + ' La serie riparte da zero.');
+        else dici('Non è ' + ohm(scelta.v) + ': ' + spiega + ' ' + CONSIGLI[scelta.tipo] + ' Si riparte da zero.');
       }
 
       /* --- avvio --- */

@@ -173,8 +173,9 @@
           s('path', { d: 'M-21 -72 Q-25 -62 -22 -50', class: 'cir-riflesso' }),
           s('rect', { x: -13, y: -21, width: 26, height: 21, rx: 3, class: 'cir-attacco' }),
           s('path', { d: 'M-13 -16 L13 -13 M-13 -10 L13 -7 M-13 -4 L13 -1', class: 'cir-attacco-riga' }));
+        const presa = s('rect', { x: -52, y: -100, width: 104, height: 132, rx: 14, class: 'cir-presa' });
         const g = s('g', { class: 'cir-lampada', transform: 'translate(' + x + ' 216)', role: 'button', tabindex: '0' },
-          s('rect', { x: -52, y: -100, width: 104, height: 132, rx: 14, class: 'cir-presa' }),
+          presa,
           s('g', { class: 'cir-sollevo' }, bulbo),
           s('text', { x: 0, y: 18, 'text-anchor': 'middle', class: 'cir-nome' }, 'L' + '₁₂₃'[k]));
         gLampade.append(g);
@@ -186,16 +187,33 @@
           e.preventDefault();
           if (!e.repeat) svita(k);
         });
-        return { g: g, bulbo: bulbo, filamento: filamento, bagliore: bagliore, alone: alone, letture: letture, alza: 0, vAlza: 0, alzaMeta: 0, lum: 0, lumMeta: 0, disegnata: null };
+        return { g: g, presa: presa, bulbo: bulbo, filamento: filamento, bagliore: bagliore, alone: alone, letture: letture, alza: 0, vAlza: 0, alzaMeta: 0, lum: 0, lumMeta: 0, disegnata: null };
       });
 
-      svg.append(strati.aloni, strati.zoccoli, strati.fili, strati.elettroni, strati.frecce, strati.viti, strati.nodi, strati.pila, gLampade, gLetture,
+      const didascalie = [
         s('text', { x: 44, y: 340, class: 'cir-cap' }, ctx.ridotto ? 'frecce: verso degli elettroni' : 'elettroni: velocità non in scala'),
-        s('text', { x: 596, y: 340, 'text-anchor': 'end', class: 'cir-cap' }, 'lampadine uguali da 12' + NB + 'Ω'));
+        s('text', { x: 596, y: 340, 'text-anchor': 'end', class: 'cir-cap' }, 'lampadine uguali da 12' + NB + 'Ω')];
+      svg.append(strati.aloni, strati.zoccoli, strati.fili, strati.elettroni, strati.frecce, strati.viti, strati.nodi, strati.pila, gLampade, gLetture, ...didascalie);
       ctx.scena.append(svg);
-      // Sugli schermi stretti si tagliano i margini vuoti: il disegno guadagna spazio.
+      // Sugli schermi stretti si tagliano i margini vuoti e le lampadine crescono del 10%
+      // (non di più: a sinistra di ognuna sale un filo); le letture salgono per far posto.
+      let stretto = false;
+      function adatta(st) {
+        stretto = st;
+        svg.setAttribute('viewBox', st ? '50 4 546 344' : '0 0 640 352');
+        didascalie[0].setAttribute('x', st ? 59 : 44);
+        didascalie[1].setAttribute('x', st ? 589 : 596);
+        lampade.forEach((L) => {
+          L.letture.forEach((el, j) => el.setAttribute('y', (st ? 62 : 66) + j * 21));
+          L.presa.setAttribute('y', st ? -104 : -100);
+          L.presa.setAttribute('height', st ? 136 : 132);
+          L.alone.setAttribute('cy', st ? 156 : 160);
+          L.disegnata = null;
+          disegnaLampada(L);
+        });
+      }
       if ('ResizeObserver' in window) {
-        const ro = new ResizeObserver(() => svg.setAttribute('viewBox', ctx.scena.clientWidth < 560 ? '36 4 568 344' : '0 0 640 352'));
+        const ro = new ResizeObserver(() => { if ((ctx.scena.clientWidth < 560) !== stretto) adatta(!stretto); });
         ro.observe(ctx.scena);
         ctx.pulizia(() => ro.disconnect());
       }
@@ -262,7 +280,8 @@
       function disegnaLampada(L) {
         if (L.disegnata === L.lum + ':' + L.alza) return;
         L.disegnata = L.lum + ':' + L.alza;
-        L.bulbo.setAttribute('transform', 'translate(0 ' + (-16 * L.alza).toFixed(2) + ') rotate(' + (8 * L.alza).toFixed(2) + ')');
+        const alzo = stretto ? 'scale(1.1) translate(0 ' + (-10 * L.alza).toFixed(2) : 'translate(0 ' + (-16 * L.alza).toFixed(2);
+        L.bulbo.setAttribute('transform', alzo + ') rotate(' + (8 * L.alza).toFixed(2) + ')');
         const b = Math.min(1, L.lum);
         L.alone.setAttribute('opacity', (0.95 * b).toFixed(3));
         L.bagliore.setAttribute('opacity', (0.85 * b).toFixed(3));
@@ -364,7 +383,7 @@
         const svitate = [1, 2, 3].filter((n) => !stato.presenti[n - 1]);
         return 'Banco con una pila da 6 V e tre lampadine uguali da 12 Ω collegate in ' + stato.topo + '. ' +
           (accese.length === 3 ? 'Tutte accese.' : accese.length ? 'Accese: ' + accese.join(' e ') + '.' : 'Tutte spente.') +
-          (svitate.length ? ' Svitate: ' + svitate.join(' e ') + '.' : '');
+          (svitate.length === 3 ? ' Tutte svitate.' : svitate.length ? ' Svitate: ' + svitate.join(' e ') + '.' : '');
       }
 
       function disegnaKirchhoff(indet) {
@@ -481,7 +500,7 @@
         }
         if (serie) {
           return nAv === 3
-            ? 'In **serie** la corrente ha una sola strada e attraversa le lampadine una dopo l\'altra: i **6 V** della pila si dividono in **2 V** ciascuna e passano **167 mA**. Ogni lampadina riceve **333 mW**, un nono dei 3 W che avrebbe in parallelo: per questo è fioca.'
+            ? 'In **serie** la corrente ha una sola strada e attraversa le lampadine una dopo l\'altra: i **6 V** della pila si dividono in parti uguali, **2 V** a lampadina, e passano **167 mA**. Ogni lampadina riceve **333 mW**, un nono dei 3 W che avrebbe in parallelo: per questo è fioca.'
             : 'In **serie** basta una lampadina svitata per interrompere l\'unica strada: non passa corrente e restano **tutte spente**.';
         }
         if (nAv === 3) return 'In **parallelo** ogni lampadina ha la sua strada e riceve tutti i **6 V** della pila: in ciascuna passano **0,5 A** e la potenza sale a **3 W**, nove volte quella in serie. A ogni [[nodo]] la corrente si divide: dalla pila escono **1,5 A**, la somma dei tre rami.';
