@@ -1230,7 +1230,7 @@
       { href: '#diodo', section: 'Questa sezione', title: 'Il diodo: la corrente passa in un solo verso' },
       { href: '#rc-filtri', section: 'Questa sezione', title: 'Il condensatore che si carica e si scarica' },
       { href: '#led-zener', section: 'Questa sezione', title: 'Lo Zener, il riferimento di tensione più semplice' },
-      { href: '../elettronica-avanzata/index.html', section: 'Elettronica avanzata', title: 'Gli alimentatori switching dei caricabatterie' },
+      { href: '../elettronica-avanzata/index.html#potenza', section: 'Elettronica avanzata', title: 'Gli alimentatori switching dei caricabatterie' },
     ],
     glossary: {
       'valore-efficace': { term: 'Valore efficace', def: 'Il valore di una tensione alternata che scalda una resistenza quanto una tensione continua uguale (in inglese RMS). Per una sinusoide è il picco diviso √2: 230 V efficaci hanno un picco di circa 325 V.' },
